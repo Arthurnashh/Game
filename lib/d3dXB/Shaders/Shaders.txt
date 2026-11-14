@@ -1,0 +1,7 @@
+Shaders build:
+
+Shaders need to be compiled using NVAsm tools. This tools needs to be placed as
+	c:\bin\nvasm\nvasm.exe
+
+For best intergration they are compiled into header files,
+those header files are then included into program code.

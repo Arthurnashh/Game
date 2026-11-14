@@ -1,0 +1,9 @@
+// detail texturing applied
+
+tex t0
+tex t1
+
+lrp r0.rgb, v0.a, t0, t1
++ mov r0.a, t0.a
+
+mul r0.rgb, v0, r0

@@ -1,0 +1,13 @@
+#include "d3dXB/shaders/FPSHadersDecl.h"
+
+xvs.1.1
+
+// Tell the compiler to link the module as a fragment (without validation on registers to be initialized and without optimalizations)
+#pragma fragment
+
+// Tell the compiler to not to add the screenspace conversion instructions
+#pragma screenspace
+
+// Point light instancing
+//LPOINT(6*POINTSPOT_COMMON_SIZE)
+LPOINT(30)

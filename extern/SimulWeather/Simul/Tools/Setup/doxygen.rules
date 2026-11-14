@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="Doxygen"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="Doxygen"
+			DisplayName="Doxygen"
+			CommandLine="&quot;$(PROGRAM_FILES32)\doxygen\bin\doxygen.exe&quot; [inputs]"
+			Outputs="$(InputName).chm"
+			FileExtensions="*.rtf"
+			ExecutionDescription="&quot;$(PROGRAM_FILES32)\doxygen\bin\doxygen.exe&quot; [inputs]"
+			>
+			<Properties>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

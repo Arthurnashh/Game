@@ -1,0 +1,535 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(1250)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_SPLASH, DIALOG
+    BEGIN
+        LEFTMARGIN, 1
+        RIGHTMARGIN, 344
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SPLASH DIALOGEX 0, 0, 346, 174
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_CAPTION
+CAPTION "Updating..."
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    CONTROL         "Animate1",IDC_PROGRESS_AVI,"SysAnimate32",ACS_CENTER | ACS_TRANSPARENT | ACS_AUTOPLAY | WS_TABSTOP,40,0,260,26
+    EDITTEXT        IDC_CONSOLE_EDIT,1,58,342,99,ES_MULTILINE | ES_READONLY | WS_VSCROLL
+    PUSHBUTTON      "OK",IDOK,149,160,51,12
+    LTEXT           "Progress",IDC_CONSOLE_PROGRESS,1,30,343,8
+    CONTROL         "",IDC_CONSOLE_PROGRESS_BAR,"msctls_progress32",WS_BORDER,1,42,304,14
+    LTEXT           "0 %",IDC_CONSOLE_PERCENTAGE,313,44,31,8
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "/*\r\n"
+    "All\\bin\\config.bin BINARY DISCARDABLE ""X:\\\\Finalize\\\\Patches\\\\All\\\\bin\\\\config.bin""\r\n"
+    "All\\bin\\ijl15.dll BINARY DISCARDABLE ""X:\\\\Finalize\\\\Patches\\\\All\\\\bin\\\\ijl15.dll""\r\n"
+    "All\\bin\\resource.bin BINARY DISCARDABLE ""X:\\\\Finalize\\\\Patches\\\\All\\\\bin\\\\resource.bin""\r\n"
+    "All\\bin\\stringtable.csv BINARY DISCARDABLE ""X:\\\\Finalize\\\\Patches\\\\All\\\\bin\\\\stringtable.csv""\r\n"
+    "All\\OperationFlashpoint.exe BINARY DISCARDABLE ""X:\\\\Finalize\\\\Patches\\\\All\\\\OperationFlashpoint.exe""\r\n"
+    "All\\OpFlashPreferences.exe BINARY DISCARDABLE ""X:\\\\Finalize\\\\Patches\\\\All\\\\OpFlashPreferences.exe""\r\n"
+    "All\\readme_1_01.txt BINARY DISCARDABLE ""X:\\\\Finalize\\\\Patches\\\\All\\\\readme_1_01.txt""\r\n"
+    "Version\\version.txt BINARY DISCARDABLE ""X:\\\\Finalize\\\\Patches\\\\Version\\\\version.txt""\r\n"
+    "*/\r\n"
+    "#include ""ofppatch.rc2""\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,2
+ PRODUCTVERSION 1,0,0,2
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "BIS"
+            VALUE "FileDescription", "BISPatch"
+            VALUE "FileVersion", "1.02"
+            VALUE "InternalName", "BISPatch"
+            VALUE "LegalCopyright", "Copyright © 2001"
+            VALUE "OriginalFilename", "BISPatch.exe"
+            VALUE "ProductName", "BIS Patch"
+            VALUE "ProductVersion", "1.02"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AVI
+//
+
+IDR_COPYFILE            AVI                     "FILECOPY.AVI"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_CAPTION             "#APPNAME Patch"
+    IDS_NOT_INSTALLED       "#APPNAME is not installed on your computer or installation is corrupted."
+    IDS_BAD_VERSION         "Your #APPNAME version (%s) is not supported by this patch (%s)."
+    IDS_ALREADY_PATCHED     "#APPNAME patch %s has been already applied."
+    IDS_MORE_RECENT         "The version of #APPNAME (%s) \nis more recent than this patch version (%s)."
+    IDS_PATCHED_OK          "#APPNAME patch %s has been applied successfully."
+    IDS_DISK_LOW            "Patch cannot continue. The disk %s is almost full."
+    IDS_UPGRADE_OK          "#APPNAME addon installed: %s."
+    IDS_UPGRADE_FAILED      "Some error occurred during patch installation.\r\nPatch file is probably dammaged. You may need to download it again.\r\nError in file %s, phase %d."
+    IDS_MISSING_FILE        "File %s is missing."
+    IDS_VERIFY_CAPTION      "Verifying #APPNAME, version %d.%02d..."
+    IDS_ERROR_IN_FILE       "Error found in file %s (%08x!=%08x)"
+    IDS_ERROR_IN_FILE_NOCRC "Error found in file %s"   
+    IDS_NO_CRC_VER          "Warning: No CRC information about version %d.%02d."
+    IDS_BAD_SOURCE          "One or more files in game instalation are modified or dammaged.\r\nReinstall game from original CD disc and try again.\r\n"
+    IDS_NO_CRC_VER_FILE     "Note: No CRC information about file %s, version %d.%02d."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_UPDATE_CAPTION      "#APPNAME: Updating version %s to version %s..."
+    IDS_UPDATE_CAPTION2     "#APPNAME: Updating to version %s..."
+    IDS_UPGRADE_CAPTION     "#APPNAME: Installing addon %s."
+    IDS_UPGRADE_CAPTION2     "#APPNAME: Installing..."
+    IDS_CHECK_FILE          "Checking file %s"
+    IDS_REQ_VERSION         "Game version %d.%02d required.\r\nYour current version is %d.%02d."
+    IDS_WARN_ERROR_IN_FILE  "Warning: Error found in file %s (%08x!=%08x)"
+    IDS_ERROR_IN_COPY       "Error found in file %s"
+    IDS_BAD_CDKEY           "Wrong CD KEY."
+    IDS_ERROR_LOG           "Update %s cannot be applied, error %s"
+    IDS_INFO_TEXT           "%s"
+    IDS_INTRO_MESSAGE       "This application will update #APPNAME to version #VERSION.\nIt may take a long time to complete. There is no way to interrupt the updating process.\nTo uninstall the patch, you need to uninstall whole game and install it again."
+    IDS_INTRO_QUESTION      "Do you want to continue?"
+    IDS_INTRO_TEXT          "Please be patient. This update may appear to take a long time to complete. It is updating and installing very large data."
+    IDS_NO_ACCESS_RIGHTS    "You have no access rights to install the application."
+    IDS_INTRO_WAIT_PLEASE   "Wait a moment..."
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Czech resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CSY)
+#ifdef _WIN32
+LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
+#pragma code_page(1250)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DISTRIBUTION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 251
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 140
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DISTRIBUTION DIALOGEX 0, 0, 258, 147
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select the distribution"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,201,109,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,201,126,50,14
+    LTEXT           "Your distribution was not recognized. Please, select one from the list.",IDC_STATIC,7,7,244,20
+    LISTBOX         IDC_DISTRIBUTIONS,7,36,190,104,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_CAPTION             "#APPNAME Aktualizace"
+    IDS_NOT_INSTALLED       "#APPNAME není na tomto poèítaèi správnì nainstalováno anebo je instalace poškozená."
+    IDS_BAD_VERSION         "Na #APPNAME verze (%s) nejde tuto aktualizaci (%s) použít."
+    IDS_ALREADY_PATCHED     "#APPNAME aktualizace %s již je nainstalovaná."
+    IDS_MORE_RECENT         "Aplikace #APPNAME (%s) \nje v novìjsí verzi než tato aktualizace (%s)."
+    IDS_PATCHED_OK          "#APPNAME aktualizace %s byla správnì nainstalovaná."
+    IDS_DISK_LOW            "Aktualizace nemùže být dokonèena. Disk %s je témìø plný."
+    IDS_UPGRADE_OK          "#APPNAME rozšíøení %s bylo nainstalováno."
+    IDS_UPGRADE_FAILED      "Pøi aktualizaci došlo k chybì.\r\nPravdìpodobnì je soubor s akutalizací narušený. Mùže být tøeba stáhnout aktualizaci znovu\r\nChyba v souboru %s, fáze %d."
+    IDS_MISSING_FILE        "Soubor %s chybí."
+    IDS_VERIFY_CAPTION      "Kontroluji #APPNAME, verzi %d.%02d..."
+    IDS_ERROR_IN_FILE       "Nalezen vadný soubor %s (%08x!=%08x)"
+    IDS_ERROR_IN_FILE_NOCRC "Nalezen vadný soubor %s"
+    IDS_NO_CRC_VER          "Upozornìní: chybí kontrolní souèet pro verzi %d.%02d."
+    IDS_BAD_SOURCE          "Jeden anebo více souborù aplikace neodpovídá anebo je narušený.\r\nZnovu aplikaci nainstalujte a zkuste aktualizovat znovu.\r\n"
+    IDS_NO_CRC_VER_FILE     "Poznámka: Chybí kontrolní souèet pro soubor %s, verze %d.%02d."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_UPDATE_CAPTION      "#APPNAME: Aktualizuji verzi %s na %s..."
+    IDS_UPDATE_CAPTION2     "#APPNAME: Aktualizuji na verzi %s..."
+    IDS_UPGRADE_CAPTION     "#APPNAME: Instaluji rozšíøení %s."
+    IDS_UPGRADE_CAPTION2     "#APPNAME: Instaluji..."
+    IDS_CHECK_FILE          "Kontroluji soubor %s"
+    IDS_REQ_VERSION         "Vyžadována verze %d.%02d \r\nVaše souèasná verze je %d.%02d."
+    IDS_WARN_ERROR_IN_FILE  "Upozornìní: Chyba v souboru %s (%08x!=%08x)"
+    IDS_ERROR_IN_COPY       "Chyba v souboru %s"
+    IDS_BAD_CDKEY           "Špatné sériové èíslo."
+    IDS_ERROR_LOG           "Aktualizace %s nejde dokonèit,chyba %s"
+    IDS_INFO_TEXT           "%s"
+    IDS_INTRO_MESSAGE       "Tato aplikace bude aktualizovat #APPNAME na verzi #VERSION.\nTo mùže trvat delší dobu. Bìhem aktualizace ji nebude možné pøerušit. \nPro návrat k pùvodní verzi bude nutné aplikaci odebrat a znovu nainstalovat."
+    IDS_INTRO_QUESTION      "Chcete pokraèovat?"
+    IDS_INTRO_TEXT          "Prosíme o strpení. Aktualizace potrvá delší dobu. Instalují se rozsáhlá data."
+    IDS_NO_ACCESS_RIGHTS    "Nemáte pøístupová práva na instalaci aplikace."
+    IDS_INTRO_WAIT_PLEASE   "Chvilku strpení..."
+END
+
+#endif    // Czech resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Germany) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_CAPTION             "#APPNAME Patch"
+    IDS_NOT_INSTALLED       "#APPNAME ist auf Ihrem Computer nicht installiert oder die installierte Version ist fehlerhaft."
+    IDS_BAD_VERSION         "Ihre #APPNAME-Version (%s) wird von diesem Patch (%s) nicht unterstützt."
+    IDS_ALREADY_PATCHED     "#APPNAME Patch %s wurde bereits installiert."
+    IDS_MORE_RECENT         "Ihre Version von #APPNAME (%s) \nist neueren Datums als diese Patch-Version (%s)."
+    IDS_PATCHED_OK          "#APPNAME Patch %s wurde erfolgreich installiert."
+    IDS_DISK_LOW            "Der Patch-Vorgang kann nicht fortgesetzt werden. Die Festplatte %s ist nahezu voll."
+    IDS_UPGRADE_OK          "#APPNAME-Addon installiert: %s"
+    IDS_UPGRADE_FAILED      "Fehler bei der Patch-Installation.\r\nWahrscheinlich ist der Patch beschädigt. Sie müssen ihn möglicherweise erneut herunterladen.\r\nFehler in Datei %s, Phase %d."
+    IDS_MISSING_FILE        "Datei %s fehlt."
+    IDS_VERIFY_CAPTION      "Überprüfung von #APPNAME, Version %d.%02d..."
+    IDS_ERROR_IN_FILE       "Fehler in Datei %s (%08x!=%08x)"
+    IDS_ERROR_IN_FILE_NOCRC "Fehler in Datei %s"
+    IDS_NO_CRC_VER          "Achtung: Keine CRC-Informationen über Version %d.%02d."
+    IDS_BAD_SOURCE          "Eine oder mehrere Dateien der installierten Version wurden verändert oder beschädigt.\r\nBitte installieren Sie das Spiel von der Original-CD neu und versuchen Sie es noch einmal.\r\n"
+    IDS_NO_CRC_VER_FILE     "Hinweis: Keine CRC-Informationen über Datei %s, Version %d.%02d."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_UPDATE_CAPTION      "#APPNAME: Aktualisierung der Version %s auf Version %s..."
+    IDS_UPDATE_CAPTION2     "#APPNAME: Aktualisierung auf Version %s..."
+    IDS_UPGRADE_CAPTION     "#APPNAME: Installationsvorgang für Addon %s."
+    IDS_UPGRADE_CAPTION2     "#APPNAME: Installationsvorgang..."
+    IDS_CHECK_FILE          "Prüfung der Datei %s"
+    IDS_REQ_VERSION         "Spielversion %d.%02d erforderlich.\r\nIhre derzeitige Version ist %d.%02d."
+    IDS_WARN_ERROR_IN_FILE  "Achtung: Fehler in Datei %s (%08x!=%08x)"
+    IDS_ERROR_IN_COPY       "Fehler in Datei %s"
+    IDS_BAD_CDKEY           "Falscher CD-Schlüssel."
+    IDS_ERROR_LOG           "Update %s cannot be applied, error %s"
+    IDS_INFO_TEXT           "%s"
+    IDS_INTRO_MESSAGE       "Dieses Programm verbessert #APPNAME auf Version #VERSION.\nEs kann sehr lange dauern. Es gibt keine Möglichkeit das Upgrade zu unterbrechen.\nUm den Patch zu deinstallieren, müssen Sie das Spiel deinstallieren und neu installieren."
+    IDS_INTRO_QUESTION      "Wollen Sie fortfahren?"
+    IDS_INTRO_TEXT          "Bitte haben Sie Geduld. Dieses Update kann sehr lange brauchen, da es sehr viele grosse Dateien verändert oder installiert."
+    IDS_NO_ACCESS_RIGHTS    "Sie haben keine Zugriffsrechte um das Programm zu installieren."
+    IDS_INTRO_WAIT_PLEASE   "Einen Moment..."
+END
+
+#endif    // German (Germany) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// French (France) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+#ifdef _WIN32
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_CAPTION             "Patch pour #APPNAME"
+    IDS_NOT_INSTALLED       "Le programme #APPNAME n'est pas installé sur votre ordinateur ou l'installation est corrompue."
+    IDS_BAD_VERSION         "La version d'#APPNAME (%s) installée n'est pas prise en charge par ce patch (%s)."
+    IDS_ALREADY_PATCHED     "Le patch #APPNAME %s a déjr été installé."
+    IDS_MORE_RECENT         "Votre version d'#APPNAME (%s) \nest plus récente que la version de ce patch (%s)."
+    IDS_PATCHED_OK          "Le patch #APPNAME %s a été installé avec succcs."
+    IDS_DISK_LOW            "L'installation du patch ne peut continuer. Le disque %s est presque plein."
+    IDS_UPGRADE_OK          "Add-on #APPNAME installé : %s."
+    IDS_UPGRADE_FAILED      "Une erreur s'est produite lors de l'installation du patch.\r\nLe fichier du patch est probablement endommagé. Essayez de le télécharger r nouveau.\r\nErreur dans le fichier %s, phase %d."
+    IDS_MISSING_FILE        "Fichier %s manquant."
+    IDS_VERIFY_CAPTION      "Vérification d'#APPNAME, version %d.%02d..."
+    IDS_ERROR_IN_FILE       "Erreur détectée dans le fichier %s (%08x!=%08x)"
+    IDS_ERROR_IN_FILE_NOCRC "Erreur détectée dans le fichier %s"
+    IDS_NO_CRC_VER          "Attention : aucune information CRC r propos de la version %d.%02d."
+    IDS_BAD_SOURCE          "Un ou plusieurs fichiers de jeu installés ont été modifiés ou endommagés.\r\nRéinstallez le jeu r partir du CD d'origine et réessayez.\r\n"
+    IDS_NO_CRC_VER_FILE     "Remarque : aucune information CRC r propos du fichier d%s, version %d.%02d."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_UPDATE_CAPTION      "#APPNAME : mise r jour de la version %s r la version %s..."
+    IDS_UPDATE_CAPTION2     "#APPNAME : mise r jour r la version %s..."
+    IDS_UPGRADE_CAPTION     "#APPNAME : add-on %s en cours d'installation."
+    IDS_UPGRADE_CAPTION2     "#APPNAME : Installation..."
+    IDS_CHECK_FILE          "Vérification du fichier %s"
+    IDS_REQ_VERSION         "Version du jeu %d.%02d requise.\r\nVous disposez actuellement de la version %d.%02d."
+    IDS_WARN_ERROR_IN_FILE  "Attention : erreur détectée dans le fichier %s (%08x!=%08x)"
+    IDS_ERROR_IN_COPY       "Erreur détectée dans le fichier %s"
+    IDS_BAD_CDKEY           "Mauvais code CD."
+    IDS_ERROR_LOG           "Update %s cannot be applied, error %s"
+    IDS_INFO_TEXT           "%s"
+    IDS_INTRO_MESSAGE       "This application will update #APPNAME to version #VERSION.\nIt may take a long time to complete. There is no way to interrupt the updating process.\nTo uninstall the patch, you need to uninstall whole game and install it again."
+    IDS_INTRO_QUESTION      "Do you want to continue?"
+    IDS_INTRO_TEXT          "Please be patient. This update may appear to take a long time to complete. It is updating and installing very large data."
+    IDS_NO_ACCESS_RIGHTS    "Vous ne disposez pas des droits d'acces permettant d'installer l'application."
+    IDS_INTRO_WAIT_PLEASE   "Un instant..."
+END
+
+#endif    // French (France) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Italian (Italy) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ITA)
+#ifdef _WIN32
+LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_CAPTION             "Patch di #APPNAME"
+    IDS_NOT_INSTALLED       "#APPNAME non c installato sul computer o l'installazione c danneggiata."
+    IDS_BAD_VERSION         "La versione (%s) di #APPNAME non c supportata dalla patch (%s)."
+    IDS_ALREADY_PATCHED     "La patch %s di #APPNAME c gir stata applicata."
+    IDS_MORE_RECENT         "La versione (%s) di #APPNAME \nc piu recente della patch versione (%s)."
+    IDS_PATCHED_OK          "La patch % di #APPNAME c stata applicata."
+    IDS_DISK_LOW            "Impossibile continuare l'installazione della patch. Il disco %s c quasi pieno."
+    IDS_UPGRADE_OK          "Il componente aggiuntivo di #APPNAME c stato installato: %s."
+    IDS_UPGRADE_FAILED      "Errore durante l'installazione della patch.\r\nIl file della patch pun essere danneggiato. Potrebbe essere necessario scaricarlo di nuovo.\r\nErrore nel file %s, fase %d."
+    IDS_MISSING_FILE        "File %s non trovato."
+    IDS_VERIFY_CAPTION      "Verifica di #APPNAME versione %d.%02d in corso..."
+    IDS_ERROR_IN_FILE       "Errore nel file %s (%08x!=%08x)"
+    IDS_ERROR_IN_FILE_NOCRC "Errore nel file %s"
+    IDS_NO_CRC_VER          "Attenzione: nessuna informazione CRC sulla versione %d.%02d."
+    IDS_BAD_SOURCE          "Durante l'installazione del gioco, uno o piu file sono stati modificati o danneggiati.\r\nReinstallare il gioco dal CD originale e provare di nuovo.\r\n"
+    IDS_NO_CRC_VER_FILE     "Nota: nessuna informazione CRC circa il file %s, versione %d.%02d."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_UPDATE_CAPTION      "#APPNAME: aggiornamento in corso della versione %s alla versione %s..."
+    IDS_UPDATE_CAPTION2     "#APPNAME: aggiornamento alla versione %s..."
+    IDS_UPGRADE_CAPTION     "#APPNAME: installazione del componente aggiuntivo %s in corso."
+    IDS_UPGRADE_CAPTION2     "#APPNAME: Installazione..."
+    IDS_CHECK_FILE          "Controllo del file %s"
+    IDS_REQ_VERSION         "C necessario utilizzare la versione %d.%02d.\r\nLa versione in uso c %d.%02d."
+    IDS_WARN_ERROR_IN_FILE  "Attenzione: errore nel file %s (%08x!=%08x)"
+    IDS_ERROR_IN_COPY       "Errore nel file %s"
+    IDS_BAD_CDKEY           "Codice del CD errato."
+    IDS_ERROR_LOG           "Update %s cannot be applied, error %s"
+    IDS_INFO_TEXT           "%s"
+    IDS_INTRO_MESSAGE       "This application will update #APPNAME to version #VERSION.\nIt may take a long time to complete. There is no way to interrupt the updating process.\nTo uninstall the patch, you need to uninstall whole game and install it again."
+    IDS_INTRO_QUESTION      "Do you want to continue?"
+    IDS_INTRO_TEXT          "Please be patient. This update may appear to take a long time to complete. It is updating and installing very large data."
+    IDS_NO_ACCESS_RIGHTS    "Non hai le autorizzazioni di accesso per installare l’applicazione."
+    IDS_INTRO_WAIT_PLEASE   "Attendere prego..."
+END
+
+#endif    // Italian (Italy) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Spanish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESN)
+#ifdef _WIN32
+LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_MODERN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_CAPTION             "Parche para #APPNAME"
+    IDS_NOT_INSTALLED       "#APPNAME no está instalado en tu ordenador o el archivo de instalación está danado."
+    IDS_BAD_VERSION         "La versión (%s) de #APPNAME no es compatible con este parche (%s)."
+    IDS_ALREADY_PATCHED     "Ya has instalado el parche %s de #APPNAME."
+    IDS_MORE_RECENT         "Tu versión de #APPNAME (%s) \nes más reciente que este parche (%s)."
+    IDS_PATCHED_OK          "El parche %s de #APPNAME ha sido instalado."
+    IDS_DISK_LOW            "No se puede instalar el parche. Apenas queda espacio en el disco %s."
+    IDS_UPGRADE_OK          "Se ha instalado el archivo complementario de #APPNAME: %s."
+    IDS_UPGRADE_FAILED      "Se produjo un error durante la instalación del parche.\r\nProbablemente el archivo esté danado. Puede que tengas que descargarlo de nuevo.\r\nHay un problema en el archivo %s en la fase %d."
+    IDS_MISSING_FILE        "No se encuentra el archivo %s."
+    IDS_VERIFY_CAPTION      "Comprobando la versión %d.%02d de #APPNAME"
+    IDS_ERROR_IN_FILE       "Hay un problema con el archivo %s (%08x!=%08x)"
+    IDS_ERROR_IN_FILE_NOCRC "Hay un problema con el archivo %s"
+    IDS_NO_CRC_VER          "Advertencia: No hay información CRC sobre la versión %d.%02d."
+    IDS_BAD_SOURCE          "Uno o varios de los archivos de instalación del juego han sido modificados o están danados.\r\nVuelve a instalar el juego desde el disco original e inténtalo de nuevo.\r\n"
+    IDS_NO_CRC_VER_FILE     "Nota: No hay información CRC sobre el archivo  %s, versión %d.%02d."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_UPDATE_CAPTION      "#APPNAME: Actualización de la versión %s a la versión %s..."
+    IDS_UPDATE_CAPTION2     "#APPNAME: Actualización a la versión %s..."
+    IDS_UPGRADE_CAPTION     "#APPNAME: Instalando archivo complementario %s."
+    IDS_UPGRADE_CAPTION2    "#APPNAME: Instalando..."
+    IDS_CHECK_FILE          "Comprobando el archivo %s"
+    IDS_REQ_VERSION         "Necesitas la versión %d.%02d del juego.\r\nDispones de la versión d.%02d."
+    IDS_WARN_ERROR_IN_FILE  "Advertencia: Hay un problema con el archivo %s (%08x!=%08x)"
+    IDS_ERROR_IN_COPY       "Hay un problema con el archivo %s"
+    IDS_BAD_CDKEY           "Clave de CD incorrecta."
+    IDS_ERROR_LOG           "Update %s cannot be applied, error %s"
+    IDS_INFO_TEXT           "%s"
+    IDS_INTRO_MESSAGE       "This application will update #APPNAME to version #VERSION.\nIt may take a long time to complete. There is no way to interrupt the updating process.\nTo uninstall the patch, you need to uninstall whole game and install it again."
+    IDS_INTRO_QUESTION      "Do you want to continue?"
+    IDS_INTRO_TEXT          "Please be patient. This update may appear to take a long time to complete. It is updating and installing very large data."
+    IDS_NO_ACCESS_RIGHTS    "No tienes permiso de acceso para instalar la aplicación."
+    IDS_INTRO_WAIT_PLEASE   "Espera un momento..."
+END
+
+#endif    // Spanish resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+/*
+All\bin\config.bin BINARY DISCARDABLE "X:\\Finalize\\Patches\\All\\bin\\config.bin"
+All\bin\ijl15.dll BINARY DISCARDABLE "X:\\Finalize\\Patches\\All\\bin\\ijl15.dll"
+All\bin\resource.bin BINARY DISCARDABLE "X:\\Finalize\\Patches\\All\\bin\\resource.bin"
+All\bin\stringtable.csv BINARY DISCARDABLE "X:\\Finalize\\Patches\\All\\bin\\stringtable.csv"
+All\OperationFlashpoint.exe BINARY DISCARDABLE "X:\\Finalize\\Patches\\All\\OperationFlashpoint.exe"
+All\OpFlashPreferences.exe BINARY DISCARDABLE "X:\\Finalize\\Patches\\All\\OpFlashPreferences.exe"
+All\readme_1_01.txt BINARY DISCARDABLE "X:\\Finalize\\Patches\\All\\readme_1_01.txt"
+Version\version.txt BINARY DISCARDABLE "X:\\Finalize\\Patches\\Version\\version.txt"
+*/
+#include "ofppatch.rc2"
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

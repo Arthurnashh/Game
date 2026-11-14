@@ -1,0 +1,130 @@
+#ifdef _MSC_VER
+#pragma once
+#endif
+
+#ifndef _ES_SPLINEEQD_HPP_
+#define _ES_SPLINEEQD_HPP_
+
+// numeric interpolators
+
+// Spline interpolation stuff
+// http://enuxsa.eas.asu.edu/~lyttle/
+
+/*
+ * y[]  - [0-n] array of the   dependant variable
+ * n    - integer denoting maximum index for x[],y[],ypp[]
+ * ypp[] - [0-n] array of d2y/dx2 (returned)
+Note: range of independant variable x is always <0,1>), 1 corresponds to n-1.
+*/
+
+template <class Numeric>
+void Spline
+(
+	const Numeric y[], int n, Numeric *ypp,
+	const Numeric &zero
+)
+{
+	float oN = n;
+	float invON = 1.0f/n;
+
+	n--;
+
+  int i;
+	Temp<float> a(n+1),b(n+1),c(n+1),gamma(n+1);
+	Temp<Numeric> r1(n+1),r2(n+1);
+
+/*>>>>>>>>>>>>>>     FILL SYSTEM	<<<<<<<<<<<<<<*/
+/*******************************************************
+* Here, we put together a tri-diagonal system to find  *
+* the second-derivative values at the nodes.	       *
+*******************************************************/
+
+  for( i=1; i<n; i++ )
+	{
+    a[i]  = ( invON ) * (1/6.0);
+    b[i]  = ( invON*2 ) * (1/3.0);
+    c[i]  = ( invON   ) * (1/6.0);
+    r1[i] = ( y[i+1] - y[i]   ) * oN
+           -( y[i]   - y[i-1] ) * oN;
+  }
+
+   b[0] = 1.0;
+   c[0] = 0.0;
+   r1[0] = zero;
+
+   a[n] = 0.0;
+   b[n] = 1.0;
+   r1[n] = zero;
+
+/*>>>>>>>>>>>>>>     SOLVE SYSTEM      <<<<<<<<<<<<<<*/
+/*******************************************************
+* Uses Thomas algorithm			               *
+*******************************************************/
+  i = 0;
+    gamma[i] = c[i] / b[i];
+    r2[i]    = r1[i] * (1/b[i]);
+
+  i = 1;
+  while (i <= n-1){
+    float betai  = b[i] - a[i]*gamma[i-1];
+    gamma[i] = c[i] / betai;
+    r2[i] = (r1[i] - r2[i-1]*a[i]) *(1/betai);
+    i = i + 1;
+  }
+
+  i = n;
+    float betai  = b[i] - a[i]*gamma[i-1];
+    r2[i] = (r1[i] - r2[i-1]*a[i]) *(1/betai);
+
+    ypp[i] = r2[i];
+ 
+  i = n-1;
+  while (i >= 0){
+    ypp[i] = r2[i] - ypp[i+1]*gamma[i];
+    i = i - 1;
+  }
+}
+
+template <class Numeric>
+Numeric Splint
+(
+	const Numeric y[], const Numeric ypp[], int n, float xi
+)
+{
+/*
+ * y[]  - [0-n] array of the   dependant variable
+ * ypp[] - [0-n] array of d2y/dx2 (found from spline)
+ * n    - integer denoting maximum index for x[],y[],ypp[]
+ * xi   - x value where interpolation is needed
+ * *yi_ptr  - pointer to interpolated y value (returned)
+Note: range of independant variable x is always <0,1), 1 corresponds to n.
+*/
+
+/*>>>>>>>>>>>>>>      TABLE LOOKUP      <<<<<<<<<<<<<<*/
+	// xmax -> n
+	// xmin -> 0
+
+	float invN = 1.0f/n;
+
+  int i_lo = toIntFloor(xi*n);
+  int i_hi = i_lo+1;
+	if( i_hi<=0 ) return y[0];
+	if( i_hi>=n ) return y[n-1];
+
+	float x_lo = i_lo*invN;
+	float x_hi = i_hi*invN;
+	Assert( x_hi>=xi );
+	Assert( x_lo<=xi );
+
+	float invDenom = n;
+	//float invDenom = 1 / ( x_hi - x_lo );
+  float A = ( x_hi - xi ) * invDenom;
+  float B = ( xi - x_lo ) * invDenom;
+	Assert( fabs(A+B-1)<1e-6 );
+  float C = ( A*A*A - A ) * Square(invN) * (1/6.0);
+  float D = ( B*B*B - B ) * Square(invN) * (1/6.0);
+
+  return y[i_lo]*A + y[i_hi]*B + ypp[i_lo]*C + ypp[i_hi]*D;
+}
+
+#endif

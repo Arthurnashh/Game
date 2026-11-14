@@ -1,0 +1,5 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Fill out color output values
+mul oD0, ACCUMULATOR_DIFFUSE, MODULATE_COLOR
+mov oD1, ACCUMULATOR_SPECULAR

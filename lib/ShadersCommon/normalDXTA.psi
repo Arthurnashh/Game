@@ -1,0 +1,14 @@
+// normal diffuse shader
+
+tex t0
+
+// DXT1 decompression -
+// add average color to prevent DXT1 decompression artifacts
+mad r0.rgb, 1-t0.a, c[T0_AVGCOLOR], t0
+//mov r0.rgb, c[T0_AVGCOLOR]
+
+mul r0.rgb, v0, r0
++mul r0.a, v0.a, t0.a
+
+mul_x2 r0.rgb, c[T0_MAXCOLOR], r0
++mul r0.a, c[T0_MAXCOLOR], r0.a

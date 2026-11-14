@@ -1,0 +1,21 @@
+#include "psDecl.h"
+
+// simple copy postprocess effect
+
+xps.1.1
+
+// a<0.5 is there so that things start glowing before fully saturated
+// this is important for sky
+
+tex t0 // framebuffer
+tex t1 // framebuffer
+tex t2 // framebuffer
+tex t3 // framebuffer
+
+add_d2 r0.rgb, t0, t1
+add_d2 r1.rgb, t2, t3
+add_d2 r0.rgb, r0, r1
+dp3 r1, r0, c[POST_FX_PARAM] // calculate brightness
+add_x2 r0.a, r1.a, -c[POST_FX_PARAM].a // calculate ammount of glow
+
+#include "finalCombiner.psi"

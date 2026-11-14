@@ -1,0 +1,88 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Transform position (only world matrix is in bone s - output is in world space)
+dp4 r0.x, SKINNED_POSITION, c[BONES_START + a0.x + 0]
+dp4 r0.y, SKINNED_POSITION, c[BONES_START + a0.x + 1]
+dp4 r0.z, SKINNED_POSITION, c[BONES_START + a0.x + 2]
+mad SKINNED_POSITION, r0, c[CONSTANTS_0_1_765_0d5].yyyx, c[CONSTANTS_0_1_765_0d5].xxxy
+
+// Transform normal (only world matrix is in bones - output is in world space)
+dp3 r0.x, SKINNED_NORMAL, c[BONES_START + a0.x + 0]
+dp3 r0.y, SKINNED_NORMAL, c[BONES_START + a0.x + 1]
+dp3 r0.z, SKINNED_NORMAL, c[BONES_START + a0.x + 2]
+mad SKINNED_NORMAL, r0, c[CONSTANTS_0_1_765_0d5].yyyx, c[CONSTANTS_0_1_765_0d5].xxxy
+
+// Apply view matrix
+m4x3 TRANSFORMED_POSITION.xyz, SKINNED_POSITION, c[WORLD_VIEW_MATRIX_0]
+mov TRANSFORMED_POSITION.w, c[CONSTANTS_0_1_765_0d5].y
+
+// Project position
+m4x4 r0, TRANSFORMED_POSITION, c[PROJ_MATRIX_0]
+
+// Convert to screenspace
+mul r0.xyz, r0, c[SCREENSPACE_SCALE]
++ rcc r1.x, r0.w
+mad oPos.xyz, r0, r1.x, c[SCREENSPACE_OFFSET]
+mov oPos.w, r0.w
+
+// Fill out texture coordinates
+dp4 oT0.x, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX0_0]
+dp4 oT0.y, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX0_1]
+dp4 oT1.x, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX1_0]
+dp4 oT1.y, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX1_1]
+
+// Get the Skinned S and T
+#define SKINNED_S r1
+#define SKINNED_T r2
+
+dp3 r0.x, INPUT_S, c[BONES_START + a0.x + 0]
+dp3 r0.y, INPUT_S, c[BONES_START + a0.x + 1]
+dp3 r0.z, INPUT_S, c[BONES_START + a0.x + 2]
+mad SKINNED_S, r0, c[CONSTANTS_0_1_765_0d5].yyyx, c[CONSTANTS_0_1_765_0d5].xxxy
+
+dp3 r0.x, INPUT_T, c[BONES_START + a0.x + 0]
+dp3 r0.y, INPUT_T, c[BONES_START + a0.x + 1]
+dp3 r0.z, INPUT_T, c[BONES_START + a0.x + 2]
+mad SKINNED_T, r0, c[CONSTANTS_0_1_765_0d5].yyyx, c[CONSTANTS_0_1_765_0d5].xxxy
+
+
+// -------------------------------------------------------
+// Calculate the light direction in the local vertex space
+dp3 r3.x, -SKINNED_S, -c[LDIRECTION_TRANSFORMED_DIR]
+dp3 r3.y, -SKINNED_T, -c[LDIRECTION_TRANSFORMED_DIR]
+dp3 r3.z, SKINNED_NORMAL, -c[LDIRECTION_TRANSFORMED_DIR]
+
+// we need to normalize now - local space may be skewed
+dp3 r3.w, r3, r3
+rsq r3.w, r3.w
+mul r3.xyz, r3.xyz, r3.w
+
+// by making light direction smaller we make diffuse component smaller
+mul r3.xyz, r3.xyz, MODULATE_COLOR.w
+
+mov oT2.xyz, r3
+
+// Fit into interval (0, 1) and write into specular (oD1 later)
+// The normalMapThrough PS uses this information
+mad ACCUMULATOR_SPECULAR, r3.xyz, c[CONSTANTS_0_1_765_0d5].wwwx, c[CONSTANTS_0_1_765_0d5].wwwx
+
+// -------------------------------------------------------
+
+// --------------------------
+// Move halfway vector to oT3
+
+// Calculate the halfway vector
+add r4, c[CAMERA_POSITION], -SKINNED_POSITION
+dp3 r4.w, r4, r4
+rsq r4.w, r4.w
+mad r4.xyz, r4, r4.w, -c[LDIRECTION_TRANSFORMED_DIR]
+
+// Transform it into local vertex space
+dp3 r0.x, -SKINNED_S, r4
+dp3 r0.y, -SKINNED_T, r4
+dp3 r0.z, SKINNED_NORMAL, r4
+
+dp3 r0.w, r0, r0
+rsq r0.w, r0.w
+mul oT3.xyz, r0, r0.w
+

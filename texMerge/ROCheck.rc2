@@ -1,0 +1,16 @@
+
+READONLYCHECKDIALOG DIALOG DISCARDABLE  0, 0, 262, 76
+STYLE  DS_MODALFRAME WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Read only warning"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Check Out",1004,94,55,50,14
+    DEFPUSHBUTTON   "Save As...",IDOK,150,55,50,14
+    DEFPUSHBUTTON   "Ok",IDCANCEL,205,55,50,14
+    LTEXT           "This file:",-1,39,7,27,8
+    EDITTEXT        1002,39,17,216,22,ES_READONLY | NOT WS_BORDER
+    LTEXT           "Is marked as READ-ONLY and cannot be overwritten!",-1,7,
+                    41,171,8
+    PUSHBUTTON      "Explore file...",1001,7,55,80,14
+    ICON            "",1003,7,7,21,20
+END

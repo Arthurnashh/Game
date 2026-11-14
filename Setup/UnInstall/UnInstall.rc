@@ -1,0 +1,301 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(1250)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_NAME            "Operation Flashpoint Gold Upgrade Uninstall"
+    IDS_UNINSTALL_QUSTION   "Uninstall Operation Flashpoint Gold Upgrade?"
+    IDS_FAIL_NOTFOUND       "File not found:\n%s"
+    IDS_CANNOT_COPYFILE     "Unable to copy file:\n%s"
+    IDS_UNINSTALL_END       "Operation Flashpoint Gold Upgrade was successfully uninstalled. Some files in directory %s was not deleted."
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Czech resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CSY)
+#ifdef _WIN32
+LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
+#pragma code_page(1250)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_UNINSTALL_USER_FILES DIALOGEX 0, 0, 186, 90
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "User Files Uninstall"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,77,69,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,69,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_UNINSTALL_USER_FILES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_NAME            "Odinstalovat Operaci Flashpoint Gold Upgrade"
+    IDS_UNINSTALL_QUSTION   "Chcete odinstalovat Operaci Flashpoint Gold Upgrade?"
+    IDS_FAIL_NOTFOUND       "Nemohu najít soubor:\n%s"
+    IDS_CANNOT_COPYFILE     "Nemohu zkopírovat soubor:\n%s"
+    IDS_UNINSTALL_END       "Operace Flashpoint Gold Upgrade byla odinstalována. V adresáøi %s zùstaly nìjaké soubory (nastavení, uložené pozice atd.)."
+END
+
+#endif    // Czech resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Polish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_PLK)
+#ifdef _WIN32
+LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
+#pragma code_page(1250)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_NAME            "Usun¹c Operation Flashpoint Gold Upgrade"
+    IDS_UNINSTALL_QUSTION   "Czy chcesz usun¹æ Operation Flashpoint Gold Upgrade?"
+    IDS_FAIL_NOTFOUND       "Nie znaleziono pliku:\n%s"
+    IDS_CANNOT_COPYFILE     "Nie mo¿na skopiowaæ pliku:\n%s"
+    IDS_UNINSTALL_END       "Gra Operation Flashpoint Gold Upgrade zosta³a usniêta. Niektóre pliki w katalogu %s nie zosta³y usuniête."
+END
+
+#endif    // Polish resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_NAME            "Operation Flashpoint Gold Upgrade Uninstall"
+    IDS_UNINSTALL_QUSTION   "Uninstall Operation Flashpoint Gold Upgrade?"
+    IDS_FAIL_NOTFOUND       "File not found:\n%s"
+    IDS_CANNOT_COPYFILE     "Unable to copy file:\n%s"
+    IDS_UNINSTALL_END       "Operation Flashpoint Gold Upgrade was successfully uninstalled. Some files in directory %s was not deleted."
+END
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Germany) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_NAME            "Operation Flashpoint Gold Upgrade deinstallieren"
+    IDS_UNINSTALL_QUSTION   "Möchten Sie Operation Flashpoint Gold Upgrade deinstallieren?"
+    IDS_FAIL_NOTFOUND       "Datei nicht gefunden:\n%s"
+    IDS_CANNOT_COPYFILE     "Folgende Datei kann nicht kopiert werden:\n%s"
+    IDS_UNINSTALL_END       "Deinstallation von Operation Flashpoint Gold Upgrade erfolgreich abgeschlossen. Einige Dateien im Verzeichnis %s sind nicht gelöscht worden."
+END
+
+#endif    // German (Germany) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// French (France) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+#ifdef _WIN32
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_NAME            "Désinstallation d'Operation Flashpoint Gold Upgrade"
+    IDS_UNINSTALL_QUSTION   "Désinstaller Operation Flashpoint Gold Upgrade ?"
+    IDS_FAIL_NOTFOUND       "Fichier non trouvé :\n%s"
+    IDS_CANNOT_COPYFILE     "Impossible de copier le fichier :\n%s"
+    IDS_UNINSTALL_END       "Désinstallation d'Operation Flashpoint Gold Upgrade réussie. Certains fichiers du répertoire %s n'ont pas été effacés."
+END
+
+#endif    // French (France) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Italian (Italy) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ITA)
+#ifdef _WIN32
+LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_NAME            "Disinstallazione di Operation Flashpoint Gold Upgrade"
+    IDS_UNINSTALL_QUSTION   "Disinstallare Operation Flashpoint Gold Upgrade?"
+    IDS_FAIL_NOTFOUND       "File non trovato:\n%s"
+    IDS_CANNOT_COPYFILE     "Impossibile copiare file:\n%s"
+    IDS_UNINSTALL_END       "Disinstallazione di Operation Flashpoint Gold Upgrade eseguita con successo. Alcuni file nella directory %s non sono stati rimossi."
+END
+
+#endif    // Italian (Italy) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Spanish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESN)
+#ifdef _WIN32
+LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_MODERN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_NAME            "Se ha desinstalado Operation Flashpoint Gold Upgrade"
+    IDS_UNINSTALL_QUSTION   "?Quieres desinstalar Operation Flashpoint Gold Upgrade?"
+    IDS_FAIL_NOTFOUND       "No se ha encontrado el archivo:\n%s"
+    IDS_CANNOT_COPYFILE     "No se ha copiado el archivo:\n%s"
+    IDS_UNINSTALL_END       "Se ha desinstalado Operation Flashpoint Gold Upgrade, pero algunos archivos del directorio %s no han sido eliminados."
+END
+
+#endif    // Spanish resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

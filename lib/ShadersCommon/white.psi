@@ -1,0 +1,5 @@
+// just white color
+def c5, 1, 1, 1, 1
+mov r0, c5
+//mov r0, v0
+//mov r0.a, c5.a

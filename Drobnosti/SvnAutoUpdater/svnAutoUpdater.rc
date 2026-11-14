@@ -1,0 +1,132 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+/////////////////////////////////////////////////////////////////////////////
+// Czech (Czech Republic) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CSY)
+LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
+#pragma code_page(1250)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+DLG_ICON                ICON                    "res\\svnAutoUpdater.ico"
+DLG_ICON_S              ICON                    "res\\svnAutoUpdater_s.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+DLG_MAIN DIALOGEX 20, 40, 201, 162
+STYLE DS_SETFONT | DS_3DLOOK | WS_MINIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_NOPARENTNOTIFY
+CAPTION "DayZUpdater"
+CLASS "DAYZ_UPDATER"
+FONT 8, "Helv", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_LOG,6,7,191,116,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | ES_WANTRETURN | WS_VSCROLL
+    PUSHBUTTON      "Clear log",IDC_CLEAR,6,128,76,15
+    GROUPBOX        "Options",IDC_STATIC,84,124,113,21
+    CONTROL         "Minimize to SysTray",IDC_MINIMIZE_SYSTRAY,"Button",BS_AUTOCHECKBOX,88,132,105,11
+    EDITTEXT        IDC_STATUS,2,148,196,12,ES_AUTOHSCROLL | ES_READONLY
+    GROUPBOX        "Log",IDC_STATIC,2,0,198,147
+END
+
+IDD_LOGIN DIALOGEX 0, 0, 190, 63
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Credentials"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_LOGIN_USERNAME,52,6,130,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LOGIN_PASSWORD,52,24,130,14,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,38,44,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,92,44,50,14
+    LTEXT           "User name:",IDC_STATIC,6,10,42,8
+    LTEXT           "Password:",IDC_STATIC,6,28,39,8
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    DLG_MAIN, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 158
+    END
+
+    IDD_LOGIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 183
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 56
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_SYSTRAY_POPUP_MENU MENU
+BEGIN
+    POPUP "POPUP"
+    BEGIN
+        MENUITEM "Restore",                     ID_POPUP_RESTORE
+        MENUITEM "Exit",                        ID_POPUP_QUIT
+    END
+END
+
+#endif    // Czech (Czech Republic) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

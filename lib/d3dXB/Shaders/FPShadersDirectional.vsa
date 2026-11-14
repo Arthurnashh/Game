@@ -1,0 +1,36 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// full directional light including specular
+
+// decrease color intensity (both specular and diffuse)
+mul r2.xyz, MODULATE_COLOR.w, c[LDIRECTION_D]
+
+// A_DFORCED_E
+mad ACCUMULATOR_DIFFUSE.xyz, INPUT_MAT_A, c[LDIRECTION_A], ACCUMULATOR_DIFFUSE
+mad ACCUMULATOR_DIFFUSE.xyz, INPUT_MAT_D_FORCED, r2.xyz, ACCUMULATOR_DIFFUSE
+
+// Direction light
+add r0, c[CAMERA_POSITION], -SKINNED_POSITION
+dp3 r4.w, r0, r0
+rsq r4.w, r4.w
+mad r4.xyz, r0, r4.w, -c[LDIRECTION_TRANSFORMED_DIR]
+dp3 r4.w, r4, r4
+rsq r4.w, r4.w
+mul r4.xyz, r4, r4.w
+dp3 r0.x, SKINNED_NORMAL, -c[LDIRECTION_TRANSFORMED_DIR]
+max r1.w, -r0.x, c[CONSTANTS_0_1_765_0d5].x
+
+dp3 r0.y, SKINNED_NORMAL, r4
+mov r0.zw, INPUT_MAT_S.w
+lit r0, r0
+
+
+// Diffuse color
+mul r1.xyz, INPUT_MAT_D.xyz, r2.xyz
+mul r4.xyz, r1.w, c[LDIRECTION_GROUND].xyz
+mad ACCUMULATOR_DIFFUSE.xyz, r0.y, r1.xyz, ACCUMULATOR_DIFFUSE.xyz
+mad ACCUMULATOR_DIFFUSE.xyz, r4.xyz, r1.xyz, ACCUMULATOR_DIFFUSE.xyz
+
+// Specular color
+mul r1.xyz, INPUT_MAT_S.xyz, r2.xyz
+mad ACCUMULATOR_SPECULAR.xyz, r0.z, r1.xyz, ACCUMULATOR_SPECULAR.xyz

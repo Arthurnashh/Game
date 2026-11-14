@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<module name="HierWalker">
+
+	<description>
+		Introduces common hierarchy of nodes with attributes and walking through this hierarchy
+		(with inheritance of attributes).
+	</description>
+
+	<files>
+		<ref_file name="El/HierWalker/hierWalker.hpp"/>
+		<ref_file name="El/HierWalker/hierWalker.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+		<ref_module name="El/Enum"/>
+		<ref_module name="El/ParamArchive"/>
+		<ref_module name="El/ParamFile"/>
+		<ref_module name="El/QStream"/>
+	</dependencies>
+
+</module>

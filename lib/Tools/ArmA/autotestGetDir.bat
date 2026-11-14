@@ -1,0 +1,1 @@
+svn checkout https://dev.bistudio.com/svn/autotest/ArmA/Autotest o:\arma\autotest

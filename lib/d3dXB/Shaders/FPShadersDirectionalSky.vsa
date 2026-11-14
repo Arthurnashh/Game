@@ -1,0 +1,20 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+//dp3 ACCUMULATOR_DIFFUSE.xyz, SKINNED_NORMAL, c[LDIRECTIONSTARS_TRANSFORMED_SUN_DIR__ALPHA_CORRECTION]
+// Fit into interval (0, 1) and write into diffuse (oD0 later)
+//mad ACCUMULATOR_DIFFUSE.xyz, SKINNED_NORMAL.xyz, c[CONSTANTS_0_1_765_0d5].www, c[CONSTANTS_0_1_765_0d5].www
+mad oT2.xyz, SKINNED_NORMAL.xyz, c[CONSTANTS_0_1_765_0d5].www, c[CONSTANTS_0_1_765_0d5].www
+
+/*
+// Direction sky light
+dp3 r0.x, SKINNED_NORMAL, c[LDIRECTIONSTARS_TRANSFORMED_SUN_DIR__ALPHA_CORRECTION]
+
+max r0.x, r0.x, c[CONSTANTS_0_1_765_0d5].x
+mul r0.x, r0.x, r0.x // ^2
+mul r1.x, r0.x, r0.x // ^4
+mul ACCUMULATOR_DIFFUSE.xyz, r0.x, r1.x // ^6
+*/
+//add ACCUMULATOR_DIFFUSE.xyz, c[CONSTANTS_0_1_765_0d5].y, -r0 // 1-r0
+
+//mul ACCUMULATOR_DIFFUSE.xyz, c[LDIRECTIONSKY_SUNSKY_COLOR].xyz, r0.x
+//mad ACCUMULATOR_DIFFUSE.xyz, r1.x, c[LDIRECTIONSKY_SKY_COLOR].xyz, ACCUMULATOR_DIFFUSE.xyz

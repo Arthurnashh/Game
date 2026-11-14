@@ -1,0 +1,17 @@
+// final color = s0*s1 + (1-s0)*s2 + s3
+// final alpha = s6.b
+// special registers:
+//   prod = s4*s5.
+//   sum  = r0+v1
+//   zero = 0
+
+// Inputs:
+//  r0  = pixel color and alphaa
+//  SPECULAR_RESULT (defined like t3.a)  = specular coeficient 
+//  c[PS_SPECULAR].rgb = specular color
+//  s0,    s1,     s2,      s3,       s4,              s5,                 s6
+xfc fog.a, r0.rgb, fog.rgb, prod.rgb, SPECULAR_RESULT, c[PS_SPECULAR].rgb, r0.a
+
+// Output:
+//RGB: r0.rgb * fog.a + fog.rgb*(1-fog.a) + t3.a*c[PS_SPECULAR].rgb
+//A:   r0.a

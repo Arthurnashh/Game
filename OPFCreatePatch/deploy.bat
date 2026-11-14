@@ -1,0 +1,1 @@
+copy /Y Release\OFPCreatePatch.exe b:\OFPPatch\

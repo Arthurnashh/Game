@@ -1,0 +1,27 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Direction sky light
+
+// Get the 1- cos^4 value
+dp3 r0.x, SKINNED_NORMAL, c[LDIRECTIONSTARS_TRANSFORMED_SUN_DIR__ALPHA_CORRECTION]
+max r0.x, r0.x, c[CONSTANTS_0_1_765_0d5].x
+mul r0.x, r0.x, r0.x // ^2
+mul r1.x, r0.x, r0.x // ^4
+add r1.x, c[CONSTANTS_0_1_765_0d5].y, -r1.x
+
+// Calculate the (1.5 * mat.diffuse.A() - 0.5) into r2
+mov r2, c[CONSTANTS_0_1_765_0d5].y
+add r2, r2, c[CONSTANTS_0_1_765_0d5].w
+mad r2, r2, INPUT_MAT_D.w, -c[CONSTANTS_0_1_765_0d5].w
+
+// Combine it with ALPHA_CORRECTION
+mul r2, r2, c[LDIRECTIONSTARS_TRANSFORMED_SUN_DIR__ALPHA_CORRECTION].w
+
+// Set the alpha value to alphaCorrection*brightness*(1-cosSun)
+mul r0.w, r2, INPUT_COLOR.w
+
+mul ACCUMULATOR_DIFFUSE.w, ACCUMULATOR_DIFFUSE.w, r0.w
+mul ACCUMULATOR_DIFFUSE.w, ACCUMULATOR_DIFFUSE.w, r1.x
+
+// Set the color value to input color (accom)
+mov ACCUMULATOR_DIFFUSE.rgb, INPUT_COLOR.rgb

@@ -1,0 +1,6 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// modulate alpha only
+mul oD0, ACCUMULATOR_DIFFUSE, INPUT_V_COLOR.wwwx
+
+mov oD1, ACCUMULATOR_SPECULAR

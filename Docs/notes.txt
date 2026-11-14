@@ -1,0 +1,10 @@
+Useful command lines:
+
+Game2:
+-mod=OFP2 -window
+
+ArmA:
+
+-window -nosplash -world=Intro -init=playMission['','testy\test.intro']
+-window -world=Sara -init=playMission['','testy\test.sara']
+-window -nosplash -world=Sara -init=playMission['ca','01Transport.Sara']

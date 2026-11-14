@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+
+<module name="Enums">
+
+	<description>
+		Extensions for enumerations, dynamic enumerations.
+	</description>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+	</dependencies>
+
+	<structure>
+		<submodule name="EnumNames">
+			<description>
+				Enable add names for enum values (for example for Serialization).
+			</description>
+			<files>
+				<ref_file name="El/Enum/enumNames.hpp"/>
+				<ref_file name="El/Enum/enumNames.cpp"/>
+			</files>
+		</submodule>
+		<submodule name="DynEnum">
+			<description>
+				Introduce type for dynamic defined enums.
+			</description>
+			<files>
+				<ref_file name="El/Enum/dynEnum.hpp"/>
+				<ref_file name="El/Enum/dynEnum.cpp"/>
+			</files>
+		</submodule>
+		<submodule name="IdString">
+			<description>
+				Other encapsulation of dynamic enums, used for compression of strings in multiplayer.
+			</description>
+			<files>
+				<ref_file name="El/Enum/idString.hpp"/>
+				<ref_file name="El/Enum/idString.hpp"/>
+			</files>
+		</submodule>
+	</structure>
+
+</module>

@@ -1,0 +1,1510 @@
+version=1;
+class GraphItems
+{
+	class Item0
+	{
+		Flags=250;
+		BasicText="";
+		Left=-425;
+		Top=-375;
+		Right=-325;
+		Bottom=-325;
+		BgColor=16777215;
+		class ItemInfo
+		{
+			Text="DialogProc";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=700;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=3;
+			};
+		};
+	};
+	class Item1
+	{
+		Flags=218;
+		BasicText="";
+		Left=-350;
+		Top=-300;
+		Right=-250;
+		Bottom=-250;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="USER_WM_CONNECT";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=7;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=4;
+			};
+		};
+	};
+	class Item2
+	{
+		Flags=210;
+		BasicText="";
+		Left=-379;
+		Top=-279;
+		Right=-371;
+		Bottom=-271;
+		BgColor=0;
+		class ItemInfo
+		{
+			Text="";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=7;
+			class ItemInfo
+			{
+				Id=5;
+			};
+		};
+	};
+	class Item3
+	{
+		Flags=218;
+		BasicText="";
+		Left=-350;
+		Top=-225;
+		Right=-250;
+		Bottom=-175;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="WM_TIMER" \n "100ms";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=7;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=8;
+			};
+		};
+	};
+	class Item4
+	{
+		Flags=210;
+		BasicText="";
+		Left=-379;
+		Top=-204;
+		Right=-371;
+		Bottom=-196;
+		BgColor=0;
+		class ItemInfo
+		{
+			Text="";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=7;
+			class ItemInfo
+			{
+				Id=9;
+			};
+		};
+	};
+	class Item5
+	{
+		Flags=250;
+		BasicText="";
+		Left=-225;
+		Top=-300;
+		Right=-125;
+		Bottom=-250;
+		BgColor=16777215;
+		class ItemInfo
+		{
+			Text="Add new client." \n "With pipe ends" \n "provided";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=8;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=10;
+			};
+		};
+	};
+	class Item6
+	{
+		Flags=218;
+		BasicText="";
+		Left=-350;
+		Top=-150;
+		Right=-250;
+		Bottom=-100;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="Copying" \n "phase";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=15;
+			};
+		};
+	};
+	class Item7
+	{
+		Flags=250;
+		BasicText="";
+		Left=-75;
+		Top=-300;
+		Right=25;
+		Bottom=-250;
+		BgColor=33023;
+		class ItemInfo
+		{
+			Text="END";
+			lStyle=-842150451;
+			Shape=6;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=700;
+			FontCharSet=0;
+			ItemType=1;
+			class ItemInfo
+			{
+				Id=59;
+			};
+		};
+	};
+	class Item8
+	{
+		Flags=250;
+		BasicText="";
+		Left=-225;
+		Top=-225;
+		Right=-125;
+		Bottom=-175;
+		BgColor=16777088;
+		class ItemInfo
+		{
+			Text="Process()";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=700;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=13;
+			};
+		};
+	};
+	class Item9
+	{
+		Flags=218;
+		BasicText="";
+		Left=-225;
+		Top=-150;
+		Right=-125;
+		Bottom=-100;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="Not" \n "Copying";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=16;
+			};
+		};
+	};
+	class Item10
+	{
+		Flags=250;
+		BasicText="";
+		Left=-225;
+		Top=-75;
+		Right=-125;
+		Bottom=-25;
+		BgColor=16777088;
+		class ItemInfo
+		{
+			Text="CheckFor" \n "Update()" \n "proc _svnAcc";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=700;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=18;
+				InitCode="Controller::CheckForUpdate()";
+			};
+		};
+	};
+	class Item11
+	{
+		Flags=218;
+		BasicText="";
+		Left=-225;
+		Top=0;
+		Right=-125;
+		Bottom=50;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="svnUpdate" \n "in progress";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=9;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=19;
+			};
+		};
+	};
+	class Item12
+	{
+		Flags=218;
+		BasicText="";
+		Left=-100;
+		Top=0;
+		Right=0;
+		Bottom=50;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="svnUpdate" \n "just finished";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=9;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=20;
+			};
+		};
+	};
+	class Item13
+	{
+		Flags=250;
+		BasicText="";
+		Left=-100;
+		Top=75;
+		Right=0;
+		Bottom=125;
+		BgColor=16777215;
+		class ItemInfo
+		{
+			Text="Ask Clients " \n "to ShutDown";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=21;
+			};
+		};
+	};
+	class Item14
+	{
+		Flags=218;
+		BasicText="";
+		Left=25;
+		Top=0;
+		Right=125;
+		Bottom=50;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="5s &" \n "Update avail";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=9;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=22;
+			};
+		};
+	};
+	class Item15
+	{
+		Flags=218;
+		BasicText="";
+		Left=-475;
+		Top=0;
+		Right=-375;
+		Bottom=50;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="Some Clients" \n "synchronized";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=8;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=23;
+			};
+		};
+	};
+	class Item16
+	{
+		Flags=250;
+		BasicText="";
+		Left=25;
+		Top=75;
+		Right=125;
+		Bottom=125;
+		BgColor=16777215;
+		class ItemInfo
+		{
+			Text="Start svnUpdate" \n "or svnCheckout";
+			lStyle=-842150451;
+			Shape=1;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=24;
+			};
+		};
+	};
+	class Item17
+	{
+		Flags=250;
+		BasicText="";
+		Left=-425;
+		Top=-75;
+		Right=-325;
+		Bottom=-25;
+		BgColor=16777215;
+		class ItemInfo
+		{
+			Text="Test copy thread" \n "finished";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=26;
+			};
+		};
+	};
+	class Item18
+	{
+		Flags=210;
+		BasicText="";
+		Left=-178.99997;
+		Top=245.99997;
+		Right=-171.00002;
+		Bottom=254.00003;
+		BgColor=0;
+		class ItemInfo
+		{
+			Text="";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=7;
+			class ItemInfo
+			{
+				Id=27;
+			};
+		};
+	};
+	class Item19
+	{
+		Flags=218;
+		BasicText="";
+		Left=225;
+		Top=150;
+		Right=325;
+		Bottom=200;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="any Client to " \n "overwrite?";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=8;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=44;
+			};
+		};
+	};
+	class Item20
+	{
+		Flags=250;
+		BasicText="";
+		Left=150;
+		Top=75;
+		Right=250;
+		Bottom=125;
+		BgColor=16777088;
+		class ItemInfo
+		{
+			Text="UpdateClients()";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=700;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=37;
+			};
+		};
+	};
+	class Item21
+	{
+		Flags=250;
+		BasicText="";
+		Left=225;
+		Top=225;
+		Right=325;
+		Bottom=275;
+		BgColor=16777215;
+		class ItemInfo
+		{
+			Text="Start" \n "Copying" \n "thread";
+			lStyle=-842150451;
+			Shape=1;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=45;
+			};
+		};
+	};
+	class Item22
+	{
+		Flags=250;
+		BasicText="";
+		Left=-475;
+		Top=75;
+		Right=-375;
+		Bottom=125;
+		BgColor=16777215;
+		class ItemInfo
+		{
+			Text="Restart and/or" \n "Delete" \n "Clients";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=56;
+			};
+		};
+	};
+	class Item23
+	{
+		Flags=250;
+		BasicText="";
+		Left=25;
+		Top=225;
+		Right=125;
+		Bottom=275;
+		BgColor=16777088;
+		class ItemInfo
+		{
+			Text="Update" \n "PipeManager()";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=700;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=42;
+			};
+		};
+	};
+	class Item24
+	{
+		Flags=218;
+		BasicText="";
+		Left=150;
+		Top=0;
+		Right=250;
+		Bottom=50;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="No svn task" \n "pending";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=43;
+			};
+		};
+	};
+	class Item25
+	{
+		Flags=210;
+		BasicText="";
+		Left=-429;
+		Top=246;
+		Right=-421;
+		Bottom=254;
+		BgColor=0;
+		class ItemInfo
+		{
+			Text="";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=7;
+			class ItemInfo
+			{
+				Id=57;
+			};
+		};
+	};
+	class Item26
+	{
+		Flags=218;
+		BasicText="";
+		Left=-50;
+		Top=300;
+		Right=50;
+		Bottom=350;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="new Client" \n "access" \n "Violation";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=8;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=49;
+			};
+		};
+	};
+	class Item27
+	{
+		Flags=250;
+		BasicText="";
+		Left=-50;
+		Top=375;
+		Right=50;
+		Bottom=425;
+		BgColor=16777215;
+		class ItemInfo
+		{
+			Text="Send" \n "CmdAccess" \n "Violating";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=50;
+			};
+		};
+	};
+	class Item28
+	{
+		Flags=218;
+		BasicText="";
+		Left=75;
+		Top=300;
+		Right=175;
+		Bottom=350;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="new Client" \n "ok";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=51;
+			};
+		};
+	};
+	class Item29
+	{
+		Flags=250;
+		BasicText="";
+		Left=75;
+		Top=375;
+		Right=175;
+		Bottom=425;
+		BgColor=16777215;
+		class ItemInfo
+		{
+			Text="Send" \n "CmdReady";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=52;
+			};
+		};
+	};
+	class Item30
+	{
+		Flags=218;
+		BasicText="";
+		Left=200;
+		Top=300;
+		Right=300;
+		Bottom=350;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="Client app" \n "Down";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=53;
+			};
+		};
+	};
+	class Item31
+	{
+		Flags=250;
+		BasicText="";
+		Left=200;
+		Top=375;
+		Right=300;
+		Bottom=425;
+		BgColor=16777215;
+		class ItemInfo
+		{
+			Text="Close" \n "Pipes";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=2;
+			class ItemInfo
+			{
+				Id=54;
+			};
+		};
+	};
+	class Item32
+	{
+		Flags=218;
+		BasicText="";
+		Left=100;
+		Top=150;
+		Right=200;
+		Bottom=200;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="No Client" \n "to overwrite";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=8;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=55;
+			};
+		};
+	};
+	class Item33
+	{
+		Flags=210;
+		BasicText="";
+		Left=-3.9999924;
+		Top=471;
+		Right=3.9999924;
+		Bottom=479;
+		BgColor=0;
+		class ItemInfo
+		{
+			Text="";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=7;
+			class ItemInfo
+			{
+				Id=60;
+			};
+		};
+	};
+	class Item34
+	{
+		Flags=210;
+		BasicText="";
+		Left=246.00002;
+		Top=471;
+		Right=254;
+		Bottom=479;
+		BgColor=0;
+		class ItemInfo
+		{
+			Text="";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=7;
+			class ItemInfo
+			{
+				Id=61;
+			};
+		};
+	};
+	class Item35
+	{
+		Flags=250;
+		BasicText="";
+		Left=75;
+		Top=450;
+		Right=175;
+		Bottom=500;
+		BgColor=33023;
+		class ItemInfo
+		{
+			Text="END";
+			lStyle=-842150451;
+			Shape=6;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=700;
+			FontCharSet=0;
+			ItemType=1;
+			class ItemInfo
+			{
+				Id=62;
+			};
+		};
+	};
+	class Item36
+	{
+		Flags=218;
+		BasicText="";
+		Left=-350;
+		Top=0;
+		Right=-250;
+		Bottom=50;
+		BgColor=65535;
+		class ItemInfo
+		{
+			Text="Copy still" \n "Running";
+			lStyle=-842150451;
+			Shape=2;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=4;
+			class ItemInfo
+			{
+				Id=63;
+			};
+		};
+	};
+	class Item37
+	{
+		Flags=210;
+		BasicText="";
+		Left=-304;
+		Top=245.99998;
+		Right=-296;
+		Bottom=254.00002;
+		BgColor=0;
+		class ItemInfo
+		{
+			Text="";
+			lStyle=-842150451;
+			Group=-842150451;
+			FontFace="Arial";
+			FontHeight=10;
+			FontWeight=0;
+			FontCharSet=0;
+			ItemType=7;
+			class ItemInfo
+			{
+				Id=64;
+			};
+		};
+	};
+};
+class GraphLinks
+{
+	class Link0
+	{
+		From=0;
+		To=2;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link1
+	{
+		From=1;
+		To=5;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link2
+	{
+		From=2;
+		To=1;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link3
+	{
+		From=2;
+		To=4;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link4
+	{
+		From=3;
+		To=8;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link5
+	{
+		From=4;
+		To=3;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link6
+	{
+		From=5;
+		To=7;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link7
+	{
+		From=6;
+		To=17;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link8
+	{
+		From=8;
+		To=6;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link9
+	{
+		From=8;
+		To=9;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link10
+	{
+		From=9;
+		To=10;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link11
+	{
+		From=10;
+		To=11;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link12
+	{
+		From=10;
+		To=12;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link13
+	{
+		From=10;
+		To=14;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link14
+	{
+		From=10;
+		To=24;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link15
+	{
+		From=11;
+		To=18;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link16
+	{
+		From=12;
+		To=13;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link17
+	{
+		From=13;
+		To=23;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link18
+	{
+		From=14;
+		To=16;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link19
+	{
+		From=15;
+		To=22;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link20
+	{
+		From=16;
+		To=23;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link21
+	{
+		From=17;
+		To=15;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link22
+	{
+		From=17;
+		To=36;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link23
+	{
+		From=18;
+		To=23;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link24
+	{
+		From=19;
+		To=21;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link25
+	{
+		From=20;
+		To=19;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link26
+	{
+		From=20;
+		To=32;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link27
+	{
+		From=21;
+		To=23;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link28
+	{
+		From=22;
+		To=25;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link29
+	{
+		From=23;
+		To=26;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link30
+	{
+		From=23;
+		To=28;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link31
+	{
+		From=23;
+		To=30;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link32
+	{
+		From=24;
+		To=20;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link33
+	{
+		From=25;
+		To=37;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link34
+	{
+		From=26;
+		To=27;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link35
+	{
+		From=27;
+		To=33;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link36
+	{
+		From=28;
+		To=29;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link37
+	{
+		From=29;
+		To=35;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link38
+	{
+		From=30;
+		To=31;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link39
+	{
+		From=31;
+		To=34;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link40
+	{
+		From=32;
+		To=23;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link41
+	{
+		From=33;
+		To=35;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link42
+	{
+		From=34;
+		To=35;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link43
+	{
+		From=36;
+		To=37;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+	class Link44
+	{
+		From=37;
+		To=18;
+		Color=6316128;
+		Flags=2;
+		class Extra
+		{
+			ArrowSize=0;
+		};
+	};
+};
+class Globals
+{
+	Grid=25;
+	GridShow=1;
+	PageColorVal=16777215;
+	NextGroupID=1;
+	NextID=65;
+	FSMName="DayZUpdater";
+	class DefaultLink
+	{
+		ArrowType=4;
+		ArrowSize=0;
+		LineStyle=2;
+	};
+	DefaultLinkColor=6316128;
+	DefaultLinkUseCustom=1;
+	PZoomLeft=-523.75568;
+	PZoomRight=384.46912;
+	PZoomBottom=541.06213;
+	PZoomTop=-423.75275;
+	Clxs=979;
+	Clys=1040;
+	Aspect=1;
+};
+class Window
+{
+	Flags=0;
+	MaxPosX=-1;
+	MaxPosY=-1;
+	MinPosX=-1;
+	MinPosY=-1;
+	Left=815;
+	Top=20;
+	Right=1923;
+	Bottom=1106;
+	ShowCmd=1;
+	SplitPos=997;
+};

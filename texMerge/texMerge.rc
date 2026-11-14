@@ -1,0 +1,738 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Czech resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CSY)
+#ifdef _WIN32
+LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
+#pragma code_page(1250)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_SOURCESAFE          BITMAP                  "res\\SourceControl.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\mainfram.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_SOURCESAFE TOOLBAR  16, 16
+BEGIN
+    BUTTON      ID_FILE_SAVEANDCHECKIN
+    SEPARATOR
+    BUTTON      ID_FILE_OPENFROMSOURCESAFE
+    SEPARATOR
+    BUTTON      ID_SOURCESAFEOTHERCOMMANDS_CHECKOUT
+    BUTTON      ID_SOURCESAFE_GETLATESTVERSION
+    BUTTON      ID_SOURCESAFEOTHERCOMMANDS_HISTORY
+    SEPARATOR
+    BUTTON      ID_SOURCESAFEOTHERCOMMANDS_UNDOCHECKOUT
+END
+
+IDR_MAINFRAME TOOLBAR  16, 15
+BEGIN
+    BUTTON      ID_FILE_NEW
+    SEPARATOR
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_BUTTON32837
+    BUTTON      ID_SET_COPY
+    BUTTON      ID_SET_MERGE
+    SEPARATOR
+    BUTTON      ID_SET_ADD
+    BUTTON      ID_SET_DELETE
+    BUTTON      ID_SET_PREV
+    BUTTON      ID_SET_NEXT
+    SEPARATOR
+    BUTTON      ID_SET_ARRANGE
+    BUTTON      ID_SET_ARRANGE_USE
+    SEPARATOR
+    BUTTON      ID_SET_GROW_X
+    BUTTON      ID_SET_SHRINK_X
+    BUTTON      ID_SET_GROW_Y
+    BUTTON      ID_SET_SHRINK_Y
+    BUTTON      ID_SET_GROW_ALL
+    BUTTON      ID_SET_SHRINK_ALL
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CHECKINCOMMENTS DIALOGEX 0, 0, 294, 66
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Check In Comments"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Comments",IDC_STATIC,7,7,34,8
+    EDITTEXT        IDC_COMMENTS,7,18,222,31,ES_AUTOHSCROLL
+    CONTROL         "Keep checked-out",IDC_KEEPCHIN,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,50,73,10
+    DEFPUSHBUTTON   "OK",IDOK,237,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,237,24,50,14
+END
+
+IDD_SETNAMEBAR DIALOGEX 0, 0, 142, 19
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_NAME,41,3,95,12,ES_AUTOHSCROLL
+    LTEXT           "Set Name",IDC_STATIC,5,3,32,12,SS_CENTERIMAGE
+END
+
+IDD_ITEMPROPR DIALOGEX 0, 0, 382, 253
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Properties"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_PROPLIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | 
+                    LVS_EDITLABELS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,
+                    7,7,312,239
+    PUSHBUTTON      "Edit &Name",IDC_EDITNAME,325,52,50,14
+    PUSHBUTTON      "Edit &Value",IDC_EDITVALUE,325,69,50,14
+    PUSHBUTTON      "&Pick file...",IDC_PICKAFILE,325,92,50,14
+    PUSHBUTTON      "Pick &folder...",IDC_PICKAFOLDER,325,108,50,14
+    PUSHBUTTON      "&Add",IDC_ADD,325,214,50,14
+    PUSHBUTTON      "&Delete",IDC_DELETE,325,232,50,14
+    DEFPUSHBUTTON   "OK",IDOK,325,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,325,24,50,14
+END
+
+IDD_AAMULTI DIALOGEX 0, 0, 167, 73
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Auto Arrange Multiple Sets"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,110,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,110,24,50,14
+    LTEXT           "Number of additional sets",IDC_STATIC,7,7,91,12,
+                    SS_CENTERIMAGE
+    COMBOBOX        IDC_NUMSETS,41,19,48,152,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "Optimize final set size",IDC_OPTIMIZE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,43,85,10
+    CONTROL         "Don't move selected",IDC_DONTMOVESEL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,56,81,10
+END
+
+IDD_MERGETOONE DIALOGEX 0, 0, 212, 183
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Merge sets into one"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,155,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,155,24,50,14
+    LISTBOX         IDC_LIST,7,18,145,156,LBS_MULTIPLESEL | LBS_USETABSTOPS | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Choose sets to merge",IDC_STATIC,7,7,71,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_CHECKINCOMMENTS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 287
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 59
+    END
+
+    IDD_SETNAMEBAR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 135
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 12
+    END
+
+    IDD_ITEMPROPR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 375
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 246
+    END
+
+    IDD_AAMULTI, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 160
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 66
+    END
+
+    IDD_MERGETOONE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_AAMULTI DLGINIT
+BEGIN
+    IDC_NUMSETS, 0x403, 2, 0
+0x0031, 
+    IDC_NUMSETS, 0x403, 2, 0
+0x0032, 
+    IDC_NUMSETS, 0x403, 2, 0
+0x0033, 
+    IDC_NUMSETS, 0x403, 2, 0
+0x0034, 
+    IDC_NUMSETS, 0x403, 2, 0
+0x0035, 
+    IDC_NUMSETS, 0x403, 2, 0
+0x0036, 
+    IDC_NUMSETS, 0x403, 2, 0
+0x0037, 
+    IDC_NUMSETS, 0x403, 2, 0
+0x0038, 
+    IDC_NUMSETS, 0x403, 2, 0
+0x0039, 
+    IDC_NUMSETS, 0x403, 3, 0
+0x3031, "\000" 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_OPENFROMSOURCESAFE "Open from Source Safe\nOpen from Source Safe"
+    ID_FILE_SAVEANDCHECKIN  "Save And Check In\nSave And Check In"
+    ID_SOURCESAFEOTHERCOMMANDS_CHECKOUT 
+                            "Check out from Source Safe\nCheck out from Source Safe"
+    ID_SOURCESAFEOTHERCOMMANDS_HISTORY 
+                            "Shows history for current file\nShow history"
+    ID_SOURCESAFEOTHERCOMMANDS_UNDOCHECKOUT 
+                            "Undoes last Check Out operation\nUndo Check Out"
+    ID_SOURCESAFE_GETLATESTVERSION 
+                            "Gets latests version from source safe of all referenced files\nGet Latest Version"
+END
+
+#endif    // Czech resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG  0, 0, 218, 67
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About texMerge"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "TexMerge Version 1.0",IDC_STATIC,42,13,119,8,
+                    SS_NOPREFIX
+    LTEXT           "Copyright (C) 1999, Suma",IDC_STATIC,42,27,119,8
+    DEFPUSHBUTTON   "OK",IDOK,179,7,32,14,WS_GROUP
+    LTEXT           "For internal use only.",IDC_STATIC,42,41,119,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 211
+        VERTGUIDE, 42
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 60
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif\r\n"
+    "#include ""res\\texMerge.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""ROCheck.rc2""  //ROCheck dialog\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\icon1.ico"
+IDR_TEXMERTYPE          ICON                    "res\\texMergeDoc.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "Open from Source Safe ...",   ID_FILE_OPENFROMSOURCESAFE
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM "Save And Check In...",        ID_FILE_SAVEANDCHECKIN
+        MENUITEM SEPARATOR
+        POPUP "Source Safe"
+        BEGIN
+            MENUITEM "Check Out",                   ID_SOURCESAFEOTHERCOMMANDS_CHECKOUT
+
+            MENUITEM "Get Latest Version",          ID_SOURCESAFE_GETLATESTVERSION
+
+            MENUITEM "History",                     ID_SOURCESAFEOTHERCOMMANDS_HISTORY
+
+            MENUITEM "Undo Check Out",              ID_SOURCESAFEOTHERCOMMANDS_UNDOCHECKOUT
+
+            MENUITEM SEPARATOR
+            MENUITEM "Disconnect",                  ID_SOURCESAFE_DISCONNECT
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Texture Folder...",          ID_FILE_PREF
+        MENUITEM "&Merged Folder...",           ID_FILE_MERGED
+        MENUITEM "TGA Output",                  ID_FILE_TGAOUTPUT
+        MENUITEM SEPARATOR
+        MENUITEM "&Export...",                  ID_FILE_EXPORT
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Set"
+    BEGIN
+        MENUITEM "&Prev\tPgUp",                 ID_SET_PREV
+        MENUITEM "&Next\tPgDn",                 ID_SET_NEXT
+        MENUITEM SEPARATOR
+        MENUITEM "&New",                        ID_SET_ADD
+        MENUITEM "&Add...",                     ID_SET_MODEL
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy\t^C",                   ID_SET_COPY
+        MENUITEM "&Merge\t^V",                  ID_SET_MERGE
+        MENUITEM "Du&plicate",                  ID_SET_DUPLICATE
+        MENUITEM "Apply Damma&ge...",           ID_SET_APPLYDAMMAGE
+        MENUITEM "&Delete",                     ID_SET_DELETE
+        MENUITEM SEPARATOR
+        POPUP "&Size"
+        BEGIN
+            MENUITEM "Grow &X\tNum 6",              ID_SET_GROW_X
+            MENUITEM "Grow &Y\tNum 8",              ID_SET_GROW_Y
+            MENUITEM "Sh&rink X\tNum 4",            ID_SET_SHRINK_X
+            MENUITEM "Shri&nk Y\tNum 2",            ID_SET_SHRINK_Y
+            MENUITEM "",                            1
+            MENUITEM "&Shrink All",                 ID_SET_SHRINK_ALL
+            MENUITEM "&Grow All",                   ID_SET_GROW_ALL
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Auto Arrange\tF7",           ID_SET_ARRANGE
+        MENUITEM "&Auto Arrange - Keep Size\tF8", ID_SET_ARRANGE_USE
+        MENUITEM "Auto Arrange - Multiple Sets", ID_SET_ARRANGE_MULTI
+        MENUITEM "Merge to one",                ID_SET_MERGETOONE
+        MENUITEM SEPARATOR
+        MENUITEM "Properties\tCtrl+Shift+Enter", ID_SET_PROPERTIES
+    END
+    POPUP "&Item"
+    BEGIN
+        MENUITEM "&Prev",                       ID_ITEM_PREV
+        MENUITEM "&Next",                       ID_ITEM_NEXT
+        MENUITEM SEPARATOR
+        MENUITEM "&Add...\tIns",                ID_ITEM_ADD
+        MENUITEM "&Delete\tDel",                ID_ITEM_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Grow\tUp",                   ID_ITEM_GROW
+        MENUITEM "&Shrink\tDown",               ID_ITEM_SHRINK
+        MENUITEM "Rotate &Left\tLeft",          ID_ITEM_ROT_LEFT
+        MENUITEM "Rotate &Right\tRight",        ID_ITEM_ROT_RIGHT
+        MENUITEM SEPARATOR
+        MENUITEM "Mark Important",              ID_ITEM_KEEPSIZE
+        MENUITEM "Properties\tCtrl+Enter",      ID_ITEM_PROPERTIES
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM "Source Safe Toolbar",         ID_VIEW_SOURCECONTROLTOOLBAR
+        MENUITEM "Set Name Bar",                ID_VIEW_SETNAMEBAR
+        MENUITEM SEPARATOR
+        MENUITEM "Zoom &In\t+",                 ID_VIEW_ZOOM_IN
+        MENUITEM "Zoom &Out\t-",                ID_VIEW_ZOOM_OUT
+        MENUITEM SEPARATOR
+        MENUITEM "Server Console",              ID_VIEW_SERVERCONSOLE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About TexMerge...",          ID_APP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS 
+BEGIN
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_ITEM_ADD,            VIRTKEY, NOINVERT
+    VK_DELETE,      ID_ITEM_DELETE,         VIRTKEY, NOINVERT
+    VK_UP,          ID_ITEM_GROW,           VIRTKEY, NOINVERT
+    VK_RETURN,      ID_ITEM_PROPERTIES,     VIRTKEY, ALT, NOINVERT
+    VK_LEFT,        ID_ITEM_ROT_LEFT,       VIRTKEY, NOINVERT
+    VK_RIGHT,       ID_ITEM_ROT_RIGHT,      VIRTKEY, NOINVERT
+    VK_DOWN,        ID_ITEM_SHRINK,         VIRTKEY, NOINVERT
+    VK_F7,          ID_SET_ARRANGE,         VIRTKEY, NOINVERT
+    VK_F8,          ID_SET_ARRANGE_USE,     VIRTKEY, NOINVERT
+    "C",            ID_SET_COPY,            VIRTKEY, CONTROL, NOINVERT
+    VK_NUMPAD6,     ID_SET_GROW_X,          VIRTKEY, NOINVERT
+    VK_NUMPAD8,     ID_SET_GROW_Y,          VIRTKEY, NOINVERT
+    "V",            ID_SET_MERGE,           VIRTKEY, CONTROL, NOINVERT
+    VK_NEXT,        ID_SET_NEXT,            VIRTKEY, NOINVERT
+    VK_PRIOR,       ID_SET_PREV,            VIRTKEY, NOINVERT
+    VK_NUMPAD4,     ID_SET_SHRINK_X,        VIRTKEY, NOINVERT
+    VK_NUMPAD2,     ID_SET_SHRINK_Y,        VIRTKEY, NOINVERT
+    VK_ADD,         ID_VIEW_ZOOM_IN,        VIRTKEY, NOINVERT
+    VK_SUBTRACT,    ID_VIEW_ZOOM_OUT,       VIRTKEY, NOINVERT
+    VK_RETURN,      ID_SET_PROPERTIES,      VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "texMerge MFC Application"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "texMerge"
+            VALUE "LegalCopyright", "Copyright (C) 1999"
+            VALUE "OriginalFilename", "texMerge.EXE"
+            VALUE "ProductName", "texMerge Application"
+            VALUE "ProductVersion", "1, 0, 0, 1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDR_MAINFRAME           "Texture Merger\n\nUntitled\nTexMerger Files (*.ptm)\n.ptm\nTexMerge.Document\nTexMerger Document"
+    IDS_PROPDLGVALUE        "Value"
+    IDS_PROPDLGNAME         "Name"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "texMerge"
+    AFX_IDS_IDLEMESSAGE     "Ready"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+    ID_INDICATOR_PAGE       "Page "
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_NEW             "Create a new document\nNew"
+    ID_FILE_OPEN            "Open an existing document\nOpen"
+    ID_FILE_CLOSE           "Close the active document\nClose"
+    ID_FILE_SAVE            "Save the active document\nSave"
+    ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
+    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+    IDS_MSG_NOREGISTRY      "Missing registry entry %1.\nVerify application is installed correctly ."
+    IDS_MSG_NOCONFIG        "Config file %1 not found.\nVerify config folder can be accessed."
+    IDS_MSG_BADCONFIG       "Config file %1 is bad.\nContact config administrator."
+    IDS_MSG_CONFIGERR       "Cannot load config file - reason unknown."
+    IDS_MSG_CONFIGOLDAPP    "Newer version of %2 is required by %1."
+END
+
+STRINGTABLE 
+BEGIN
+    ID_SET_ADD              "Create a new set."
+    ID_SET_DELETE           "Delete current set."
+    ID_SET_DUPLICATE        "Duplicate set."
+    ID_ITEM_ADD             "Insert new item."
+    ID_ITEM_DELETE          "Delete highlighted item."
+    ID_SET_NEXT             "Move to next set."
+    ID_SET_PREV             "Move to previous set."
+    ID_ITEM_PREV            "Highlight previous item."
+    ID_ITEM_NEXT            "Highlight next item."
+    ID_VIEW_ZOOM_IN         "Zoom in view."
+    ID_VIEW_ZOOM_OUT        "Zoom out view."
+    ID_SET_GROW             "Grow up current set."
+END
+
+STRINGTABLE 
+BEGIN
+    ID_SET_SHRINK           "Shrink down current set."
+    ID_ITEM_GROW            "Grow up highlighted item."
+    ID_ITEM_SHRINK          "Shrink down highlighted item."
+    ID_SET_GROW_ALL         "Grow up current set and items."
+    ID_SET_SHRINK_ALL       "Shrink down current set and items."
+    ID_SET_GROW_X           "Grow width."
+    ID_SET_SHRINK_X         "Shrink down width."
+    ID_SET_GROW_Y           "Grow height."
+    ID_SET_SHRINK_Y         "Shrink down height."
+    ID_ITEM_ROT_LEFT        "Rotate highlighted item left."
+    ID_ITEM_ROT_RIGHT       "Rotate highlighted item right."
+    ID_SET_ARRANGE          "Auto-arrange items."
+END
+
+STRINGTABLE 
+BEGIN
+    ID_SET_MODEL            "Add all textures from model."
+    ID_SET_COPY             "Store to temporary buffer."
+    ID_SET_MERGE            "Merge with temporary buffer."
+    ID_FILE_EXPORT          "Build texture set files."
+    ID_FILE_PREF            "Select folder where source textures are stored."
+    ID_FILE_PROP            "Configure environment."
+    ID_SET_APPLYDAMMAGE     "Duplicate and apply dammage textures."
+    ID_FILE_MERGED          "Select folder where merged textures are stored."
+    ID_SET_ARRANGE_USE      "Auto arrange items without growing."
+    ID_FILE_TGAOUTPUT       "All outputs will use TGA file format"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_SOURCESAFE_DISCONNECT 
+                            "Disconnects from Source Safe Server\nDisconnect From Source Safe"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_INVALID_CD_KEY      "Initialization failed: Bad Serial Number"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif
+#include "res\texMerge.rc2"  // non-Microsoft Visual C++ edited resources
+#include "ROCheck.rc2"  //ROCheck dialog
+#include "afxres.rc"         // Standard components
+#endif
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

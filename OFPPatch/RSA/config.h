@@ -1,0 +1,6 @@
+
+#define BYTES_PER_MPI_LIMB	SIZEOF_UNSIGNED_LONG
+
+#define HAVE_MEMICMP				1
+
+#undef M_DEBUG

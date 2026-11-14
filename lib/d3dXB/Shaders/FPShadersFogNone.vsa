@@ -1,0 +1,4 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Fill out the fog
+mov oFog, c[CONSTANTS_0_1_765_0d5].y

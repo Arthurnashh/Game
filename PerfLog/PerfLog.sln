@@ -1,0 +1,34 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PerfLog", "PerfLog.vcproj", "{F3D1FB41-9D38-4C27-B742-65A63A72F8B9}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 2
+		SccProjectName0 = \u0022$/\u0022,\u0020AAAAAAAA
+		SccLocalPath0 = ..\\..
+		SccProvider0 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = true
+		SccProjectFilePathRelativizedFromConnection0 = Poseidon\\PerfLog\\
+		SolutionUniqueID = {4345D8F8-78C4-4B64-B0B6-BB2C30141816}
+		SccProjectUniqueName1 = PerfLog.vcproj
+		SccLocalPath1 = ..\\..
+		CanCheckoutShared = true
+		SccProjectFilePathRelativizedFromConnection1 = Poseidon\\PerfLog\\
+	EndGlobalSection
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{F3D1FB41-9D38-4C27-B742-65A63A72F8B9}.Debug.ActiveCfg = Debug|Win32
+		{F3D1FB41-9D38-4C27-B742-65A63A72F8B9}.Debug.Build.0 = Debug|Win32
+		{F3D1FB41-9D38-4C27-B742-65A63A72F8B9}.Release.ActiveCfg = Release|Win32
+		{F3D1FB41-9D38-4C27-B742-65A63A72F8B9}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

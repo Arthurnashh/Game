@@ -1,0 +1,49 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Get the index to the first item if the particular instance
+mul r0.x, c[CONSTANTS_SVOffset_lightsat_1020_0d5].z, c[CONSTANTS_SVOffset_lightsat_1020_0d5].w
+mad r0.x, INPUT_BLENDINDICES.x, r0.x, c[CONSTANTS_SVOffset_lightsat_1020_0d5].w
+mov a0.x, r0.x
+
+// Skinned position
+mov SKINNED_POSITION.xyz, c[BONES_START + a0.x + 0].xyz
+mov SKINNED_POSITION.w, c[CONSTANTS_0_1_765_0d5].y
+
+// Skinned normal
+//mov SKINNED_NORMAL, c[CONSTANTS_0_1_765_0d5].xxxx
+add r0, c[CAMERA_POSITION], -SKINNED_POSITION
+dp3 r0.w, r0, r0
+rsq r0.w, r0.w
+mul SKINNED_NORMAL.xyz, r0.xyz, r0.w
+
+// Apply view matrix
+m4x3 TRANSFORMED_POSITION.xyz, SKINNED_POSITION, c[WORLD_VIEW_MATRIX_0]
+mov TRANSFORMED_POSITION.w, c[CONSTANTS_0_1_765_0d5].y
+
+// Extend the edges according to the texture coordinates and size
+mov r0.x, c[BONES_START + a0.x + 0].w
+mul r0.x, r0.x, c[CONSTANTS_0_1_765_0d5].w
+mad r1.xy, INPUT_TEXCOORD0.xy, c[BONES_START + a0.x + 0].ww, -r0.xx
+add TRANSFORMED_POSITION.xy, TRANSFORMED_POSITION.xy, r1.xy
+
+// Project position
+m4x4 r0, TRANSFORMED_POSITION, c[PROJ_MATRIX_0]
+
+// Convert to screenspace
+mul r0.xyz, r0, c[SCREENSPACE_SCALE]
++ rcc r1.x, r0.w
+mad oPos.xyz, r0, r1.x, c[SCREENSPACE_OFFSET]
+mov oPos.w, r0.w
+
+// Fill out texture coordinates
+mov oT0.xy, INPUT_TEXCOORD0.xy
+mov oT1.xy, INPUT_TEXCOORD0.xy
+
+// Init lights
+mov ACCUMULATOR_DIFFUSE.xyz, c[MAT_E]
+mov ACCUMULATOR_DIFFUSE.w, INPUT_MAT_A.w
+mul ACCUMULATOR_DIFFUSE, ACCUMULATOR_DIFFUSE, c[ACCOMODATE_EYE]
+mov ACCUMULATOR_SPECULAR.xyzw, c[CONSTANTS_0_1_765_0d5].x
+
+// Set the modulate color
+mov MODULATE_COLOR, c[BONES_START + a0.x + 1]

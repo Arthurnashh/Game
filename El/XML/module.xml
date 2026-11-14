@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+
+<module name="XML">
+
+	<description>
+		Support for XML parsing (SAX parser) and downloading files from internet.
+	</description>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+		<ref_file name="El/Common/globalAlive.cpp"/>
+		<ref_file name="El/QStream/qStream.hpp"/>
+	</dependencies>
+
+	<structure>
+		<submodule name="XML">
+			<description>
+				SAX parser.
+			</description>
+			<files>
+				<ref_file name="El/XML/xml.hpp"/>
+				<ref_file name="El/XML/xml.cpp"/>
+			</files>
+		</submodule>
+		<submodule name="INet">
+			<description>
+				Downloading files from internet.
+			</description>
+			<files>
+				<ref_file name="El/XML/inet.hpp"/>
+				<ref_file name="El/XML/inet.cpp"/>
+			</files>
+		</submodule>
+	</structure>
+
+</module>

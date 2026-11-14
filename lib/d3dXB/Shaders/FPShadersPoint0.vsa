@@ -1,0 +1,5 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Point light instancing
+//LPOINT(0*POINTSPOT_COMMON_SIZE)
+LPOINT(0)

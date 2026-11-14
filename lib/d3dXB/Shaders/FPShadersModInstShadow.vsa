@@ -1,0 +1,5 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// shadow/diffuse component modulated by instance data (per-model)
+
+mov MODULATE_COLOR.w, c[BONES_START + a0.x + 3].w

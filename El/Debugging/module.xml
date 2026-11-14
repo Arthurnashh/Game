@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+
+<module name="Debugging">
+
+	<description>
+		Helps obtain information about crash or freeze of application not running under debugger.
+	</description>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+		<ref_file name="El/Common/perfLog.hpp"/>
+		<ref_file name="El/Common/globalAlive.cpp"/>
+		<ref_module name="El/CRC"/>
+		<ref_module name="El/QStream"/>
+	</dependencies>
+
+	<structure>
+		<submodule name="MapFile">
+			<description>
+				Helps retrieve informations about address in program from *.map file.
+			</description>
+			<files>
+				<ref_file name="El/Debugging/mapFile.hpp"/>
+				<ref_file name="El/Debugging/mapFile.cpp"/>
+			</files>
+		</submodule>
+		<submodule name="Imexhnd">
+			<description>
+				Write information about application context and crash context (call stack, registers etc.) into report file.
+			</description>
+			<files>
+				<ref_file name="El/Debugging/imexhnd.h"/>
+				<ref_file name="El/Debugging/imexhnd.cpp"/>
+			</files>
+		</submodule>
+		<submodule name="DebugTrap">
+			<description>
+				Detection and report of application freeze.
+			</description>
+			<files>
+				<ref_file name="El/Debugging/debugTrap.hpp"/>
+				<ref_file name="El/Debugging/debugTrap.cpp"/>
+			</files>
+		</submodule>
+	</structure>
+
+	<extensions>
+		<use_interface file="El/Interfaces/iAppInfo.hpp" class="ApplicationInfoFunctions">
+			<description>
+				Generic informations about application (version, context etc.).
+				Application itself is responsible for nondefault implementation.
+			</description>
+			<use_implementation name="Default" selector="El/AppInfo/useAppInfoDefault.cpp">
+				<description>
+					Default (dummy) implementation.
+				</description>
+			</use_implementation>
+		</use_interface>
+	</extensions>
+
+</module>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    <security-constraint>
+        <display-name>CD Key Upload</display-name>
+        <web-resource-collection>
+            <web-resource-name>Stats</web-resource-name>
+            <description/>
+            <url-pattern>/resources/bicdkeys.cdkeys/stats</url-pattern>
+        </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>New key</web-resource-name>
+            <description/>
+            <url-pattern>/resources/bicdkeys.cdkeys/new</url-pattern>
+            <url-pattern>/resources/bicdkeys.cdkeys/newKeys</url-pattern>
+        </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>Manage existing keys</web-resource-name>
+            <description/>
+            <url-pattern>/resources/bicdkeys.cdkeys/reset</url-pattern>
+            <url-pattern>/resources/bicdkeys.cdkeys/history</url-pattern>
+        </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>Page</web-resource-name>
+            <description/>
+            <url-pattern>/uploadKeys.jsp</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <description/>
+            <role-name>CD Key Manager</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-constraint>
+        <display-name>Product key management</display-name>
+        <web-resource-collection>
+            <web-resource-name>Product keys</web-resource-name>
+            <description/>
+            <url-pattern>/resources/bicdkeys.productkeys/copy</url-pattern>
+            <url-pattern>/resources/bicdkeys.productkeys/new</url-pattern>
+            <url-pattern>/products.jsp</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <description/>
+            <role-name>Product Key Manager</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>CDKeysWebRealm</realm-name>
+    </login-config>
+    <security-role>
+        <description>Can upload CD keys or block them.</description>
+        <role-name>CD Key Manager</role-name>
+    </security-role>
+    <security-role>
+        <description/>
+        <role-name>Product Key Manager</role-name>
+    </security-role>
+</web-app>

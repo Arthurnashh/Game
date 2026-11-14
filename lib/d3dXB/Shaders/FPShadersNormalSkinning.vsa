@@ -1,0 +1,118 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Skinning transformation
+
+// Process indices
+mad r0, INPUT_BLENDINDICES, c[MATRICES_OFFSET_765].yyyy, c[MATRICES_OFFSET_765].xxxx
+dp4 r1.x, c[CONSTANTS_0_1_765_0d5].yyyy, INPUT_BLENDWEIGHT
+sub r1.x, c[CONSTANTS_0_1_765_0d5].y, r1.x
+mov r1.y, c[CONSTANTS_0_1_765_0d5].x
+
+#define SKINNED_MATRIX_0 r3
+#define SKINNED_MATRIX_1 r4
+#define SKINNED_MATRIX_2 r5
+
+mov a0.x, r0.x
+
+mad SKINNED_MATRIX_0, c[BONES_START + a0.x + 0], INPUT_BLENDWEIGHT.x, r1.xyyy
+mad SKINNED_MATRIX_1, c[BONES_START + a0.x + 1], INPUT_BLENDWEIGHT.x, r1.yxyy
+mad SKINNED_MATRIX_2, c[BONES_START + a0.x + 2], INPUT_BLENDWEIGHT.x, r1.yyxy
+mov a0.x, r0.y
+mad SKINNED_MATRIX_0, c[BONES_START + a0.x + 0], INPUT_BLENDWEIGHT.y, SKINNED_MATRIX_0
+mad SKINNED_MATRIX_1, c[BONES_START + a0.x + 1], INPUT_BLENDWEIGHT.y, SKINNED_MATRIX_1
+mad SKINNED_MATRIX_2, c[BONES_START + a0.x + 2], INPUT_BLENDWEIGHT.y, SKINNED_MATRIX_2
+mov a0.x, r0.z
+mad SKINNED_MATRIX_0, c[BONES_START + a0.x + 0], INPUT_BLENDWEIGHT.z, SKINNED_MATRIX_0
+mad SKINNED_MATRIX_1, c[BONES_START + a0.x + 1], INPUT_BLENDWEIGHT.z, SKINNED_MATRIX_1
+mad SKINNED_MATRIX_2, c[BONES_START + a0.x + 2], INPUT_BLENDWEIGHT.z, SKINNED_MATRIX_2
+mov a0.x, r0.w
+mad SKINNED_MATRIX_0, c[BONES_START + a0.x + 0], INPUT_BLENDWEIGHT.w, SKINNED_MATRIX_0
+mad SKINNED_MATRIX_1, c[BONES_START + a0.x + 1], INPUT_BLENDWEIGHT.w, SKINNED_MATRIX_1
+mad SKINNED_MATRIX_2, c[BONES_START + a0.x + 2], INPUT_BLENDWEIGHT.w, SKINNED_MATRIX_2
+
+// Decompress
+mul r0, INPUT_POSITION, c[POS_MUL]
+add r0, r0, c[POS_ADD]
+
+dp4 SKINNED_POSITION.x, SKINNED_MATRIX_0, r0
+dp4 SKINNED_POSITION.y, SKINNED_MATRIX_1, r0
+dp4 SKINNED_POSITION.z, SKINNED_MATRIX_2, r0
+mov SKINNED_POSITION.w, c[CONSTANTS_0_1_765_0d5].y
+dp3 SKINNED_NORMAL.x, SKINNED_MATRIX_0, INPUT_NORMAL
+dp3 SKINNED_NORMAL.y, SKINNED_MATRIX_1, INPUT_NORMAL
+dp3 SKINNED_NORMAL.z, SKINNED_MATRIX_2, INPUT_NORMAL
+
+// Transform position
+m4x3 TRANSFORMED_POSITION.xyz, SKINNED_POSITION, c[WORLD_VIEW_MATRIX_0]
+mov TRANSFORMED_POSITION.w, c[CONSTANTS_0_1_765_0d5].y
+
+// Project position
+m4x4 r0, TRANSFORMED_POSITION, c[PROJ_MATRIX_0]
+
+// Convert to screenspace
+mul r0.xyz, r0, c[SCREENSPACE_SCALE]
++ rcc r1.x, r0.w
+mad oPos.xyz, r0, r1.x, c[SCREENSPACE_OFFSET]
+mov oPos.w, r0.w
+
+// Fill out texture coordinates
+dp4 oT0.x, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX0_0]
+dp4 oT0.y, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX0_1]
+dp4 oT1.x, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX1_0]
+dp4 oT1.y, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX1_1]
+
+// Transform S
+dp3 r0.x, SKINNED_MATRIX_0, INPUT_S
+dp3 r0.y, SKINNED_MATRIX_1, INPUT_S
+dp3 r0.z, SKINNED_MATRIX_2, INPUT_S
+
+// Transform T
+dp3 r1.x, SKINNED_MATRIX_0, INPUT_T
+dp3 r1.y, SKINNED_MATRIX_1, INPUT_T
+dp3 r1.z, SKINNED_MATRIX_2, INPUT_T
+
+// -------------------------------------------------------
+// Calculate the light direction in the local vertex space
+dp3 r3.x, -r0, -c[LDIRECTION_TRANSFORMED_DIR]
+dp3 r3.y, -r1, -c[LDIRECTION_TRANSFORMED_DIR]
+dp3 r3.z, SKINNED_NORMAL, -c[LDIRECTION_TRANSFORMED_DIR]
+
+// by making light direction smaller we make diffuse component smaller
+
+mul oT2.xyz, r3.xyz, MODULATE_COLOR.w
+
+// Fit into interval (0, 1) and write into specular (oD1 later)
+// The normalMapThrough PS uses this information
+mad ACCUMULATOR_SPECULAR, r3.xyz, c[CONSTANTS_0_1_765_0d5].wwwx, c[CONSTANTS_0_1_765_0d5].wwwx
+
+// -------------------------------------------------------
+
+// --------------------------
+// Move halfway vector to oT3
+
+// Calculate the halfway vector
+add r4, c[CAMERA_POSITION], -SKINNED_POSITION
+dp3 r4.w, r4, r4
+rsq r4.w, r4.w
+mad r4.xyz, r4, r4.w, -c[LDIRECTION_TRANSFORMED_DIR]
+dp3 r4.w, r4, r4
+rsq r4.w, r4.w
+mul r4.xyz, r4, r4.w
+
+// Transform it into local vertex space
+dp3 oT3.x, -r0, r4
+dp3 oT3.y, -r1, r4
+dp3 oT3.z, SKINNED_NORMAL, r4
+
+// Normalize it and move it into oT3 FLY
+//dp3 r3.w, r3, r3
+//rsq r3.w, r3.w
+//mul oT3.xyz, r3, r3.w
+
+// --------------------------
+
+// Init lights
+mov ACCUMULATOR_DIFFUSE.xyz, c[MAT_E]
+mov ACCUMULATOR_DIFFUSE.w, INPUT_MAT_A.w
+mul ACCUMULATOR_DIFFUSE.xyz, ACCUMULATOR_DIFFUSE, c[ACCOMODATE_EYE]
+

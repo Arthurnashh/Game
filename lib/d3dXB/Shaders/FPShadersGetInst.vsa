@@ -1,0 +1,7 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// get and decompress instance index
+
+// Get the index to the first row of the transformed matrix
+mad r0.x, INPUT_BLENDINDICES.x, c[CONSTANTS_SVOffset_lightsat_1020_0d5].z, c[CONSTANTS_SVOffset_lightsat_1020_0d5].w
+mov a0.x, r0.x

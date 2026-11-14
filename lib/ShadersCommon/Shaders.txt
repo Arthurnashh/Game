@@ -1,0 +1,3 @@
+Common shader sources:
+
+Pixel shader "Fragments" in this folder can be included in any pixel shader implementation.

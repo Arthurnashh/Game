@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<module name="Stringtable">
+
+	<description>
+		Support for localization of strings using stringtable (csv file).
+	</description>
+
+	<files>
+		<ref_file name="El/Stringtable/stringtable.hpp"/>
+		<ref_file name="El/Stringtable/stringtable.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+		<ref_file name="El/Common/perfLog.hpp"/>
+		<ref_module name="El/QStream"/>
+	</dependencies>
+
+	<interfaces>
+		<interface file="El/Interfaces/iLocalize.hpp" class="LocalizeStringFunctions">
+			<implementation class="StringtableFunctions"/>
+			<description>
+				Implements common preprocessor using C++ like preprocessor.
+			</description>
+			<files>
+				<ref_file name="El/Stringtable/localizeStringtable.hpp"/>
+				<ref_file name="El/Stringtable/localizeStringtable.cpp"/>
+			</files>
+		</interface>
+	</interfaces>
+
+</module>

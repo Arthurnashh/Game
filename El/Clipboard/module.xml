@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<module name="Windows Clipboard">
+
+	<description>
+		Offers functions for export into windows clipboard (and file)
+		and for import from windows clipboard.
+	</description>
+
+	<files>
+		<ref_file name="El/Clipboard/clipboard.hpp"/>
+		<ref_file name="El/Clipboard/clipboard.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+	</dependencies>
+
+</module>

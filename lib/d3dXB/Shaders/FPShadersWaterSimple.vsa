@@ -1,0 +1,257 @@
+#include "d3dXB/shaders/FPShadersDecl.h"
+
+// water shader, based on normal map shader FPShadersNormal
+// per vertex animation added
+
+xvs.1.1
+
+// Tell the compiler to link the module as a fragment (without validation on registers to be initialized and without optimalizations)
+#pragma fragment
+
+// Tell the compiler to not to add the screenspace conversion instructions
+#pragma screenspace
+
+// Skinned position and normal
+mul r0, INPUT_POSITION, c[POS_MUL]
+add SKINNED_POSITION, r0, c[POS_ADD]
+
+// *** wave simulation
+// Fill out texture coordinates
+//dp4 oT1.x, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX1_0]
+//dp4 oT1.y, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX1_1]
+//// UV are used as a source for wave animation as well
+//dp4 r4.x, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX0_0]
+//dp4 r4.y, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX0_1]
+
+mul r0, c[CONSTANTS_0_1_765_0d5].wwwy, c[CONSTANTS_0_1_765_0d5].wwwy
+mul r0.xyz, r0.xyz, r0.xyz
+mul r0, SKINNED_POSITION, r0
+
+dp3 oT1.x, r0.xzw, c[TEX_TRANSFORM_MATRIX1_0].xyw
+dp3 oT1.y, r0.xzw, c[TEX_TRANSFORM_MATRIX1_1].xyw
+
+dp3 r4.x, r0.xzw, c[TEX_TRANSFORM_MATRIX0_0].xyw
+dp3 r4.y, r0.xzw, c[TEX_TRANSFORM_MATRIX0_1].xyw
+
+
+// calculate phase offset for sin. argument - P(y)
+// first version - P(y) = sin(y)
+mul r0.xy, r4.yy, c[WATER_WAVEGEN].xy
+frc r0.xy, r0.xy
+
+// x = x0*2*pi-pi
+mad r0.xy, r0.xy, c[WATER_PI_0p5_PI2_0p25].z, -c[WATER_PI_0p5_PI2_0p25].x
+
+// calculate 2x sin at once, using Taylor series
+mul r1, r0.xyxy, r0.xyxy // r1.xy = r0^2.xy, r1.zw = r0^2.xy
+mul r1.zw, r1.xyxy, r1.xyxy // r1.xy = r0^2.xy, r1.zw = r0^4.xy
+
+mul r2, r0.xyxy, r1.xyzw // r2.xy = r0^3.xy, r2.zw = r0^5.xy
+mul r3, r2.xyzw, r1.zwzw // r3.xy = r0^7.xy, r2.zw = r0^9.xy
+
+mad r0.xy, r2.xy, c[WATER_SIN_TAYLOR_3579].x, r0.xy
+mad r0.xy, r2.zw, c[WATER_SIN_TAYLOR_3579].y, r0.xy
+mad r0.xy, r3.xy, c[WATER_SIN_TAYLOR_3579].z, r0.xy
+mad r0.xy, r3.zw, c[WATER_SIN_TAYLOR_3579].w, r0.xy
+
+mad r4.x, c[WATER_WAVEGEN].z, r0.x, r4.x
+mad r4.x, c[WATER_WAVEGEN].w, r0.y, r4.x
+
+frc r0.xy, r4.xy
+
+// r0.xy from 0 to 1 (x0)
+// wave top is where sin(x)==1 -> x = pi/2 -> x0 = 3/4;
+// white line is on u = 0.5 -> we seek 1/4
+//add oT0.x, r4.x, -c[WATER_PI_0p5_PI2_0p25].w
+
+// x = x0*2*pi-pi
+mad r0.xy, r0.xy, c[WATER_PI_0p5_PI2_0p25].z, -c[WATER_PI_0p5_PI2_0p25].x
+
+// r0.xy from -pi to +pi (x)
+
+// calculate 2x sin at once, using Taylor series
+
+mul r1, r0.xyxy, r0.xyxy // r1.xy = r0^2.xy, r1.zw = r0^2.xy
+mul r1.zw, r1.xyxy, r1.xyxy // r1.xy = r0^2.xy, r1.zw = r0^4.xy
+
+mul r2, r0.xyxy, r1.xyzw // r2.xy = r0^3.xy, r2.zw = r0^5.xy
+mul r3, r2.xyzw, r1.zwzw // r3.xy = r0^7.xy, r2.zw = r0^9.xy
+
+mad r4.xy, r2.xy, c[WATER_SIN_TAYLOR_3579].x, r0.xy
+mad r4.xy, r2.zw, c[WATER_SIN_TAYLOR_3579].y, r4.xy
+mad r4.xy, r3.xy, c[WATER_SIN_TAYLOR_3579].z, r4.xy
+mad r4.xy, r3.zw, c[WATER_SIN_TAYLOR_3579].w, r4.xy
+
+mul r2.y, r4.x, c[WATER_PI_0p5_PI2_0p25].y // sum both waves
+mad r2.y, r4.y, c[WATER_PI_0p5_PI2_0p25].y, r2.y // r2.y now contains wave sum
+
+mul r2.zw, r4.xyxy, c[WATER_WAVE_HEIGHT_X_Y_XDER_YDER].xyxy
+add r2.w, r2.z, r2.w // r2.w - animated water position
+
+// modify transparency based on the "shore" value
+// the more on the shore, the more transparent we want to be are
+#define SHORE_A MODULATE_COLOR.w // register shared with SKINNED_T
+mov SHORE_A, c[CONSTANTS_0_1_765_0d5].w
+mov oT0.xy, c[CONSTANTS_0_1_765_0d5].xx
+
+add SKINNED_POSITION.y, r2.w, SKINNED_POSITION.y
+
+// calculate partial derivative, sin argument is stored in r0.xy
+
+// calculate cos using Taylor series
+
+// - already done above - mul r1, r0.xyxy, r0.xyxy // r1.xy = r0^2.xy, r1.zw = r0^2.xy
+//- already done above - mul r1.zw, r1.xyxy, r1.xyxy // r1.xy = r0^2.xy, r1.zw = r0^4.xy
+mul r2, r1.xyzw, r1.zwzw // r2.xy = r0^6.xy, r2.zw = r0^8.xy
+
+mov r4.xy, c[CONSTANTS_0_1_765_0d5].y
+mad r4.xy, r1.xy, c[WATER_COS_TAYLOR_2468].x, r4.xy
+mad r4.xy, r1.zw, c[WATER_COS_TAYLOR_2468].y, r4.xy
+mad r4.xy, r2.xy, c[WATER_COS_TAYLOR_2468].z, r4.xy
+mad r4.xy, r2.zw, c[WATER_COS_TAYLOR_2468].w, r4.xy
+
+// sin(A*x+B)' = A*cos(A*x+B)
+
+mul r0.xy, r4.xy, c[WATER_WAVE_HEIGHT_X_Y_XDER_YDER].zw
+
+// Animate the normal and S/T space
+
+// reusing color result registers, as they will be used only on the end
+#define SKINNED_S r4
+#define SKINNED_T MODULATE_COLOR  // we will not need r4 any more
+// never use SKINNED_T.w - we use it for other purposes
+
+// water ST space is fixed:
+// S   = (1,0,0)
+// SxT = (0,1,0) (normal)
+// T   = (0,0,1)
+
+// we can derive normal from the derivations
+
+mov SKINNED_NORMAL.xz, -r0.xyy
+mov SKINNED_NORMAL.yw, c[CONSTANTS_0_1_765_0d5].y
+
+// normalize the normal
+dp3 SKINNED_NORMAL.w, SKINNED_NORMAL, SKINNED_NORMAL
+rsq  SKINNED_NORMAL.w, SKINNED_NORMAL.w
+mul SKINNED_NORMAL.xyz, SKINNED_NORMAL.xyz, SKINNED_NORMAL.w
+
+// SetDirectionAside((1,0,0)-normal*normal.x).Normalized());
+mad SKINNED_S.xyz, -SKINNED_NORMAL, SKINNED_NORMAL.x, c[CONSTANTS_0_1_765_0d5].yxx
+dp3 SKINNED_S.w, SKINNED_S, SKINNED_S
+rsq  SKINNED_S.w, SKINNED_S.w
+mul SKINNED_S.xyz, SKINNED_S.xyz, SKINNED_S.w
+
+// calculate T as a crossproduct of S and NORMAL
+//  SetDirection(DirectionAside().CrossProduct(normal));
+mul  SKINNED_T.xyz, SKINNED_S.yzx, SKINNED_NORMAL.zxy
+mad  SKINNED_T.xyz, -SKINNED_NORMAL.yzx, SKINNED_S.zxy, SKINNED_T.xyz
+
+/*
+  SetDirectionUp(normal);
+  // Project into the plane
+  Coord t=DirectionUp()*aside;
+  SetDirectionAside((aside-normal*t).Normalized());
+  SetDirection(DirectionAside().CrossProduct(normal));
+*/
+
+// Transform position
+m4x3 TRANSFORMED_POSITION.xyz, SKINNED_POSITION, c[WORLD_VIEW_MATRIX_0]
+mov TRANSFORMED_POSITION.w, c[CONSTANTS_0_1_765_0d5].y
+
+// Project position
+m4x4 r0, TRANSFORMED_POSITION, c[PROJ_MATRIX_0]
+
+// Convert to screenspace
+mul r0.xyz, r0, c[SCREENSPACE_SCALE]
++ rcc r1.x, r0.w
+mad oPos.xyz, r0, r1.x, c[SCREENSPACE_OFFSET]
+mov oPos.w, r0.w
+
+
+// --------------------------
+// Move halfway vector to oT3
+
+#define CAMERA_SPACE_POSITION r5
+
+// Calculate model space normalized eye vector (camera to vertex)
+
+add CAMERA_SPACE_POSITION, c[CAMERA_POSITION], -SKINNED_POSITION
+dp3 CAMERA_SPACE_POSITION.w, CAMERA_SPACE_POSITION, CAMERA_SPACE_POSITION
+rsq CAMERA_SPACE_POSITION.w, CAMERA_SPACE_POSITION.w
+
+// Normalize it
+mul CAMERA_SPACE_POSITION.xyz, CAMERA_SPACE_POSITION.xyz, CAMERA_SPACE_POSITION.w
+
+// Transform it into local vertex space
+// move it into oT2
+dp3 oT2.x, -SKINNED_S.xyz, CAMERA_SPACE_POSITION
+dp3 oT2.y, -SKINNED_T.xyz, CAMERA_SPACE_POSITION
+dp3 oT2.z, SKINNED_NORMAL.xyz, CAMERA_SPACE_POSITION
+
+// Calculate the eye halfway vector
+
+add r0.xyz, CAMERA_SPACE_POSITION, -c[LDIRECTION_TRANSFORMED_DIR]
+// no need to normalize, we will normalize after converting to ST space
+
+// Transform it into local vertex space
+dp3 r3.x, -SKINNED_S.xyz, r0
+dp3 r3.y, -SKINNED_T.xyz, r0
+dp3 r3.z, SKINNED_NORMAL.xyz, r0
+
+// Normalize it and move it into oT3
+dp3 r3.w, r3, r3
+rsq r3.w, r3.w
+mul oT3.xyz, r3, r3.w
+
+// calculate reflection halfway vector and transform it into the tangent space
+
+add r0.xyz, CAMERA_SPACE_POSITION, c[CONSTANTS_0_1_765_0d5].xyx
+
+// Transform it into local vertex space
+dp3 r3.x, -SKINNED_S.xyz, r0
+dp3 r3.y, -SKINNED_T.xyz, r0
+dp3 r3.z, SKINNED_NORMAL.xyz, r0
+
+// Normalize it and move it into oD1 with bx2 conversion
+dp3 r3.w, r3, r3
+rsq r3.w, r3.w
+// we need to prepare it for bx2 conversions
+
+mad r3.xyz, r3.xyz, r3.w, c[CONSTANTS_0_1_765_0d5].y
+mul ACCUMULATOR_SPECULAR, r3.xyz, c[CONSTANTS_0_1_765_0d5].wwwx
+
+
+// calculate alpha factor based on viewing angle
+// normalized eye vector
+dp3 r0.w, CAMERA_SPACE_POSITION.xyz, SKINNED_NORMAL
+
+// consider min. and max. angle
+mad r0.w, c[WATER_REFLECT_ADD_MUL_u_u].y, r0.w, c[WATER_REFLECT_ADD_MUL_u_u].x
+
+// saturate between 0 and 1
+max r0.w, r0.w, c[CONSTANTS_0_1_765_0d5].x
+min r0.w, r0.w, c[CONSTANTS_0_1_765_0d5].y
+
+// def: A = r0.w, W = ACCUMULATOR_DIFFUSE.w
+// when A = 1, we want W to be W (stay as it is)
+// when A = 0, we want W to be 1
+
+// W = W*A+1*(1-A) = W*A + 1 - A
+// Init lights
+mov ACCUMULATOR_DIFFUSE.xyz, c[MAT_E]
+dp3 r1.x, SKINNED_NORMAL, -c[LDIRECTION_TRANSFORMED_DIR]
+max r1.x, r1.x, c[CONSTANTS_0_1_765_0d5].x
+
+// Diffuse color
+mul r1.xyz, r1.x, INPUT_MAT_D
+mad ACCUMULATOR_DIFFUSE.xyz, r1.xyz, c[LDIRECTION_D], ACCUMULATOR_DIFFUSE.xyz
+
+mov ACCUMULATOR_DIFFUSE.w, INPUT_MAT_A.w
+
+mul ACCUMULATOR_DIFFUSE.w, ACCUMULATOR_DIFFUSE.w, SHORE_A // same as MODULATE_COLOR.w
+
+mad ACCUMULATOR_DIFFUSE.w, ACCUMULATOR_DIFFUSE.w, r0.w, c[CONSTANTS_0_1_765_0d5].y // W = W*A+1
+add ACCUMULATOR_DIFFUSE.w, ACCUMULATOR_DIFFUSE.w, -r0.w // W = W-A
+
+mul ACCUMULATOR_DIFFUSE.xyz, ACCUMULATOR_DIFFUSE, c[ACCOMODATE_EYE]

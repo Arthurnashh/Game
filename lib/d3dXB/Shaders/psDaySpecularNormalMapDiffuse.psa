@@ -1,0 +1,36 @@
+#include "psDecl.h"
+
+xps.1.1
+
+#define SELECT_R c4
+
+def SELECT_R, 1,0,0,0
+
+tex t0 // color
+tex t1 // normal
+tex t2 // detail
+
+// reconstruct normal from DXT5 compression
+// do it in such a way that even DXT1 normals maps work
+mad r1.rgb, 1-t1.a, SELECT_R, t1.rgb
+
+; Do dot product and save it to r0
+dp3 r0.rgb, r1_bx2, v1_bx2
+
+; Multiply diffuse coeficient by the dot result and add A*ForcedDiffuse*Emission
+mad r0.rgb, r0_sat, c[PS_DIFFUSE], v0
+
+; Set the visibility (to v0.a for instance)
++ mov r0.a, v0.a
+
+; Multiply it by t0 (combine it with value from color map)
+mul r0, r0, t0
+
+; Combine with detail map
+mul_x2 r0.rgb, r0, t2
+
+; Decompress the result
+mul r0.rgb, c[T0_MAXCOLOR], r0
++mul r0.a, c[T0_MAXCOLOR], r0.a
+
+#include "finalCombiner.psi"

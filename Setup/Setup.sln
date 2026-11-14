@@ -1,0 +1,55 @@
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoRun", "AutoRun\AutoRun.vcproj", "{627A6513-8392-4616-BDA3-7BBDBFA7935B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Setup", "Setup\Setup.vcproj", "{16EB0B1E-B6FE-4155-95A3-E385753D545B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnInstall", "UnInstall\UnInstall.vcproj", "{CD8F695A-4D53-4F8F-AD63-892A7346878B}"
+EndProject
+Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Demo Version|Win32 = Demo Version|Win32
+		MP Demo|Win32 = MP Demo|Win32
+		Release Steam DLC|Win32 = Release Steam DLC|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{627A6513-8392-4616-BDA3-7BBDBFA7935B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{627A6513-8392-4616-BDA3-7BBDBFA7935B}.Debug|Win32.Build.0 = Debug|Win32
+		{627A6513-8392-4616-BDA3-7BBDBFA7935B}.Demo Version|Win32.ActiveCfg = Demo Version|Win32
+		{627A6513-8392-4616-BDA3-7BBDBFA7935B}.Demo Version|Win32.Build.0 = Demo Version|Win32
+		{627A6513-8392-4616-BDA3-7BBDBFA7935B}.MP Demo|Win32.ActiveCfg = Demo Version|Win32
+		{627A6513-8392-4616-BDA3-7BBDBFA7935B}.MP Demo|Win32.Build.0 = Demo Version|Win32
+		{627A6513-8392-4616-BDA3-7BBDBFA7935B}.Release Steam DLC|Win32.ActiveCfg = Release|Win32
+		{627A6513-8392-4616-BDA3-7BBDBFA7935B}.Release Steam DLC|Win32.Build.0 = Release|Win32
+		{627A6513-8392-4616-BDA3-7BBDBFA7935B}.Release|Win32.ActiveCfg = Release|Win32
+		{627A6513-8392-4616-BDA3-7BBDBFA7935B}.Release|Win32.Build.0 = Release|Win32
+		{16EB0B1E-B6FE-4155-95A3-E385753D545B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{16EB0B1E-B6FE-4155-95A3-E385753D545B}.Debug|Win32.Build.0 = Debug|Win32
+		{16EB0B1E-B6FE-4155-95A3-E385753D545B}.Demo Version|Win32.ActiveCfg = Demo Version|Win32
+		{16EB0B1E-B6FE-4155-95A3-E385753D545B}.Demo Version|Win32.Build.0 = Demo Version|Win32
+		{16EB0B1E-B6FE-4155-95A3-E385753D545B}.MP Demo|Win32.ActiveCfg = MP Demo|Win32
+		{16EB0B1E-B6FE-4155-95A3-E385753D545B}.MP Demo|Win32.Build.0 = MP Demo|Win32
+		{16EB0B1E-B6FE-4155-95A3-E385753D545B}.Release Steam DLC|Win32.ActiveCfg = Release Steam DLC|Win32
+		{16EB0B1E-B6FE-4155-95A3-E385753D545B}.Release Steam DLC|Win32.Build.0 = Release Steam DLC|Win32
+		{16EB0B1E-B6FE-4155-95A3-E385753D545B}.Release|Win32.ActiveCfg = Release|Win32
+		{16EB0B1E-B6FE-4155-95A3-E385753D545B}.Release|Win32.Build.0 = Release|Win32
+		{CD8F695A-4D53-4F8F-AD63-892A7346878B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CD8F695A-4D53-4F8F-AD63-892A7346878B}.Demo Version|Win32.ActiveCfg = Release|Win32
+		{CD8F695A-4D53-4F8F-AD63-892A7346878B}.Demo Version|Win32.Build.0 = Release|Win32
+		{CD8F695A-4D53-4F8F-AD63-892A7346878B}.MP Demo|Win32.ActiveCfg = Release|Win32
+		{CD8F695A-4D53-4F8F-AD63-892A7346878B}.MP Demo|Win32.Build.0 = Release|Win32
+		{CD8F695A-4D53-4F8F-AD63-892A7346878B}.Release Steam DLC|Win32.ActiveCfg = Release|Win32
+		{CD8F695A-4D53-4F8F-AD63-892A7346878B}.Release Steam DLC|Win32.Build.0 = Release|Win32
+		{CD8F695A-4D53-4F8F-AD63-892A7346878B}.Release|Win32.ActiveCfg = Release|Win32
+		{CD8F695A-4D53-4F8F-AD63-892A7346878B}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

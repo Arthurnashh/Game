@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="RunBatch"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="runbatch"
+			DisplayName="runbatch"
+			CommandLine="[inputs]"
+			Outputs="$(InputName).no_output"
+			FileExtensions="*.bat"
+			ExecutionDescription="Running batch file"
+			>
+			<Properties>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy into %USERPROFILE%\My Documents\Visual Studio 2012\Visualizers -->
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+<Type Name="Ref&lt;*&gt;">
+  <DisplayString Condition="_ref==0">null_ptr</DisplayString>
+  <DisplayString Condition="_ref!=0">{_ref}</DisplayString>
+  <Expand>
+    <ExpandedItem>_ref</ExpandedItem>
+  </Expand>
+</Type>
+
+  
+<Type Name="Link&lt;*&gt;">
+  <DisplayString Condition="_ref==0">null_ptr</DisplayString>
+  <DisplayString Condition="_ref!=0">{_ref}</DisplayString>
+  <Expand><Item Name="[ptr]">_ref</Item></Expand>
+</Type>
+
+<Type Name="LLink&lt;*&gt;">
+  <AlternativeType Name="SoftLink&lt;*&gt;"/>
+  <AlternativeType Name="SoftLinkPerm&lt;*&gt;"/>
+  <DisplayString Condition="_tracker._ref-&gt;_remove!=0">LLink {_tracker._ref-&gt;_remove}</DisplayString>
+  <DisplayString Condition="_tracker._ref-&gt;_remove==0">LLink(null_ptr)</DisplayString>
+  <Expand><Item Name="[ptr]">_tracker._ref-&gt;_remove</Item></Expand>
+</Type>
+  
+<Type Name="Array&lt;*&gt;">
+    <DisplayString>size={_n}</DisplayString>
+    <Expand>
+        <Item Name="[size]">_n</Item>
+        <ArrayItems>
+            <Size>_n</Size>
+            <ValuePointer>_data</ValuePointer>
+        </ArrayItems>
+    </Expand>
+</Type>
+
+ <Type Name="TListBidir&lt;*&gt;">
+    <Expand>
+        <LinkedListItems>
+            <HeadPointer>next</HeadPointer>
+            <NextPointer>next</NextPointer>
+            <ValueNode>($T1 *)this</ValueNode>
+        </LinkedListItems>
+    </Expand>
+</Type>
+
+ <Type Name="SListMT&lt;*&gt;">
+    <Expand>
+        <LinkedListItems>
+            <HeadPointer>_list.Next.Next</HeadPointer>
+            <NextPointer>Next</NextPointer>
+            <ValueNode>($T1 *)this</ValueNode>
+        </LinkedListItems>
+    </Expand>
+</Type>
+
+<Type Name="MapStringToClass&lt;*&gt;">
+    <DisplayString>size={_count}</DisplayString>
+    <Expand>
+        <Item Name="[size]">_tableSize</Item>
+        <IndexListItems>
+            <Size>_tableSize</Size>
+            <ValueNode>_hashTable[$i]</ValueNode>
+        </IndexListItems>
+    </Expand>
+</Type>  
+  
+<Type Name="RStringCT&lt;*&gt;">
+  <DisplayString Condition="_ref._ref==0">null_ptr</DisplayString>
+  <DisplayString Condition="_ref._ref!=0">{_ref._ref-&gt;_data,s}</DisplayString>
+  <StringView>_ref._ref-&gt;_data</StringView>
+</Type>
+
+<Type Name="CompactBuffer&lt;*&gt;">
+  <DisplayString>{_data}</DisplayString>
+  <StringView>_data</StringView>
+  <Expand>
+    <Item Name="[data]">_data</Item>
+  </Expand>
+</Type>
+
+<Type Name="QuadTreeEx&lt;*,*,*,*,*&gt;">
+  <Expand>
+    <IndexListItems> 
+      <Size>(1 &lt;&lt; $T4)*(1 &lt;&lt; $T3)</Size> 
+      <ValueNode Condition="((_flags._data[$i/32]&gt;&gt;($i&amp;31))&amp;1)==0">((Type *)_data)[$i]</ValueNode> 
+      <ValueNode Condition="((_flags._data[$i/32]&gt;&gt;($i&amp;31))&amp;1)!=0">(QuadTreeEx&lt;$T1,$T2,$T3,$T4,$T5&gt; *)*_data[$i]</ValueNode> 
+    </IndexListItems> 
+  </Expand>
+</Type>
+  
+<Type Name="QuadTreeExRoot&lt;*,*,*,*,*&gt;">
+  <Expand>
+    <Item Name="[outer]">_outer</Item>
+    <Item Name="[sizeX]">_sizeX</Item>
+    <Item Name="[sizeY]">_sizeY</Item>
+    <Item Condition="!_flag" Name="[value]">*($T1 *)&amp;_inner[0]</Item>
+    <Item Condition="_flag" Name="[tree]">(QuadTreeEx&lt;$T1,$T2,$T3,$T4,$T5&gt; *)_inner[0]</Item>
+  </Expand>
+</Type>
+  
+</AutoVisualizer>

@@ -1,0 +1,35 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DSCreateKey", "DSCreateKey\DSCreateKey.vcxproj", "{D08C2EB4-1C58-4329-97CC-8E2D0F4C0BD8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DSSignFile", "DSSignFile\DSSignFile.vcxproj", "{27DA82A2-4045-4701-B7EB-38FFC8A0894E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DSCheckSignatures", "DSCheckSignatures\DSCheckSignatures.vcxproj", "{41664B46-A527-447C-922B-DABF05105266}"
+EndProject
+Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D08C2EB4-1C58-4329-97CC-8E2D0F4C0BD8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D08C2EB4-1C58-4329-97CC-8E2D0F4C0BD8}.Debug|Win32.Build.0 = Debug|Win32
+		{D08C2EB4-1C58-4329-97CC-8E2D0F4C0BD8}.Release|Win32.ActiveCfg = Release|Win32
+		{D08C2EB4-1C58-4329-97CC-8E2D0F4C0BD8}.Release|Win32.Build.0 = Release|Win32
+		{27DA82A2-4045-4701-B7EB-38FFC8A0894E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{27DA82A2-4045-4701-B7EB-38FFC8A0894E}.Debug|Win32.Build.0 = Debug|Win32
+		{27DA82A2-4045-4701-B7EB-38FFC8A0894E}.Release|Win32.ActiveCfg = Release|Win32
+		{27DA82A2-4045-4701-B7EB-38FFC8A0894E}.Release|Win32.Build.0 = Release|Win32
+		{41664B46-A527-447C-922B-DABF05105266}.Debug|Win32.ActiveCfg = Debug|Win32
+		{41664B46-A527-447C-922B-DABF05105266}.Debug|Win32.Build.0 = Debug|Win32
+		{41664B46-A527-447C-922B-DABF05105266}.Release|Win32.ActiveCfg = Release|Win32
+		{41664B46-A527-447C-922B-DABF05105266}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

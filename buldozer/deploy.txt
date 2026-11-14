@@ -1,0 +1,27 @@
+How to deploy:
+
+0) Get configs to O: from vcs://Cfg/Fp/Bin/ and vcs://Cfg/Cfg/Bin/
+1) Copy configs from O: to P:
+2) Deploy bin and exe to U: (tools)
+3) Deploy bin and exe to X: (Xbox working area)
+
+(See also news:chkjml$vf1$1@new_server.localdomain)
+
+-------------------------------------
+putBuldBinOFP2:
+
+Copy config from O:\fp\bin into P: working area.
+
+deployBuldOFP2:
+
+Deploy Buldozer for OFP2 and its configs to the central distribution.
+
+deployBuldX:
+
+Deploy Buldozer for XBOX to the central distribution.
+
+putBuldBinX:
+
+Copy config from O:\StatusQuo\bin into X: working area.
+
+

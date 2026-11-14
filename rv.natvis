@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy into %USERPROFILE%\My Documents\Visual Studio 2012\Visualizers -->
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="AbstractTime">
+    <DisplayString>{_time*0.001} s</DisplayString>
+    <Expand>
+      <Item Name="[sec]">_time*0.001</Item>
+      <Item Name="[ms]">_time</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="ColorP">
+    <AlternativeType Name="ColorK"/>
+    <DisplayString>{_r},{_g},{_b},{_a}</DisplayString>
+  </Type>
+
+  <!-- El -->
+  <Type Name="Vector3P">
+    <AlternativeType Name="Vector3K"/>
+    <DisplayString>{_e[0]},{_e[1]},{_e[2]}</DisplayString>
+  </Type>
+
+  <Type Name="Fixed16p16">
+    <DisplayString>{fx/65536.0}</DisplayString>
+    <Expand>
+      <Item Name="[fixed point]">fx/65536.0</Item>
+    </Expand>
+  </Type>
+
+
+  <!-- Gamespy -->
+  <Type Name="HashImplementation">
+    <DisplayString>size={nbuckets}</DisplayString>
+    <Expand>
+      <Item Name="[buckets]">nbuckets</Item>
+      <IndexListItems>
+        <Size>nbuckets</Size>
+        <ValueNode>buckets[$i]</ValueNode>
+      </IndexListItems>
+    </Expand>
+  </Type>
+
+  <!-- Gamespy -->
+  <Type Name="DArrayImplementation">
+    <!-- Gamespy -->
+    <DisplayString>size={count}</DisplayString>
+    <Expand>
+      <Item Name="[size]">count</Item>
+      <ArrayItems>
+        <Size>count</Size>
+        <ValuePointer>(SBKeyValuePair *)list</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  
+  <!-- Marina/Dantzig -->
+  <Type Name="Vector&lt;*&gt;">
+    <DisplayString>dim={_nDim}</DisplayString>
+    <Expand>
+        <Item Name="[dim]">_nDim</Item>
+        <ArrayItems>
+            <Size>_nDim</Size>
+            <ValuePointer>_pVector</ValuePointer>
+        </ArrayItems>
+    </Expand>
+  </Type>
+  
+  <!-- Marina/Dantzig -->
+  <Type Name="Matrix&lt;*&gt;">
+    <DisplayString>dim={_nDim}</DisplayString>
+    <Expand>
+        <Item Name="[dim]">_nDim</Item>
+        <ArrayItems>
+            <Size>_nDim*_nDim</Size>
+            <ValuePointer>_pMatrix</ValuePointer>
+        </ArrayItems>
+    </Expand>
+  </Type>
+
+
+</AutoVisualizer>

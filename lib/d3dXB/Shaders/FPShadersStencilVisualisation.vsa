@@ -1,0 +1,25 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Get the input position
+mov TRANSFORMED_POSITION, INPUT_POSITION
+
+// Modify the Z coordinate
+mad TRANSFORMED_POSITION.z, TRANSFORMED_POSITION.z, c[SHADOW_MUL__ADD__INTENSITY].x, c[SHADOW_MUL__ADD__INTENSITY].y
+
+// Set the W to 1
+mov TRANSFORMED_POSITION.w, c[CONSTANTS_0_1_765_0d5].y
+
+// Project position
+mov r0.xy, TRANSFORMED_POSITION.xy
+dp4 r0.z, c[PROJ_MATRIX_2], TRANSFORMED_POSITION
+dp4 r0.w, c[PROJ_MATRIX_3], TRANSFORMED_POSITION
+
+// Convert to screenspace
+mul r0.z, r0.z, c[SCREENSPACE_SCALE].z
++ rcc r1.x, r0.w
+mul r0.z, r0.z, r1.x
+// apply 4X AA factors
+mad oPos, r0, c[CONSTANTS_0_1_765_0d5].wwyy, -c[CONSTANTS_0_1_765_0d5].wwxx
+
+// Set the shadow intensity to oD0
+mul oD0, INPUT_POSITION.w, c[SHADOW_MUL__ADD__INTENSITY].z

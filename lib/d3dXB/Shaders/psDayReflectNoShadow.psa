@@ -1,0 +1,16 @@
+#include "psDecl.h"
+
+xps.1.1
+
+// no shadow alpha (2nd pass for muzzle-flash rendering)
+
+def c5, 1, 1, 1, 1
+
+tex t0
+
+// only alpha is actually written
+// we read t0 to make sure alpha kill works
+mov r0.rgb, t0.rgb
++mov r0.a, c5
+
+#include "finalCombiner.psi"

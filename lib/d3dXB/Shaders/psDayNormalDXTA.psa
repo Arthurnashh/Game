@@ -1,0 +1,22 @@
+#include "psDecl.h"
+
+xps.1.1
+
+// normal diffuse shader
+
+tex t0
+
+// DXT1 decompression -
+// add average color to prevent DXT1 decompression artifacts
+mad r0.rgb, 1-t0.a, c[T0_AVGCOLOR], t0
++mul r0.a, c[T0_MAXCOLOR], t0.a
+
+
+mul r0.rgb, v0, r0
+// force discreete alpha in the result
++cnd r0.a, r0.a, 1-zero, zero
+
+mul r0.rgb, c[T0_MAXCOLOR], r0
++mul r0.a, v0.a, r0.a
+
+#include "finalCombiner.psi"

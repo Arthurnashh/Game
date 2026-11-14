@@ -1,0 +1,190 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{41664B46-A527-447C-922B-DABF05105266}</ProjectGuid>
+    <RootNamespace>DSCheckSignatures</RootNamespace>
+    <SccProjectName>"$/", AAAAAAAA</SccProjectName>
+    <SccLocalPath>..\..\..</SccLocalPath>
+    <SccProvider>MSSCCI:Microsoft Visual SourceSafe</SccProvider>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..;W:\c\extern;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;MFC_NEW=1;_ENABLE_PBO_PROTECTION=1;_USE_SETUP_PBO_PROTECTION=1;USE_HASH_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>rsamtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>w:\c\extern;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..\..;..\..\..\extern;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;MFC_NEW=1;_ENABLE_PBO_PROTECTION=1;_USE_SETUP_PBO_PROTECTION=1;USE_HASH_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>rsamt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\..\extern;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\El\Credits\credits.cpp" />
+    <ClCompile Include="..\..\..\El\LZO\lzo1x_d1.c" />
+    <ClCompile Include="..\..\..\El\LZO\lzo1x_d4.c" />
+    <ClCompile Include="..\..\..\El\LZO\lzo1x_dStream.cpp" />
+    <ClCompile Include="..\..\..\El\LZO\lzo_init.c" />
+    <ClCompile Include="..\..\..\El\LZO\pinit.c" />
+    <ClCompile Include="..\..\..\El\LZO\plzo1x_1f.c" />
+    <ClCompile Include="DSCheckSignatures.cpp" />
+    <ClCompile Include="..\..\..\El\DataSignatures\dataSignatures.cpp" />
+    <ClCompile Include="..\..\..\El\DataSignatures\sha1.cpp" />
+    <ClCompile Include="..\..\..\El\DataSignatures\sha1wrapper.cpp" />
+    <ClCompile Include="..\..\..\El\QStream\qbstream.cpp" />
+    <ClCompile Include="..\..\..\El\QStream\qstream.cpp" />
+    <ClCompile Include="..\..\..\El\QStream\qstreamUseBankQFBank.cpp" />
+    <ClCompile Include="..\..\..\El\QStream\qstreamUseFServerDefault.cpp" />
+    <ClCompile Include="..\..\..\El\QStream\serializeBin.cpp" />
+    <ClCompile Include="..\..\..\El\QStream\ssCompress.cpp" />
+    <ClCompile Include="..\..\..\El\Common\perfLog.cpp" />
+    <ClCompile Include="..\..\..\El\CDKey\serial.cpp" />
+    <ClCompile Include="..\..\..\El\ActiveObject\activeObject.cpp" />
+    <ClCompile Include="..\..\..\El\Encryption\AESEncryption.cpp" />
+    <ClCompile Include="..\..\..\El\Encryption\pboheaderprotection.cpp" />
+    <ClCompile Include="..\..\..\Es\Framework\appFrame.cpp" />
+    <ClCompile Include="..\..\..\Es\Framework\useAppFrameDefault.cpp" />
+    <ClCompile Include="..\..\..\Es\Memory\debugAlloc.cpp" />
+    <ClCompile Include="..\..\..\Es\Memory\useMallocMemFunctions.cpp" />
+    <ClCompile Include="..\..\..\Es\Strings\rString.cpp" />
+    <ClCompile Include="..\..\..\Es\Files\filenames.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\El\Credits\credits.hpp" />
+    <ClInclude Include="..\..\..\El\DataSignatures\dataSignatures.hpp" />
+    <ClInclude Include="..\..\..\El\DataSignatures\hashwrapper.h" />
+    <ClInclude Include="..\..\..\El\DataSignatures\sha1.h" />
+    <ClInclude Include="..\..\..\El\DataSignatures\sha1wrapper.h" />
+    <ClInclude Include="..\..\..\El\LZO\acc_fccm.h" />
+    <ClInclude Include="..\..\..\El\LZO\config1x.h" />
+    <ClInclude Include="..\..\..\El\LZO\lzo_conf.h" />
+    <ClInclude Include="..\..\..\El\LZO\lzo_dict.h" />
+    <ClInclude Include="..\..\..\El\LZO\lzo_ptr.h" />
+    <ClInclude Include="..\..\..\El\LZO\miniacc.h" />
+    <ClInclude Include="..\..\..\El\LZO\plzo1_c_dict.h" />
+    <ClInclude Include="..\..\..\El\LZO\plzo1_d_fc.h" />
+    <ClInclude Include="..\..\..\El\QStream\QBStream.hpp" />
+    <ClInclude Include="..\..\..\El\QStream\QStream.hpp" />
+    <ClInclude Include="..\..\..\El\QStream\serializeBin.hpp" />
+    <ClInclude Include="..\..\..\El\Common\perfLog.hpp" />
+    <ClInclude Include="..\..\..\El\CDKey\serial.hpp" />
+    <ClInclude Include="..\..\..\El\ActiveObject\activeObject.hpp" />
+    <ClInclude Include="..\..\..\El\Encryption\aes.h" />
+    <ClInclude Include="..\..\..\El\Encryption\AESEncryption.h" />
+    <ClInclude Include="..\..\..\El\Encryption\pboheaderprotection.h" />
+    <ClInclude Include="..\..\..\Es\Framework\appFrame.hpp" />
+    <ClInclude Include="..\..\..\Es\Memory\debugAlloc.hpp" />
+    <ClInclude Include="..\..\..\Es\Strings\rString.hpp" />
+    <ClInclude Include="..\..\..\Es\Files\fileContainer.hpp" />
+    <ClInclude Include="..\..\..\Es\Files\filenames.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\El\LZO\lzo1x_d.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\lzo1_d.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\lzo_dll.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\lzo_func.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1x_c.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1x_d.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1_c.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1_c_copy_lit.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1_c_copy_lit_impl.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="deploy.bat" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,84 @@
+#order 0
+#substr
+#function
+#reportsections
+
+#rem First insert functions that will not be protected
+
+#rem Insert some modules that need not be protected
+#module
+vorbisfile:
+vorbisfilemt:
+
+#function
+
+#rem Determine which functions have to be fade protected.
+
+#order 30
+WinMain@16
+CDKey
+
+#rem Include also some functions, that do not need to be protected,
+#rem but we think it can do no harm to protect them
+#rem Note: any reference to DLL makes function protection impossible
+#module
+
+#function
+
+#rem Functions that perform Fade protection should go here
+#rem Such functions are protected by checksum
+#rem Any tampering with them should result in crash
+#rem Protect all InGameUI (this is where we draw fade messages)
+
+#order 20
+
+CheckFade
+CRCCalculator
+ProcessKeyPressed
+InGameUI
+RifleInaccuracy@Man
+
+#rem Add also some functions that need not be protected
+#rem to hide better what we are really doing.
+
+AimWeapon@Man
+Simulate@Man
+TrackTargets@EntityAI
+Think@AIUnit
+Think@AIGroup
+
+#rem CD Protection cannot be protected (self-modifying code)
+#order 10
+
+?CDP
+?CDAPFN0506
+
+#rem After CD Protection insert some functions that may but need not be protected
+#rem to provide some space for checksum space padding to DWORD.
+
+#order 11
+GetWeaponDirection
+AISubgroupContext
+
+
+#rem Some functions are identical between several modules
+#rem and linker replaces them with one common instance.
+#rem This can cause ordering problems when when function is merged
+#rem with library functions.
+#rem We reset ordering preferences for such functions to 10000
+#rem to avoid such conflicts.
+
+#rem Put some unique functions before library functions, as they sometimes
+#rem cannot be ordered and we need an end marker for the CRC region
+#rem The function should call no DLL functions to prevent warning, as it
+#rem can be partly included in the CRC region as well
+#order 9999
+
+GlanceRandomDirection@AIBrain
+
+#order 10000
+#module
+LIBC:
+LIBCMT:
+
+#rem All other functions remain unprotected (order==10000)

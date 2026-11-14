@@ -1,0 +1,19 @@
+// Per-pixel normalized specular highlights
+
+texcoord t0             ; H
+tex t1                  ; N
+texm3x2pad t2, t1_bx2   ; H dot N
+texm3x2tex t3, t0_bx2   ; H dot H
+
+// v1 == L (tangent space)
+// Calculate diffuse coeficient
+dp3 r1, t1_bx2, v1_bx2
+
+// Move diffuse color to output
+mad_x2 r0.rgb, r1, c[PS_DIFFUSE], v0
++ mov r0.a, t3.a
+
+// Add the per pixel specular color
+mad r0.rgb, t3, c[PS_SPECULAR].rgb, r0.rgb
+
+// calculate "environmental" reflection

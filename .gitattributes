@@ -1,0 +1,3 @@
+DayZ2010.sdf filter=lfs diff=lfs merge=lfs -text
+extern/RotorLib/RTDynamics[[:space:]]4.0/Lib/VC8-32/debug/RTDynamics-vc8-static-mt-32-d.lib filter=lfs diff=lfs merge=lfs -text
+extern/RotorLib/RTDynamics[[:space:]]4.0/Lib/VC10-32/Debug/RTDynamics-vc10-static-mt-32-d.lib filter=lfs diff=lfs merge=lfs -text

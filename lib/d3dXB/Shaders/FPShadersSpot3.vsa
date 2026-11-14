@@ -1,0 +1,5 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Spot light instancing
+//LSPOT(15*POINTSPOT_COMMON_SIZE)
+LSPOT(15)

@@ -1,0 +1,10 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// only ambient part of the directional light
+
+// forced diffuse lowered based on shadow
+mul r2.xyz, MODULATE_COLOR.w, c[LDIRECTION_D]
+
+// A_DFORCED_E
+mad ACCUMULATOR_DIFFUSE.xyz, INPUT_MAT_A, c[LDIRECTION_A], ACCUMULATOR_DIFFUSE
+mad ACCUMULATOR_DIFFUSE.xyz, INPUT_MAT_D_FORCED, r2.xyz, ACCUMULATOR_DIFFUSE

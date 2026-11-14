@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<module name="Pathname">
+
+	<description>
+		Module simplifying manipulation with paths and filenames. It can also convert
+		relative path to absolute respectively.
+	</description>
+
+	<dependencies>
+	</dependencies>
+
+	<files>
+       <ref_file name="El/Pathname/Pathname.h"/>
+       <ref_file name="El/Pathname/Pathname.cpp"/>
+	</files>
+
+</module>

@@ -1,0 +1,39 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Transform position (only world matrix is in bones - output is in world space)
+dp4 r0.x, SKINNED_POSITION, c[BONES_START + a0.x + 0]
+dp4 r0.y, SKINNED_POSITION, c[BONES_START + a0.x + 1]
+dp4 r0.z, SKINNED_POSITION, c[BONES_START + a0.x + 2]
+mad SKINNED_POSITION, r0, c[CONSTANTS_0_1_765_0d5].yyyx, c[CONSTANTS_0_1_765_0d5].xxxy
+
+// Transform normal (only world matrix is in bones - output is in world space)
+dp3 r0.x, SKINNED_NORMAL, c[BONES_START + a0.x + 0]
+dp3 r0.y, SKINNED_NORMAL, c[BONES_START + a0.x + 1]
+dp3 r0.z, SKINNED_NORMAL, c[BONES_START + a0.x + 2]
+mad SKINNED_NORMAL, r0, c[CONSTANTS_0_1_765_0d5].yyyx, c[CONSTANTS_0_1_765_0d5].xxxy
+
+// we need to normalize now - local space may be skewed
+dp3 SKINNED_NORMAL.w, SKINNED_NORMAL, SKINNED_NORMAL
+rsq SKINNED_NORMAL.w, SKINNED_NORMAL.w
+mul SKINNED_NORMAL.xyz, SKINNED_NORMAL.xyz, SKINNED_NORMAL.w
+
+// Apply view matrix
+m4x3 TRANSFORMED_POSITION.xyz, SKINNED_POSITION, c[WORLD_VIEW_MATRIX_0]
+mov TRANSFORMED_POSITION.w, c[CONSTANTS_0_1_765_0d5].y
+
+// Project position
+m4x4 r0, TRANSFORMED_POSITION, c[PROJ_MATRIX_0]
+
+// Convert to screenspace
+mul r0.xyz, r0, c[SCREENSPACE_SCALE]
++ rcc r1.x, r0.w
+mad oPos.xyz, r0, r1.x, c[SCREENSPACE_OFFSET]
+mov oPos.w, r0.w
+
+// Fill out texture coordinates
+dp4 oT0.x, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX0_0]
+dp4 oT0.y, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX0_1]
+dp4 oT1.x, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX1_0]
+dp4 oT1.y, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX1_1]
+
+mov ACCUMULATOR_SPECULAR.xyzw, c[CONSTANTS_0_1_765_0d5].x

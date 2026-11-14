@@ -1,0 +1,16 @@
+# visual studio stuff
+DayZ.sdf
+DayZ.opensdf
+DayZ.v*.suo
+
+# build stuff
+lib/obj
+bin
+cfg/Win32
+dist
+*.vcxproj.user
+buildNo.h
+
+# extern stuff
+extern/bullet*/out
+extern/libBullet*.lib

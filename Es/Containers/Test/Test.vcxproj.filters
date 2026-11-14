@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="containersTest.cpp" />
+    <ClCompile Include="..\..\Memory\useMallocMemFunctions.cpp">
+      <Filter>Es\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Framework\useAppFrameDefault.cpp">
+      <Filter>Es\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Framework\appFrame.cpp">
+      <Filter>Es\Framework</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Es">
+      <UniqueIdentifier>{0a07f199-3ccf-42ef-a8f6-2ff7f6d6bb61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Memory">
+      <UniqueIdentifier>{2c431357-3365-463b-aac7-040570b34b45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Framework">
+      <UniqueIdentifier>{3817fe49-3912-4a08-8f3a-4f1cfd322409}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Framework\appFrame.hpp">
+      <Filter>Es\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\essencepch.hpp">
+      <Filter>Es</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Framework\debugLog.hpp">
+      <Filter>Es\Framework</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\es.natstepfilter">
+      <Filter>Es</Filter>
+    </None>
+    <None Include="..\..\es.natvis">
+      <Filter>Es</Filter>
+    </None>
+  </ItemGroup>
+</Project>

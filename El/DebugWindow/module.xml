@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<module name="Debug Window">
+
+	<description>
+		Support for application debugging window.
+	</description>
+
+	<files>
+		<ref_file name="El/DebugWindow/debugWin.hpp"/>
+		<ref_file name="El/DebugWindow/debugWinImpl.hpp"/>
+		<ref_file name="El/DebugWindow/debugWin.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+		<ref_module name="El/Color"/>
+	</dependencies>
+
+	<extensions>
+		<use_interface file="El/Interfaces/iAppInfo.hpp" class="ApplicationInfoFunctions">
+			<description>
+				Generic informations about application (version, context etc.).
+				Application itself is responsible for nondefault implementation.
+			</description>
+			<use_implementation name="Default" selector="El/AppInfo/useAppInfoDefault.cpp">
+				<description>
+					Default (dummy) implementation.
+				</description>
+			</use_implementation>
+		</use_interface>
+	</extensions>
+
+</module>

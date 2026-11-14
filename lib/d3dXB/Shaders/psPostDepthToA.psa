@@ -1,0 +1,34 @@
+#include "psDecl.h"
+
+// depth of field blur postprocess effect
+
+xps.1.1
+
+def c7, 0.0625,0,0,1.0 // r selector,0, depth offset, a offset
+def c6, 0,0,0,0.5
+// c0 rgb  - blur intensity
+// c0 a - blur focus
+
+tex t1 // depth buffer b = stencil, arg = depth (a=MSB, g=LSB)
+
+dp3 r0.rgb, t1, c7 // select r component and scale it down
++add_x4 r1.a, -c7.a, t1.a // scale a component up
+
+// r0 contains depth value - is is usually a small negative number
+add r0.rgb, r0, c0.a // user control may change focus
++mov_x4 r1.a, r1.a
+
+add r0.rgb, r0, r1.a // add a (MS) and r (LS) components
+// r0 contains signed distance from focal plane
+
+add r0, r0.b, c6.a // make it unsigned
+// r0 now contains blur factor 0 = not blurred, 1 = blurred
+
+// final color = s0*s1 + (1-s0)*s2 + s3
+// final alpha = s6.b
+// special registers:
+//   prod = s4*s5.
+//   sum  = r0+v1
+//   zero = 0
+//  s0,        s1,         s2,          s3,           s4,           s5,           s6
+xfc fog_sat.a, r0_sat.rgb, fog_sat.rgb, zero_sat.rgb, zero_sat.rgb, zero_sat.rgb, r0_sat.a

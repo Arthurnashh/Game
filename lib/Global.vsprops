@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="Global"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="$(SolutionDir)..;$(SolutionDir)..\PhysicalLibs\RigidBody\ODE;$(SolutionDir)..\extern"
+		PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS,BUILD_SYSTEM_USER=$(USERNAME)"
+	/>
+</VisualStudioPropertySheet>

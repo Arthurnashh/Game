@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="HTML Help"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="HTML Help"
+			DisplayName="HTML Help"
+			CommandLine="&quot;$(PROGRAM_FILES32)\HTML Help Workshop\hhc.exe&quot; [inputs] "
+			Outputs="$(ProjectDir)/Help/$(SafeInputName).chm"
+			AdditionalDependencies="$(ProjectDir)/Help"
+			FileExtensions="*.hhp"
+			ExecutionDescription="Building help..."
+			>
+			<Properties>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

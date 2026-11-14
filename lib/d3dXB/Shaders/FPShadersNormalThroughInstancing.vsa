@@ -1,0 +1,153 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+#define CROWN_LIGHTING
+//#define DITHER
+
+#ifdef CROWN_LIGHTING
+  // Transform light direction from world space to model space
+  // multiply by matrix transpose
+  mov r0.xyz, c[LDIRECTION_TRANSFORMED_DIR].xyz
+  mul r2.xyz, r0.x, c[BONES_START + a0.x + 0].xyz
+  mad r2.xyz, r0.y, c[BONES_START + a0.x + 1].xyz, r2.xyz
+  mad r2.xyz, r0.z, c[BONES_START + a0.x + 2].xyz, r2.xyz
+  
+  // renormalize to handle skew / scale
+  dp3 r0.w, r2.xyz, r2.xyz
+  rsq r0.w, r0.w
+  mul r2.xyz, r2.xyz, r0.w
+  
+
+  // calculate interestion of direction light ray with tree crown sphere
+  // calculate interestion of direction light ray with tree crown sphere
+  // r2.xyz - model space light direction
+  // c[TREE_CROWN_CENTER] - crown sphere center
+  // c[TREE_CROWN_SIZE] - crown sphere size, xyz: 1/vector span, w: 1/sphere radius
+  
+  // calculate X = position inside of unit sphere
+  
+  
+  
+  sub r0.xyz, SKINNED_POSITION.xyz, c[TREE_CROWN_CENTER].xyz
+  mul r0.xyz, r0.xyz, c[TREE_CROWN_SIZE].xyz
+
+  // based on X we calculate oT3
+  // Y = X.y*0.5+0.5 (map -1..1 to 0..1 range) 
+  mad oT3.y, r0.y, c[CONSTANTS_0_1_765_0d5].w, c[CONSTANTS_0_1_765_0d5].w
+
+  // X = sqrt(X.x^2+X.z^2)
+  mul r1.xy, r0.xz, r0.xz
+  add r1.x, r1.x, r1.y
+  rsq r1.y, r1.x
+  mul oT3.x, r1.x, r1.y
+  
+  // calculate L = ligth direction transformed into unit sphere space
+  mul r3.xyz, r2.xyz, c[TREE_CROWN_SIZE].xyz
+  
+  
+  // distance traveled is:
+  // s = ((X.L)+sqrt((X.L)*(X.L)+(L.L)-(L.L)(X.X))/(L.L)
+  
+  // L.L
+  dp3 r1.x, r3.xyz, r3.xyz
+  // X.X
+  dp3 r1.y, r0.xyz, r0.xyz
+  // X.L
+  dp3 r1.z, r3.xyz, r0.xyz
+  
+  mad r1.w, r1.z, r1.z, r1.x // = (X.L)*(X.L)+(L.L)
+  mad r1.w, -r1.x, r1.y, r1.w // -= (L.L)*(X.X)
+  
+  max r1.w, c[CONSTANTS_0_1_765_0d5].x, r1.w
+  
+  rsq r0.w, r1.w // 1/sqrt(...)
+  mad r1.z, r1.w, r0.w, r1.z  // sqrt(...)+(X.L)
+  mul r1.y, r1.w, r0.w  // sqrt(...)
+  
+  rcc r1.x, r1.x // 1/(L.L)
+  
+  mul r0.w, c[TREE_CROWN_SIZE].w, r1.x
+  
+  add r1.y, r1.y, r1.y // 2*sqrt(...) = max. span
+  
+  mul r0.xy, r0.w, r1.yz // r0.x - s, r0.y = max. s
+  
+  min oT2.xy, r0.x, r0.y
+#endif
+
+// Transform position (only world matrix is in bone s - output is in world space)
+dp4 r0.x, SKINNED_POSITION, c[BONES_START + a0.x + 0]
+dp4 r0.y, SKINNED_POSITION, c[BONES_START + a0.x + 1]
+dp4 r0.z, SKINNED_POSITION, c[BONES_START + a0.x + 2]
+mad SKINNED_POSITION, r0, c[CONSTANTS_0_1_765_0d5].yyyx, c[CONSTANTS_0_1_765_0d5].xxxy
+
+// Transform normal (only world matrix is in bones - output is in world space)
+dp3 r0.x, SKINNED_NORMAL, c[BONES_START + a0.x + 0]
+dp3 r0.y, SKINNED_NORMAL, c[BONES_START + a0.x + 1]
+dp3 r0.z, SKINNED_NORMAL, c[BONES_START + a0.x + 2]
+mad SKINNED_NORMAL, r0, c[CONSTANTS_0_1_765_0d5].yyyx, c[CONSTANTS_0_1_765_0d5].xxxy
+
+// Apply view matrix
+m4x3 TRANSFORMED_POSITION.xyz, SKINNED_POSITION, c[WORLD_VIEW_MATRIX_0]
+mov TRANSFORMED_POSITION.w, c[CONSTANTS_0_1_765_0d5].y
+
+// Project position
+m4x4 r0, TRANSFORMED_POSITION, c[PROJ_MATRIX_0]
+
+// Convert to screenspace
+mul r0.xyz, r0, c[SCREENSPACE_SCALE]
++ rcc r1.x, r0.w
+mad oPos.xyz, r0, r1.x, c[SCREENSPACE_OFFSET]
+mov oPos.w, r0.w
+
+// Fill out texture coordinates
+dp4 oT0.x, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX0_0]
+dp4 oT0.y, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX0_1]
+dp4 oT1.x, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX1_0]
+dp4 oT1.y, INPUT_TEXCOORD0, c[TEX_TRANSFORM_MATRIX1_1]
+
+#ifdef DITHER
+  // r2 = (oPos.x, oPos.y, 0,1) - r12 is Xbox specific read alias for oPos
+  mad r2, r12.xy, c[CONSTANTS_0_1_765_0d5].yy, c[CONSTANTS_0_1_765_0d5].xxxy
+  // screenspace based texture coordinate fill
+  dp4 r3.x, r2, c[TEX_TRANSFORM_MATRIX2_0]
+  dp4 r3.y, r2, c[TEX_TRANSFORM_MATRIX2_1]
+  // avoid perspective correction
+  //mov r3.zw, c[CONSTANTS_0_1_765_0d5].xxxy
+  mul oT2.xy, r3.xy, r0.w
+  mov oT2.w, r0.w
+#endif
+
+
+
+// Get the Skinned S and T
+#define SKINNED_S r1
+#define SKINNED_T r2
+
+dp3 r0.x, INPUT_S, c[BONES_START + a0.x + 0]
+dp3 r0.y, INPUT_S, c[BONES_START + a0.x + 1]
+dp3 r0.z, INPUT_S, c[BONES_START + a0.x + 2]
+mad SKINNED_S, r0, c[CONSTANTS_0_1_765_0d5].yyyx, c[CONSTANTS_0_1_765_0d5].xxxy
+
+dp3 r0.x, INPUT_T, c[BONES_START + a0.x + 0]
+dp3 r0.y, INPUT_T, c[BONES_START + a0.x + 1]
+dp3 r0.z, INPUT_T, c[BONES_START + a0.x + 2]
+mad SKINNED_T, r0, c[CONSTANTS_0_1_765_0d5].yyyx, c[CONSTANTS_0_1_765_0d5].xxxy
+
+
+// -------------------------------------------------------
+// Calculate the light direction in the local vertex space
+dp3 r3.x, -SKINNED_S, -c[LDIRECTION_TRANSFORMED_DIR]
+dp3 r3.y, -SKINNED_T, -c[LDIRECTION_TRANSFORMED_DIR]
+dp3 r3.z, SKINNED_NORMAL, -c[LDIRECTION_TRANSFORMED_DIR]
+
+// we need to normalize now - local space may be skewed
+dp3 r3.w, r3, r3
+rsq r3.w, r3.w
+mul r3.xyz, r3.xyz, r3.w
+
+// by making light direction smaller we make diffuse component smaller
+mul r3.xyz, r3.xyz, MODULATE_COLOR.w
+
+// Fit into interval (0, 1) and write into specular (oD1 later)
+// The normalMapThrough PS uses this information
+mad ACCUMULATOR_SPECULAR, r3.xyz, c[CONSTANTS_0_1_765_0d5].wwwx, c[CONSTANTS_0_1_765_0d5].wwwx

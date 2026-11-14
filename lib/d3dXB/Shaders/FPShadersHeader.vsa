@@ -1,0 +1,6 @@
+#include "d3dXB/shaders/FPShadersDecl.h"
+
+xvs.1.1
+
+// Tell the compiler to not to add the screenspace conversion instructions
+#pragma screenspace

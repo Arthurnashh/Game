@@ -1,0 +1,177 @@
+readme:
+AutoText and Code Template entries used by Visual Assist. 
+
+Normal file location: "C:\Program Files\Visual Assist\misc\vassist.tpl"
+
+You can obtain information on the purpose and format of this
+file by clicking "Help..." on the Auto Completion tab of the
+options dialog. The button will open "readtmpl.txt" in the
+Misc subdirectory of the Visual Assist installation directory.
+If you are currently in VC++, you can also right-click on the 
+string "readtmpl.txt" to display a menu with an Open Document 
+item that can open the file for you.
+
+
+caretPosChar:
+§
+
+
+readme:
+AutoText follows. None of the entry names contain a space.
+
+
+#d:
+#define 
+#de:
+#define 
+#u:
+#undef 
+#un:
+#undef 
+#p:
+#pragma 
+#pr:
+#pragma 
+#in:
+#include "§"
+#ins:
+#include <§>
+#im:
+#import "§"
+#if:
+#ifdef §
+#endif
+#ifn:
+#ifndef §
+#endif
+#el:
+#else
+#eli:
+#elif 
+#en:
+#endif
+
+A:
+ASSERT(§)
+r:
+return
+T:
+TRUE
+t:
+true
+F:
+FALSE
+f:
+false
+I:
+INT
+U:
+UINT
+B:
+BOOL
+V:
+VOID
+H:
+HWND
+L:
+LONG
+N:
+NULL
+patch:
+/*!
+\patch 2.%1 Date %MONTH%/%DAY%/%YEAR% by %2
+- Fixed: §
+*/
+
+//:
+// § [%MONTH%/%DAY%/%YEAR%]
+///:
+//////////////////////////////////////////////////////////////////////////
+
+/*:
+/*
+ *	§
+ */
+/**:
+/************************************************************************/
+/* §                                                                     */
+/************************************************************************/
+
+
+readme:
+Code Templates follow. All entry names contain a space.
+
+
+Class definition using selection:
+
+class %0
+{
+public:
+	%0();
+	~%0();
+protected:
+	§
+private:
+};
+
+Switch with 4 cases using selection:
+switch (%0) {
+case %1:
+	break;
+case %2:
+	break;
+case %3:
+	break;
+case %4:
+	break;
+default:
+}
+
+#ifndef selection:
+#ifdef NOT
+%0
+#endif
+
+separator
+
+File header:
+/********************************************************************
+	created:	%DATE%
+	created:	%DAY%:%MONTH%:%YEAR%   %HOUR%:%MINUTE%
+	filename: 	%FILE%
+	file path:	%FILE_PATH%
+	file base:	%FILE_BASE%
+	file ext:	%FILE_EXT%
+	author:		%1
+	
+	purpose:	§
+*********************************************************************/
+
+readme:
+Added a space to the end of WinMain so this entry does not appear
+as AutoText.
+
+WinMain :
+int PASCAL WinMain(HANDLE hInstance,
+                   HANDLE hPrevInstance,
+                   LPSTR lpszCommandLine,
+                   int cmdShow)
+{
+	§
+}
+
+Version Info:
+OSVERSIONINFO os;
+os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+GetVersionEx(&os);
+if (os.dwPlatformId == VER_PLATFORM_WIN32_NT)
+{
+	§
+}
+else if (os.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
+{
+}
+else
+{
+}
+

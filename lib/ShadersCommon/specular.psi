@@ -1,0 +1,8 @@
+// no detail texture, specular
+
+tex t0
+
+mul r0, v0, t0 // apply diffuse
+
+mad_x2 r0.rgb, r0, c[T0_MAXCOLOR], v1 // add specular to color
++mul r0.a, r0, c[T0_MAXCOLOR]

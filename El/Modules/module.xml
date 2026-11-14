@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<module name="Modules">
+
+	<description>
+		Enable dynamically extend application using modules and plugins.
+	</description>
+
+	<files>
+		<ref_file name="El/Modules/modules.hpp"/>
+		<ref_file name="El/Modules/modules.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+	</dependencies>
+
+</module>

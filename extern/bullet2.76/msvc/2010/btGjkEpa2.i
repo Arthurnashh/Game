@@ -1,0 +1,11427 @@
+/*
+ * SNC Preprocessed Output:
+ * "e:\EnforceNG\bullet-2.76\src\BulletCollision\NarrowPhaseCollision\btGjkEpa2.cpp"
+ * "SN Systems ps3ppusnc - 'ps3ppucf.exe' 440.1.11914.0 (rel,TR,3.3 @184299) WIN32"
+ * "-XYc=cp+gnu_ext+rtti-exceptions+bool+wchar_t+array_nd+tmplname -XYg -DSN_TARGET_PS3 -D_DEBUG -D__SNC__ -DREMOTE_PATH="/app_home/" -D_DEBUG -D_IRR_STATIC_LIB_ -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS -DCMAKE_INTDIR="Debug" -D__PS3__ -Xdepmode=1 -Xmserrors --diag_suppress=1700 --diag_suppress=68 --diag_suppress=1011 --diag_suppress=178 --diag_suppress=613 -O0 -Xfastmath=1 -Xpreprocess --display_error_number --alternative_tokens -D_BIG_ENDIAN=1 -D__BIG_ENDIAN__ -D__ALTIVEC__ -JC:\PS3SDK/host-win32/sn/ppu/include -JC:\PS3SDK/host-win32/sn/ppu/include/sn -JC:\PS3SDK/host-win32/sn/common/include -JC:\PS3SDK/host-win32/sn/common/include/sn -JC:\PS3SDK/target/ppu/include -JC:\PS3SDK/target/common/include -JC:\Program Files (x86)\SN Systems\PS3/ppu/include -JC:\Program Files (x86)\SN Systems\PS3/ppu/include/sn -JC:\Program Files (x86)\SN Systems\PS3/common/include -JC:\Program Files (x86)\SN Systems\PS3/common/include/sn -M -MO -E -f"
+ *
+ */
+
+# 1 "e:\\EnforceNG\\bullet-2.76\\src\\BulletCollision\\NarrowPhaseCollision\\btGjkEpa2.cpp"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+ 
+# 1 "..\\..\\src\\BulletCollision/CollisionShapes/btConvexInternalShape.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+# 1 "..\\..\\src\\BulletCollision/CollisionShapes/btConvexShape.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+# 1 "..\\..\\src\\BulletCollision/CollisionShapes/btCollisionShape.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+# 1 "..\\..\\src\\LinearMath/btTransform.h"
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+# 1 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+# 1 "..\\..\\src\\LinearMath/btVector3.h"
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+# 1 "..\\..\\src\\LinearMath/btScalar.h"
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/math.h"
+
+
+
+
+ 
+ 
+# 1 "C:/PS3SDK\\target\\ppu\\include/ymath.h"
+
+
+
+
+ 
+ 
+# 1 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+
+
+
+ 
+ 
+# 1 "C:/PS3SDK\\target\\ppu\\include/sys/types.h"
+ 
+ 
+ 
+ 
+
+
+
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/sys/syscall.h"
+ 
+ 
+ 
+ 
+
+
+
+
+# 248 "C:/PS3SDK\\target\\ppu\\include/sys/syscall.h"
+
+
+
+ 
+# 262 "C:/PS3SDK\\target\\ppu\\include/sys/syscall.h"
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/sys/types.h"
+ 
+ 
+ 
+ 
+
+# 264 "C:/PS3SDK\\target\\ppu\\include/sys/syscall.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+ 
+# 326 "C:/PS3SDK\\target\\ppu\\include/sys/syscall.h"
+
+# 525 "C:/PS3SDK\\target\\ppu\\include/sys/syscall.h"
+
+
+
+ 
+
+
+
+
+
+
+
+# 10 "C:/PS3SDK\\target\\ppu\\include/sys/types.h"
+# 1 "C:/PS3SDK\\target\\common\\include/sys/sys_types.h"
+ 
+ 
+ 
+ 
+
+
+
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/sys/cdefs.h"
+ 
+ 
+ 
+ 
+
+
+
+
+# 20 "C:/PS3SDK\\target\\ppu\\include/sys/cdefs.h"
+
+# 32 "C:/PS3SDK\\target\\ppu\\include/sys/cdefs.h"
+
+
+
+
+
+
+# 10 "C:/PS3SDK\\target\\common\\include/sys/sys_types.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/sys/integertypes.h"
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+namespace std { typedef signed char int8_t;
+typedef unsigned char uint8_t;
+typedef signed short int16_t;
+typedef unsigned short uint16_t;
+typedef signed int int32_t;
+typedef unsigned int uint32_t;
+
+
+typedef signed long long int64_t;
+typedef unsigned long long uint64_t;
+typedef signed int intptr_t;
+typedef unsigned int uintptr_t;
+# 29 "C:/PS3SDK\\target\\ppu\\include/sys/integertypes.h"
+
+}
+
+	using ::std:: int8_t;
+using ::std:: uint8_t;
+using ::std:: int16_t;
+using ::std:: uint16_t;
+using ::std:: int32_t;
+using ::std:: uint32_t;
+using ::std:: int64_t;
+using ::std:: uint64_t;
+using ::std:: intptr_t;
+using ::std:: uintptr_t;
+
+
+
+# 11 "C:/PS3SDK\\target\\common\\include/sys/sys_types.h"
+
+
+
+
+
+
+
+ 
+typedef ::std:: uint64_t callout_t;
+typedef ::std:: uint64_t timer_t;
+
+
+
+ 
+namespace std {
+# 35 "C:/PS3SDK\\target\\common\\include/sys/sys_types.h"
+typedef ::std:: uint32_t size_t;
+typedef ::std:: int32_t off_t;
+
+
+
+
+typedef ::std:: int64_t off64_t;
+typedef ::std:: int64_t time_t;
+
+
+
+
+}
+
+
+ 
+ 
+typedef ::std:: uint32_t sys_pid_t;
+
+ 
+typedef ::std:: uint32_t sys_program_segment_t;
+
+ 
+typedef ::std:: uint32_t sys_overlay_t;
+
+
+
+
+ 
+typedef ::std:: uint64_t sys_ppu_thread_t;
+
+ 
+typedef ::std:: uint32_t sys_interrupt_tag_t;
+
+
+
+ 
+typedef ::std:: uint32_t sys_mutex_t;
+typedef ::std:: uint32_t sys_cond_t;
+typedef ::std:: uint32_t sys_shared_mutex_t;
+typedef ::std:: uint32_t sys_sync_point_t;
+typedef ::std:: uint32_t sys_rwlock_t;
+
+typedef ::std:: uint32_t sys_protocol_t;
+typedef ::std:: uint32_t sys_recursive_t;
+typedef ::std:: uint32_t sys_process_shared_t;
+typedef ::std:: uint32_t sys_adaptive_t;
+
+typedef ::std:: uint32_t _sys_sleep_queue_t;
+typedef ::std:: uint32_t _sys_lwcond_queue_t;
+typedef ::std:: uint32_t sys_semaphore_t;
+typedef ::std:: uint32_t sys_event_flag_t;
+
+
+
+
+ 
+typedef ::std:: uint32_t sys_event_queue_t;
+typedef ::std:: uint32_t sys_event_port_t;
+typedef ::std:: uint32_t sys_event_type_t;
+
+
+
+ 
+typedef ::std:: uint32_t sys_spu_thread_group_t;
+typedef ::std:: uint32_t sys_spu_thread_t;
+
+
+
+ 
+typedef ::std:: uint32_t sys_spu_system_module_t;
+
+
+
+
+ 
+
+
+
+
+
+
+
+ 
+typedef ::std:: uint32_t sys_timer_t;
+
+
+
+
+ 
+typedef ::std:: int64_t system_time_t;
+typedef ::std:: uint64_t usecond_t;
+typedef ::std:: uint32_t second_t;
+
+ 
+typedef ::std:: uint64_t sys_ipc_key_t;
+
+
+
+ 
+typedef ::std:: uintptr_t lparaddr_t;
+typedef ::std:: uintptr_t sys_addr_t;
+typedef ::std:: uint32_t sys_memory_t;
+typedef ::std:: uint32_t sys_memory_container_t;
+
+
+
+
+ 
+typedef ::std:: uint32_t sys_trace_t;
+typedef ::std:: uint32_t sys_trace_buffer_t;
+
+
+
+
+
+ 
+namespace std { typedef struct sys_ppu_guid_info {
+	const char magic[5];		 
+	const ::std:: uint8_t id_revision;	 
+	const ::std:: uint16_t reserved1;	 
+	const ::std:: uint32_t ppu_guid[5];	 
+	const ::std:: uint32_t reserved2;	 
+} sys_ppu_guid_info_t;
+
+}
+
+
+ 
+	namespace std {
+
+
+typedef int32_t ssize_t;
+
+
+
+typedef int mode_t;
+typedef long int useconds_t;
+typedef long key_t;
+typedef uint32_t pid_t;
+typedef unsigned long dev_t;
+typedef unsigned long ino_t;
+typedef unsigned long nlink_t;
+typedef long blkcnt_t;
+typedef long blksize_t;
+
+
+}
+
+	using ::std:: size_t;
+
+using ::std:: off_t;
+using ::std:: off64_t;
+using ::std:: ssize_t;
+using ::std:: mode_t;
+using ::std:: useconds_t;
+using ::std:: key_t;
+using ::std:: dev_t;
+using ::std:: ino_t;
+using ::std:: nlink_t;
+using ::std:: blkcnt_t;
+using ::std:: blksize_t;
+using ::std:: time_t;
+
+using ::std:: sys_ppu_guid_info_t;
+
+
+
+
+# 11 "C:/PS3SDK\\target\\ppu\\include/sys/types.h"
+
+ 
+
+# 10 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+# 24 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/stdarg.h"
+
+
+
+
+ 
+
+
+
+
+
+typedef char *   va_list;
+
+
+  extern  "C"
+  {
+
+    extern char  *__va_funcx(int, va_list, ...) ;  
+
+  }
+
+
+# 28 "C:/PS3SDK\\target\\ppu\\include/stdarg.h"
+
+# 39 "C:/PS3SDK\\target\\ppu\\include/stdarg.h"
+
+# 26 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+
+ 
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		 
+
+# 109 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+# 119 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+# 127 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+		 
+
+
+typedef int _Int32t;
+typedef unsigned int _Uint32t;
+
+
+
+
+
+
+
+typedef int _Ptrdifft;
+
+
+
+
+
+
+typedef unsigned int _Sizet;
+
+
+
+
+
+
+
+
+
+		 
+# 165 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+
+
+		 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		 
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+ 
+
+		 
+# 216 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+# 223 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+
+
+
+
+
+
+# 236 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+		 
+
+
+
+
+namespace std {}
+
+
+
+
+
+# 278 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+# 287 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+
+
+
+
+
+# 309 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+
+
+
+
+
+
+
+
+
+
+
+# 327 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+
+
+
+
+# 350 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+# 369 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+ 
+
+
+
+
+     
+ 
+# 387 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+# 410 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+
+namespace std {
+typedef bool _Bool;
+}
+
+
+		 
+
+
+
+# 427 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+namespace std {
+		 
+
+
+
+
+
+
+		 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+typedef long long _Longlong;
+typedef unsigned long long _ULonglong;
+
+# 462 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+		 
+
+
+
+typedef wchar_t _Wchart;
+
+
+# 482 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+  
+
+
+
+
+  
+
+
+
+
+typedef int _Wintt;
+
+# 506 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+		 
+
+
+		 
+
+
+
+
+		 
+typedef va_list _Va_list;
+
+
+
+# 526 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+
+
+		 
+
+
+extern "C" {
+void _Atexit(void (*)(void));
+}
+
+		 
+
+
+
+
+
+
+
+
+
+typedef char _Sysch_t;
+
+		 
+
+
+		 
+ 
+
+
+}
+
+extern "C" {
+# 566 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+typedef void *_Rmtx;
+
+}
+
+		 
+
+
+extern "C" {
+void _Locksyslock(int);
+void _Unlocksyslock(int);
+}
+
+
+
+
+
+
+		 
+# 594 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+
+
+
+
+
+
+
+
+
+namespace std {
+extern "C++" {	
+		
+class _Lockit
+	{	
+public:
+
+# 628 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+	explicit _Lockit()
+		: _Locktype(1)
+		{	
+		
+			_Locksyslock(_Locktype);
+		}
+
+	explicit _Lockit(int _Type)
+		: _Locktype(_Type)
+		{	
+		
+			_Locksyslock(_Locktype);
+		}
+
+	~_Lockit()
+		{	
+		
+			_Unlocksyslock(_Locktype);
+		}
+
+private:
+	int _Locktype;
+public:
+	_Lockit(const _Lockit&);			
+	_Lockit& operator=(const _Lockit&);	
+
+
+	};
+
+class _Mutex
+	{	
+public:
+
+# 672 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+	_Mutex();
+	~_Mutex();
+	void _Lock();
+	void _Unlock();
+
+private:
+	_Mutex(const _Mutex&);				
+	_Mutex& operator=(const _Mutex&);	
+	_Rmtx *_Mtx;
+
+
+	};
+}	
+}
+
+
+		 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+namespace std {
+using ::va_list;
+}
+
+
+
+
+
+# 723 "C:/PS3SDK\\target\\ppu\\include/yvals.h"
+
+
+
+
+
+
+ 
+# 10 "C:/PS3SDK\\target\\ppu\\include/ymath.h"
+namespace std {
+extern "C" {
+
+		 
+# 27 "C:/PS3SDK\\target\\ppu\\include/ymath.h"
+
+		 
+
+
+
+
+
+		 
+
+
+
+
+
+
+
+		 
+typedef union
+	{	 
+	unsigned short _Word[8];
+	float _Float;
+	double _Double;
+	long double _Long_double;
+	} _Dconst;
+
+		 
+void _Feraise(int);
+
+		 
+double _Cosh(double, double);
+short _Dtest(double *);
+short _Exp(double *, double, short);
+double _Log(double, int);
+double _Sin(double, unsigned int);
+double _Sinh(double, double);
+extern   _Dconst _Denorm, _Hugeval, _Inf,
+	_Nan, _Snan;
+
+		 
+float _FCosh(float, float);
+short _FDtest(float *);
+short _FExp(float *, float, short);
+float _FLog(float, int);
+float _FSin(float, unsigned int);
+float _FSinh(float, float);
+extern   _Dconst _FDenorm, _FInf, _FNan, _FSnan;
+
+		 
+long double _LCosh(long double, long double);
+short _LDtest(long double *);
+short _LExp(long double *, long double, short);
+long double _LLog(long double, int);
+long double _LSin(long double, unsigned int);
+long double _LSinh(long double, long double);
+extern   _Dconst _LDenorm, _LInf, _LNan, _LSnan;
+
+}
+}
+
+
+
+
+
+ 
+# 11 "C:/PS3SDK\\target\\ppu\\include/math.h"
+
+
+namespace std {
+
+		 
+
+
+
+
+		 
+
+
+
+
+
+
+
+
+
+
+
+		 
+
+# 43 "C:/PS3SDK\\target\\ppu\\include/math.h"
+typedef float float_t;
+typedef double double_t;
+
+
+		 
+
+ 
+# 68 "C:/PS3SDK\\target\\ppu\\include/math.h"
+
+# 75 "C:/PS3SDK\\target\\ppu\\include/math.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+extern "C" {
+int _FFpcomp(float, float);
+int _Fpcomp(double, double);
+int _LFpcomp(long double, long double);
+
+int _FDclass(float);
+int _Dclass(double);
+int _LDclass(long double);
+
+int _FDsign(float);
+int _Dsign(double);
+int _LDsign(long double);
+}
+
+
+
+
+
+
+
+
+
+		
+template<class _Ty>
+	struct _Rc_type
+	{	
+	typedef float _Type;	
+	};
+
+		
+template<class _Ty, class _T2>
+	struct _Rc_widened
+	{	
+	typedef float _Type;	
+	};
+
+		
+
+# 163 "C:/PS3SDK\\target\\ppu\\include/math.h"
+template<class _Ty>
+	struct _Real_type
+	{	
+	typedef double _Type;	
+	};
+
+
+template<> struct _Real_type<float>
+	{	
+	typedef float _Type;
+	};
+
+template<> struct _Real_type<long double>
+	{	
+	typedef long double _Type;
+	};
+
+		
+template<class _Ty, class _T2>
+	struct _Real_widened
+	{	
+	typedef long double _Type;	
+	};
+
+template<> struct _Real_widened<float, float>
+	{	
+	typedef float _Type;
+	};
+
+template<> struct _Real_widened<float, double>
+	{	
+	typedef double _Type;
+	};
+
+template<> struct _Real_widened<double, float>
+	{	
+	typedef double _Type;
+	};
+
+template<> struct _Real_widened<double, double>
+	{	
+	typedef double _Type;
+	};
+
+		
+template<class _Trc, class _Tre>
+	struct _Combined_type
+	{	
+	typedef float _Type;	
+	};
+
+template<> struct _Combined_type<float, double>
+	{	
+	typedef double _Type;
+	};
+
+template<> struct _Combined_type<float, long double>
+	{	
+	typedef long double _Type;
+	};
+
+		
+inline int _FPCOMP(float _Left, float _Right)
+	{	
+	return (_FFpcomp(_Left, _Right));
+	}
+
+inline int _FPCOMP(double _Left, double _Right)
+	{	
+	return (_Fpcomp(_Left, _Right));
+	}
+
+inline int _FPCOMP(long double _Left, long double _Right)
+	{	
+	return (_LFpcomp(_Left, _Right));
+	}
+
+template<class _T1, class _T2> inline
+	int _FPCOMP(_T1 _Left, _T2 _Right)
+	{	
+	typedef typename _Combined_type<float,
+		typename _Real_widened<
+			typename _Real_type<_T1>::_Type,
+			typename _Real_type<_T2>::_Type>::_Type>::_Type _Tw;
+	return (_FPCOMP((_Tw)_Left, (_Tw)_Right));
+	}
+
+		
+inline int fpclassify(float _Left)
+	{	
+	return (_FDtest(&_Left));
+	}
+
+inline int fpclassify(double _Left)
+	{	
+	return (_Dtest(&_Left));
+	}
+
+inline int fpclassify(long double _Left)
+	{	
+	return (_LDtest(&_Left));
+	}
+
+		
+inline bool signbit(float _Left)
+	{	
+	return (_FDsign(_Left) != 0);
+	}
+
+inline bool signbit(double _Left)
+	{	
+	return (_Dsign(_Left) != 0);
+	}
+
+inline bool signbit(long double _Left)
+	{	
+	return (_LDsign(_Left) != 0);
+	}
+
+template<class _Ty> inline
+	bool isfinite(_Ty _Left)
+	{	
+	return (fpclassify(_Left) <= 0);
+	}
+
+template<class _Ty> inline
+	bool isinf(_Ty _Left)
+	{	
+	return (fpclassify(_Left) == 1);
+	}
+
+template<class _Ty> inline
+	bool isnan(_Ty _Left)
+	{	
+	return (fpclassify(_Left) == 2);
+	}
+
+template<class _Ty> inline
+	bool isnormal(_Ty _Left)
+	{	
+	return (fpclassify(_Left) == (-1));
+	}
+
+template<class _Ty1, class _Ty2> inline
+	bool isgreater(_Ty1 _Left, _Ty2 _Right)
+	{	
+	return ((_FPCOMP(_Left, _Right) & 4) != 0);
+	}
+
+template<class _Ty1, class _Ty2> inline
+	bool isgreaterequal(_Ty1 _Left, _Ty2 _Right)
+	{	
+	return ((_FPCOMP(_Left, _Right) & (2 | 4)) != 0);
+	}
+
+template<class _Ty1, class _Ty2> inline
+	bool isless(_Ty1 _Left, _Ty2 _Right)
+	{	
+	return ((_FPCOMP(_Left, _Right) & 1) != 0);
+	}
+
+template<class _Ty1, class _Ty2> inline
+	bool islessequal(_Ty1 _Left, _Ty2 _Right)
+	{	
+	return ((_FPCOMP(_Left, _Right) & (1 | 2)) != 0);
+	}
+
+template<class _Ty1, class _Ty2> inline
+	bool islessgreater(_Ty1 _Left, _Ty2 _Right)
+	{	
+	return ((_FPCOMP(_Left, _Right) & (1 | 4)) != 0);
+	}
+
+template<class _Ty1, class _Ty2> inline
+	bool isunordered(_Ty1 _Left, _Ty2 _Right)
+	{	
+	return (_FPCOMP(_Left, _Right) == 0);
+	}
+
+# 354 "C:/PS3SDK\\target\\ppu\\include/math.h"
+
+# 427 "C:/PS3SDK\\target\\ppu\\include/math.h"
+
+
+
+
+
+
+extern "C" {
+		 
+double acos(double);
+double asin(double);
+double atan(double);
+double atan2(double, double);
+double ceil(double);
+double exp(double);
+double fabs(double);
+double floor(double);
+double fmod(double, double);
+double frexp(double, int *);
+double ldexp(double, int);
+double modf(double, double *);
+double pow(double, double);
+double sqrt(double);
+double tan(double);
+double tanh(double);
+
+
+double acosh(double);
+double asinh(double);
+double atanh(double);
+double cbrt(double);
+double copysign(double, double);
+double erf(double);
+double erfc(double);
+double exp2(double);
+double expm1(double);
+double fdim(double, double);
+double fma(double, double, double);
+double fmax(double, double);
+double fmin(double, double);
+double hypot(double, double);
+int ilogb(double);
+double lgamma(double);
+_Longlong llrint(double);
+_Longlong llround(double);
+double log1p(double);
+double logb(double);
+long lrint(double);
+long lround(double);
+double nan(const char *);
+double nearbyint(double);
+double nextafter(double, double);
+double nexttoward(double, long double);
+double remainder(double, double);
+double remquo(double, double, int *);
+double rint(double);
+double round(double);
+double scalbn(double, int);
+double scalbln(double, long);
+double tgamma(double);
+double trunc(double);
+
+
+		 
+float acosf(float);
+float asinf(float);
+float atanf(float);
+float atan2f(float, float);
+float ceilf(float);
+float expf(float);
+float fabsf(float);
+float floorf(float);
+float fmodf(float, float);
+float frexpf(float, int *);
+float ldexpf(float, int);
+float modff(float, float *);
+float powf(float, float);
+float sqrtf(float);
+float tanf(float);
+float tanhf(float);
+
+
+float acoshf(float);
+float asinhf(float);
+float atanhf(float);
+float cbrtf(float);
+float copysignf(float, float);
+float erff(float);
+float erfcf(float);
+float expm1f(float);
+float exp2f(float);
+float fdimf(float, float);
+float fmaf(float, float, float);
+float fmaxf(float, float);
+float fminf(float, float);
+float hypotf(float, float);
+int ilogbf(float);
+float lgammaf(float);
+_Longlong llrintf(float);
+_Longlong llroundf(float);
+float log1pf(float);
+float logbf(float);
+long lrintf(float);
+long lroundf(float);
+float nanf(const char *);
+float nearbyintf(float);
+float nextafterf(float, float);
+float nexttowardf(float, long double);
+float remainderf(float, float);
+float remquof(float, float, int *);
+float rintf(float);
+float roundf(float);
+float scalbnf(float, int);
+float scalblnf(float, long);
+float tgammaf(float);
+float truncf(float);
+
+
+		 
+long double acosl(long double);
+long double asinl(long double);
+long double atanl(long double);
+long double atan2l(long double, long double);
+long double ceill(long double);
+long double expl(long double);
+long double fabsl(long double);
+long double floorl(long double);
+long double fmodl(long double, long double);
+long double frexpl(long double, int *);
+long double ldexpl(long double, int);
+long double modfl(long double, long double *);
+long double powl(long double, long double);
+long double sqrtl(long double);
+long double tanl(long double);
+long double tanhl(long double);
+
+
+long double acoshl(long double);
+long double asinhl(long double);
+long double atanhl(long double);
+long double cbrtl(long double);
+long double copysignl(long double, long double);
+long double erfl(long double);
+long double erfcl(long double);
+long double exp2l(long double);
+long double expm1l(long double);
+long double fdiml(long double, long double);
+long double fmal(long double, long double, long double);
+long double fmaxl(long double, long double);
+long double fminl(long double, long double);
+long double hypotl(long double, long double);
+int ilogbl(long double);
+long double lgammal(long double);
+_Longlong llrintl(long double);
+_Longlong llroundl(long double);
+long double log1pl(long double);
+long double logbl(long double);
+long lrintl(long double);
+long lroundl(long double);
+long double nanl(const char *);
+long double nearbyintl(long double);
+long double nextafterl(long double, long double);
+long double nexttowardl(long double, long double);
+long double remainderl(long double, long double);
+long double remquol(long double, long double, int *);
+long double rintl(long double);
+long double roundl(long double);
+long double scalbnl(long double, int);
+long double scalblnl(long double, long);
+long double tgammal(long double);
+long double truncl(long double);
+
+
+}
+
+
+
+
+
+
+		
+template<class _Ty> inline
+	_Ty _Pow_int(_Ty _Left, int _Right)
+	{	
+	unsigned int _Num = _Right;
+	if (_Right < 0)
+		_Num = 0 - _Num;
+
+	for (_Ty _Ans = 1; ; _Left *= _Left)
+		{	
+		if ((_Num & 1) != 0)
+			_Ans *= _Left;
+		if ((_Num >>= 1) == 0)
+			return (0 <= _Right ? _Ans
+				: _Ans == _Ty(0) ? ((double)((float)(1e+30F * 1e+30F))) : _Ty(1) / _Ans);
+		}
+	}
+
+
+		
+extern "C" {
+inline double cos(double _Left)
+	{	
+	return (_Sin(_Left, 1));
+	}
+
+inline double cosh(double _Left)
+	{	
+	return (_Cosh(_Left, 1));
+	}
+
+inline double log(double _Left)
+	{	
+	return (_Log(_Left, 0));
+	}
+
+inline double log10(double _Left)
+	{	
+	return (_Log(_Left, 1));
+	}
+
+inline double sin(double _Left)
+	{	
+	return (_Sin(_Left, 0));
+	}
+
+inline double sinh(double _Left)
+	{	
+	return (_Sinh(_Left, 1));
+	}
+
+
+inline double log2(double _Left)
+	{	
+	return (_Log(_Left, -1));
+	}
+
+
+}
+
+inline double abs(double _Left)	
+	{	
+	return (__builtin_fabs(_Left));
+	}
+
+# 687 "C:/PS3SDK\\target\\ppu\\include/math.h"
+inline double pow(double _Left, int _Right)
+	{	
+	return (_Pow_int(_Left, _Right));
+	}
+
+
+		
+extern "C" {
+inline float cosf(float _Left)
+	{	
+	return (_FSin(_Left, 1));
+	}
+
+inline float coshf(float _Left)
+	{	
+	return (_FCosh(_Left, 1));
+	}
+
+inline float logf(float _Left)
+	{	
+	return (_FLog(_Left, 0));
+	}
+
+inline float log10f(float _Left)
+	{	
+	return (_FLog(_Left, 1));
+	}
+
+inline float sinf(float _Left)
+	{	
+	return (_FSin(_Left, 0));
+	}
+
+inline float sinhf(float _Left)
+	{	
+	return (_FSinh(_Left, 1));
+	}
+
+
+inline float log2f(float _Left)
+	{	
+	return (_FLog(_Left, -1));
+	}
+
+
+}
+
+inline float abs(float _Left)	
+	{	
+	return (__builtin_fabsf(_Left));
+	}
+
+inline float acos(float _Left)
+	{	
+	return (acosf(_Left));
+	}
+
+inline float asin(float _Left)
+	{	
+	return (asinf(_Left));
+	}
+
+inline float atan(float _Left)
+	{	
+	return (atanf(_Left));
+	}
+
+inline float atan2(float _Left, float _Right)
+	{	
+	return (atan2f(_Left, _Right));
+	}
+
+inline float ceil(float _Left)
+	{	
+	return (ceilf(_Left));
+	}
+
+inline float cos(float _Left)
+	{	
+	return (_FSin(_Left, 1));
+	}
+
+inline float cosh(float _Left)
+	{	
+	return (_FCosh(_Left, 1));
+	}
+
+inline float exp(float _Left)
+	{	
+	return (expf(_Left));
+	}
+
+inline float fabs(float _Left)
+	{	
+	return (__builtin_fabsf(_Left));
+	}
+
+inline float floor(float _Left)
+	{	
+	return (floorf(_Left));
+	}
+
+inline float fmod(float _Left, float _Right)
+	{	
+	return (fmodf(_Left, _Right));
+	}
+
+inline float frexp(float _Left, int *_Right)
+	{	
+	return (frexpf(_Left, _Right));
+	}
+
+inline float ldexp(float _Left, int _Right)
+	{	
+	return (ldexpf(_Left, _Right));
+	}
+
+inline float log(float _Left)
+	{	
+	return (_FLog(_Left, 0));
+	}
+
+inline float log10(float _Left)
+	{	
+	return (_FLog(_Left, 1));
+	}
+
+inline float modf(float _Left, float *_Right)
+	{	
+	return (modff(_Left, _Right));
+	}
+
+inline float pow(float _Left, float _Right)
+	{	
+	return (powf(_Left, _Right));
+	}
+
+# 840 "C:/PS3SDK\\target\\ppu\\include/math.h"
+inline float pow(float _Left, int _Right)
+	{	
+	return (_Pow_int(_Left, _Right));
+	}
+
+
+inline float sin(float _Left)
+	{	
+	return (_FSin(_Left, 0));
+	}
+
+inline float sinh(float _Left)
+	{	
+	return (_FSinh(_Left, 1));
+	}
+
+inline float sqrt(float _Left)
+	{	
+
+	return (sqrtf(_Left));
+
+
+
+	}
+
+inline float tan(float _Left)
+	{	
+	return (tanf(_Left));
+	}
+
+inline float tanh(float _Left)
+	{	
+	return (tanhf(_Left));
+	}
+
+
+inline float acosh(float _Left)
+	{	
+	return (acoshf(_Left));
+	}
+
+inline float asinh(float _Left)
+	{	
+	return (asinhf(_Left));
+	}
+
+inline float atanh(float _Left)
+	{	
+	return (atanhf(_Left));
+	}
+
+inline float cbrt(float _Left)
+	{	
+	return (cbrtf(_Left));
+	}
+
+inline float copysign(float _Left, float _Right)
+	{	
+	return (copysignf(_Left, _Right));
+	}
+
+inline float erf(float _Left)
+	{	
+ 	return (erff(_Left)); }
+
+inline float erfc(float _Left)
+	{	
+	return (erfcf(_Left));
+	}
+
+inline float exp2(float _Left)
+	{	
+	return (exp2f(_Left));
+	}
+
+inline float expm1(float _Left)
+	{	
+	return (expm1f(_Left));
+	}
+
+inline float fdim(float _Left, float _Right)
+	{	
+	return (fdimf(_Left, _Right));
+	}
+
+inline float fma(float _Left, float _Right, float _Addend)
+	{	
+	return (fmaf(_Left, _Right, _Addend));
+	}
+
+inline float fmax(float _Left, float _Right)
+	{	
+	return (fmaxf(_Left, _Right));
+	}
+
+inline float fmin(float _Left, float _Right)
+	{	
+	return (fminf(_Left, _Right));
+	}
+
+inline float hypot(float _Left, float _Right)
+	{	
+	return (hypotf(_Left, _Right));
+	}
+
+inline int ilogb(float _Left)
+	{	
+	return (ilogbf(_Left));
+	}
+
+inline float lgamma(float _Left)
+	{	
+	return (lgammaf(_Left));
+	}
+
+inline _Longlong llrint(float _Left)
+	{	
+	return (llrintf(_Left));
+	}
+
+inline _Longlong llround(float _Left)
+	{	
+	return (llroundf(_Left));
+	}
+
+inline float log1p(float _Left)
+	{	
+	return (log1pf(_Left));
+	}
+
+inline float log2(float _Left)
+	{	
+	return (_FLog(_Left, -1));
+	}
+
+inline float logb(float _Left)
+	{	
+	return (logbf(_Left));
+	}
+
+inline long lrint(float _Left)
+	{	
+	return (lrintf(_Left));
+	}
+
+inline long lround(float _Left)
+	{	
+	return (lroundf(_Left));
+	}
+
+inline float nearbyint(float _Left)
+	{	
+	return (nearbyintf(_Left));
+	}
+
+inline float nextafter(float _Left, float _Right)
+	{	
+	return (nextafterf(_Left, _Right));
+	}
+
+inline float nexttoward(float _Left, long double _Right)
+	{	
+	return (nexttowardf(_Left, _Right));
+	}
+
+inline float remainder(float _Left, float _Right)
+	{	
+	return (remainderf(_Left, _Right));
+	}
+
+inline float remquo(float _Left, float _Right, int *_Pval)
+	{	
+	return (remquof(_Left, _Right, _Pval));
+	}
+
+inline float rint(float _Left)
+	{	
+	return (rintf(_Left));
+	}
+
+inline float round(float _Left)
+	{	
+	return (roundf(_Left));
+	}
+
+inline float scalbn(float _Left, int _Right)
+	{	
+	return (scalbnf(_Left, _Right));
+	}
+
+inline float scalbln(float _Left, long _Right)
+	{	
+	return (scalblnf(_Left, _Right));
+	}
+
+inline float tgamma(float _Left)
+	{	
+	return (tgammaf(_Left));
+	}
+
+inline float trunc(float _Left)
+	{	
+	return (truncf(_Left));
+	}
+
+
+		
+extern "C" {
+inline long double cosl(long double _Left)
+	{	
+	return (_LSin(_Left, 1));
+	}
+
+inline long double coshl(long double _Left)
+	{	
+	return (_LCosh(_Left, 1));
+	}
+
+inline long double logl(long double _Left)
+	{	
+	return (_LLog(_Left, 0));
+	}
+
+inline long double log10l(long double _Left)
+	{	
+	return (_LLog(_Left, 1));
+	}
+
+inline long double sinl(long double _Left)
+	{	
+	return (_LSin(_Left, 0));
+	}
+
+inline long double sinhl(long double _Left)
+	{	
+	return (_LSinh(_Left, 1));
+	}
+
+
+inline long double log2l(long double _Left)
+	{	
+	return (_LLog(_Left, -1));
+	}
+
+
+}
+
+inline long double abs(long double _Left)	
+	{	
+	return (fabsl(_Left));
+	}
+
+inline long double acos(long double _Left)
+	{	
+	return (acosl(_Left));
+	}
+
+inline long double asin(long double _Left)
+	{	
+	return (asinl(_Left));
+	}
+
+inline long double atan(long double _Left)
+	{	
+	return (atanl(_Left));
+	}
+
+inline long double atan2(long double _Left, long double _Right)
+	{	
+	return (atan2l(_Left, _Right));
+	}
+
+inline long double ceil(long double _Left)
+	{	
+	return (ceill(_Left));
+	}
+
+inline long double cos(long double _Left)
+	{	
+	return (_LSin(_Left, 1));
+	}
+
+inline long double cosh(long double _Left)
+	{	
+	return (_LCosh(_Left, 1));
+	}
+
+inline long double exp(long double _Left)
+	{	
+	return (expl(_Left));
+	}
+
+inline long double fabs(long double _Left)
+	{	
+	return (fabsl(_Left));
+	}
+
+inline long double floor(long double _Left)
+	{	
+	return (floorl(_Left));
+	}
+
+inline long double fmod(long double _Left, long double _Right)
+	{	
+	return (fmodl(_Left, _Right));
+	}
+
+inline long double frexp(long double _Left, int *_Right)
+	{	
+	return (frexpl(_Left, _Right));
+	}
+
+inline long double ldexp(long double _Left, int _Right)
+	{	
+	return (ldexpl(_Left, _Right));
+	}
+
+inline long double log(long double _Left)
+	{	
+	return (_LLog(_Left, 0));
+	}
+
+inline long double log10(long double _Left)
+	{	
+	return (_LLog(_Left, 1));
+	}
+
+inline long double modf(long double _Left, long double *_Right)
+	{	
+	return (modfl(_Left, _Right));
+	}
+
+inline long double pow(long double _Left, long double _Right)
+	{	
+	return (powl(_Left, _Right));
+	}
+
+# 1193 "C:/PS3SDK\\target\\ppu\\include/math.h"
+inline long double pow(long double _Left, int _Right)
+	{	
+	return (_Pow_int(_Left, _Right));
+	}
+
+
+inline long double sin(long double _Left)
+	{	
+	return (_LSin(_Left, 0));
+	}
+
+inline long double sinh(long double _Left)
+	{	
+	return (_LSinh(_Left, 1));
+	}
+
+inline long double sqrt(long double _Left)
+	{	
+	return (sqrtl(_Left));
+	}
+
+inline long double tan(long double _Left)
+	{	
+	return (tanl(_Left));
+	}
+
+inline long double tanh(long double _Left)
+	{	
+	return (tanhl(_Left));
+	}
+
+
+inline long double acosh(long double _Left)
+	{	
+	return (acoshl(_Left));
+	}
+
+inline long double asinh(long double _Left)
+	{	
+	return (asinhl(_Left));
+	}
+
+inline long double atanh(long double _Left)
+	{	
+	return (atanhl(_Left));
+	}
+
+inline long double cbrt(long double _Left)
+	{	
+	return (cbrtl(_Left));
+	}
+
+inline long double copysign(long double _Left, long double _Right)
+	{	
+	return (copysignl(_Left, _Right));
+	}
+
+inline long double erf(long double _Left)
+	{	
+	return (erfl(_Left));
+	}
+
+inline long double erfc(long double _Left)
+	{	
+	return (erfcl(_Left));
+	}
+
+inline long double exp2(long double _Left)
+	{	
+	return (exp2l(_Left));
+	}
+
+inline long double expm1(long double _Left)
+	{	
+	return (expm1l(_Left));
+	}
+
+inline long double fdim(long double _Left, long double _Right)
+	{	
+	return (fdiml(_Left, _Right));
+	}
+
+inline long double fma(long double _Left, long double _Right,
+	long double _Addend)
+	{	
+	return (fmal(_Left, _Right, _Addend));
+	}
+
+inline long double fmax(long double _Left, long double _Right)
+	{	
+	return (fmaxl(_Left, _Right));
+	}
+
+inline long double fmin(long double _Left, long double _Right)
+	{	
+	return (fminl(_Left, _Right));
+	}
+
+inline long double hypot(long double _Left, long double _Right)
+	{	
+	return (hypotl(_Left, _Right));
+	}
+
+inline int ilogb(long double _Left)
+	{	
+	return (ilogbl(_Left));
+	}
+
+inline long double lgamma(long double _Left)
+	{	
+	return (lgammal(_Left));
+	}
+
+inline _Longlong llrint(long double _Left)
+	{	
+	return (llrintl(_Left));
+	}
+
+inline _Longlong llround(long double _Left)
+	{	
+	return (llroundl(_Left));
+	}
+
+inline long double log1p(long double _Left)
+	{	
+	return (log1pl(_Left));
+	}
+
+inline long double log2(long double _Left)
+	{	
+	return (_LLog(_Left, -1));
+	}
+
+inline long double logb(long double _Left)
+	{	
+	return (logbl(_Left));
+	}
+
+inline long lrint(long double _Left)
+	{	
+	return (lrintl(_Left));
+	}
+
+inline long lround(long double _Left)
+	{	
+	return (lroundl(_Left));
+	}
+
+inline long double nearbyint(long double _Left)
+	{	
+	return (nearbyintl(_Left));
+	}
+
+inline long double nextafter(long double _Left, long double _Right)
+	{	
+	return (nextafterl(_Left, _Right));
+	}
+
+inline long double nexttoward(long double _Left, long double _Right)
+	{	
+	return (nexttowardl(_Left, _Right));
+	}
+
+inline long double remainder(long double _Left, long double _Right)
+	{	
+	return (remainderl(_Left, _Right));
+	}
+
+inline long double remquo(long double _Left, long double _Right,
+	int *_Pval)
+	{	
+	return (remquol(_Left, _Right, _Pval));
+	}
+
+inline long double rint(long double _Left)
+	{	
+	return (rintl(_Left));
+	}
+
+inline long double round(long double _Left)
+	{	
+	return (roundl(_Left));
+	}
+
+inline long double scalbn(long double _Left, int _Right)
+	{	
+	return (scalbnl(_Left, _Right));
+	}
+
+inline long double scalbln(long double _Left, long _Right)
+	{	
+	return (scalblnl(_Left, _Right));
+	}
+
+inline long double tgamma(long double _Left)
+	{	
+	return (tgammal(_Left));
+	}
+
+inline long double trunc(long double _Left)
+	{	
+	return (truncl(_Left));
+	}
+
+
+# 1465 "C:/PS3SDK\\target\\ppu\\include/math.h"
+
+ 
+ 
+
+
+
+
+
+
+}
+
+
+ 
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+
+
+
+
+ 
+
+
+
+ 
+# 1 "C:/PS3SDK\\host-win32\\sn\\ppu\\include/altivec.h"
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+# 61 "C:/PS3SDK\\host-win32\\sn\\ppu\\include/altivec.h"
+
+# 12 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/vec_types.h"
+
+
+
+
+
+ 
+
+
+
+ 
+# 1 "C:/PS3SDK\\target\\ppu\\include/vec_types_snc.h"
+ 
+ 
+ 
+ 
+
+
+
+
+typedef vector unsigned char  qword;
+
+typedef vector float          vec_float4;
+
+typedef vector pixel          vec_pixel8;
+
+typedef vector bool char      vec_bchar16;
+typedef vector bool short     vec_bshort8;
+typedef vector bool int       vec_bint4;
+typedef vector bool int       vec_double2;
+
+typedef vector signed char    vec_char16;
+typedef vector signed short   vec_short8;
+typedef vector signed int     vec_int4;
+typedef vector bool short     vec_llong2;
+
+typedef vector unsigned char  vec_uchar16;
+typedef vector unsigned short vec_ushort8;
+typedef vector unsigned int   vec_uint4;
+typedef vector bool char      vec_ullong2;
+
+# 13 "C:/PS3SDK\\target\\ppu\\include/vec_types.h"
+
+
+
+
+
+
+# 14 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+
+namespace std {
+
+ 
+extern "C" {
+
+
+
+ 
+
+extern inline vec_float4 acosf4fast(vec_float4 x);
+extern inline vec_float4 asinf4fast(vec_float4 x);
+extern inline vec_float4 atan2f4fast(vec_float4 y, vec_float4 x);
+extern inline vec_float4 atanf4fast(vec_float4 x);
+extern inline vec_float4 cbrtf4fast(vec_float4 x);
+extern inline vec_float4 cosf4fast(vec_float4 x);
+extern inline vec_float4 divf4(vec_float4 x, vec_float4 y);
+extern inline vec_float4 divf4fast(vec_float4 x, vec_float4 y);
+extern inline vec_float4 exp2f4fast(vec_float4 x);
+extern inline vec_float4 expf4fast(vec_float4 x);
+extern inline vec_float4 expm1f4fast(vec_float4 x);
+extern inline vec_float4 log10f4fast(vec_float4 x);
+extern inline vec_float4 log1pf4fast(vec_float4 x);
+extern inline vec_float4 log2f4fast(vec_float4 x);
+extern inline vec_float4 logf4fast(vec_float4 x);
+extern inline vec_float4 negatef4(vec_float4 x);
+extern inline vec_float4 powf4fast(vec_float4 x, vec_float4 y);
+extern inline vec_float4 recipf4(vec_float4 x);
+extern inline vec_float4 recipf4fast(vec_float4 x);
+extern inline vec_float4 rsqrtf4(vec_float4 x);
+extern inline vec_float4 rsqrtf4fast(vec_float4 x);
+extern inline void       sincosf4fast(vec_float4 x, vec_float4* s, vec_float4* c);
+extern inline vec_float4 sinf4fast(vec_float4 x);
+extern inline vec_float4 sqrtf4fast(vec_float4 x);
+extern inline vec_float4 tanf4fast(vec_float4 x);
+
+
+ 
+
+extern inline vec_float4 acosf4(vec_float4);
+extern inline vec_float4 asinf4(vec_float4);
+extern inline vec_float4 atanf4(vec_float4);
+extern inline vec_float4 atan2f4(vec_float4, vec_float4);
+extern inline vec_float4 ceilf4(vec_float4);
+extern inline vec_float4 copysignf4(vec_float4, vec_float4);
+extern inline vec_float4 cosf4(vec_float4 x);
+extern inline vec_float4 expf4(vec_float4);
+extern inline vec_float4 fabsf4(vec_float4);
+extern inline vec_float4 floorf4(vec_float4);
+extern inline vec_float4 fmaxf4(vec_float4, vec_float4);
+extern inline vec_float4 fminf4(vec_float4, vec_float4);
+extern inline vec_float4 fmodf4(vec_float4, vec_float4);
+extern inline vec_float4 frexpf4(vec_float4, vec_int4 *);
+extern inline vec_float4 ldexpf4(vec_float4, vec_int4);
+extern inline vec_float4 logf4(vec_float4);
+extern inline vec_float4 log10f4(vec_float4);
+extern inline vec_float4 modff4(vec_float4, vec_float4*);
+extern inline vec_float4 remainderf4(vec_float4, vec_float4);
+extern inline void       sincosf4(vec_float4 x, vec_float4* s, vec_float4* c);
+extern inline vec_float4 powf4(vec_float4, vec_float4);
+extern inline vec_float4 sinf4(vec_float4 x);
+extern inline vec_float4 sqrtf4(vec_float4 x);
+extern inline vec_float4 tanf4(vec_float4 x);
+extern inline vec_float4 truncf4(vec_float4);
+
+extern inline vec_float4 cbrtf4(vec_float4);
+extern inline vec_float4 expm1f4(vec_float4);
+extern inline vec_float4 exp2f4(vec_float4);
+extern inline vec_float4 fdimf4(vec_float4, vec_float4);
+extern inline vec_float4 fmaf4(vec_float4, vec_float4, vec_float4);
+extern inline vec_float4 hypotf4(vec_float4, vec_float4);
+extern inline vec_int4 ilogbf4(vec_float4);
+
+
+extern inline vec_float4 log1pf4(vec_float4);
+extern inline vec_float4 log2f4(vec_float4);
+extern inline vec_float4 logbf4(vec_float4);
+
+}
+
+
+ 
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/spec.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+# 98 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+
+ 
+ 
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/truncf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 truncf4 ( vec_float4 x )
+{
+   return vec_trunc( x );
+}
+
+# 102 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/ceilf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+extern inline vec_float4 ceilf4 ( vec_float4 x )
+{
+   return vec_ceil( x );
+}
+
+# 103 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/copysignf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+extern inline vec_float4 copysignf4 ( vec_float4 x, vec_float4 y )
+{
+   vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+   smask = vec_vslw(smask, smask);
+   return vec_sel(x, y, smask);
+}
+
+# 104 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/divf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+extern inline vec_float4 divf4 ( vec_float4 numer, vec_float4 denom )
+{  
+   
+   vec_uint4 mask = (vec_uint4)(vec_int4)(-1);
+   vec_float4 vnzero = (vec_float4)vec_vslw(mask, mask);
+   vec_float4 y0, y0numer;
+
+   y0 = vec_re(denom);
+   y0numer = vec_madd(numer, y0, vnzero);
+   y0 = vec_madd(vec_nmsub(denom, y0, (vec_float4)(1.0f) ), y0numer, y0numer);
+
+   return vec_sel(y0numer, y0, vec_cmpeq(y0, y0));
+}
+
+# 105 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/divf4fast.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 divf4fast ( vec_float4 numer, vec_float4 denom )
+{
+   vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+   return vec_madd( numer, vec_re( denom ), vzero);
+}
+
+# 106 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/fabsf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+extern inline vec_float4 fabsf4 ( vec_float4 x )
+{
+   return vec_abs( x );
+}
+
+# 107 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/floorf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+extern inline vec_float4 floorf4 ( vec_float4 x )
+{
+   return vec_floor( x );
+}
+
+# 108 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/fmaxf4.h"
+
+
+
+
+ 
+
+                    
+
+
+      
+
+
+
+extern inline vec_float4 fmaxf4 ( vec_float4 x, vec_float4 y )
+{
+   return vec_max( x, y );
+}
+
+# 109 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/fminf4.h"
+
+
+
+
+ 
+
+         
+
+
+
+
+
+
+extern inline vec_float4 fminf4 ( vec_float4 x, vec_float4 y )
+{
+   return vec_min( x, y );
+}
+
+# 110 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/fmodf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 fmodf4 ( vec_float4 x, vec_float4 y )
+{
+   vec_float4 q, xabs, yabs, qabs;
+   vec_int4   qi0, qi1, qi2;
+   vec_float4 i0, i1, i2, r1, r2, i;
+   vec_uint4  inrange;
+   vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+   vec_uint4 iszero = (vec_uint4)vec_cmpeq(x, vzero);
+ 
+   
+ 
+   
+   
+                                                                                
+   q = divf4( x, y );
+   xabs = fabsf4( x );
+   yabs = fabsf4( y );
+   qabs = fabsf4( q );
+                                                                                
+   inrange = (vec_uint4)vec_cmpgt( (vec_float4)((vec_uint4)(0x49800000)), qabs );
+                                                                                
+   qi1 = vec_cts( qabs, 0 );
+   qi0 = vec_add( qi1, (vec_int4)(-1) );
+   qi2 = vec_add( qi1, (vec_int4)(1) );
+                                                                                                                                                          
+   i0 = vec_ctf( qi0, 0 );
+   i1 = vec_ctf( qi1, 0 );
+   i2 = vec_ctf( qi2, 0 );
+                                                                                                                                                          
+   
+                                                                                                                                                          
+   r1 = vec_nmsub( i1, yabs, xabs );
+   r2 = vec_nmsub( i2, yabs, xabs );
+                                                                                                                                                          
+   i = i0;
+   i = vec_sel( i1, i, (vec_uint4)vec_cmpgt( vzero, r1 ) );
+   i = vec_sel( i2, i, (vec_uint4)vec_cmpgt( vzero, r2 ) );
+                                                                                                                                                          
+   i = copysignf4( i, q );
+                                                                                                                                                          
+   return vec_sel(vec_sel((vec_float4)vzero, vec_nmsub( i, y, x ), inrange),
+		  x, iszero);
+}
+
+# 111 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/modff4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 modff4 ( vec_float4 x, vec_float4 *iptr )
+{
+   vec_float4 integral, fraction;
+ 
+   integral = truncf4( x );
+   fraction = vec_sub( x, integral );
+ 
+   *iptr = integral;
+   return fraction;
+}
+
+# 112 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/negatef4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+extern inline vec_float4 negatef4 ( vec_float4 x )
+{
+   vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+   smask = vec_vslw(smask, smask);
+   return (vec_float4)vec_xor( (vec_uint4)x, smask );
+}
+
+# 113 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/recipf4.h"
+
+
+
+
+ 
+
+                     
+
+
+                                             
+
+
+
+extern inline vec_float4 recipf4 ( vec_float4 x )
+{ 
+   
+ 
+   vec_float4 y0 = vec_re( x );
+   vec_float4 res = vec_madd( vec_nmsub( x, y0, (vec_float4)(1.0f) ), y0, y0 );
+   return vec_sel(y0, res, vec_cmpeq(res, res));
+}
+
+# 114 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/recipf4fast.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 recipf4fast ( vec_float4 x )
+{
+   return vec_re( x );
+}
+
+# 115 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/remainderf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 remainderf4 ( vec_float4 x, vec_float4 y )
+{
+   vec_float4 q, xabs, yabs, qabs, yabshalf;
+   vec_int4   qi0, qi1, qi2;
+   vec_float4 i0, i1, i2, i, rem;
+   vec_uint4  inrange, odd0, odd1, odd2, cmp1, cmp2, odd;
+   vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+   vec_uint4 iszero = (vec_uint4)vec_cmpeq(x, vzero);
+ 
+   
+ 
+   
+   
+                                                                                
+   q = divf4( x, y );
+   xabs = fabsf4( x );
+   yabs = fabsf4( y );
+   qabs = fabsf4( q );
+                                                                                
+   inrange = (vec_uint4)vec_cmpgt( (vec_float4)((vec_uint4)(0x49800000)), qabs );
+                                                                                
+   qi1 = vec_cts( qabs, 0 );
+   qi0 = vec_add( qi1, (vec_int4)(-1) );
+   qi2 = vec_add( qi1, (vec_int4)(1) );
+                                                                                                                                                          
+   odd1 = (vec_uint4)vec_cmpeq( vec_and( qi1, (vec_int4)(1) ), (vec_int4)(1) );
+   odd0 = odd2 = vec_nor( odd1, odd1 );
+
+   i0 = vec_ctf( qi0, 0 );
+   i1 = vec_ctf( qi1, 0 );
+   i2 = vec_ctf( qi2, 0 );
+                                                                                                                                                          
+   
+                                                                                                                                                          
+   cmp1 = (vec_uint4)vec_cmpgt( (vec_int4)vzero, (vec_int4)vec_nmsub( i1, yabs, xabs ) );
+   cmp2 = (vec_uint4)vec_cmpgt( (vec_int4)vzero, (vec_int4)vec_nmsub( i2, yabs, xabs ) );
+                                                                                                                    
+   i = i0;
+   i = vec_sel( i1, i, cmp1 );
+   i = vec_sel( i2, i, cmp2 );
+                                                                                                                    
+   odd = odd0;
+   odd = vec_sel( odd1, odd, cmp1 );
+   odd = vec_sel( odd2, odd, cmp2 );
+                                                                                                                    
+   rem = vec_nmsub( i, yabs, xabs );
+                                                                                                                    
+   
+   
+   
+   
+   
+   
+   
+
+   yabshalf = vec_madd( yabs, (vec_float4)(0.5f), (vec_float4)vzero );
+   cmp1 = (vec_uint4)vec_cmpgt( rem, yabshalf );
+   cmp2 = vec_and( (vec_uint4)vec_cmpeq( rem, yabshalf ), odd );
+                                                                                                                    
+   i = vec_sel( i, vec_add( i, (vec_float4)(1.0f) ), vec_or( cmp1, cmp2 ) );
+   i = copysignf4( i, q );
+                                                                                                                                                          
+   return vec_sel(vec_sel((vec_float4)vzero, vec_nmsub( i, y, x ), inrange ),
+		 x, iszero);
+}
+
+# 116 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/rsqrtf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+      
+
+
+
+extern inline vec_float4 rsqrtf4 ( vec_float4 x )
+{ 
+   
+ 
+   vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+   vec_float4 half = (vec_float4)(0.5f);
+   vec_float4 one = (vec_float4)(1.0f);
+   vec_float4 y0, y0x, y0half;
+
+   y0 = vec_rsqrte( x );
+   y0x = vec_madd( y0, x, vzero );
+   y0half = vec_madd( y0, half, vzero );
+   y0x = vec_madd( vec_nmsub( y0, y0x, one ), y0half, y0 );
+   return vec_sel(y0, y0x, vec_cmpeq(y0x, y0x));
+}
+
+# 117 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/rsqrtf4fast.h"
+
+
+
+
+ 
+
+
+
+
+
+
+      
+
+
+
+extern inline vec_float4 rsqrtf4fast ( vec_float4 x )
+{
+   return vec_rsqrte( x );
+}
+
+# 118 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/sqrtf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+      
+
+
+
+extern inline vec_float4 sqrtf4 ( vec_float4 x )
+{
+   
+ 
+   vec_float4 zero = (vec_float4)(0.0f);
+   vec_float4 half = (vec_float4)(0.5f);
+   vec_float4 one = (vec_float4)(1.0f);
+   vec_float4 y0, y0x, y0xhalf;
+   vec_uint4 cmp_zero;
+
+   y0 = vec_rsqrte( x );
+   cmp_zero = (vec_uint4)vec_cmpeq( x, zero );
+   cmp_zero = vec_or(cmp_zero, (vec_uint4)vec_cmpeq(y0, zero));
+   y0x = vec_madd( y0, x, zero );
+   y0xhalf = vec_madd( y0x, half, zero );
+   return vec_sel(vec_madd(vec_nmsub(y0, y0x, one), y0xhalf, y0x), x, cmp_zero);
+}
+
+# 119 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/sqrtf4fast.h"
+
+
+
+
+ 
+
+
+      
+
+
+
+
+
+
+extern inline vec_float4 sqrtf4fast ( vec_float4 x )
+{
+   vec_float4 zero = (vec_float4)(0.0f);
+   return vec_sel( vec_madd( x, vec_rsqrte( x ), zero ), zero, vec_cmpeq( x, zero ) );
+}
+
+# 120 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+
+ 
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/sinf4.h"
+
+
+
+
+ 
+
+
+
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/sincos_c.h"
+
+
+
+
+ 
+
+
+
+
+
+
+# 18 "C:/PS3SDK\\target\\ppu\\include/bits/sincos_c.h"
+
+# 25 "C:/PS3SDK\\target\\ppu\\include/bits/sincos_c.h"
+
+
+
+
+
+
+
+
+# 39 "C:/PS3SDK\\target\\ppu\\include/bits/sincos_c.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+# 11 "C:/PS3SDK\\target\\ppu\\include/bits/sinf4.h"
+
+
+
+
+
+extern inline vec_float4 sinf4 (vec_float4 x)
+{
+    vec_float4 xl,xl2,xl3,res;
+    vec_int4   q;
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+    smask = vec_vslw(smask, smask);
+
+    
+    
+    xl = vec_madd(x, (vec_float4)(0.63661977236f),(vec_float4)vzero);
+
+    
+    
+    
+    xl = vec_add(xl,vec_sel((vec_float4)(0.5f),xl,smask));
+    q = vec_cts(xl,0);
+
+     
+    
+    
+    vec_int4 offset = vec_and(q,(vec_int4)((int)0x3));
+
+    
+    
+    vec_float4 qf = vec_ctf(q,0);
+    vec_float4 p1 = vec_nmsub(qf,(vec_float4)(1.57079625129f),x);
+    xl  = vec_nmsub(qf,(vec_float4)(7.54978995489e-8f),p1);
+    
+    
+    
+    xl2 = vec_madd(xl,xl,(vec_float4)vzero);
+    xl3 = vec_madd(xl2,xl,(vec_float4)vzero);
+    
+
+    
+    
+    
+    
+    
+    vec_float4 ct1 = vec_madd((vec_float4)(-0.0013602249f),xl2,(vec_float4)(0.0416566950f));
+    vec_float4 st1 = vec_madd((vec_float4)(-0.0001950727f),xl2,(vec_float4)(0.0083320758f));
+
+    vec_float4 ct2 = vec_madd(ct1,xl2,(vec_float4)(-0.4999990225f));
+    vec_float4 st2 = vec_madd(st1,xl2,(vec_float4)(-0.1666665247f));
+    
+    vec_float4 cx = vec_madd(ct2,xl2,(vec_float4)(1.0f));
+    vec_float4 sx = vec_madd(st2,xl3,xl);
+
+    
+    
+    
+    vec_uint4 mask1 = (vec_uint4)vec_cmpeq(vec_and(offset,
+                                                   (vec_int4)(0x1)),
+                                           (vec_int4)vzero);
+    res = vec_sel(cx,sx,mask1);
+
+    
+    
+    vec_uint4 mask2 = (vec_uint4)vec_cmpeq(vec_and(offset,(vec_int4)(0x2)),(vec_int4)vzero);
+    res = vec_sel((vec_float4)vec_xor(smask,(vec_uint4)res),res,mask2);
+
+    return res;
+
+}
+
+# 123 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/cosf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 cosf4 (vec_float4 x)
+{
+    vec_float4 xl,xl2,xl3,res;
+    vec_int4   q;
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+    smask = vec_vslw(smask, smask);
+
+    
+    
+    xl = vec_madd(x, (vec_float4)(0.63661977236f), vzero);
+
+    
+    
+    
+    xl = vec_add(xl,vec_sel((vec_float4)(0.5f),xl, smask));
+    q = vec_cts(xl,0);
+
+     
+    
+    
+    vec_int4 offset = vec_add((vec_int4)(1),vec_and(q,(vec_int4)((int)0x3)));
+
+    
+    
+    vec_float4 qf = vec_ctf(q,0);
+    vec_float4 p1 = vec_nmsub(qf,(vec_float4)(1.57079625129f),x);
+    xl  = vec_nmsub(qf,(vec_float4)(7.54978995489e-8f),p1);
+    
+    
+    
+    xl2 = vec_madd(xl,xl,vzero);
+    xl3 = vec_madd(xl2,xl,vzero);
+    
+
+    
+    
+    
+    
+    
+    vec_float4 ct1 = vec_madd((vec_float4)(-0.0013602249f),xl2,(vec_float4)(0.0416566950f));
+    vec_float4 st1 = vec_madd((vec_float4)(-0.0001950727f),xl2,(vec_float4)(0.0083320758f));
+
+    vec_float4 ct2 = vec_madd(ct1,xl2,(vec_float4)(-0.4999990225f));
+    vec_float4 st2 = vec_madd(st1,xl2,(vec_float4)(-0.1666665247f));
+    
+    vec_float4 cx = vec_madd(ct2,xl2,(vec_float4)(1.0f));
+    vec_float4 sx = vec_madd(st2,xl3,xl);
+
+    
+    
+    
+    vec_uint4 mask1 = (vec_uint4)vec_cmpeq(vec_and(offset,
+                                                   (vec_int4)(0x1)),
+                                           (vec_int4)vzero);
+    res = vec_sel(cx,sx,mask1);
+
+    
+    
+    vec_uint4 mask2 = (vec_uint4)vec_cmpeq(vec_and(offset,(vec_int4)(0x2)),(vec_int4)(vzero));
+    res = vec_sel((vec_float4)vec_xor(smask,(vec_uint4)res),res,mask2);
+
+    return res;
+
+}
+
+# 124 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/sincosf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+extern inline void sincosf4 (vec_float4 x, vec_float4* s, vec_float4* c)
+{
+    vec_float4 xl,xl2,xl3;
+    vec_int4   q;
+    vec_int4   offsetSin, offsetCos;
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+    smask = vec_vslw(smask, smask);
+
+    
+    
+    xl = vec_madd(x, (vec_float4)(0.63661977236f),(vec_float4)vzero);
+
+    
+    
+    
+    xl = vec_add(xl,vec_sel((vec_float4)(0.5f),xl,smask));
+    q = vec_cts(xl,0);
+
+     
+    
+    
+    
+    offsetSin = vec_and(q,(vec_int4)((int)0x3));
+    offsetCos = vec_add((vec_int4)(1),offsetSin);
+
+    
+    
+    vec_float4 qf = vec_ctf(q,0);
+    vec_float4 p1 = vec_nmsub(qf,(vec_float4)(1.57079625129f),x);
+    xl  = vec_nmsub(qf,(vec_float4)(7.54978995489e-8f),p1);
+    
+    
+    
+    xl2 = vec_madd(xl,xl,(vec_float4)vzero);
+    xl3 = vec_madd(xl2,xl,(vec_float4)vzero);
+    
+
+    
+    
+    
+    
+    
+    vec_float4 ct1 = vec_madd((vec_float4)(-0.0013602249f),xl2,(vec_float4)(0.0416566950f));
+    vec_float4 st1 = vec_madd((vec_float4)(-0.0001950727f),xl2,(vec_float4)(0.0083320758f));
+
+    vec_float4 ct2 = vec_madd(ct1,xl2,(vec_float4)(-0.4999990225f));
+    vec_float4 st2 = vec_madd(st1,xl2,(vec_float4)(-0.1666665247f));
+    
+    vec_float4 cx = vec_madd(ct2,xl2,(vec_float4)(1.0f));
+    vec_float4 sx = vec_madd(st2,xl3,xl);
+
+    
+    
+    
+    vec_uint4 sinMask = (vec_uint4)vec_cmpeq(vec_and(offsetSin,(vec_int4)(0x1)),(vec_int4)vzero);
+    vec_uint4 cosMask = (vec_uint4)vec_cmpeq(vec_and(offsetCos,(vec_int4)(0x1)),(vec_int4)vzero);    
+    *s = vec_sel(cx,sx,sinMask);
+    *c = vec_sel(cx,sx,cosMask);
+
+    
+    
+    sinMask = (vec_uint4)vec_cmpeq(vec_and(offsetSin,(vec_int4)(0x2)),(vec_int4)vzero);
+    cosMask = (vec_uint4)vec_cmpeq(vec_and(offsetCos,(vec_int4)(0x2)),(vec_int4)vzero);
+    
+    *s = vec_sel((vec_float4)vec_xor(smask,(vec_uint4)*s),*s,sinMask);
+    *c = vec_sel((vec_float4)vec_xor(smask,(vec_uint4)*c),*c,cosMask);
+    
+}
+
+# 125 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/tanf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 tanf4 (vec_float4 x)
+{
+    vec_float4 xl,xl2,xl3,res;
+    vec_int4   q;
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+    smask = vec_vslw(smask, smask);
+
+    
+    
+    xl = vec_madd(x, (vec_float4)(0.63661977236f),(vec_float4)vzero);
+
+    
+    
+    
+    xl = vec_add(xl,vec_sel((vec_float4)(0.5f),xl,smask));
+    q = vec_cts(xl,0);
+
+     
+    
+    
+    vec_float4 qf = vec_ctf(q,0);
+    vec_float4 p1 = vec_nmsub(qf,(vec_float4)(1.57079625129f),x);
+    xl  = vec_nmsub(qf,(vec_float4)(7.54978995489e-8f),p1);
+    
+    
+    
+    xl2 = vec_madd(xl,xl,(vec_float4)vzero);
+    xl3 = vec_madd(xl2,xl,(vec_float4)vzero);
+ 
+    
+    
+    
+    
+    
+    vec_float4 ct2 = vec_madd((vec_float4)( 0.0097099364f),xl2,(vec_float4)(-0.4291161787f));
+    
+    vec_float4 cx = vec_madd(ct2,xl2,(vec_float4)(1.0f));
+    vec_float4 sx = vec_madd((vec_float4)(-0.0957822992f),xl3,xl);
+
+    
+    
+    
+    vec_float4 cxosx = divf4(cx,sx);
+    vec_float4 sxocx = divf4(sx,cx);
+
+    vec_float4 ncxosx = (vec_float4)vec_xor(smask,(vec_uint4)cxosx);
+
+    
+    
+    
+    vec_uint4 mask = (vec_uint4)vec_cmpeq(vec_and(q,(vec_int4)(0x1)),(vec_int4)vzero);
+    res = vec_sel(ncxosx,sxocx,mask);
+
+    return res;
+}
+
+# 126 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/asinf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+extern inline vec_float4 asinf4 (vec_float4 x)
+{
+    vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+    smask = vec_vslw(smask, smask);
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    
+    
+    vec_uint4 positive = (vec_uint4)vec_cmpgt(x, vzero);
+
+    
+    
+    x = vec_abs(x);
+
+    
+    
+    vec_uint4 gtHalf = (vec_uint4)vec_cmpgt(x,(vec_float4)(0.5f));    
+
+
+    
+    
+    
+    
+    
+    
+    vec_float4 g = vec_sel(vec_madd(x,x, vzero),vec_madd((vec_float4)(-0.5f),x,(vec_float4)(0.5f)),gtHalf);
+    
+    x = vec_sel(x,vec_madd((vec_float4)(-2.0f),sqrtf4(g), vzero),gtHalf);
+
+    
+    
+    
+    
+    vec_float4 denom = vec_add(g,(vec_float4)(-5.54846723f));
+    vec_float4 num = vec_madd((vec_float4)(-0.504400557f),g,(vec_float4)(0.933933258f));
+    denom = vec_madd(denom,g,(vec_float4)(5.603603363f));
+    num = vec_madd(vec_madd(x,g, vzero),num, vzero);
+
+    
+    
+    
+    x = vec_add(x,divf4(num,denom));
+
+    
+    
+    
+    x = vec_sel(x,vec_add(x,(vec_float4)(1.57079632679489661923f)),gtHalf);
+
+    
+    
+    
+    x = vec_sel((vec_float4)vec_xor((vec_int4)smask, (vec_int4)x),x,positive);
+
+    return x;
+}
+
+# 127 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/acosf4.h"
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+extern inline vec_float4 acosf4 (vec_float4 x)
+{
+    vec_float4 result, xabs;
+    vec_float4 t1;
+    vec_float4 xabs2, xabs4;
+    vec_float4 hi, lo;
+    vec_float4 neg, pos;
+    vec_uint4 select;
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    
+    xabs = vec_abs(x);
+    select = (vec_uint4)(vec_sra((vec_int4)(x), (vec_uint4)(31)));
+    
+    t1 = sqrtf4(vec_sub((vec_float4)(1.0), xabs));
+    
+    
+
+
+
+ 
+    xabs2 = vec_madd(xabs,  xabs, vzero);
+    xabs4 = vec_madd(xabs2, xabs2, vzero);
+    hi = vec_madd((vec_float4)(-0.0012624911), xabs, (vec_float4)(0.0066700901));
+    hi = vec_madd(hi, xabs, (vec_float4)(-0.0170881256));
+    hi = vec_madd(hi, xabs, (vec_float4)( 0.0308918810));
+    lo = vec_madd((vec_float4)(-0.0501743046), xabs, (vec_float4)(0.0889789874));
+    lo = vec_madd(lo, xabs, (vec_float4)(-0.2145988016));
+    lo = vec_madd(lo, xabs, (vec_float4)( 1.5707963050));
+    
+    result = vec_madd(hi, xabs4, lo);
+    
+    
+ 
+    neg = vec_nmsub(t1, result, (vec_float4)(3.1415926535898f));
+    pos = vec_madd(t1, result, vzero);
+    
+    result = vec_sel(pos, neg, select);
+    
+    return result;
+}
+
+# 128 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/atanf4.h"
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+extern inline vec_float4 atanf4 (vec_float4 x)
+{
+    vec_float4 bias;
+    vec_float4 x2, x3, x4, x8, x9;
+    vec_float4 hi, lo;
+    vec_float4 result;
+    vec_float4 inv_x;
+    vec_uint4 sign;
+    vec_uint4 select;
+    vec_float4 xabs;
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+    smask = vec_vslw(smask, smask);
+    vec_float4 vnzero = vec_or(vzero, (vec_float4)smask);
+    
+    sign = vec_and((vec_uint4)x, smask);
+    xabs = (vec_float4)vec_andc((vec_uint4)x, smask);
+    inv_x = recipf4(x);
+    inv_x = (vec_float4)vec_xor((vec_uint4)inv_x, smask);
+    select = (vec_uint4)vec_cmpgt(xabs, (vec_float4)(1.0f));
+    bias = (vec_float4)(1.57079632679489661923f);
+    bias = (vec_float4)vec_and((vec_uint4)bias, select);
+    bias = (vec_float4)vec_or((vec_uint4)sign, (vec_uint4)bias);
+    
+    x = vec_sel(x, inv_x, select);
+    
+    
+
+
+
+ 
+    bias = vec_add(bias, x);
+    x2 = vec_madd(x,  x,  vzero);
+    x3 = vec_madd(x2, x,  vzero);
+    x4 = vec_madd(x2, x2, vzero);
+    x8 = vec_madd(x4, x4, vzero);
+    x9 = vec_madd(x8, x,  vnzero);
+    hi = vec_madd((vec_float4)(0.0028662257f), x2, (vec_float4)(-0.0161657367f));
+    hi = vec_madd(hi, x2, (vec_float4)(0.0429096138f));
+    hi = vec_madd(hi, x2, (vec_float4)(-0.0752896400f));
+    hi = vec_madd(hi, x2, (vec_float4)(0.1065626393f));
+    lo = vec_madd((vec_float4)(-0.1420889944f), x2, (vec_float4)(0.1999355085f));
+    lo = vec_madd(lo, x2, (vec_float4)(-0.3333314528f));
+    lo = vec_madd(lo, x3, bias);
+    
+    result = vec_madd(hi, x9, lo);    
+    return result;
+}
+
+# 129 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/atan2f4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+extern inline vec_float4 atan2f4 (vec_float4 y, vec_float4 x)
+{
+    vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+    smask = vec_vslw(smask, smask);
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    vec_float4 xx = vec_sel(x, (vec_float4)(1.0f), vec_cmpeq(x, y));
+    vec_float4 yy = vec_sel(y, (vec_float4)(1.0f), vec_cmpeq(x, y));
+    vec_float4 res = atanf4(divf4(yy,xx));
+
+    
+    
+    
+    
+    
+    
+    
+    vec_uint4 signy = (vec_uint4)vec_and((vec_uint4)y, smask);
+    vec_uint4 isnan = vec_sel((vec_uint4)x, signy, vec_cmpeq(x, x));
+    isnan = vec_sel((vec_uint4)y, isnan, vec_cmpeq(y, y));
+    vec_uint4 yNeg = (vec_uint4)vec_cmpgt(vzero,y);
+    vec_uint4 xNeg = (vec_uint4)vec_cmpgt(vzero,x);
+    vec_uint4 szero = (vec_uint4)vec_cmpeq((vec_uint4)x, (vec_uint4)smask);
+
+    vec_float4 bias = vec_sel((vec_float4)(3.14159265358979323846f),(vec_float4)(-3.14159265358979323846f),yNeg);
+
+    vec_float4 newRes = vec_add(bias, res);
+
+    res = vec_sel(vec_sel(res,newRes,xNeg),newRes,szero);
+
+    return (vec_float4)vec_or((vec_uint4)res, isnan);
+}
+
+# 130 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/sinf4fast.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 sinf4fast (vec_float4 x)
+{
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+    smask = vec_vslw(smask, smask);
+    vec_float4 g = vec_madd(x,x,(vec_float4)vzero);
+    vec_float4 f = (vec_float4)vec_andc((vec_uint4)x,smask);
+
+    vec_float4 t1 = vec_madd(g,g,(vec_float4)vzero);
+    vec_float4 t2 = vec_madd((vec_float4)(-0.1980741872e-3f),g,(vec_float4)(0.8333025139e-2f));
+    vec_float4 t3 = vec_madd((vec_float4)(-0.1666665668f),g,(vec_float4)vzero);
+    vec_float4 t4 = vec_madd(t1,t1,(vec_float4)vzero);
+    vec_float4 t5 = vec_madd(t1,t2,t3);
+    vec_float4 r  = vec_madd((vec_float4)(0.2601903036e-5f),t4,t5);
+
+    vec_float4 res = vec_madd(f,r,f);
+
+    res = vec_sel(res, x, smask);
+
+    return res;
+}
+
+# 131 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/cosf4fast.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 cosf4fast (vec_float4 x)
+{
+    
+    
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+    smask = vec_vslw(smask, smask);
+    x = vec_sub((vec_float4)(1.57079625129f),x);
+    x = vec_add((vec_float4)(7.54978995489e-8f),x);
+
+    vec_float4 g = vec_madd(x,x,vzero);
+    vec_float4 f = (vec_float4)vec_andc((vec_uint4)x,smask);
+
+    vec_float4 t1 = vec_madd(g,g,vzero);
+    vec_float4 t2 = vec_madd((vec_float4)(-0.1980741872e-3f),g,(vec_float4)(0.8333025139e-2f));
+    vec_float4 t3 = vec_madd((vec_float4)(-0.1666665668f),g,vzero);
+    vec_float4 t4 = vec_madd(t1,t1,vzero);
+    vec_float4 t5 = vec_madd(t1,t2,t3);
+    vec_float4 r  = vec_madd((vec_float4)(0.2601903036e-5f),t4,t5);
+
+    vec_float4 res = vec_madd(f,r,f);
+
+    res = vec_sel(res, x, smask);
+
+    return res;
+}
+
+# 132 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/sincosf4fast.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+extern inline void sincosf4fast (vec_float4 x, vec_float4* s, vec_float4* c)
+{
+    vec_float4 xl2,xl3;
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+ 
+    
+    
+    xl2 = vec_madd(x,x,(vec_float4)vzero);
+    xl3 = vec_madd(xl2,x,(vec_float4)vzero);
+    
+
+    
+    
+    
+    
+    
+    vec_float4 ct1 = vec_madd((vec_float4)(-0.0013602249f),xl2,(vec_float4)(0.0416566950f));
+    vec_float4 st1 = vec_madd((vec_float4)(-0.0001950727f),xl2,(vec_float4)(0.0083320758f));
+
+    vec_float4 ct2 = vec_madd(ct1,xl2,(vec_float4)(-0.4999990225f));
+    vec_float4 st2 = vec_madd(st1,xl2,(vec_float4)(-0.1666665247f));
+    
+    *c = vec_madd(ct2,xl2,(vec_float4)(1.0f));
+    *s = vec_madd(st2,xl3,x);
+
+}
+
+# 133 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/tanf4fast.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+extern inline vec_float4 tanf4fast (vec_float4 x)
+{
+    vec_float4 x2,x3;
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+
+    
+    
+    x2 = vec_madd(x,x,(vec_float4)vzero);
+    x3 = vec_madd(x2,x,(vec_float4)vzero);
+    
+
+    
+    
+    
+    
+    
+    vec_float4 ct2 = vec_madd((vec_float4)( 0.0097099364f),x2,(vec_float4)(-0.4291161787f));
+    
+    vec_float4 cx = vec_madd(ct2,x2,(vec_float4)(1.0f));
+    vec_float4 sx = vec_madd((vec_float4)(-0.0957822992f),x3,x);
+
+    vec_float4 res = divf4(sx,cx);
+    return res;
+}
+
+# 134 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/acosf4fast.h"
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+extern inline vec_float4 acosf4fast (vec_float4 x)
+{
+    vec_float4 result, xabs;
+    vec_float4 t1;
+    vec_float4 xabs2, xabs4;
+    vec_float4 hi, lo;
+    vec_float4 neg, pos;
+    vec_uint4 select;
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    
+    xabs = vec_abs(x);
+    select = (vec_uint4)(vec_sra((vec_int4)(x), (vec_uint4)(31)));
+    
+    t1 = sqrtf4fast(vec_sub((vec_float4)(1.0), xabs));
+    
+    
+
+
+
+ 
+    xabs2 = vec_madd(xabs,  xabs, vzero);
+    xabs4 = vec_madd(xabs2, xabs2, vzero);
+    hi = vec_madd((vec_float4)(-0.0012624911), xabs, (vec_float4)(0.0066700901));
+    hi = vec_madd(hi, xabs, (vec_float4)(-0.0170881256));
+    hi = vec_madd(hi, xabs, (vec_float4)( 0.0308918810));
+    lo = vec_madd((vec_float4)(-0.0501743046), xabs, (vec_float4)(0.0889789874));
+    lo = vec_madd(lo, xabs, (vec_float4)(-0.2145988016));
+    lo = vec_madd(lo, xabs, (vec_float4)( 1.5707963050));
+    
+    result = vec_madd(hi, xabs4, lo);
+    
+    
+ 
+    neg = vec_nmsub(t1, result, (vec_float4)(3.1415926535898f));
+    pos = vec_madd(t1, result, vzero);
+    
+    result = vec_sel(pos, neg, select);
+    
+    return result;
+}
+
+# 135 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/asinf4fast.h"
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 asinf4fast (vec_float4 x)
+{
+    vec_uint4 mask = (vec_uint4)(vec_int4)(-1);
+    mask = vec_vslw(mask, mask);
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    vec_uint4 sign;
+    vec_float4 result, xabs;
+    vec_float4 t1;
+    vec_float4 xabs2, xabs4;
+    vec_float4 hi, lo;
+    
+    
+ 
+    sign = vec_and((vec_uint4)(x), mask);
+    xabs = vec_abs(x);
+    
+    t1 = sqrtf4(vec_sub((vec_float4)(1.0f), xabs));
+    
+    
+
+
+
+ 
+    xabs2 = vec_madd(xabs,  xabs, vzero);
+    xabs4 = vec_madd(xabs2, xabs2, vzero);
+    hi = vec_madd((vec_float4)(-0.0012624911), xabs, (vec_float4)(0.0066700901));
+    hi = vec_madd(hi, xabs, (vec_float4)(-0.0170881256));
+    hi = vec_madd(hi, xabs, (vec_float4)( 0.0308918810));
+    lo = vec_madd((vec_float4)(-0.0501743046), xabs, (vec_float4)(0.0889789874));
+    lo = vec_madd(lo, xabs, (vec_float4)(-0.2145988016));
+    lo = vec_madd(lo, xabs, (vec_float4)( 1.5707963050));
+    
+    result = vec_madd(hi, xabs4, lo);
+    result = vec_nmsub(t1, result, (vec_float4)(1.5707963267949f));
+    
+    
+ 
+    result = (vec_float4)(vec_or((vec_uint4)(result), sign));
+    
+    return result;
+}
+
+# 136 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/atanf4fast.h"
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+extern inline vec_float4 atanf4fast (vec_float4 x)
+{
+    vec_float4 bias;
+    vec_float4 x2, x3, x4, x8, x9;
+    vec_float4 hi, lo;
+    vec_float4 result;
+    vec_float4 inv_x;
+    vec_uint4 sign;
+    vec_uint4 select;
+    vec_float4 xabs;
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+    smask = vec_vslw(smask, smask);
+    
+    sign = vec_and((vec_uint4)x, smask);
+    xabs = (vec_float4)vec_andc((vec_uint4)x, smask);
+    inv_x = recipf4fast(x);
+    inv_x = (vec_float4)vec_xor((vec_uint4)inv_x, smask);
+    select = (vec_uint4)vec_cmpgt(xabs, (vec_float4)(1.0));
+    bias = (vec_float4)vec_or(sign, (vec_uint4)((vec_float4)(1.57079632679489661923f)));
+    bias = (vec_float4)vec_and((vec_uint4)bias, select);
+    
+    x = vec_sel(x, inv_x, select);
+    
+    
+
+
+
+ 
+    bias = vec_add(bias, x);
+    x2 = vec_madd(x,  x,  vzero);
+    x3 = vec_madd(x2, x,  vzero);
+    x4 = vec_madd(x2, x2, vzero);
+    x8 = vec_madd(x4, x4, vzero);
+    x9 = vec_madd(x8, x,  vzero);
+    hi = vec_madd((vec_float4)(0.0028662257), x2, (vec_float4)(-0.0161657367));
+    hi = vec_madd(hi, x2, (vec_float4)(0.0429096138));
+    hi = vec_madd(hi, x2, (vec_float4)(-0.0752896400));
+    hi = vec_madd(hi, x2, (vec_float4)(0.1065626393));
+    lo = vec_madd((vec_float4)(-0.1420889944), x2, (vec_float4)(0.1999355085));
+    lo = vec_madd(lo, x2, (vec_float4)(-0.3333314528));
+    lo = vec_madd(lo, x3, bias);
+    
+    result = vec_madd(hi, x9, lo);
+    
+    return result;
+}
+
+# 137 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/atan2f4fast.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+extern inline vec_float4 atan2f4fast (vec_float4 y, vec_float4 x)
+{
+    vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+    vec_float4 res = atanf4fast(divf4fast(y,x));
+
+    
+    
+    
+    
+    
+    
+    
+    vec_uint4 yNeg = (vec_uint4)vec_cmpgt(vzero,y);
+    vec_uint4 xNeg = (vec_uint4)vec_cmpgt(vzero,x);
+
+    vec_float4 bias = vec_sel((vec_float4)(3.14159265358979323846f),(vec_float4)(-3.14159265358979323846f),yNeg);
+
+    vec_float4 newRes = vec_add(bias, res);
+
+    res = vec_sel(res,newRes,xNeg);
+
+    return res;
+}
+
+# 138 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+
+ 
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/fmaf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+extern inline vec_float4 fmaf4 (vec_float4 x, vec_float4 y, vec_float4 z)
+{
+  return vec_madd(x,y,z);
+}
+
+# 141 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/fdimf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+extern inline vec_float4 fdimf4 (vec_float4 x, vec_float4 y)
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_float4 diff = vec_sub(x,y);
+  return vec_sel(vzero, diff, vec_cmpgt(x,y));
+}
+
+# 142 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/hypotf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+extern inline vec_float4 hypotf4 (vec_float4 x, vec_float4 y)
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_float4 sum = vec_madd(x,x,vzero);
+  sum = vec_madd(y,y,sum);
+  return sqrtf4(sum);
+}
+
+# 143 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+
+ 
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/frexpf4.h"
+
+
+
+
+ 
+
+
+
+
+extern inline vec_float4 frexpf4 (vec_float4 x, vec_int4 *exp)
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_uint4 zeromask = (vec_uint4)vec_cmpeq(x, (vec_float4)vzero);
+ 
+  vec_int4 expmask = (vec_int4)(0x7F800000);
+  vec_int4 e1 = vec_and ( (vec_int4)x, expmask);
+  vec_int4 e2 = vec_sub(vec_sr(e1, (vec_uint4)(23) ), (vec_int4)(126) );
+  *exp = vec_sel(e2, (vec_int4)vzero, zeromask);
+ 
+  vec_float4 m2 = vec_sel(x, (vec_float4)((vec_int4)(0x3F000000)), (vec_uint4)expmask);
+
+  return vec_sel(m2, (vec_float4)vzero, zeromask);
+}
+
+
+
+
+
+
+
+ 
+
+# 146 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/ldexpf4.h"
+
+
+
+
+ 
+
+
+
+
+extern inline vec_float4 ldexpf4 (vec_float4 x, vec_int4 exp) 
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+  smask = vec_vslw(smask, smask);
+
+  vec_int4 expmask = (vec_int4)(0x7F800000);
+  vec_int4 e1 = vec_and((vec_int4)x, expmask);
+  vec_int4 e2 = vec_sr(e1,(vec_uint4)(23));
+
+  vec_uint4 maxmask = (vec_uint4)vec_cmpgt(exp, (vec_int4)(255));
+  vec_uint4 minmask = (vec_uint4)vec_cmpgt((vec_int4)(-255), exp);
+  minmask = vec_or (minmask, (vec_uint4)vec_cmpeq(x, (vec_float4)vzero));
+
+  vec_int4 esum = vec_add(e2, exp);
+
+  maxmask = vec_or (maxmask, (vec_uint4)vec_cmpgt(esum, (vec_int4)(255)));
+  maxmask = vec_andc(maxmask, smask);
+  minmask = vec_or (minmask, (vec_uint4)vec_cmpgt((vec_int4)vzero, esum));
+
+  x = vec_sel(x, (vec_float4)vec_sl(esum,(vec_uint4)(23)), (vec_uint4)expmask);
+  x = vec_sel(x, (vec_float4)vzero, minmask);
+  x = vec_sel(x, (vec_float4)maxmask, maxmask);
+  return x;
+}
+
+# 147 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/log2f4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 log2f4 (vec_float4 x)
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+  smask = vec_vslw(smask, smask);
+  vec_float4 ones = (vec_float4)(1.0f);
+  vec_uint4 iszero = (vec_uint4)vec_cmpeq(x, vzero);
+  vec_uint4 isnan = (vec_uint4)vec_cmpeq(x, x);
+  vec_int4 expmask = (vec_int4)(0x7F800000);
+  vec_uint4 isinf = (vec_uint4)vec_cmpeq((vec_uint4)x, (vec_uint4)expmask);
+
+  vec_int4 xexp = vec_add( vec_sr(vec_and((vec_int4)x, expmask), (vec_uint4)(23)), (vec_int4)(-126) );
+  vec_float4 xx = vec_sel(x, (vec_float4)((vec_int4)(0x3F000000)), (vec_uint4)expmask);
+
+  vec_uint4  mask = (vec_uint4)vec_cmpgt( (vec_float4)((float)0.7071067811865f), xx);
+  xx    = vec_sel(xx   , vec_add(xx, xx)                , mask);
+  xexp = vec_sel(xexp, vec_sub(xexp, (vec_int4)(1) ), mask);
+  
+  vec_float4 x1 = vec_sub(xx , ones);
+  vec_float4 z  = divf4(x1, vec_add(xx, ones));
+  vec_float4 w  = vec_madd(z , z, vzero);
+  vec_float4 polywneg;
+  polywneg = vec_madd((vec_float4)(((float)(-0.2988439998f))), w, (vec_float4)(((float)(-0.3997655209f))));
+  polywneg = vec_madd(polywneg                 , w, (vec_float4)(((float)(-0.6666679125f))));
+  
+  vec_float4 y    = vec_madd(z, vec_madd(polywneg, w, x1), vzero);
+  vec_float4 zz1  = vec_madd((vec_float4)(((float) 1.4426950216293f)), x1, vec_ctf(xexp,0));
+  vec_float4 zz2  = vec_madd((vec_float4)(((float) 1.9259629911e-8f)), x1,
+			     vec_madd((vec_float4)(((float)-1.4426950408890f)), y, vzero)
+			     );
+  
+  vec_float4 res =  vec_sel(vec_add(zz1,zz2), (vec_float4)vec_or((vec_uint4)expmask, smask), iszero);
+  res = vec_sel(res, x, isinf);
+  return vec_sel(x, res, isnan);
+}
+
+# 148 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/log2f4fast.h"
+
+
+
+
+ 
+
+
+
+
+extern inline vec_float4 log2f4fast (vec_float4 x)
+{
+  return vec_loge(x);
+}
+
+# 149 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/logf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 logf4 (vec_float4 x) 
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+  smask = vec_vslw(smask, smask);
+  vec_float4 ones = (vec_float4)(1.0f);
+  vec_int4 expmask = (vec_int4)(0x7F800000);
+  vec_uint4 iszero = (vec_uint4)vec_cmpeq(x, vzero);
+  vec_uint4 isnan = (vec_uint4)vec_cmpeq(x, x);
+  vec_uint4 isinf = (vec_uint4)vec_cmpeq((vec_uint4)x, (vec_uint4)expmask);
+
+  vec_int4 xexp = vec_add( vec_sr(vec_and((vec_int4)x, expmask), (vec_uint4)(23)), (vec_int4)(-126) );
+  vec_float4 xx = vec_sel(x, (vec_float4)((vec_int4)(0x3F000000)), (vec_uint4)expmask);
+
+  vec_uint4  mask = (vec_uint4)vec_cmpgt((vec_float4)((float)0.7071067811865f), xx);
+  xx = vec_sel(xx, vec_add(xx, xx), mask);
+  xexp = vec_sel(xexp, vec_sub(xexp,(vec_int4)(1)), mask);
+
+  vec_float4 x1 = vec_sub(xx, ones);
+  vec_float4 z  = divf4  (x1, vec_add(xx, ones));
+  vec_float4 w  = vec_madd(z, z, vzero);
+  vec_float4 polywneg;
+  polywneg = vec_madd((vec_float4)(((float)(-0.2988439998f))), w, (vec_float4)(((float)(-0.3997655209f))));
+  polywneg = vec_madd(polywneg                , w, (vec_float4)(((float)(-0.6666679125f))));
+
+  vec_float4 y    = vec_madd(z, vec_madd(polywneg, w, x1), vzero);
+  vec_float4 wnew = vec_ctf(xexp,0);
+  vec_float4 zz1     = vec_madd((vec_float4)(((float)(0.6931470632553f)))   , wnew, x1);
+  vec_float4 zz2neg  = vec_madd((vec_float4)(((float)(-1.1730463525e-7f))), wnew, y );
+
+  
+  vec_float4 res = vec_sel(vec_sub(zz1,zz2neg), (vec_float4)vec_or((vec_uint4)expmask, smask), iszero);
+  res = vec_sel(res, x, isinf);
+  return vec_sel(x, res, isnan);
+}
+
+# 150 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/logf4fast.h"
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+extern inline vec_float4 logf4fast (vec_float4 x)
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  return vec_madd(log2f4fast(x), (vec_float4)(0.69314718055995f), vzero);
+}
+
+# 151 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/log10f4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+extern inline vec_float4 log10f4 (vec_float4 x) 
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_uint4 smask = (vec_uint4)(vec_int4)(-1);
+  smask = vec_vslw(smask, smask);
+  vec_float4 ones = (vec_float4)(1.0f);
+  vec_int4 expmask = (vec_int4)(0x7F800000);
+  vec_uint4 iszero = (vec_uint4)vec_cmpeq(x, vzero);
+  vec_uint4 isnan = (vec_uint4)vec_cmpeq(x, x);
+  vec_uint4 isinf = (vec_uint4)vec_cmpeq((vec_uint4)x, (vec_uint4)expmask);
+
+  vec_int4 xexp = vec_add(vec_sr(vec_and((vec_int4)x, expmask), (vec_uint4)(23)), (vec_int4)(-126));
+  vec_float4 xx = vec_sel(x, (vec_float4)((vec_int4)(0x3F000000)), (vec_uint4)expmask);
+
+  vec_uint4 mask = (vec_uint4)vec_cmpgt((vec_float4)((float)0.7071067811865f), xx);
+  xx = vec_sel(xx, vec_add(xx, xx), mask);
+  xexp = vec_sel(xexp, vec_sub(xexp, (vec_int4)(1)), mask);
+  
+  vec_float4 x1 = vec_sub(xx, ones);
+  vec_float4 z = divf4(x1, vec_add(xx, ones));
+  vec_float4 w = vec_madd(z, z, vzero);
+  vec_float4 polywneg;
+  polywneg = vec_madd((vec_float4)(((float)(-0.2988439998f))), w, (vec_float4)(((float)(-0.3997655209f))));
+  polywneg = vec_madd(polywneg                  , w, (vec_float4)(((float)(-0.6666679125f))));
+  
+  vec_float4 y = vec_madd(z, vec_madd(polywneg, w, x1), vzero);
+  vec_float4 wnew = vec_ctf(xexp, 0);
+  
+  vec_float4 zz1 = vec_madd((vec_float4)(((float) 0.4342944622040f)), x1, 
+			    vec_madd((vec_float4)(((float) 0.3010299205780f)), wnew, vzero));
+  vec_float4 zz2 = vec_madd((vec_float4)(((float) 1.9699272335e-8f)), x1,
+			    vec_madd((vec_float4)(((float) 7.5085978266e-8f)), wnew, 
+				     vec_madd((vec_float4)(((float)-0.4342944819033f)), y, vzero)));
+  
+  vec_float4 res = vec_sel(vec_add(zz1, zz2), (vec_float4)vec_or((vec_uint4)expmask, smask), iszero);
+  res = vec_sel(res, x, isinf);
+  return vec_sel(x, res, isnan);
+}
+
+# 152 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/log10f4fast.h"
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+extern inline vec_float4 log10f4fast (vec_float4 x) 
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  return vec_madd(log2f4fast(x), (vec_float4)(0.30102999566398f), (vec_float4)vzero);
+}
+
+# 153 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/log1pf4.h"
+
+
+
+
+ 
+
+
+
+
+extern inline vec_float4 log1pf4 (vec_float4 x)
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_uint4 iszero = (vec_uint4)vec_cmpeq(x, vzero);
+  vec_uint4 isnan = (vec_uint4)vec_cmpeq(x, x);
+  vec_uint4 nearzeromask = (vec_uint4)vec_and(vec_cmpgt(x, (vec_float4)(-0.5f)),
+					      vec_cmpgt((vec_float4)(0.5f), x));
+  vec_float4 x2 = vec_madd(x,x,vzero);
+  vec_float4 d0, d1, n0, n1;
+
+  d0 = vec_madd(x , (vec_float4)(1.5934420741f), (vec_float4)(0.8952856868f));
+  d1 = vec_madd(x , (vec_float4)(0.1198195734f), (vec_float4)(0.8377145063f));
+  d1 = vec_madd(x2, d1, d0);
+  
+  n0 = vec_madd(x , (vec_float4)(1.1457993413f), (vec_float4)(0.8952856678f));
+  n1 = vec_madd(x , (vec_float4)(0.0082862580f), (vec_float4)(0.3394238808f));
+  n1 = vec_madd(x2, n1, n0);
+ 
+  vec_float4 res = vec_sel(logf4(vec_add(x, (vec_float4)(1.0f))),
+                 vec_madd(x, divf4(n1, d1), vzero), nearzeromask);
+  res = vec_sel(res, x, iszero);
+  res = vec_sel(x, res, isnan);
+  return res;
+}
+
+# 154 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/log1pf4fast.h"
+
+
+
+
+ 
+
+
+
+
+extern inline vec_float4 log1pf4fast (vec_float4 x)
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_float4 x2 = vec_madd(x,x,vzero);
+  vec_float4 d0, d1, n0, n1;
+
+  d0 = vec_madd(x , (vec_float4)(1.5934420741f), (vec_float4)(0.8952856868f));
+  d1 = vec_madd(x , (vec_float4)(0.1198195734f), (vec_float4)(0.8377145063f));
+  d1 = vec_madd(x2, d1, d0);
+  
+  n0 = vec_madd(x , (vec_float4)(1.1457993413f), (vec_float4)(0.8952856678f));
+  n1 = vec_madd(x , (vec_float4)(0.0082862580f), (vec_float4)(0.3394238808f));
+  n1 = vec_madd(x2, n1, n0);
+
+  return vec_madd(x, divf4(n1, d1), vzero);
+}
+
+# 155 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/logbf4.h"
+
+
+
+
+ 
+
+
+
+
+extern inline vec_float4 logbf4 (vec_float4 x)
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_int4 expmask = (vec_int4)(0x7F800000);
+  vec_uint4 isnan = (vec_uint4)vec_cmpeq(x, x);
+  vec_int4 e1 = vec_and((vec_int4)x, expmask);
+  vec_uint4 isinf = (vec_uint4)vec_cmpeq(e1, expmask);
+  vec_uint4 zeromask = (vec_uint4)vec_cmpeq(e1, (vec_int4)vzero);
+  e1 = vec_sub(e1, (vec_int4)(0x3F800000));
+  vec_float4 res = vec_sel(vec_ctf(e1,23), __extension__ ((vec_float4){-((float)((float)(1e+30F * 1e+30F))), -((float)((float)(1e+30F * 1e+30F))), -((float)((float)(1e+30F * 1e+30F))), -((float)((float)(1e+30F * 1e+30F)))}), zeromask);
+  res = vec_sel(res, (vec_float4)expmask, isinf);
+  return vec_sel(x, res, isnan);
+}
+
+# 156 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/ilogbf4.h"
+
+
+
+
+ 
+
+
+
+
+extern inline vec_int4 ilogbf4 (vec_float4 x)
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_int4 minus127 = (vec_int4)(-127);
+
+  vec_int4 e1 = vec_and((vec_int4)x, (vec_int4)(0x7F800000));
+  vec_uint4 zeromask = (vec_uint4)vec_cmpeq(e1, (vec_int4)vzero);
+  vec_int4 e2 = vec_add(vec_sr(e1,(vec_uint4)(23)), minus127);
+  
+  return vec_sel(e2, (vec_int4)((-0x7fffffff - 1)), zeromask);
+
+}
+
+# 157 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/exp2f4.h"
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+extern inline vec_float4 exp2f4 (vec_float4 x)
+{
+  vec_int4 ix;
+  vec_uint4 overflow;
+  vec_uint4 underflow;
+  vec_float4 frac, frac2, frac4;
+  vec_float4 exp_int, exp_frac;
+  vec_float4 result;
+  vec_float4 hi, lo;
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_float4 bias;
+  
+ 
+
+  bias = (vec_float4)(vec_sra((vec_int4)(x), (vec_uint4)(31) ));
+  bias = (vec_float4)(vec_andc((vec_uint4)(0x3F7FFFFF), (vec_uint4)bias));
+  ix = vec_cts(vec_add(x, bias), 0);  
+
+
+
+
+  frac = vec_sub(vec_ctf(ix, 0), x);
+  frac = vec_madd(frac, (vec_float4)(0.69314718055995f), vzero);
+
+  
+  
+  overflow  = (vec_uint4)vec_cmpgt(x, (vec_float4)((vec_int4)(0x4300FFFF))); 
+  underflow = (vec_uint4)vec_cmpgt((vec_float4)(-126.0f), x);
+
+  
+                                                          
+  exp_int = (vec_float4)(vec_sl(vec_add(ix, (vec_int4)(126)), (vec_uint4)(23)));   
+
+  
+
+
+
+ 
+  frac2 = vec_madd(frac, frac, vzero);
+  frac4 = vec_madd(frac2, frac2, vzero);
+
+  hi = vec_madd(frac, (vec_float4)(-0.0001413161), (vec_float4)(0.0013298820));
+  hi = vec_madd(frac, hi, (vec_float4)(-0.0083013598));
+  hi = vec_madd(frac, hi, (vec_float4)(0.0416573475));
+  lo = vec_madd(frac, (vec_float4)(-0.1666653019), (vec_float4)(0.4999999206));
+  lo = vec_madd(frac, lo, (vec_float4)(-0.9999999995));
+  lo = vec_madd(frac, lo, (vec_float4)(1.0));
+
+  exp_frac = vec_madd(frac4, hi, lo);
+  
+  result = vec_madd(exp_frac, exp_int, vzero);
+  result = vec_madd(exp_frac, exp_int, result); 
+
+   
+  result = vec_sel(result, __extension__ ((vec_float4){((float)((float)(1e+30F * 1e+30F))), ((float)((float)(1e+30F * 1e+30F))), ((float)((float)(1e+30F * 1e+30F))), ((float)((float)(1e+30F * 1e+30F)))}), overflow); 
+  result = vec_sel(result, vzero, underflow);
+  
+
+  return (result);
+}
+
+# 158 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/exp2f4fast.h"
+
+
+
+
+ 
+
+
+
+
+extern inline vec_float4 exp2f4fast (vec_float4 x)
+{
+  return vec_expte(x);
+}
+
+
+
+
+
+
+
+ 
+
+# 159 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/expf4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+extern inline vec_float4 expf4 (vec_float4 x) 
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_uint4 xnegmask = (vec_uint4)vec_cmpgt(vzero, x);
+  vec_float4 goffset  = vec_sel((vec_float4)( 0.5f),(vec_float4)(-0.5f),xnegmask);
+  vec_float4 g  = vec_madd(x, (vec_float4)(((float)1.4426950408889634f)), vzero);  
+  vec_int4 xexp = vec_cts(vec_add(g, goffset),0);
+  
+  g = vec_ctf(xexp, 0);
+  g = vec_madd(g, (vec_float4)(((float)-1.1730463525082e-7f)), vec_madd(g, (vec_float4)(((float)-0.6931470632553101f)), x));
+  vec_float4 z  = vec_madd(g, g, vzero);
+  vec_float4 a = vec_madd(z, (vec_float4)(0.0999748594f), vzero);
+  vec_float4 b = vec_madd(g, 
+			  vec_madd(z, 
+				   (vec_float4)(0.0083208258f), 
+				   (vec_float4)(0.4999999992f)
+				   ),
+			  vzero);
+  
+  vec_float4 foo  = divf4(vec_add((vec_float4)(1.0f), vec_add(a, b)),
+			  vec_add((vec_float4)(1.0f), vec_sub(a, b)));
+
+  return ldexpf4(foo, xexp);
+  
+}
+
+# 160 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/expf4fast.h"
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+ 
+
+
+
+
+
+
+
+ 
+ 
+extern inline vec_float4 expf4fast (vec_float4 x)
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  return exp2f4fast(vec_madd( (vec_float4)(((float)1.442695040889f)), x, vzero));
+}
+
+# 161 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/expm1f4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+extern inline vec_float4 expm1f4 (vec_float4 x) 
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_uint4 nearzeromask = (vec_uint4)vec_and(vec_cmpgt(x, (vec_float4)(((float)-0.6931471805599f))),
+					      vec_cmpgt((vec_float4)(((float) 0.4054651081082f)), x));
+  vec_float4 x2 = vec_madd(x,x,vzero);
+  vec_float4 d0, d1, n0, n1;
+
+  d0 = vec_madd(x , (vec_float4)(-0.3203561199f), (vec_float4)(0.9483177697f));
+  d1 = vec_madd(x2, (vec_float4)( 0.0326527809f), d0);
+  
+  n0 = vec_madd(x , (vec_float4)(0.1538026623f), (vec_float4)(0.9483177732f));
+  n1 = vec_madd(x , (vec_float4)(0.0024490478f), (vec_float4)(0.0305274668f));
+  n1 = vec_madd(x2, n1, n0);
+ 
+  return vec_sel(vec_sub(expf4(x), (vec_float4)(1.0f)),
+                 vec_madd(x, divf4(n1, d1), vzero),
+                 nearzeromask);
+}
+
+# 162 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/expm1f4fast.h"
+
+
+
+
+ 
+
+
+
+
+extern inline vec_float4 expm1f4fast (vec_float4 x)
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_float4 x2 = vec_madd(x,x,vzero);
+  vec_float4 d0, d1, n0, n1;
+  
+  d0 = vec_madd(x , (vec_float4)(-0.3203561199f), (vec_float4)(0.9483177697f));
+  d1 = vec_madd(x2, (vec_float4)( 0.0326527809f), d0);
+  
+  n0 = vec_madd(x , (vec_float4)(0.1538026623f), (vec_float4)(0.9483177732f));
+  n1 = vec_madd(x , (vec_float4)(0.0024490478f), (vec_float4)(0.0305274668f));
+  n1 = vec_madd(x2, n1, n0);
+ 
+  return vec_madd(x, divf4(n1, d1), vzero);
+
+}
+
+# 163 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/powf4.h"
+
+
+
+
+ 
+
+
+
+
+extern inline vec_float4 powf4 (vec_float4 x, vec_float4 y)
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0),(vec_uint4)(0));
+  vec_uint4 yzero = (vec_uint4)vec_cmpeq((vec_float4)vzero, y);
+  vec_uint4 negx  = (vec_uint4)vec_cmpgt((vec_int4)vzero, (vec_int4)x);
+
+  vec_uint4 sbit = (vec_uint4)(vec_int4)(-1);
+  sbit = vec_vslw(sbit, sbit);
+  vec_float4 absx = vec_andc(x, (vec_float4)sbit);
+  vec_float4 absy = vec_andc(y, (vec_float4)sbit);
+  vec_uint4 oddy = vec_and(vec_ctu(absy, 0), (vec_uint4)(0x00000001));
+  negx = vec_and(negx, (vec_uint4)vec_cmpgt(oddy, (vec_uint4)vzero));
+
+  vec_float4 res = log2f4(absx);
+  res = vec_sel(res, y, yzero);
+  vec_float4 res1 = vec_madd(y, res, (vec_float4)vzero);
+  res1 = exp2f4(vec_sel(res1, res, vec_and(vec_cmpeq(res, vzero),
+                        (vec_uint4)vec_cmpgt((vec_int4)x,(vec_int4)vzero))));
+  res1 = vec_sel(res1, vec_or((vec_float4)sbit, res1), negx);
+  res1 = vec_sel(x, res1, vec_cmpeq(res, res));
+  return res1;
+}
+
+# 164 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/powf4fast.h"
+
+
+
+
+ 
+
+
+
+
+extern inline vec_float4 powf4fast (vec_float4 x, vec_float4 y)
+{
+  vec_int4 zeros = (vec_int4)(0);
+  vec_uint4 zeromask = (vec_uint4)vec_cmpeq((vec_float4)zeros, x);
+
+  vec_uint4 negmask  = (vec_uint4)vec_cmpgt((vec_float4)zeros, x);
+  
+  vec_float4 sbit = (vec_float4)((vec_int4)(0x80000000));
+  vec_float4 absx = vec_andc(x, sbit);
+  vec_float4 absy = vec_andc(y, sbit);
+  vec_uint4 oddy = vec_and(vec_ctu(absy, 0), (vec_uint4)(0x00000001));
+  negmask = vec_and(negmask, (vec_uint4)vec_cmpgt(oddy, (vec_uint4)zeros));
+
+  vec_float4 res = exp2f4fast(vec_madd(y, log2f4(absx), (vec_float4)zeros));
+  res = vec_sel(res, vec_or(sbit, res), negmask);
+
+
+  return vec_sel(res, (vec_float4)zeros, zeromask);
+}
+
+# 165 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/cbrtf4.h"
+
+
+
+
+ 
+
+
+
+# 31 "C:/PS3SDK\\target\\ppu\\include/bits/cbrtf4.h"
+
+extern inline vec_float4 cbrtf4 (vec_float4 x) 
+{
+  vec_float4 vzero = (vec_float4)vec_xor((vec_uint4)(0), (vec_uint4)(0));
+  vec_int4 xexp, n;
+  vec_uint4 sgnmask = (vec_uint4)(vec_int4)(-1);
+  sgnmask = vec_vslw(sgnmask, sgnmask);
+  vec_uint4 iszero = (vec_uint4)vec_cmpeq(x, vzero);
+  vec_uint4 isnan = (vec_uint4)vec_cmpeq(x, x);
+  vec_uint4 negmask = (vec_uint4)vec_cmpgt(vzero, x);
+  vec_float4 xx = vec_andc(x, (vec_float4)sgnmask);
+
+  xx = frexpf4(xx, &xexp);
+  vec_float4 p = vec_madd(
+			  vec_madd(xx, (vec_float4)(-0.191502161678719066f), (vec_float4)(0.697570460207922770f)),
+			  xx,
+			  (vec_float4)(0.492659620528969547f)
+			  );
+  vec_float4 p3 = vec_madd(p, vec_madd(p, p, vzero), vzero);
+
+  vec_int4 quot;
+  n = xexp; vec_uint4 negxexpmask = (vec_uint4)vec_cmpgt((vec_int4)(vzero), n); n = vec_sel(n, vec_add(n,(vec_int4)(2)), negxexpmask); quot = vec_add(vec_sra(n,(vec_uint4)(2)), vec_sra(n,(vec_uint4)(4))); quot = vec_add(quot, vec_sra(quot, (vec_uint4)(4))); quot = vec_add(quot, vec_sra(quot, (vec_uint4)(8))); quot = vec_add(quot, vec_sra(quot,(vec_uint4)(16))); vec_int4 r = vec_sub(vec_sub(n,quot), vec_sl(quot,(vec_uint4)(1))); quot = vec_add( quot, vec_sra( vec_add( vec_add(r,(vec_int4)(5)), vec_sl (r,(vec_uint4)(2)) ), (vec_uint4)(4) ) );;
+  vec_int4 modval = vec_sub(vec_sub(xexp,quot), vec_sl(quot,(vec_uint4)(1))); 
+  vec_float4 factor =  (vec_float4)(1.0/1.5874010519681994748);
+  factor = vec_sel(factor, (vec_float4)(1.0/1.2599210498948731648), vec_cmpeq(modval,(vec_int4)(-1)));
+  factor = vec_sel(factor, (vec_float4)(               1.0), vec_cmpeq(modval,(vec_int4)(vzero)));
+  factor = vec_sel(factor, (vec_float4)(    1.2599210498948731648), vec_cmpeq(modval,(vec_int4)( 1)));
+  factor = vec_sel(factor, (vec_float4)(1.5874010519681994748), vec_cmpeq(modval,(vec_int4)( 2)));
+
+  vec_float4 pre  = vec_madd(p, factor, vzero);
+  vec_float4 numr = vec_madd(xx , (vec_float4)(2.0f), p3);
+  vec_float4 denr = vec_madd(p3, (vec_float4)(2.0f), xx );
+  vec_float4 res = vec_madd(pre, divf4(numr, denr), vzero);
+  res = ldexpf4(res, quot);
+
+  res = vec_sel(res, vec_or(res,(vec_float4)sgnmask), negmask);
+  res = vec_sel(res, x, iszero);
+  return vec_sel(x, res, isnan);
+}
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+# 166 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/cbrtf4fast.h"
+
+
+
+
+ 
+
+
+
+extern inline vec_float4 cbrtf4fast (vec_float4 x)
+{
+  return cbrtf4(x);
+}
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+# 167 "C:/PS3SDK\\target\\ppu\\include/bits/sce_math.h"
+                                                                                                                                                                                  
+
+
+}
+
+
+
+
+
+
+using ::std:: acosf4fast;
+using ::std:: asinf4fast;
+using ::std:: atan2f4fast;
+using ::std:: atanf4fast;
+using ::std:: cbrtf4fast;
+using ::std:: cosf4fast;
+using ::std:: divf4;
+using ::std:: divf4fast;
+using ::std:: exp2f4fast;
+using ::std:: expf4fast;
+using ::std:: expm1f4fast;
+using ::std:: log10f4fast;
+using ::std:: log1pf4fast;
+using ::std:: log2f4fast;
+using ::std:: logf4fast;
+using ::std:: negatef4;
+using ::std:: powf4fast;
+using ::std:: recipf4;
+using ::std:: recipf4fast;
+using ::std:: rsqrtf4;
+using ::std:: rsqrtf4fast;
+using ::std:: sincosf4fast;
+using ::std:: sinf4fast;
+using ::std:: sqrtf4fast;
+using ::std:: tanf4fast;
+
+using ::std:: acosf4;
+using ::std:: asinf4;
+using ::std:: atanf4;
+using ::std:: atan2f4;
+using ::std:: ceilf4;
+using ::std:: copysignf4;
+using ::std:: cosf4;
+using ::std:: expf4;
+using ::std:: fabsf4;
+using ::std:: floorf4;
+using ::std:: fmaxf4;
+using ::std:: fminf4;
+using ::std:: fmodf4;
+using ::std:: frexpf4;
+using ::std:: ldexpf4;
+using ::std:: logf4;
+using ::std:: log10f4;
+using ::std:: modff4;
+using ::std:: remainderf4;
+using ::std:: sincosf4;
+using ::std:: powf4;
+using ::std:: sinf4;
+using ::std:: sqrtf4;
+using ::std:: tanf4;
+using ::std:: truncf4;
+
+using ::std:: cbrtf4;
+using ::std:: expm1f4;
+using ::std:: exp2f4;
+using ::std:: fdimf4;
+using ::std:: fmaf4;
+using ::std:: hypotf4;
+using ::std:: ilogbf4;
+
+
+using ::std:: log1pf4;
+using ::std:: log2f4;
+using ::std:: logbf4;
+# 1480 "C:/PS3SDK\\target\\ppu\\include/math.h"
+
+
+
+
+
+
+using ::std:: abs;
+
+
+using ::std:: acos; using ::std:: asin;
+using ::std:: atan; using ::std:: atan2; using ::std:: ceil;
+using ::std:: cos; using ::std:: cosh; using ::std:: exp;
+using ::std:: fabs; using ::std:: floor; using ::std:: fmod;
+using ::std:: frexp; using ::std:: ldexp; using ::std:: log;
+using ::std:: log10; using ::std:: modf; using ::std:: pow;
+using ::std:: sin; using ::std:: sinh; using ::std:: sqrt;
+using ::std:: tan; using ::std:: tanh;
+
+using ::std:: acosf; using ::std:: asinf;
+using ::std:: atanf; using ::std:: atan2f; using ::std:: ceilf;
+using ::std:: cosf; using ::std:: coshf; using ::std:: expf;
+using ::std:: fabsf; using ::std:: floorf; using ::std:: fmodf;
+using ::std:: frexpf; using ::std:: ldexpf; using ::std:: logf;
+using ::std:: log10f; using ::std:: modff; using ::std:: powf;
+using ::std:: sinf; using ::std:: sinhf; using ::std:: sqrtf;
+using ::std:: tanf; using ::std:: tanhf;
+
+using ::std:: acosl; using ::std:: asinl;
+using ::std:: atanl; using ::std:: atan2l; using ::std:: ceill;
+using ::std:: cosl; using ::std:: coshl; using ::std:: expl;
+using ::std:: fabsl; using ::std:: floorl; using ::std:: fmodl;
+using ::std:: frexpl; using ::std:: ldexpl; using ::std:: logl;
+using ::std:: log10l; using ::std:: modfl; using ::std:: powl;
+using ::std:: sinl; using ::std:: sinhl; using ::std:: sqrtl;
+using ::std:: tanl; using ::std:: tanhl;
+
+
+
+
+using ::std:: _Rc_type; using ::std:: _Rc_widened;
+using ::std:: _Real_type; using ::std:: _Real_widened;
+using ::std:: _Combined_type;
+
+using ::std:: _FPCOMP; using ::std:: fpclassify;
+using ::std:: signbit; using ::std:: isfinite; using ::std:: isinf;
+using ::std:: isnan; using ::std:: isnormal;
+using ::std:: isgreater; using ::std:: isgreaterequal;
+using ::std:: isless; using ::std:: islessequal; using ::std:: islessgreater;
+using ::std:: isunordered;
+
+
+using ::std:: float_t; using ::std:: double_t;
+
+using ::std:: acosh; using ::std:: asinh; using ::std:: atanh;
+using ::std:: cbrt; using ::std:: erf; using ::std:: erfc;
+using ::std:: expm1; using ::std:: exp2;
+using ::std:: hypot; using ::std:: ilogb; using ::std:: lgamma;
+using ::std:: log1p; using ::std:: log2; using ::std:: logb;
+using ::std:: llrint; using ::std:: lrint; using ::std:: nearbyint;
+using ::std:: rint; using ::std:: llround; using ::std:: lround;
+using ::std:: fdim; using ::std:: fma; using ::std:: fmax; using ::std:: fmin;
+using ::std:: round; using ::std:: trunc;
+using ::std:: remainder; using ::std:: remquo;
+using ::std:: copysign; using ::std:: nan; using ::std:: nextafter;
+using ::std:: scalbn; using ::std:: scalbln;
+using ::std:: nexttoward; using ::std:: tgamma;
+
+using ::std:: acoshf; using ::std:: asinhf; using ::std:: atanhf;
+using ::std:: cbrtf; using ::std:: erff; using ::std:: erfcf;
+using ::std:: expm1f; using ::std:: exp2f;
+using ::std:: hypotf; using ::std:: ilogbf; using ::std:: lgammaf;
+using ::std:: log1pf; using ::std:: log2f; using ::std:: logbf;
+using ::std:: llrintf; using ::std:: lrintf; using ::std:: nearbyintf;
+using ::std:: rintf; using ::std:: llroundf; using ::std:: lroundf;
+using ::std:: fdimf; using ::std:: fmaf; using ::std:: fmaxf; using ::std:: fminf;
+using ::std:: roundf; using ::std:: truncf;
+using ::std:: remainderf; using ::std:: remquof;
+using ::std:: copysignf; using ::std:: nanf;
+using ::std:: nextafterf; using ::std:: scalbnf; using ::std:: scalblnf;
+using ::std:: nexttowardf; using ::std:: tgammaf;
+
+using ::std:: acoshl; using ::std:: asinhl; using ::std:: atanhl;
+using ::std:: cbrtl; using ::std:: erfl; using ::std:: erfcl;
+using ::std:: expm1l; using ::std:: exp2l;
+using ::std:: hypotl; using ::std:: ilogbl; using ::std:: lgammal;
+using ::std:: log1pl; using ::std:: log2l; using ::std:: logbl;
+using ::std:: llrintl; using ::std:: lrintl; using ::std:: nearbyintl;
+using ::std:: rintl; using ::std:: llroundl; using ::std:: lroundl;
+using ::std:: fdiml; using ::std:: fmal; using ::std:: fmaxl; using ::std:: fminl;
+using ::std:: roundl; using ::std:: truncl;
+using ::std:: remainderl; using ::std:: remquol;
+using ::std:: copysignl; using ::std:: nanl;
+using ::std:: nextafterl; using ::std:: scalbnl; using ::std:: scalblnl;
+using ::std:: nexttowardl; using ::std:: tgammal;
+
+
+
+
+
+
+
+ 
+# 27 "..\\..\\src\\LinearMath/btScalar.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/stdlib.h"
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+namespace std {
+
+		 
+
+
+
+
+
+
+
+
+extern "C" {
+extern char _Mbcurmax;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		 
+
+
+
+
+
+
+typedef struct
+	{	 
+	int quot;
+	int rem;
+	} div_t;
+
+typedef struct
+	{	 
+	long quot;
+	long rem;
+	} ldiv_t;
+
+
+typedef struct
+	{	 
+	_Longlong quot;
+	_Longlong rem;
+	} _Lldiv_t;
+
+
+
+typedef _Lldiv_t lldiv_t;
+
+
+		 
+extern "C" {  
+void exit(int) __attribute__((__noreturn__));
+void _Exit(int) __attribute__((__noreturn__));	 
+void exitspawn(const char *, char *const [], char *const [], sys_addr_t, size_t, int, uint64_t) __attribute__((__noreturn__));  
+void _Exitspawn(const char *, char *const [], char *const [], sys_addr_t, size_t, int, uint64_t) __attribute__((__noreturn__));  
+}
+
+extern "C" {
+int abs(int);
+long labs(long);
+void abort(void) __attribute__((__noreturn__));
+void *calloc(size_t, size_t);
+div_t div(int, int);
+void free(void *);
+ldiv_t ldiv(long, long);
+void *malloc(size_t);
+void *(memalign)(size_t boundary, size_t size_arg);   
+int mblen(const char *, size_t);
+size_t mbstowcs(wchar_t *,
+	const char *, size_t);
+int mbtowc(wchar_t *, const char *, size_t);
+int rand(void);
+void srand(unsigned int);
+void *realloc(void *, size_t);
+
+
+void *reallocalign(void *, size_t size_arg, size_t boundary);
+size_t malloc_usable_size(void*);
+
+struct malloc_managed_size {
+  size_t max_system_size;
+  size_t current_system_size;
+  size_t current_inuse_size;
+};
+
+int malloc_stats(struct malloc_managed_size *);
+int malloc_stats_fast(struct malloc_managed_size *);
+
+
+long strtol(const char *, char **, int);
+size_t wcstombs(char *,
+	const wchar_t *, size_t);
+int wctomb(char *, wchar_t);
+
+unsigned long _Stoul(const char *, char **, int);
+float _Stof(const char *, char **, long);
+double _Stod(const char *, char **, long);
+long double _Stold(const char *, char **, long);
+_Longlong _Stoll(const char *, char **, int);
+_ULonglong _Stoull(const char *, char **, int);
+
+size_t _Getmbcurmax(void);
+
+
+_Longlong llabs(_Longlong);
+lldiv_t lldiv(_Longlong, _Longlong);
+
+
+}
+
+
+extern "C" {
+typedef void _Atexfun(void);
+typedef int _Cmpfun(const void *, const void *);
+
+int atexit(void (*)(void));
+void *bsearch(const void *, const void *,
+	size_t, size_t, _Cmpfun *);
+void qsort(void *, size_t, size_t, _Cmpfun *);
+}
+
+# 170 "C:/PS3SDK\\target\\ppu\\include/stdlib.h"
+
+		
+extern "C" {
+inline double atof(const char *_Str)
+	{	
+	return (_Stod(_Str, 0, 0));
+	}
+
+inline float atoff(const char *_Str)
+	{	
+	return (_Stof(_Str, 0, 0));
+	}
+
+inline int atoi(const char *_Str)
+	{	
+	return ((int)_Stoul(_Str, 0, 10));
+	}
+
+inline long atol(const char *_Str)
+	{	
+	return ((long)_Stoul(_Str, 0, 10));
+	}
+
+# 200 "C:/PS3SDK\\target\\ppu\\include/stdlib.h"
+inline double strtod(const char * _Str,
+	char ** _Endptr)
+	{	
+	return (_Stod(_Str, _Endptr, 0));
+	}
+
+inline unsigned long strtoul(const char * _Str,
+	char ** _Endptr, int _Base)
+	{	
+	return (_Stoul(_Str, _Endptr, _Base));
+	}
+
+
+
+inline _Longlong atoll(const char *_Str)
+	{	
+	return ((_Longlong)_Stoull(_Str, 0, 10));
+	}
+
+inline float strtof(const char * _Str,
+	char ** _Endptr)
+	{	
+	return (_Stof(_Str, _Endptr, 0));
+	}
+
+inline long double strtold(const char * _Str,
+	char ** _Endptr)
+	{	
+	return (_Stold(_Str, _Endptr, 0));
+	}
+
+inline _Longlong strtoll(const char * _Str,
+	char ** _Endptr, int _Base)
+	{	
+	return (_Stoll(_Str, _Endptr, _Base));
+	}
+
+inline _ULonglong strtoull(const char * _Str,
+	char ** _Endptr, int _Base)
+	{	
+	return (_Stoull(_Str, _Endptr, _Base));
+	}
+
+
+}
+
+		
+
+
+inline long abs(long _Left)
+	{	
+	return (labs(_Left));
+	}
+
+inline ldiv_t div(long _Left, long _Right)
+	{	
+	return (ldiv(_Left, _Right));
+	}
+
+
+
+
+
+inline _Longlong abs(_Longlong _Left)
+	{	
+	return (llabs(_Left));
+	}
+
+inline _Lldiv_t div(_Longlong _Left, _Longlong _Right)
+	{	
+	return (lldiv(_Left, _Right));
+	}
+
+
+
+
+# 321 "C:/PS3SDK\\target\\ppu\\include/stdlib.h"
+
+
+
+
+
+extern "C" {
+extern inline int get_state_TT800(void **state);
+extern inline void init_TT800(unsigned int s);
+extern inline void init_by_array_TT800(unsigned int init_key[], int key_length);
+extern inline unsigned int rand_int32_TT800(void);
+extern inline unsigned int rand_int31_TT800(void);
+extern inline float rand_real1_TT800(void);
+extern inline float rand_real2_TT800(void);
+extern inline float rand_real3_TT800(void);
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/tt800.h"
+
+
+
+
+ 
+
+
+
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/tt800_globals.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+typedef struct 
+{
+  
+  unsigned int State[25]; 
+  
+  int Next_Number;
+} __TT800_State_t;
+
+extern "C" {
+extern __TT800_State_t __TT800;
+}
+
+# 20 "C:/PS3SDK\\target\\ppu\\include/bits/tt800.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+extern inline int get_state_TT800 (void * *state)
+{
+  *state = (void *)&__TT800;
+  return(sizeof(__TT800));
+}
+
+ 
+
+extern inline void init_TT800 (unsigned int s)
+{
+  int i;
+  unsigned int *p = (unsigned int *)__TT800.State;
+  for(i=0; i < 25; i++)
+  {
+    *(p++) ^= s;
+  }
+  __TT800.Next_Number = 0;
+}
+
+ 
+
+extern inline void init_by_array_TT800 (unsigned int init_key[], int key_length)
+{
+  int i,j;
+  unsigned int *p = (unsigned int *)__TT800.State;
+  for(i=0,j=0; i < 25; i++, j++)
+  {
+    if(j > key_length) j=0;
+    *(p++) ^= init_key[j];
+  }
+  __TT800.Next_Number = 0;
+}
+
+
+extern inline unsigned int rand_int32_TT800 (void)
+{
+  unsigned int y;
+  static const unsigned int mag01[2]={0x0, 0x8ebfd028 } ; 
+
+  
+  if (__TT800.Next_Number==25)
+  { 
+    
+    int kk;
+    for (kk=0;kk<25-7;kk++)
+    {
+      __TT800.State[kk] = __TT800.State[kk+7] ^ (__TT800.State[kk] >> 1) ^ mag01[__TT800.State[kk] % 2];
+    }
+    for (; kk<25;kk++)
+    {
+      __TT800.State[kk] = __TT800.State[kk+(7-25)] ^ (__TT800.State[kk] >> 1) ^ mag01[__TT800.State[kk] % 2];
+    }
+    __TT800.Next_Number=0;
+  }
+  
+  y = __TT800.State[__TT800.Next_Number];
+  
+  y ^= (y << 7) & 0x2b5b2500; 
+  y ^= (y << 15) & 0xdb8b0000;
+  y &= 0xffffffff; 
+  y ^= (y >> 16); 
+  __TT800.Next_Number++;
+  return( y );
+}
+ 
+extern inline unsigned int rand_int31_TT800 (void)
+{
+    return (long)(rand_int32_TT800()>>1);
+}
+
+ 
+extern inline float rand_real1_TT800 (void)
+{
+    return rand_int32_TT800()*(1.0f/4294967295.0f); 
+      
+}
+
+ 
+extern inline float rand_real2_TT800 (void)
+{
+    return rand_int32_TT800()*(1.0f/4294967296.0f); 
+     
+}
+
+ 
+extern inline float rand_real3_TT800 (void)
+{
+  unsigned int dr = rand_int32_TT800();
+    return (((float)dr) + 0.5f)*(1.0f/4294967296.0f); 
+     
+}
+
+# 338 "C:/PS3SDK\\target\\ppu\\include/stdlib.h"
+
+}
+
+}
+
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/sce_stdlib.h"
+
+
+
+
+ 
+
+
+
+ 
+
+
+
+                       
+typedef struct
+{
+   vec_int4 quot; 
+   vec_int4 rem;  
+} divi4_t;
+                     
+ 
+
+
+namespace std {
+
+
+ 
+extern "C" {
+vec_int4 absi4(vec_int4 x);
+divi4_t divi4(vec_int4 numer, vec_int4 denom);
+}
+
+
+
+ 
+
+
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/absi4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+extern inline vec_int4 absi4 ( vec_int4 x )
+{
+   return vec_abs( x );
+}
+
+
+# 39 "C:/PS3SDK\\target\\ppu\\include/bits/sce_stdlib.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/divi4.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+extern inline divi4_t divi4 ( vec_int4 numer, vec_int4 denom )
+{
+   vec_int4 minusone = (vec_int4)(-1);
+   vec_uint4 zero = (vec_uint4)(0);
+   vec_uint4 one = (vec_uint4)(1);
+   vec_uint4 k158 = (vec_uint4)(158);
+   vec_uint4 k23 = (vec_uint4)(23);
+   
+   divi4_t res;
+   vec_uint4 numerPos, denomPos, quotNeg;
+   vec_uint4 numerAbs, denomAbs;
+   vec_uint4 denomZeros, numerZeros, shift, denomShifted, oneShifted;
+   vec_uint4 quot, newQuot, skip, newNum, cont;
+   int       anyCont;
+       
+   
+ 
+   numerPos = (vec_uint4)vec_cmpgt( numer, minusone );
+   denomPos = (vec_uint4)vec_cmpgt( denom, minusone );
+   quotNeg = vec_xor( numerPos, denomPos );
+   
+   
+ 
+   numerAbs = (vec_uint4)vec_sel( vec_sub( (vec_int4)zero, numer ), numer, numerPos );
+   denomAbs = (vec_uint4)vec_sel( vec_sub( (vec_int4)zero, denom ), denom, denomPos );
+ 
+   
+
+   denomZeros = vec_sub( k158, vec_sr( (vec_uint4)vec_ctf( denomAbs, 0 ), k23 ) );
+   numerZeros = vec_sub( k158, vec_sr( (vec_uint4)vec_ctf( numerAbs, 0 ), k23 ) );
+      
+   shift = vec_sub( denomZeros, numerZeros );
+   denomShifted = vec_sl( denomAbs, shift );
+   oneShifted = vec_sl( one, shift );
+   oneShifted = vec_sel( oneShifted, zero, vec_or( vec_cmpeq( denomAbs, zero ), 
+                                                   vec_cmpgt( denomAbs, numerAbs ) ) );
+   
+   
+
+   quot = zero;
+   
+   do
+   {
+      cont = (vec_uint4)vec_cmpgt( oneShifted, zero );
+      anyCont = vec_any_gt( oneShifted, zero );
+      skip = (vec_uint4)vec_cmpgt( denomShifted, numerAbs );
+      
+      newQuot = vec_or( quot, oneShifted );
+      newNum = vec_sub( numerAbs, denomShifted );
+      
+      oneShifted = vec_sr( oneShifted, one );
+      denomShifted = vec_sr( denomShifted, one );
+      
+      quot = vec_sel( newQuot, quot, skip );
+      numerAbs = vec_sel( numerAbs, newNum, vec_andc( cont, skip ) );
+   }
+   while ( anyCont );
+
+   res.quot = (vec_int4)vec_sel( quot, vec_sub( zero, quot ), quotNeg );
+   res.rem = (vec_int4)vec_sel( (vec_uint4)vec_sub( (vec_int4)zero, (vec_int4)numerAbs ), numerAbs, numerPos );
+   return res;
+}
+
+# 40 "C:/PS3SDK\\target\\ppu\\include/bits/sce_stdlib.h"
+
+
+}
+
+
+
+
+
+
+using ::std:: absi4;
+using ::std:: divi4;
+# 346 "C:/PS3SDK\\target\\ppu\\include/stdlib.h"
+
+
+
+
+
+using ::std:: div_t; using ::std:: ldiv_t;
+
+using ::std:: abort; using ::std:: abs; using ::std:: atexit;
+using ::std:: atof; using ::std:: atoi; using ::std:: atol;
+using ::std:: bsearch; using ::std:: calloc; using ::std:: div;
+using ::std:: exit; using ::std:: free; 
+using ::std:: labs; using ::std:: ldiv; using ::std:: malloc;
+using ::std:: mblen; using ::std:: mbstowcs; using ::std:: mbtowc;
+using ::std:: qsort; using ::std:: rand; 
+using ::std:: realloc;
+using ::std:: srand; using ::std:: strtod; using ::std:: strtol;
+using ::std:: strtoul; 
+using ::std:: wcstombs; using ::std:: wctomb;
+using ::std:: memalign;   
+using ::std:: atoff;
+
+
+using  ::std:: reallocalign;
+using  ::std:: malloc_usable_size;
+using  ::std:: malloc_stats;
+using  ::std:: malloc_stats_fast;
+using  ::std:: malloc_managed_size;
+
+
+
+using ::std:: lldiv_t;
+
+using ::std:: atoll; using ::std:: llabs; using ::std:: lldiv;
+using ::std:: strtof; using ::std:: strtold;
+using ::std:: strtoll; using ::std:: strtoull;
+using ::std:: _Exit;
+
+
+using ::std:: exitspawn; using ::std:: _Exitspawn;
+
+using ::std:: get_state_TT800; using ::std:: init_TT800; using ::std:: init_by_array_TT800;
+using ::std:: rand_int32_TT800; using ::std:: rand_int31_TT800;
+using ::std:: rand_real1_TT800; using ::std:: rand_real2_TT800; using ::std:: rand_real3_TT800;
+
+
+
+
+
+
+ 
+# 28 "..\\..\\src\\LinearMath/btScalar.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/cstdlib"
+
+
+
+
+ 
+
+
+
+
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/stdlib.h"
+
+
+
+
+ 
+ 
+# 343 "C:/PS3SDK\\target\\ppu\\include/stdlib.h"
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/bits/sce_stdlib.h"
+
+
+
+
+ 
+# 45 "C:/PS3SDK\\target\\ppu\\include/bits/sce_stdlib.h"
+
+# 346 "C:/PS3SDK\\target\\ppu\\include/stdlib.h"
+
+
+# 391 "C:/PS3SDK\\target\\ppu\\include/stdlib.h"
+
+
+
+
+ 
+# 14 "C:/PS3SDK\\target\\ppu\\include/cstdlib"
+
+
+# 30 "C:/PS3SDK\\target\\ppu\\include/cstdlib"
+
+# 96 "C:/PS3SDK\\target\\ppu\\include/cstdlib"
+
+
+
+
+ 
+# 29 "..\\..\\src\\LinearMath/btScalar.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/cfloat"
+
+
+
+
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/float.h"
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+namespace std {
+
+		 
+
+
+typedef struct
+	{	 
+	int _Ddig, _Dmdig, _Dmax10e, _Dmaxe, _Dmin10e, _Dmine;
+	union
+		{	 
+		unsigned short _Us[8];
+		float _Float;
+		double _Double;
+		long double _Long_double;
+		} _Deps, _Dmax, _Dmin;
+	} _Dvals;
+
+
+		 
+extern "C" {
+extern   _Dvals _Dbl, _Flt, _Ldbl;
+}
+
+		 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 64 "C:/PS3SDK\\target\\ppu\\include/float.h"
+
+
+
+		 
+
+   
+
+   
+
+   
+# 86 "C:/PS3SDK\\target\\ppu\\include/float.h"
+
+		 
+
+   
+
+   
+
+   
+# 106 "C:/PS3SDK\\target\\ppu\\include/float.h"
+
+		 
+
+
+    
+
+    
+
+    
+# 128 "C:/PS3SDK\\target\\ppu\\include/float.h"
+
+}
+
+
+
+
+
+ 
+# 7 "C:/PS3SDK\\target\\ppu\\include/cfloat"
+
+# 40 "C:/PS3SDK\\target\\ppu\\include/cfloat"
+
+
+
+
+
+
+ 
+# 30 "..\\..\\src\\LinearMath/btScalar.h"
+
+
+ 
+
+
+inline int	btGetVersion()
+{
+	return 277;
+}
+
+
+
+
+
+# 51 "..\\..\\src\\LinearMath/btScalar.h"
+
+
+
+
+
+
+
+
+# 94 "..\\..\\src\\LinearMath/btScalar.h"
+	
+# 1 "C:/PS3SDK\\target\\ppu\\include/assert.h"
+
+
+
+
+ 
+ 
+
+
+
+
+namespace std {
+
+
+
+# 21 "C:/PS3SDK\\target\\ppu\\include/assert.h"
+
+# 34 "C:/PS3SDK\\target\\ppu\\include/assert.h"
+
+# 44 "C:/PS3SDK\\target\\ppu\\include/assert.h"
+
+# 52 "C:/PS3SDK\\target\\ppu\\include/assert.h"
+
+
+
+
+
+extern "C" {
+void _Assert(const char *, const char *);
+void _SCE_Assert(const char *, const char *);
+}
+
+
+
+}
+
+
+
+
+ 
+# 102 "..\\..\\src\\LinearMath/btScalar.h"
+# 1 "C:/PS3SDK\\target\\ppu\\include/alloca.h"
+
+
+
+
+ 
+
+
+
+
+
+
+
+extern "C" {
+
+
+extern void* alloca (unsigned int size);
+
+
+}
+
+
+
+
+
+
+
+
+# 104 "..\\..\\src\\LinearMath/btScalar.h"
+
+# 113 "..\\..\\src\\LinearMath/btScalar.h"
+	
+
+
+
+		
+
+
+
+
+
+# 204 "..\\..\\src\\LinearMath/btScalar.h"
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+typedef float btScalar;
+
+
+
+
+
+
+
+
+
+# 247 "..\\..\\src\\LinearMath/btScalar.h"
+
+# 258 "..\\..\\src\\LinearMath/btScalar.h"
+
+
+# 277 "..\\..\\src\\LinearMath/btScalar.h"
+		
+inline __attribute__((always_inline)) btScalar btSqrt(btScalar y) 
+{ 
+# 295 "..\\..\\src\\LinearMath/btScalar.h"
+	return sqrtf(y); 
+
+}
+inline __attribute__((always_inline)) btScalar btFabs(btScalar x) { return fabsf(x); }
+inline __attribute__((always_inline)) btScalar btCos(btScalar x) { return cosf(x); }
+inline __attribute__((always_inline)) btScalar btSin(btScalar x) { return sinf(x); }
+inline __attribute__((always_inline)) btScalar btTan(btScalar x) { return tanf(x); }
+inline __attribute__((always_inline)) btScalar btAcos(btScalar x) { 
+	if (x<btScalar(-1))	
+		x=btScalar(-1); 
+	if (x>btScalar(1))	
+		x=btScalar(1);
+	return acosf(x); 
+}
+inline __attribute__((always_inline)) btScalar btAsin(btScalar x) { 
+	if (x<btScalar(-1))	
+		x=btScalar(-1); 
+	if (x>btScalar(1))	
+		x=btScalar(1);
+	return asinf(x); 
+}
+inline __attribute__((always_inline)) btScalar btAtan(btScalar x) { return atanf(x); }
+inline __attribute__((always_inline)) btScalar btAtan2(btScalar x, btScalar y) { return atan2f(x, y); }
+inline __attribute__((always_inline)) btScalar btExp(btScalar x) { return expf(x); }
+inline __attribute__((always_inline)) btScalar btLog(btScalar x) { return logf(x); }
+inline __attribute__((always_inline)) btScalar btPow(btScalar x,btScalar y) { return powf(x,y); }
+inline __attribute__((always_inline)) btScalar btFmod(btScalar x,btScalar y) { return fmodf(x,y); }
+	
+
+
+# 331 "..\\..\\src\\LinearMath/btScalar.h"
+
+
+
+
+# 342 "..\\..\\src\\LinearMath/btScalar.h"
+
+inline __attribute__((always_inline)) btScalar btAtan2Fast(btScalar y, btScalar x) 
+{
+	btScalar coeff_1 = (btScalar(6.283185307179586232) * btScalar(0.5)) / 4.0f;
+	btScalar coeff_2 = 3.0f * coeff_1;
+	btScalar abs_y = btFabs(y);
+	btScalar angle;
+	if (x >= 0.0f) {
+		btScalar r = (x - abs_y) / (x + abs_y);
+		angle = coeff_1 - coeff_1 * r;
+	} else {
+		btScalar r = (x + abs_y) / (abs_y - x);
+		angle = coeff_2 - coeff_1 * r;
+	}
+	return (y < 0.0f) ? -angle : angle;
+}
+
+inline __attribute__((always_inline)) bool      btFuzzyZero(btScalar x) { return btFabs(x) < 1.1920928955078125e-07f; }
+
+inline __attribute__((always_inline)) bool	btEqual(btScalar a, btScalar eps) {
+	return (((a) <= eps) && !((a) < -eps));
+}
+inline __attribute__((always_inline)) bool	btGreaterEqual (btScalar a, btScalar eps) {
+	return (!((a) <= eps));
+}
+
+
+inline __attribute__((always_inline)) int       btIsNegative(btScalar x) {
+    return x < btScalar(0.0) ? 1 : 0;
+}
+
+inline __attribute__((always_inline)) btScalar btRadians(btScalar x) { return x * (btScalar(6.283185307179586232) / btScalar(360.0)); }
+inline __attribute__((always_inline)) btScalar btDegrees(btScalar x) { return x * (btScalar(360.0) / btScalar(6.283185307179586232)); }
+
+
+
+
+inline __attribute__((always_inline)) btScalar btFsel(btScalar a, btScalar b, btScalar c)
+{
+	return a >= btScalar(0.f) ? b : c;
+}
+
+
+
+
+inline __attribute__((always_inline)) bool btMachineIsLittleEndian()
+{
+   long int i = 1;
+   const char *p = (const char *) &i;
+   if (p[0] == 1)  
+	   return true;
+   else
+	   return false;
+}
+
+
+
+
+
+inline __attribute__((always_inline)) unsigned btSelect(unsigned condition, unsigned valueIfConditionNonZero, unsigned valueIfConditionZero) 
+{
+    
+    
+    
+    
+    unsigned testNz = (unsigned)(((int)condition | -(int)condition) >> 31);
+    unsigned testEqz = ~testNz;
+    return ((valueIfConditionNonZero & testNz) | (valueIfConditionZero & testEqz)); 
+}
+inline __attribute__((always_inline)) int btSelect(unsigned condition, int valueIfConditionNonZero, int valueIfConditionZero)
+{
+    unsigned testNz = (unsigned)(((int)condition | -(int)condition) >> 31);
+    unsigned testEqz = ~testNz; 
+    return static_cast<int>((valueIfConditionNonZero & testNz) | (valueIfConditionZero & testEqz));
+}
+inline __attribute__((always_inline)) float btSelect(unsigned condition, float valueIfConditionNonZero, float valueIfConditionZero)
+{
+
+
+
+    return (condition != 0) ? valueIfConditionNonZero : valueIfConditionZero; 
+
+}
+
+template<typename T> inline __attribute__((always_inline)) void btSwap(T& a, T& b)
+{
+	T tmp = a;
+	a = b;
+	b = tmp;
+}
+
+
+
+inline __attribute__((always_inline)) unsigned btSwapEndian(unsigned val)
+{
+	return (((val & 0xff000000) >> 24) | ((val & 0x00ff0000) >> 8) | ((val & 0x0000ff00) << 8)  | ((val & 0x000000ff) << 24));
+}
+
+inline __attribute__((always_inline)) unsigned short btSwapEndian(unsigned short val)
+{
+	return static_cast<unsigned short>(((val & 0xff00) >> 8) | ((val & 0x00ff) << 8));
+}
+
+inline __attribute__((always_inline)) unsigned btSwapEndian(int val)
+{
+	return btSwapEndian((unsigned)val);
+}
+
+inline __attribute__((always_inline)) unsigned short btSwapEndian(short val)
+{
+	return btSwapEndian((unsigned short) val);
+}
+
+
+
+
+
+
+
+inline __attribute__((always_inline)) unsigned int  btSwapEndianFloat(float d)
+{
+    unsigned int a = 0;
+    unsigned char *dst = (unsigned char *)&a;
+    unsigned char *src = (unsigned char *)&d;
+
+    dst[0] = src[3];
+    dst[1] = src[2];
+    dst[2] = src[1];
+    dst[3] = src[0];
+    return a;
+}
+
+
+inline __attribute__((always_inline)) float btUnswapEndianFloat(unsigned int a) 
+{
+    float d = 0.0f;
+    unsigned char *src = (unsigned char *)&a;
+    unsigned char *dst = (unsigned char *)&d;
+
+    dst[0] = src[3];
+    dst[1] = src[2];
+    dst[2] = src[1];
+    dst[3] = src[0];
+
+    return d;
+}
+
+
+
+inline __attribute__((always_inline)) void  btSwapEndianDouble(double d, unsigned char* dst)
+{
+    unsigned char *src = (unsigned char *)&d;
+
+    dst[0] = src[7];
+    dst[1] = src[6];
+    dst[2] = src[5];
+    dst[3] = src[4];
+    dst[4] = src[3];
+    dst[5] = src[2];
+    dst[6] = src[1];
+    dst[7] = src[0];
+
+}
+
+
+inline __attribute__((always_inline)) double btUnswapEndianDouble(const unsigned char *src) 
+{
+    double d = 0.0;
+    unsigned char *dst = (unsigned char *)&d;
+
+    dst[0] = src[7];
+    dst[1] = src[6];
+    dst[2] = src[5];
+    dst[3] = src[4];
+    dst[4] = src[3];
+    dst[5] = src[2];
+    dst[6] = src[1];
+    dst[7] = src[0];
+
+	return d;
+}
+
+
+inline __attribute__((always_inline)) btScalar btNormalizeAngle(btScalar angleInRadians) 
+{
+	angleInRadians = btFmod(angleInRadians, btScalar(6.283185307179586232));
+	if(angleInRadians < -(btScalar(6.283185307179586232) * btScalar(0.5)))
+	{
+		return angleInRadians + btScalar(6.283185307179586232);
+	}
+	else if(angleInRadians > (btScalar(6.283185307179586232) * btScalar(0.5)))
+	{
+		return angleInRadians - btScalar(6.283185307179586232);
+	}
+	else
+	{
+		return angleInRadians;
+	}
+}
+
+
+struct btTypedObject
+{
+	btTypedObject(int objectType)
+		:m_objectType(objectType)
+	{
+	}
+	int	m_objectType;
+	inline int getObjectType() const
+	{
+		return m_objectType;
+	}
+};
+# 18 "..\\..\\src\\LinearMath/btVector3.h"
+# 1 "..\\..\\src\\LinearMath/btMinMax.h"
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+template <class T>
+inline __attribute__((always_inline)) const T& btMin(const T& a, const T& b) 
+{
+  return a < b ? a : b ;
+}
+
+template <class T>
+inline __attribute__((always_inline)) const T& btMax(const T& a, const T& b) 
+{
+  return  a > b ? a : b;
+}
+
+template <class T>
+inline __attribute__((always_inline)) const T& btClamped(const T& a, const T& lb, const T& ub) 
+{
+	return a < lb ? lb : (ub < a ? ub : a); 
+}
+
+template <class T>
+inline __attribute__((always_inline)) void btSetMin(T& a, const T& b) 
+{
+    if (b < a) 
+	{
+		a = b;
+	}
+}
+
+template <class T>
+inline __attribute__((always_inline)) void btSetMax(T& a, const T& b) 
+{
+    if (a < b) 
+	{
+		a = b;
+	}
+}
+
+template <class T>
+inline __attribute__((always_inline)) void btClamp(T& a, const T& lb, const T& ub) 
+{
+	if (a < lb) 
+	{
+		a = lb; 
+	}
+	else if (ub < a) 
+	{
+		a = ub;
+	}
+}
+
+# 19 "..\\..\\src\\LinearMath/btVector3.h"
+
+# 27 "..\\..\\src\\LinearMath/btVector3.h"
+
+
+
+
+
+
+const vec_int4 btElementMask = {1, 2, 4, 8};
+
+const vec_float4 btZero = {0.f, 0.f, 0.f, 0.f};
+const vec_float4 btOne = {1.f, 1.f, 1.f, 1.f};
+
+const vec_float4 btIdentVec0 = {1.f, 0.f, 0.f, 0.f};
+const vec_float4 btIdentVec1 = {0.f, 1.f, 0.f, 0.f};
+const vec_float4 btIdentVec2 = {0.f, 0.f, 1.f, 0.f};
+
+
+const vec_uint4 btSelVec0 = {0xffffffff, 0, 0, 0};
+const vec_uint4 btSelVec1 = {0, 0xffffffff, 0, 0};
+const vec_uint4 btSelVec2 = {0, 0, 0xffffffff, 0};
+const vec_uint4 btSelVec3 = {0, 0, 0, 0xffffffff};
+const vec_int4 btIntZero = {0, 0, 0, 0};
+
+const vec_float4 btLargeFloatVec = {1e18f, 1e18f, 1e18f, 1e18f};
+
+static inline __attribute__((always_inline)) const vec_float4 btZeroVec()
+{
+	return btZero;
+}
+
+
+
+
+
+ 
+class __attribute__ ((aligned (16))) btVector3
+{
+public:
+	static void btHitPrint(unsigned int id);
+
+
+	union
+	{
+		vec_float4 mVec;
+		float m_floats[4];
+	};
+	
+	inline __attribute__((always_inline)) const vec_float4*	get128ptr() const
+	{
+		return &mVec;
+	}
+
+	inline __attribute__((always_inline)) const vec_float4&	get128() const
+	{
+		return mVec;
+	}
+
+	inline __attribute__((always_inline))	void set128(vec_float4 v)
+	{
+		mVec = v;
+	}
+
+	inline __attribute__((always_inline)) btVector3(const vec_float4 vec):mVec(vec)
+	{
+	}
+
+	inline __attribute__((always_inline)) btVector3(const btScalar vec)
+	{
+		mVec = vec_float4(vec);
+	}
+	
+# 115 "..\\..\\src\\LinearMath/btVector3.h"
+	
+
+
+   
+	inline __attribute__((always_inline)) btVector3():mVec(btZero)  
+	{
+	}
+
+	
+
+
+
+ 
+	inline __attribute__((always_inline)) btVector3(const btScalar& x, const btScalar& y, const btScalar& z)
+	{
+		m_floats[0] = x;
+		m_floats[1] = y;
+		m_floats[2] = z;
+	}
+
+	
+ 
+	inline __attribute__((always_inline)) btVector3& operator+=(const btVector3& v)
+	{
+		mVec = vec_add(v.mVec, mVec);
+		
+		return *this;
+	}
+
+  
+ 
+	inline __attribute__((always_inline)) btVector3& operator-=(const btVector3& v) 
+	{
+		mVec = vec_sub(mVec, v.mVec);
+		
+		return *this;
+	}
+
+  
+ 
+	inline __attribute__((always_inline)) btVector3& operator*=(const btScalar& s)
+	{
+		
+		mVec = vec_madd(mVec, vec_float4(s), btZeroVec());
+		return *this;
+	}
+
+	
+ 
+	inline __attribute__((always_inline)) btScalar dot(const btVector3& v) const
+	{
+		
+		
+		
+		vec_float4 tmp = vec_madd(mVec, v.mVec, btZeroVec());
+		vec_float4 result = vec_add(tmp, vec_sld(tmp, tmp, 4));
+		return btScalar(vec_extract(vec_add(result, vec_sld(tmp, tmp, 8)), 0));
+	}
+
+	inline __attribute__((always_inline)) btVector3& safeNormalize() 
+	{
+		if(vec_any_ne(vec_sel(mVec, btZero, btSelVec3), btZero))
+		{
+			return *this /= length();
+		}
+		
+		mVec = btIdentVec0;
+		return *this;
+	}
+
+  
+ 
+	inline __attribute__((always_inline)) btVector3& normalize() 
+	{
+		return *this /= length();
+	}
+
+   
+	inline __attribute__((always_inline)) btVector3 absolute() const 
+	{
+		return vec_abs(mVec);
+	}
+  
+ 
+	inline __attribute__((always_inline)) btVector3 cross(const btVector3& v) const
+	{
+		vec_float4 vec1021 = vec_vmrghw(vec_sld(mVec, mVec, 4), mVec);
+		vec_float4 vec1201a = vec_vmrghw(vec1021, vec_sld(vec1021, vec1021, 8));
+
+		vec1021 = vec_vmrghw(vec_sld(v.mVec, v.mVec, 4), v.mVec);
+		vec_float4 vec1201b = vec_vmrghw(vec1021, vec_sld(vec1021, vec1021, 8));
+
+		return vec_sub(vec_madd(vec1201a, vec_sld(vec1201b, vec1201b, 4), btZeroVec()), vec_madd(vec1201b, vec_sld(vec1201a, vec1201a, 4), btZeroVec()));
+	}
+
+	inline __attribute__((always_inline)) btScalar triple(const btVector3& v1, const btVector3& v2) const
+	{
+		return dot(v1.cross(v2));
+	}
+
+	inline __attribute__((always_inline)) void setInterpolate3(const btVector3& v0, const btVector3& v1, btScalar rt) 
+	{
+		
+
+
+
+
+ 
+		vec_float4 s = vec_float4(1.0f - rt);
+		mVec = vec_madd(s, v0.mVec, vec_madd(vec_float4(rt), v1.mVec, btZeroVec()));
+	}
+
+  
+
+ 
+	inline __attribute__((always_inline)) btVector3 lerp(const btVector3& v, const btScalar& t) const 
+	{
+		
+
+
+
+ 
+		return btVector3(vec_madd(vec_float4(t), vec_sub(v.mVec, mVec), mVec));
+	}
+
+	inline __attribute__((always_inline)) vec_float4 re() const
+	{
+		vec_float4 vre = vec_re( mVec );
+		return vec_madd(vec_nmsub( mVec, vre, btOne ), vre, vre);
+	}
+
+  
+ 
+	inline __attribute__((always_inline)) btVector3& operator*=(const btVector3& v)
+	{
+		mVec = vec_madd(mVec, v.mVec, btZeroVec());
+		
+		return *this;
+	}
+	
+ 
+	inline __attribute__((always_inline)) btVector3& operator/=(const btScalar& s) 
+	{
+		;
+		return *this *= btScalar(1.0) / s;
+	}
+
+	 
+	inline __attribute__((always_inline)) btScalar length2() const
+	{
+		return dot(*this);
+	}
+
+	 
+	inline __attribute__((always_inline)) btScalar length() const
+	{
+		return btSqrt(length2());
+	}
+	
+	
+ 
+	inline __attribute__((always_inline)) btScalar angle(const btVector3& v) const 
+	{
+		btScalar s = btSqrt(length2() * v.length2());
+		;
+		return btAcos(dot(v) / s);
+	}
+  
+	
+ 
+	inline __attribute__((always_inline)) int minAxis() const
+	{
+		return m_floats[0] < m_floats[1] ? (m_floats[0] <m_floats[2] ? 0 : 2) : (m_floats[1] <m_floats[2] ? 1 : 2);
+		
+
+
+
+
+
+
+
+ 
+	}
+
+  
+  
+	inline __attribute__((always_inline)) int maxAxis() const 
+	{
+		return m_floats[0] < m_floats[1] ? (m_floats[1] <m_floats[2] ? 2 : 1) : (m_floats[0] <m_floats[2] ? 2 : 0);
+		
+
+
+
+
+
+ 
+	}
+
+	inline __attribute__((always_inline)) int furthestAxis() const
+	{
+		return absolute().minAxis();
+	}
+
+	inline __attribute__((always_inline)) int closestAxis() const 
+	{
+		return absolute().maxAxis();
+	}
+
+	
+ 
+	inline __attribute__((always_inline)) btScalar distance2(const btVector3& v) const;
+
+	
+ 
+	inline __attribute__((always_inline)) btScalar distance(const btVector3& v) const;
+
+	 
+	inline __attribute__((always_inline)) btVector3 normalized() const;
+
+	
+
+ 
+	inline __attribute__((always_inline)) btVector3 rotate( const btVector3& wAxis, const btScalar angle ) const;
+
+	
+	inline __attribute__((always_inline)) btScalar getX() const { return (btScalar)m_floats[0];}
+  	inline __attribute__((always_inline)) btScalar getY() const { return (btScalar)m_floats[1];}
+  	inline __attribute__((always_inline)) btScalar getZ() const { return (btScalar)m_floats[2];}
+	inline __attribute__((always_inline)) btScalar getW() const { return (btScalar)m_floats[3];}
+	inline __attribute__((always_inline)) btScalar get(unsigned int i) const {((i < 4) ? (void)0 : ::std:: _Assert("..\\..\\src\\LinearMath/btVector3.h" ":" "344" " " "i < 4", 0)); return (btScalar)m_floats[i];}
+  	inline __attribute__((always_inline)) void	setX(btScalar x) { m_floats[0] = x;}
+  	inline __attribute__((always_inline)) void	setY(btScalar y) { m_floats[1] = y;}
+  	inline __attribute__((always_inline)) void	setZ(btScalar z) { m_floats[2] = z;}
+  	inline __attribute__((always_inline)) void	setW(btScalar w) { m_floats[3] = w;}
+	inline __attribute__((always_inline)) void	set(unsigned int i, btScalar v) {((i < 4) ? (void)0 : ::std:: _Assert("..\\..\\src\\LinearMath/btVector3.h" ":" "349" " " "i < 4", 0));   m_floats[i] = v;}
+  
+	inline __attribute__((always_inline))	operator       btScalar *()       { return (btScalar*)m_floats;}
+	inline __attribute__((always_inline))	operator const btScalar *() const { return (btScalar*)m_floats;}
+
+	inline __attribute__((always_inline))	bool	operator==(const btVector3& other) const
+	{
+		return vec_all_eq(vec_sel(mVec, other.mVec, btSelVec3), other.mVec);
+	}
+
+	inline __attribute__((always_inline))	bool	operator!=(const btVector3& other) const
+	{
+		return !(*this == other);
+	}
+
+	 
+
+ 
+	inline __attribute__((always_inline)) void	setMax(const btVector3& other)
+	{
+		mVec = vec_max(mVec, other.mVec);
+	}
+
+	
+
+ 
+	inline __attribute__((always_inline)) void	setMin(const btVector3& other)
+	{
+		mVec = vec_min(mVec, other.mVec);
+	}
+
+	void	setZero()
+	{
+		mVec = btZeroVec();
+	}
+
+  
+
+		inline __attribute__((always_inline)) void 	setValue(const btScalar& x, const btScalar& y, const btScalar& z)
+		{
+			m_floats[0]=x;
+			m_floats[1]=y;
+			m_floats[2]=z;
+		}
+
+		void	getSkewSymmetricMatrix(btVector3* v0,btVector3* v1,btVector3* v2) const
+		{
+			v0->setValue(0.		,-getZ()		,getY());
+			v1->setValue(getZ()	,0.			,-getX());
+			v2->setValue(-getY()	,getX()	,0.);
+		}
+
+		inline __attribute__((always_inline)) bool isZero() const 
+		{
+			return vec_all_eq(vec_sel(mVec, btZero, btSelVec3), btZero);
+		}
+
+		inline __attribute__((always_inline)) bool fuzzyZero() const 
+		{
+			return length2() < 1.1920928955078125e-07f;
+		}
+
+		inline __attribute__((always_inline))	void	serialize(struct	btVector3FloatData& dataOut) const;
+
+		inline __attribute__((always_inline))	void	deSerialize(const struct	btVector3FloatData& dataIn);
+
+		inline __attribute__((always_inline))	void	serializeFloat(struct	btVector3FloatData& dataOut) const;
+
+		inline __attribute__((always_inline))	void	deSerializeFloat(const struct	btVector3FloatData& dataIn);
+
+		inline __attribute__((always_inline))	void	serializeDouble(struct	btVector3DoubleData& dataOut) const;
+
+		inline __attribute__((always_inline))	void	deSerializeDouble(const struct	btVector3DoubleData& dataIn);
+};
+
+ 
+inline __attribute__((always_inline)) btVector3 
+operator+(const btVector3& v1, const btVector3& v2) 
+{
+	
+	return btVector3(vec_add(v1.mVec, v2.mVec));
+}
+
+ 
+inline __attribute__((always_inline)) btVector3 
+operator*(const btVector3& v1, const btVector3& v2) 
+{
+	
+	return btVector3(vec_madd(v1.mVec, v2.mVec, btZeroVec()));
+}
+
+ 
+inline __attribute__((always_inline)) btVector3 
+operator-(const btVector3& v1, const btVector3& v2)
+{
+	
+	return btVector3(vec_sub(v1.mVec, v2.mVec));
+}
+
+ 
+inline __attribute__((always_inline)) btVector3 
+operator-(const btVector3& v)
+{
+	
+	return btVector3(vec_sub(btZeroVec(), v.mVec));
+}
+
+ 
+inline __attribute__((always_inline)) btVector3
+operator/(const btVector3& v1, const btVector3& v2)
+{
+	
+	
+	
+	vec_float4 vre = vec_re( v2.mVec );
+	vec_float4 r = vec_madd(vec_nmsub( v2.mVec, vre, btOne ), vre, vre);
+	return btVector3(vec_madd(v1.mVec, r, btZero));
+	
+}
+
+ 
+inline __attribute__((always_inline)) btVector3 
+operator*(const btVector3& v, const btScalar& s)
+{
+	
+	return btVector3(vec_madd(v.mVec, vec_float4(s), btZeroVec())); 
+}
+
+ 
+inline __attribute__((always_inline)) btVector3 
+operator*(const btScalar& s, const btVector3& v)
+{ 
+	return v * s; 
+}
+
+ 
+inline __attribute__((always_inline)) btVector3
+operator/(const btVector3& v, const btScalar& s)
+{
+	;
+	return v * (btScalar(1.0) / s);
+}
+
+ 
+inline __attribute__((always_inline)) btScalar 
+btDot(const btVector3& v1, const btVector3& v2) 
+{ 
+	return v1.dot(v2); 
+}
+
+
+ 
+inline __attribute__((always_inline)) btScalar
+btDistance2(const btVector3& v1, const btVector3& v2) 
+{ 
+	return v1.distance2(v2); 
+}
+
+
+ 
+inline __attribute__((always_inline)) btScalar
+btDistance(const btVector3& v1, const btVector3& v2) 
+{ 
+	return v1.distance(v2); 
+}
+
+ 
+inline __attribute__((always_inline)) btScalar
+btAngle(const btVector3& v1, const btVector3& v2) 
+{ 
+	return v1.angle(v2); 
+}
+
+ 
+inline __attribute__((always_inline)) btVector3 
+btCross(const btVector3& v1, const btVector3& v2) 
+{ 
+	return v1.cross(v2); 
+}
+
+inline __attribute__((always_inline)) btScalar
+btTriple(const btVector3& v1, const btVector3& v2, const btVector3& v3)
+{
+	return v1.triple(v2, v3);
+}
+
+
+
+
+ 
+inline __attribute__((always_inline)) btVector3 
+lerp(const btVector3& v1, const btVector3& v2, const btScalar& t)
+{
+	return v1.lerp(v2, t);
+}
+
+
+
+inline __attribute__((always_inline)) btScalar btVector3::distance2(const btVector3& v) const
+{
+	return (v - *this).length2();
+}
+
+inline __attribute__((always_inline)) btScalar btVector3::distance(const btVector3& v) const
+{
+	return (v - *this).length();
+}
+
+inline __attribute__((always_inline)) btVector3 btVector3::normalized() const
+{
+	return *this / length();
+} 
+
+inline __attribute__((always_inline)) btVector3 btVector3::rotate( const btVector3& wAxis, const btScalar angle ) const
+{
+	
+
+
+	
+	vec_float4 tmp = vec_madd(wAxis.mVec, mVec, btZero);
+	tmp = vec_splat(vec_add(vec_add(tmp, vec_sld(tmp, tmp, 4)), vec_sld(tmp, tmp, 8)), 0);
+	btVector3 o = vec_madd(wAxis.mVec, tmp, btZeroVec());
+
+
+
+	btVector3 x = *this - o;
+	btVector3 y;
+
+	y = wAxis.cross( *this );
+
+	return ( o + x * btCos( angle ) + y * btSin( angle ) );
+}
+
+class btVector4 : public btVector3
+{
+public:
+
+	inline __attribute__((always_inline)) btVector4() {}
+
+	inline __attribute__((always_inline)) btVector4(const btScalar& x, const btScalar& y, const btScalar& z,const btScalar& w) 
+		: btVector3(x,y,z)
+	{
+		
+		m_floats[3] = w;
+	}
+
+	inline __attribute__((always_inline)) btVector4(vec_float4 vec)
+	{
+		mVec = vec;
+	}
+
+	inline __attribute__((always_inline)) btVector4 absolute4() const 
+	{
+		return btVector4(vec_abs(mVec));
+	}
+
+	inline __attribute__((always_inline)) int maxAxis4() const
+	{
+		vec_float4 twins = vec_max(mVec, vec_sld(mVec, mVec, 4));	
+		twins = vec_max(twins, vec_sld(twins, twins, 8));	
+		vec_int4 ret = vec_sums((vec_int4)btZeroVec(), vec_and(btElementMask, (vec_int4)vec_cmpeq(twins, mVec)));
+		int out = vec_extract(ret, 3);
+		return (out > 2) ? ((out & 4) ? 2 : 3) : ((out & 1) ? 0 : 1);
+	}
+
+
+	inline __attribute__((always_inline)) int minAxis4() const
+	{
+		
+		vec_float4 twins = vec_min(mVec, vec_sld(mVec, mVec, 4));	
+		twins = vec_min(twins, vec_sld(twins, twins, 8));	
+		vec_int4 ret = vec_sums((vec_int4)btZeroVec(), vec_and(btElementMask, (vec_int4)vec_cmpeq(twins, mVec)));
+		int out = vec_extract(ret, 3);
+		return (out > 2) ? ((out & 4) ? 2 : 3) : ((out & 1) ? 0 : 1);
+	}
+
+
+	inline __attribute__((always_inline)) int closestAxis4() const 
+	{
+		return absolute4().maxAxis4();
+	}
+
+	
+
+
+
+
+ 
+		inline __attribute__((always_inline)) void	setValue(const btScalar& x, const btScalar& y, const btScalar& z,const btScalar& w)
+		{
+			m_floats[0]=x;
+			m_floats[1]=y;
+			m_floats[2]=z;
+			m_floats[3]=w;
+		}
+};
+
+
+
+
+inline __attribute__((always_inline)) void	btSwapVector3Endian(const btVector3& sourceVec, btVector3& destVec)
+{
+	
+	vec_uint4 src = (vec_uint4)sourceVec.mVec;	
+
+	vec_ushort8  dest = (vec_ushort8)vec_rl(src, vec_splats(16u));			
+	dest = vec_rl(dest, vec_ushort8(8));	
+	destVec = (vec_float4)dest;
+}
+
+
+inline __attribute__((always_inline)) void	btUnSwapVector3Endian(btVector3& vector)
+{
+	
+	vec_uint4 src = (vec_uint4)vector.mVec;	
+
+	vec_ushort8  dest = (vec_ushort8)vec_rl(src, vec_splats(16u));			
+	dest = vec_rl(dest, vec_ushort8(8));	
+	vector = (vec_float4)dest;
+}
+
+# 705 "..\\..\\src\\LinearMath/btVector3.h"
+template <class T>
+inline __attribute__((always_inline)) void btPlaneSpace1 (const T& n, T& p, T& q)
+{
+  if (btFabs(n[2]) > btScalar(0.7071067811865475244008443621048490)) {
+    
+    btScalar a = n[1]*n[1] + n[2]*n[2];
+    btScalar k = ((btScalar)(btScalar(1.0)/btSqrt(btScalar(a))));
+    p[0] = 0;
+	p[1] = -n[2]*k;
+	p[2] = n[1]*k;
+    
+    q[0] = a*k;
+	q[1] = -n[0]*p[2];
+	q[2] = n[0]*p[1];
+  }
+  else {
+    
+    btScalar a = n[0]*n[0] + n[1]*n[1];
+    btScalar k = ((btScalar)(btScalar(1.0)/btSqrt(btScalar(a))));
+    p[0] = -n[1]*k;
+	p[1] = n[0]*k;
+	p[2] = 0;
+    
+    q[0] = -n[2]*p[1];
+	q[1] = n[2]*p[0];
+	q[2] = a*k;
+  }
+}
+
+
+struct	btVector3FloatData
+{
+	union
+	{
+		vec_float4 mVec;
+		float m_floats[4];
+	};
+};
+
+struct	btVector3DoubleData
+{
+	double	m_floats[4];
+
+};
+
+inline __attribute__((always_inline))	void	btVector3::serializeFloat(struct	btVector3FloatData& dataOut) const
+{
+	
+	dataOut.mVec = mVec;
+}
+
+inline __attribute__((always_inline)) void	btVector3::deSerializeFloat(const struct	btVector3FloatData& dataIn)
+{
+	mVec = dataIn.mVec;
+}
+
+inline __attribute__((always_inline))	void	btVector3::serializeDouble(struct	btVector3DoubleData& dataOut) const
+{
+	((! "implemented") ? (void)0 : ::std:: _Assert("..\\..\\src\\LinearMath/btVector3.h" ":" "763" " " "!\"implemented\"", 0));
+}
+
+inline __attribute__((always_inline)) void	btVector3::deSerializeDouble(const struct	btVector3DoubleData& dataIn)
+{
+	((! "implemented") ? (void)0 : ::std:: _Assert("..\\..\\src\\LinearMath/btVector3.h" ":" "768" " " "!\"implemented\"", 0));
+}
+
+inline __attribute__((always_inline))	void	btVector3::serialize(struct	btVector3FloatData& dataOut) const
+{
+	
+	dataOut.mVec = mVec;
+}
+
+inline __attribute__((always_inline)) void	btVector3::deSerialize(const struct	btVector3FloatData& dataIn)
+{
+	mVec = dataIn.mVec;
+}
+# 1483 "..\\..\\src\\LinearMath/btVector3.h"
+
+
+
+static inline __attribute__((always_inline)) float vec_dot3s( vec_float4 vec0, vec_float4 vec1 )
+{
+	vec_float4 tmp = vec_madd(vec0, vec1, btZeroVec());
+	return vec_extract(vec_add(vec_add(tmp, vec_sld(tmp, tmp, 4)), vec_sld(tmp, tmp, 8)), 0);
+}
+
+static inline __attribute__((always_inline)) vec_float4 vec_dot3( vec_float4 vec0, vec_float4 vec1 )
+{
+	vec_float4 tmp = vec_madd(vec0, vec1, btZeroVec());
+	return vec_splat(vec_add(vec_add(tmp, vec_sld(tmp, tmp, 4)), vec_sld(tmp, tmp, 8)), 0);
+}
+
+static inline __attribute__((always_inline)) vec_float4 vec_dot3mx(const vec_float4* mx, vec_float4 vec )
+{
+	
+	vec_float4 vec0 = vec_madd(mx[0], vec, btZeroVec());
+	vec_float4 vec1 = vec_madd(mx[1], vec, btZeroVec());
+	vec_float4 vec2 = vec_madd(mx[2], vec, btZeroVec());
+
+	
+	vec_float4 tmp = vec_vmrghw(vec0, vec2);	
+	vec_float4 mt0 = vec_vmrghw(tmp, vec1); 
+	vec_float4 mt1 = vec_vmrglw(tmp, vec_sld(vec1, vec1, 12));	
+	vec_float4 mt2 = vec_vmrghw(vec_vmrglw(vec0, vec2), vec_sld(vec1, vec1,	8)); 
+
+	
+	return vec_add(mt2, vec_add(mt0, mt1));
+}
+
+
+# 1522 "..\\..\\src\\LinearMath/btVector3.h"
+
+# 18 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+# 1 "..\\..\\src\\LinearMath/btQuaternion.h"
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+# 1 "..\\..\\src\\LinearMath/btQuadWord.h"
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+class __attribute__ ((aligned (16))) btQuadWord
+
+
+
+{
+protected:
+
+
+public:
+	union {
+		vec_float4 mVec128;
+		btScalar	m_floats[4];
+	};
+public:
+	inline __attribute__((always_inline)) vec_float4	get128() const
+	{
+		return mVec128;
+	}
+
+	inline __attribute__((always_inline)) void 	setValue(const vec_float4 vec)
+	{
+		mVec128 = vec;
+	}
+protected:
+
+
+
+
+	public:
+
+	 
+		inline __attribute__((always_inline)) const btScalar& getX() const { return m_floats[0]; }
+   
+		inline __attribute__((always_inline)) const btScalar& getY() const { return m_floats[1]; }
+   
+		inline __attribute__((always_inline)) const btScalar& getZ() const { return m_floats[2]; }
+   
+		inline __attribute__((always_inline)) void	setX(btScalar x) { m_floats[0] = x;};
+   
+		inline __attribute__((always_inline)) void	setY(btScalar y) { m_floats[1] = y;};
+   
+		inline __attribute__((always_inline)) void	setZ(btScalar z) { m_floats[2] = z;};
+   
+		inline __attribute__((always_inline)) void	setW(btScalar w) { m_floats[3] = w;};
+   
+		inline __attribute__((always_inline)) const btScalar& x() const { return m_floats[0]; }
+   
+		inline __attribute__((always_inline)) const btScalar& y() const { return m_floats[1]; }
+   
+		inline __attribute__((always_inline)) const btScalar& z() const { return m_floats[2]; }
+   
+		inline __attribute__((always_inline)) const btScalar& w() const { return m_floats[3]; }
+
+	
+	
+	
+	inline __attribute__((always_inline))	operator       btScalar *()       { return &m_floats[0]; }
+	inline __attribute__((always_inline))	operator const btScalar *() const { return &m_floats[0]; }
+
+
+	inline __attribute__((always_inline))	bool	operator==(const btQuadWord& other) const
+	{
+		
+		return vec_all_eq(mVec128, other.mVec128);
+	}
+# 102 "..\\..\\src\\LinearMath/btQuadWord.h"
+
+	inline __attribute__((always_inline))	bool	operator!=(const btQuadWord& other) const
+	{
+		return !(*this == other);
+	}
+
+  
+
+
+
+ 
+		inline __attribute__((always_inline)) void 	setValue(const btScalar& x, const btScalar& y, const btScalar& z)
+		{
+			m_floats[0]=x;
+			m_floats[1]=y;
+			m_floats[2]=z;
+			m_floats[3] = 0.f;
+		}
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+ 
+		inline __attribute__((always_inline)) void	setValue(const btScalar& x, const btScalar& y, const btScalar& z,const btScalar& w)
+		{
+			m_floats[0]=x;
+			m_floats[1]=y;
+			m_floats[2]=z;
+			m_floats[3]=w;
+		}
+   
+		inline __attribute__((always_inline)) btQuadWord()
+		
+		{
+		}
+ 
+  
+
+
+
+ 
+		inline __attribute__((always_inline)) btQuadWord(const btScalar& x, const btScalar& y, const btScalar& z)		
+		{
+			
+			setValue(x, y, z, 0.f);
+		}
+
+
+
+
+
+
+ 
+		inline __attribute__((always_inline)) btQuadWord(const btScalar& x, const btScalar& y, const btScalar& z,const btScalar& w) 
+		{
+			
+			setValue(x, y, z, w);
+		}
+
+  
+
+ 
+		inline __attribute__((always_inline)) void	setMax(const btQuadWord& other)
+		{
+
+			
+			mVec128 = vec_max(mVec128, other.mVec128);
+# 184 "..\\..\\src\\LinearMath/btQuadWord.h"
+		}
+  
+
+ 
+		inline __attribute__((always_inline)) void	setMin(const btQuadWord& other)
+		{
+
+			
+			mVec128 = vec_min(mVec128, other.mVec128);
+# 199 "..\\..\\src\\LinearMath/btQuadWord.h"
+		}
+
+
+
+};
+
+# 20 "..\\..\\src\\LinearMath/btQuaternion.h"
+
+ 
+class btQuaternion : public btQuadWord {
+public:
+   
+	btQuaternion() {}
+
+
+	inline __attribute__((always_inline)) btQuaternion(const vec_float4 vec)		
+	{
+		mVec128 = vec;
+	}
+
+	inline __attribute__((always_inline)) btQuaternion(const btVector3 vec)		
+	{
+		mVec128 = vec.mVec;
+	}
+
+
+	
+	
+   
+	btQuaternion(const btScalar& x, const btScalar& y, const btScalar& z, const btScalar& w) 
+		: btQuadWord(x, y, z, w) 
+	{}
+  
+
+ 
+	btQuaternion(const btVector3& axis, const btScalar& angle) 
+	{ 
+		setRotation(axis, angle); 
+	}
+  
+
+
+ 
+	btQuaternion(const btScalar& yaw, const btScalar& pitch, const btScalar& roll)
+	{ 
+
+		setEuler(yaw, pitch, roll); 
+
+
+
+	}
+  
+
+ 
+	void setRotation(const btVector3& axis, const btScalar& angle)
+	{
+		btScalar d = axis.length();
+		((d != btScalar(0.0)) ? (void)0 : ::std:: _Assert("..\\..\\src\\LinearMath/btQuaternion.h" ":" "70" " " "d != btScalar(0.0)", 0));
+		btScalar s = btSin(angle * btScalar(0.5)) / d;
+		setValue(axis.getX() * s, axis.getY() * s, axis.getZ() * s, 
+			btCos(angle * btScalar(0.5)));
+	}
+  
+
+
+ 
+	void setEuler(const btScalar& yaw, const btScalar& pitch, const btScalar& roll)
+	{
+		btScalar halfYaw = btScalar(yaw) * btScalar(0.5);  
+		btScalar halfPitch = btScalar(pitch) * btScalar(0.5);  
+		btScalar halfRoll = btScalar(roll) * btScalar(0.5);  
+		btScalar cosYaw = btCos(halfYaw);
+		btScalar sinYaw = btSin(halfYaw);
+		btScalar cosPitch = btCos(halfPitch);
+		btScalar sinPitch = btSin(halfPitch);
+		btScalar cosRoll = btCos(halfRoll);
+		btScalar sinRoll = btSin(halfRoll);
+		setValue(cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw,
+			cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw,
+			sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw,
+			cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw);
+	}
+  
+
+
+ 
+	void setEulerZYX(const btScalar& yaw, const btScalar& pitch, const btScalar& roll)
+	{
+		btScalar halfYaw = btScalar(yaw) * btScalar(0.5);  
+		btScalar halfPitch = btScalar(pitch) * btScalar(0.5);  
+		btScalar halfRoll = btScalar(roll) * btScalar(0.5);  
+		btScalar cosYaw = btCos(halfYaw);
+		btScalar sinYaw = btSin(halfYaw);
+		btScalar cosPitch = btCos(halfPitch);
+		btScalar sinPitch = btSin(halfPitch);
+		btScalar cosRoll = btCos(halfRoll);
+		btScalar sinRoll = btSin(halfRoll);
+		setValue(sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw, 
+                         cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw, 
+                         cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw, 
+                         cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw); 
+	}
+  
+ 
+	inline __attribute__((always_inline))	btQuaternion& operator+=(const btQuaternion& q)
+	{
+
+		
+		mVec128 = vec_add(mVec128, q.mVec128);
+
+
+
+		return *this;
+	}
+
+  
+ 
+	btQuaternion& operator-=(const btQuaternion& q) 
+	{
+
+		
+		mVec128 = vec_sub(mVec128, q.mVec128);
+
+
+
+		return *this;
+	}
+
+  
+ 
+	btQuaternion& operator*=(const btScalar& s)
+	{
+
+		
+		mVec128 = vec_madd(mVec128, vec_float4(s), btZero);
+
+
+
+		return *this;
+	}
+
+  
+
+ 
+	btQuaternion& operator*=(const btQuaternion& q)
+	{
+
+		
+		vec_float4 xklm = vec_sld(q.mVec128, q.mVec128, 12);
+		vec_float4 tmp = vec_madd(mVec128, vec_sld(xklm, q.mVec128, 8), btZeroVec());	
+		vec_float4 bmckal = vec_sld(vec_sld(tmp, tmp, 12), tmp, 8);
+		tmp = vec_madd(mVec128, vec_sld(xklm, q.mVec128, 12), btZeroVec()); 	
+		vec_float4 clambk = vec_sld(vec_sld(tmp, tmp, 12), tmp, 12);
+
+		vec_float4 d = vec_splat(mVec128, 3);
+		vec_float4 n = vec_splat(q.mVec128, 3);
+		vec_float4 res = vec_madd(q.mVec128, d, vec_madd(mVec128, n, vec_sub(bmckal, clambk)));	
+
+		tmp = vec_madd(mVec128, q.mVec128, btZeroVec());	
+		tmp = vec_sub(tmp, vec_sld(tmp, tmp, 4));		
+		vec_float4 ret = vec_sel(res, vec_sub(tmp, vec_sld(tmp, tmp, 8)), btSelVec3);		
+		mVec128 = ret;
+# 181 "..\\..\\src\\LinearMath/btQuaternion.h"
+		return *this;
+	}
+  
+ 
+	btScalar dot(const btQuaternion& q) const
+	{
+
+		
+		vec_float4 tmp = vec_madd(mVec128, q.mVec128, btZeroVec());
+		vec_float4 result = vec_add(tmp, vec_sld(tmp, tmp, 8));
+		return btScalar(vec_extract(vec_add(result, vec_sld(result, result, 4)), 0));
+
+
+
+	}
+
+   
+	btScalar length2() const
+	{
+		return dot(*this);
+	}
+
+   
+	btScalar length() const
+	{
+		return btSqrt(length2());
+	}
+
+  
+ 
+	btQuaternion& normalize() 
+	{
+		return *this /= length();
+	}
+
+  
+ 
+	inline __attribute__((always_inline)) btQuaternion
+	operator*(const btScalar& s) const
+	{
+
+		
+		return btQuaternion(vec_madd(mVec128, vec_float4(s), btZero));
+
+
+
+	}
+
+
+  
+ 
+	btQuaternion operator/(const btScalar& s) const
+	{
+		((s != btScalar(0.0)) ? (void)0 : ::std:: _Assert("..\\..\\src\\LinearMath/btQuaternion.h" ":" "234" " " "s != btScalar(0.0)", 0));
+		return *this * (btScalar(1.0) / s);
+	}
+
+  
+ 
+	btQuaternion& operator/=(const btScalar& s) 
+	{
+		((s != btScalar(0.0)) ? (void)0 : ::std:: _Assert("..\\..\\src\\LinearMath/btQuaternion.h" ":" "242" " " "s != btScalar(0.0)", 0));
+		return *this *= btScalar(1.0) / s;
+	}
+
+   
+	btQuaternion normalized() const 
+	{
+		return *this / length();
+	} 
+  
+ 
+	btScalar angle(const btQuaternion& q) const 
+	{
+		btScalar s = btSqrt(length2() * q.length2());
+		((s != btScalar(0.0)) ? (void)0 : ::std:: _Assert("..\\..\\src\\LinearMath/btQuaternion.h" ":" "256" " " "s != btScalar(0.0)", 0));
+		return btAcos(dot(q) / s);
+	}
+   
+	btScalar getAngle() const 
+	{
+		btScalar s = btScalar(2.) * btAcos(m_floats[3]);
+		return s;
+	}
+
+	 
+	btVector3 getAxis() const
+	{
+
+		
+		btScalar s_squared = btScalar(1.) - btPow(getW(), btScalar(2.));
+		if (s_squared < btScalar(10.) * 1.1920928955078125e-07f) 
+			return btIdentVec0;  
+		float res = 1/btSqrt(s_squared);
+		return btVector3(vec_madd(mVec128, vec_splats(res), btZeroVec()));
+# 283 "..\\..\\src\\LinearMath/btQuaternion.h"
+	}
+
+	 
+	btQuaternion inverse() const
+	{
+		return btQuaternion(-m_floats[0], -m_floats[1], -m_floats[2], m_floats[3]);
+	}
+
+  
+ 
+	inline __attribute__((always_inline)) btQuaternion
+	operator+(const btQuaternion& q2) const
+	{
+
+		
+		return btQuaternion(vec_add(mVec128, q2.mVec128));
+
+
+
+
+	}
+
+  
+ 
+	inline __attribute__((always_inline)) btQuaternion
+	operator-(const btQuaternion& q2) const
+	{
+
+		
+		return btQuaternion(vec_sub(mVec128, q2.mVec128));
+
+
+
+
+	}
+
+  
+ 
+	inline __attribute__((always_inline)) btQuaternion operator-() const
+	{
+
+		
+		return btQuaternion(vec_sub(btZero, mVec128));
+
+
+
+
+	}
+   
+	inline __attribute__((always_inline)) btQuaternion farthest( const btQuaternion& qd) const 
+	{
+
+		
+		vec_float4 diff = vec_sub(mVec128, qd.mVec128);
+		vec_float4 sum = vec_add(mVec128, qd.mVec128);
+		vec_float4 tmp = vec_sub(vec_madd(diff, diff, btZero), vec_madd(sum, sum, btZero));
+		if(vec_any_gt(vec_sel(btZeroVec(), vec_add(vec_add(tmp, vec_sld(tmp, tmp, 4)), vec_sld(tmp, tmp, 8)), btSelVec0), btZeroVec()));
+			return qd;
+		return (-qd);
+# 350 "..\\..\\src\\LinearMath/btQuaternion.h"
+	}
+
+	 
+	inline __attribute__((always_inline)) btQuaternion nearest( const btQuaternion& qd) const 
+	{
+
+		
+		vec_float4 diff = vec_sub(mVec128, qd.mVec128);
+		vec_float4 sum = vec_add(mVec128, qd.mVec128);
+		vec_float4 tmp = vec_sub(vec_madd(diff, diff, btZero), vec_madd(sum, sum, btZero));
+		if(vec_any_lt(vec_sel(btZeroVec(), vec_add(vec_add(tmp, vec_sld(tmp, tmp, 4)), vec_sld(tmp, tmp, 8)), btSelVec0), btZeroVec()));
+			return qd;
+		return (-qd);
+# 371 "..\\..\\src\\LinearMath/btQuaternion.h"
+	}
+
+
+  
+
+
+ 
+	btQuaternion slerp(const btQuaternion& q, const btScalar& t) const
+	{
+		btScalar theta = angle(q);
+		if (theta != btScalar(0.0))
+		{
+			btScalar d = btScalar(1.0) / btSin(theta);
+			btScalar s0 = btSin((btScalar(1.0) - t) * theta);
+			btScalar s1 = btSin(t * theta);   
+
+			
+			if (dot(q) < 0) 
+			{
+				vec_float4 tmp = vec_madd(mVec128, vec_float4(s0), btZero);
+				tmp = vec_sub(tmp, vec_madd(q.mVec128, vec_float4(s1), btZero));
+            return btQuaternion(vec_madd(tmp, vec_float4(d), btZero));
+			}
+         else
+			{
+				vec_float4 tmp = vec_madd(mVec128, vec_float4(s0), vec_madd(q.mVec128, vec_float4(s1), btZero));
+				return btQuaternion(vec_madd(tmp, vec_float4(d), btZero));
+			}
+# 411 "..\\..\\src\\LinearMath/btQuaternion.h"
+                        
+		}
+		else
+		{
+			return *this;
+		}
+	}
+
+	static const btQuaternion&	getIdentity()
+	{
+		static const btQuaternion identityQuat(btScalar(0.),btScalar(0.),btScalar(0.),btScalar(1.));
+		return identityQuat;
+	}
+
+	inline __attribute__((always_inline)) const btScalar& getW() const { return m_floats[3]; }
+	
+};
+
+
+ 
+inline __attribute__((always_inline)) btQuaternion
+operator-(const btQuaternion& q)
+{
+	
+	return btQuaternion(vec_sub(btZeroVec(), q.mVec128));
+}
+# 445 "..\\..\\src\\LinearMath/btQuaternion.h"
+
+
+ 
+inline __attribute__((always_inline)) btQuaternion
+operator*(const btQuaternion& q1, const btQuaternion& q2) {
+	
+
+	
+
+
+
+
+
+
+
+ 
+
+	vec_float4 nopm = vec_madd(q1.mVec128, q2.mVec128, btZeroVec());
+	vec_float4 kcja = vec_madd(q1.mVec128, vec_sld(q2.mVec128, q2.mVec128, 4), btZeroVec());
+	vec_float4 hfge = vec_madd(q1.mVec128, vec_sld(q2.mVec128, q2.mVec128, 8), btZeroVec());
+	vec_float4 bldi = vec_madd(q1.mVec128, vec_sld(q2.mVec128, q2.mVec128, 12), btZeroVec());
+
+	
+	vec_float4 agie = vec_vmrglw(vec_vmrglw(kcja, bldi) , hfge);
+	vec_float4 bfjg = vec_vmrghw(vec_vmrghw(bldi, vec_sld(kcja, kcja, 8)) , vec_sld(hfge, hfge, 4));
+	vec_float4 cekh = vec_vmrghw(vec_sld(vec_sld(kcja, kcja, 8), kcja, 12) , vec_sld(hfge, hfge, 12));
+	vec_float4 dhlf =  vec_vmrghw(vec_vmrglw(bldi, vec_sld(bldi, bldi, 12)) , hfge);
+
+	
+	vec_float4 mnop = vec_add(vec_add(nopm, vec_sld(nopm, nopm, 4)), vec_sld(nopm, nopm, 8));
+	mnop = vec_sub(nopm, vec_sld(mnop, mnop, 4));
+
+	vec_float4 res = vec_sub(vec_add(vec_add(agie, bfjg), cekh), dhlf);
+	
+	 return btQuaternion(vec_sel(res, mnop, btSelVec3));
+}
+
+inline __attribute__((always_inline)) btQuaternion
+operator*(const btQuaternion& q, const btVector3& w)
+{
+	
+
+	
+
+
+
+
+
+
+
+ 
+
+	vec_float4 jklx = vec_madd(q.mVec128, w.mVec, btZeroVec());	
+	vec_float4 hbxa = vec_madd(q.mVec128, vec_sld(w.mVec, w.mVec, 4), btZeroVec());	
+	vec_float4 fxed = vec_madd(q.mVec128, vec_sld(w.mVec, w.mVec, 8), btZeroVec());	
+	vec_float4 xicg = vec_madd(q.mVec128, vec_sld(w.mVec, w.mVec, 12), btZeroVec());	
+
+	vec_float4 adgf = vec_vmrglw(vec_vmrglw(hbxa, xicg) , vec_sld(fxed, fxed, 4));
+	vec_float4 behd = vec_vmrghw(vec_sld(vec_sld(hbxa, hbxa, 8), hbxa, 12) , vec_sld(fxed, fxed, 8));
+	vec_float4 cfix = vec_vmrghw(vec_vmrglw(xicg, vec_sld(xicg, xicg, 12)) , fxed);
+
+	vec_float4 res = vec_sub(vec_add(adgf, behd), cfix);
+	vec_float4 last = vec_sub(btZeroVec(), jklx);
+	last = vec_add(vec_add(vec_sld(last, last, 4), vec_sld(last, last, 8)), vec_sld(last, last, 12));
+	vec_float4 ret = vec_sel(res, last, btSelVec3);
+
+	return btQuaternion(ret);
+}
+# 541 "..\\..\\src\\LinearMath/btQuaternion.h"
+ 
+inline __attribute__((always_inline)) btScalar 
+dot(const btQuaternion& q1, const btQuaternion& q2) 
+{ 
+	return q1.dot(q2); 
+}
+
+
+ 
+inline __attribute__((always_inline)) btScalar
+length(const btQuaternion& q) 
+{ 
+	return q.length(); 
+}
+
+ 
+inline __attribute__((always_inline)) btScalar
+angle(const btQuaternion& q1, const btQuaternion& q2) 
+{ 
+	return q1.angle(q2); 
+}
+
+ 
+inline __attribute__((always_inline)) btQuaternion
+inverse(const btQuaternion& q) 
+{
+	return q.inverse();
+}
+
+
+
+
+
+ 
+inline __attribute__((always_inline)) btQuaternion
+slerp(const btQuaternion& q1, const btQuaternion& q2, const btScalar& t) 
+{
+	return q1.slerp(q2, t);
+}
+
+inline __attribute__((always_inline)) btVector3 
+quatRotate(const btQuaternion& rotation, const btVector3& v) 
+{
+	btQuaternion q = rotation * v;
+	q *= rotation.inverse();
+
+	
+	return btVector3(q.get128());
+
+
+
+}
+
+inline __attribute__((always_inline)) btQuaternion  
+shortestArcQuat(const btVector3& v0, const btVector3& v1) 
+{
+	btVector3 c = v0.cross(v1);
+	btScalar  d = v0.dot(v1);
+
+	if (d < -1.0 + 1.1920928955078125e-07f)
+	{
+		btVector3 n,unused;
+		btPlaneSpace1(v0,n,unused);
+		return btQuaternion(n.getX(),n.getY(),n.getZ(),0.0f); 
+	}
+
+	btScalar tmp = 1.0f + d;
+	btScalar  s = btSqrt(tmp + tmp);
+	btScalar rs = 1.0f / s;
+
+	return btQuaternion(c.getX()*rs,c.getY()*rs,c.getZ()*rs,s * 0.5f);
+}
+
+inline __attribute__((always_inline)) btQuaternion 
+shortestArcQuatNormalize2(btVector3& v0,btVector3& v1)
+{
+	v0.normalize();
+	v1.normalize();
+	return shortestArcQuat(v0,v1);
+}
+
+# 19 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+
+
+
+
+
+
+
+
+ 
+class btMatrix3x3 {
+
+	
+	btVector3 m_el[3];
+
+public:
+
+
+	btMatrix3x3(const vec_float4 a, const vec_float4 b, const vec_float4 c)
+	{
+		m_el[0].mVec = a;
+		m_el[1].mVec = b;
+		m_el[2].mVec = c;
+	};
+
+	inline __attribute__((always_inline)) btVector3&  operator[](int i)
+	{ 
+		;
+		return m_el[i]; 
+	}
+	
+ 
+	inline __attribute__((always_inline)) const btVector3& operator[](int i) const
+	{
+		;
+		return m_el[i]; 
+	} 
+
+	inline __attribute__((always_inline)) const vec_float4*	get128ptr() const
+	{
+		return (vec_float4*)m_el;
+	}
+
+
+	 
+	btMatrix3x3 () {}
+
+	
+
+	 
+	explicit btMatrix3x3(const btQuaternion& q) { setRotation(q); }
+	
+
+
+
+
+
+ 
+	 
+
+	btMatrix3x3(const btScalar& xx, const btScalar& xy, const btScalar& xz,
+		const btScalar& yx, const btScalar& yy, const btScalar& yz,
+		const btScalar& zx, const btScalar& zy, const btScalar& zz)
+	{ 
+		setValue(xx, xy, xz, 
+			yx, yy, yz, 
+			zx, zy, zz);
+	}
+
+	 
+	inline __attribute__((always_inline)) btMatrix3x3 (const btMatrix3x3& other)
+	{
+		m_el[0] = other.m_el[0];
+		m_el[1] = other.m_el[1];
+		m_el[2] = other.m_el[2];
+	}
+	 
+	inline __attribute__((always_inline)) btMatrix3x3& operator=(const btMatrix3x3& other)
+	{
+		m_el[0] = other.m_el[0];
+		m_el[1] = other.m_el[1];
+		m_el[2] = other.m_el[2];
+		return *this;
+	}
+
+
+	inline __attribute__((always_inline)) btVector3 getDiagonal() const
+	{
+		
+		return btVector3(vec_vmrghw(vec_vmrghw(m_el[0].mVec, vec_sld(m_el[2].mVec, m_el[2].mVec, 8)), vec_sld(m_el[1].mVec, m_el[1].mVec, 4)));
+	}
+
+
+	
+ 
+	inline __attribute__((always_inline)) btVector3 getColumn(int i) const
+	{
+		return btVector3(m_el[0][i],m_el[1][i],m_el[2][i]);
+	}
+
+
+	
+ 
+	inline __attribute__((always_inline)) const btVector3 getRow(int i) const
+	{
+		;
+		return m_el[i];
+	}
+
+	
+ 
+# 144 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+
+	
+
+ 
+	btMatrix3x3& operator*=(const btMatrix3x3& m); 
+
+	
+ 
+# 160 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+	
+
+
+
+
+
+
+
+
+ 
+	void setValue(const btScalar& xx, const btScalar& xy, const btScalar& xz, 
+		const btScalar& yx, const btScalar& yy, const btScalar& yz, 
+		const btScalar& zx, const btScalar& zy, const btScalar& zz)
+	{
+		m_el[0].setValue(xx,xy,xz);
+		m_el[1].setValue(yx,yy,yz);
+		m_el[2].setValue(zx,zy,zz);
+	}
+	
+   
+	void setRotation(const btQuaternion& q) 
+	{
+		btScalar d = q.length2();
+		;
+		btScalar s = btScalar(2.0) / d;
+	
+# 226 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+		btScalar xs = q.x() * s,   ys = q.y() * s,   zs = q.z() * s;
+		btScalar wx = q.w() * xs,  wy = q.w() * ys,  wz = q.w() * zs;
+		btScalar xx = q.x() * xs,  xy = q.x() * ys,  xz = q.x() * zs;
+		btScalar yy = q.y() * ys,  yz = q.y() * zs,  zz = q.z() * zs;
+		setValue(btScalar(1.0) - (yy + zz), xy - wz, xz + wy,
+			xy + wz, btScalar(1.0) - (xx + zz), yz - wx,
+			xz - wy, yz + wx, btScalar(1.0) - (xx + yy));
+
+	}
+
+
+	
+
+
+
+ 
+	void setEulerYPR(const btScalar& yaw, const btScalar& pitch, const btScalar& roll) 
+	{
+		setEulerZYX(roll, pitch, yaw);
+	}
+
+	
+
+
+
+
+
+
+
+ 
+	void setEulerZYX(btScalar eulerX,btScalar eulerY,btScalar eulerZ) { 
+		
+		btScalar ci ( btCos(eulerX)); 
+		btScalar cj ( btCos(eulerY)); 
+		btScalar ch ( btCos(eulerZ)); 
+		btScalar si ( btSin(eulerX)); 
+		btScalar sj ( btSin(eulerY)); 
+		btScalar sh ( btSin(eulerZ)); 
+		btScalar cc = ci * ch; 
+		btScalar cs = ci * sh; 
+		btScalar sc = si * ch; 
+		btScalar ss = si * sh;
+
+		setValue(cj * ch, sj * sc - cs, sj * cc + ss,
+			cj * sh, sj * ss + cc, sj * cs - sc, 
+			-sj,      cj * si,      cj * ci);
+	}
+
+	 
+	void setIdentity()
+	{ 
+
+		
+		m_el[0].mVec = btIdentVec0;
+		m_el[1].mVec = btIdentVec1;
+		m_el[2].mVec = btIdentVec2;
+
+
+
+
+
+	}
+
+	static const btMatrix3x3&	getIdentity()
+	{
+
+		
+		static const btMatrix3x3 identityMatrix(btIdentVec0, btIdentVec1, btIdentVec2);
+
+
+
+
+
+		return identityMatrix;
+	}
+
+	
+ 
+# 321 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+	
+ 
+	void getRotation(btQuaternion& q) const
+	{
+# 386 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+		btScalar trace = btVector3(m_el[0]).getX() + btVector3(m_el[1]).getY() + btVector3(m_el[2]).getZ();
+		btScalar temp[4];
+
+		if (trace > btScalar(0.0)) 
+		{
+			btScalar s = btSqrt(trace + btScalar(1.0));
+			temp[3]=(s * btScalar(0.5));
+			s = btScalar(0.5) / s;
+
+			temp[0]=((btVector3(m_el[2]).getY() - btVector3(m_el[1]).getZ()) * s);
+			temp[1]=((btVector3(m_el[0]).getZ() - btVector3(m_el[2]).getX()) * s);
+			temp[2]=((btVector3(m_el[1]).getX() - btVector3(m_el[0]).getY()) * s);
+		} 
+		else 
+		{
+			int i = btVector3(m_el[0]).getX() < btVector3(m_el[1]).getY() ? 
+				(btVector3(m_el[1]).getY() < btVector3(m_el[2]).getZ() ? 2 : 1) :
+				(btVector3(m_el[0]).getX() < btVector3(m_el[2]).getZ() ? 2 : 0); 
+			int j = (i + 1) % 3;  
+			int k = (i + 2) % 3;
+			
+			btScalar s = btSqrt(m_el[i][i] - m_el[j][j] - m_el[k][k] + btScalar(1.0));
+			temp[i] = s * btScalar(0.5);
+			s = btScalar(0.5) / s;
+
+			temp[3] = (m_el[k][j] - m_el[j][k]) * s;
+			temp[j] = (m_el[j][i] + m_el[i][j]) * s;
+			temp[k] = (m_el[k][i] + m_el[i][k]) * s;
+		}
+		q.setValue(temp[0],temp[1],temp[2],temp[3]);
+
+	}
+
+	
+
+
+ 	
+
+# 519 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+	
+ 
+
+	btMatrix3x3 scaled(const btVector3& s) const
+	{
+
+		
+		return btMatrix3x3(vec_madd(s.mVec, m_el[0].mVec, btZeroVec()), vec_madd(s.mVec, m_el[1].mVec, btZeroVec()), vec_madd(s.mVec, m_el[2].mVec, btZeroVec()));
+
+
+
+
+
+	}
+
+	 
+	btScalar            determinant() const;
+	 
+	btMatrix3x3 adjoint() const;
+	 
+	btMatrix3x3 absolute() const;
+	 
+	btMatrix3x3 transpose() const;
+	 
+	btMatrix3x3 inverse() const; 
+
+	btMatrix3x3 transposeTimes(const btMatrix3x3& m) const;
+	btMatrix3x3 timesTranspose(const btMatrix3x3& m) const;
+
+# 562 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+
+	
+
+
+
+
+
+
+
+ 
+	void diagonalize(btMatrix3x3& rot, btScalar threshold, int maxSteps)
+	{
+# 666 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+		rot.setIdentity();
+		for (int step = maxSteps; step > 0; step--)
+		{
+			
+			int p = 0;
+			int q = 1;
+			int r = 2;
+			btScalar max = btFabs(m_el[0][1]);
+			btScalar v = btFabs(m_el[0][2]);
+			if (v > max)
+			{
+				q = 2;
+				r = 1;
+				max = v;
+			}
+			v = btFabs(m_el[1][2]);
+			if (v > max)
+			{
+				p = 1;
+				q = 2;
+				r = 0;
+				max = v;
+			}
+
+			btScalar t = threshold * (btFabs(m_el[0][0]) + btFabs(m_el[1][1]) + btFabs(m_el[2][2]));
+			if (max <= t)
+			{
+				if (max <= 1.1920928955078125e-07f * t)
+				{
+					return;
+				}
+				step = 1;
+			}
+
+			
+			btScalar mpq = m_el[p][q];
+			btScalar theta = (m_el[q][q] - m_el[p][p]) / (2 * mpq);
+			btScalar theta2 = theta * theta;
+			btScalar cos;
+			btScalar sin;
+			if (theta2 * theta2 < btScalar(10 / 1.1920928955078125e-07f))
+			{
+				t = (theta >= 0) ? 1 / (theta + btSqrt(1 + theta2))
+					: 1 / (theta - btSqrt(1 + theta2));
+				cos = 1 / btSqrt(1 + t * t);
+				sin = cos * t;
+			}
+			else
+			{
+				
+				t = 1 / (theta * (2 + btScalar(0.5) / theta2));
+				cos = 1 - btScalar(0.5) * t * t;
+				sin = cos * t;
+			}
+
+			
+			m_el[p][q] = m_el[q][p] = 0;
+			m_el[p][p] -= t * mpq;
+			m_el[q][q] += t * mpq;
+			btScalar mrp = m_el[r][p];
+			btScalar mrq = m_el[r][q];
+			m_el[r][p] = m_el[p][r] = cos * mrp - sin * mrq;
+			m_el[r][q] = m_el[q][r] = cos * mrq + sin * mrp;
+
+			
+			for (int i = 0; i < 3; i++)
+			{
+				btVector3& row = rot[i];
+				mrp = row[p];
+				mrq = row[q];
+				row[p] = cos * mrp - sin * mrq;
+				row[q] = cos * mrq + sin * mrp;
+			}
+		}
+
+	}
+
+
+
+
+	
+
+
+
+
+
+ 
+# 759 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+
+	void	serialize(struct	btMatrix3x3FloatData& dataOut) const;
+
+	void	serializeFloat(struct	btMatrix3x3FloatData& dataOut) const;
+
+	void	deSerialize(const struct	btMatrix3x3FloatData& dataIn);
+
+	void	deSerializeFloat(const struct	btMatrix3x3FloatData& dataIn);
+
+	void	deSerializeDouble(const struct	btMatrix3x3DoubleData& dataIn);
+};
+
+inline __attribute__((always_inline)) btMatrix3x3& 
+btMatrix3x3::operator*=(const btMatrix3x3& m)
+{
+
+	
+	btMatrix3x3 mt = transpose();
+	
+	vec_float4 tmp3, bdg, cfh, aei;
+	bdg = cfh = aei = btZeroVec();
+	for(int i = 0; i < 3; ++i)
+	{
+		aei = vec_madd(m.m_el[i].mVec, mt.m_el[i].mVec, aei);
+		
+		tmp3 = vec_vmrghw(m.m_el[i].mVec, m.m_el[i].mVec);
+		bdg = vec_madd(vec_sld(tmp3, tmp3, 12), mt.m_el[i].mVec, bdg); 
+
+		tmp3 = vec_sld(m.m_el[i].mVec, m.m_el[i].mVec, 4);
+		tmp3 = vec_vmrghw(tmp3, tmp3);
+		cfh = vec_madd(vec_sld(tmp3, tmp3, 8), mt.m_el[i].mVec, cfh);
+	}
+	
+	
+	tmp3 = vec_vmrghw(aei, cfh);	
+	vec_float4 tmp = vec_vmrghw(tmp3, bdg);
+	
+	m_el[0].mVec = tmp;
+	m_el[1].mVec = vec_sld(tmp, vec_sld(tmp3, tmp3, 8), 12);
+	m_el[2].mVec = vec_vmrglw(vec_sld(aei, vec_vmrglw(bdg, aei), 8), cfh);
+
+
+
+
+
+	return *this;
+}
+
+inline __attribute__((always_inline)) btScalar 
+btMatrix3x3::determinant() const
+{ 
+
+
+
+
+	return btTriple((*this)[0], (*this)[1], (*this)[2]);
+
+}
+
+
+inline __attribute__((always_inline)) btMatrix3x3 
+btMatrix3x3::absolute() const
+{
+
+	
+	return btMatrix3x3(
+		vec_abs(m_el[0].mVec), vec_abs(m_el[1].mVec), vec_abs(m_el[2].mVec));
+# 832 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+}
+
+inline __attribute__((always_inline)) btMatrix3x3 
+btMatrix3x3::transpose() const 
+{
+
+	
+	vec_float4 tmp = vec_vmrghw(m_el[0].mVec, m_el[2].mVec);	
+	return btMatrix3x3(vec_vmrghw(tmp, m_el[1].mVec), 
+							vec_vmrglw(tmp, vec_sld(m_el[1].mVec, m_el[1].mVec, 12)),	
+							vec_vmrghw(vec_vmrglw(m_el[0].mVec, m_el[2].mVec), vec_sld(m_el[1].mVec, m_el[1].mVec,	8))); 
+
+
+
+
+
+}
+
+inline __attribute__((always_inline)) btMatrix3x3 
+btMatrix3x3::adjoint() const 
+{
+
+	
+	vec_float4 coxyz = vec_sld(m_el[2].mVec, m_el[2].mVec, 12);
+
+	vec_float4 byzx = vec_sld(vec_sld(m_el[1].mVec, m_el[1].mVec, 12), m_el[1].mVec, 8);
+	
+	
+	vec_float4 icf = vec_madd(m_el[0].mVec, byzx, btZeroVec());
+	vec_float4 gad = vec_madd(m_el[1].mVec, vec_sld(coxyz, m_el[2].mVec, 8), btZeroVec());
+	vec_float4 ehb = vec_madd(m_el[0].mVec, vec_sld(coxyz, m_el[2].mVec, 12), btZeroVec());
+
+	vec_float4 aoxyz = vec_sld(m_el[0].mVec, m_el[0].mVec, 12);
+
+	
+	
+	
+	icf = vec_sub(icf, vec_madd(m_el[1].mVec, vec_sld(aoxyz, m_el[0].mVec, 8), btZeroVec()));
+	gad = vec_sub(gad, vec_madd(m_el[2].mVec, byzx, btZeroVec()));
+	ehb = vec_sub(ehb, vec_madd(m_el[2].mVec, vec_sld(aoxyz, m_el[0].mVec, 12), btZeroVec()));
+
+	vec_float4 tmp = vec_vmrghw(gad, icf);		
+	
+	
+	
+	return btMatrix3x3(vec_vmrglw(tmp, ehb),
+					vec_vmrghw(vec_vmrglw(gad, icf), ehb),
+					vec_vmrghw(tmp, vec_sld(ehb, ehb, 4)));
+
+
+
+
+
+}
+
+inline __attribute__((always_inline)) btMatrix3x3 
+btMatrix3x3::inverse() const
+{
+
+	
+	
+
+
+
+ 
+
+	vec_float4 coxyz = vec_sld(m_el[2].mVec, m_el[2].mVec, 12);
+	vec_float4 czxy = vec_sld(coxyz, m_el[2].mVec, 12);
+	vec_float4 co = vec_madd(m_el[1].mVec, vec_sld(coxyz, m_el[2].mVec, 8), btZeroVec());
+	vec_float4 cooxyz = vec_sld(co, co, 12);
+	co = vec_sld(cooxyz, co, 8);
+	vec_float4 tmp = vec_madd(m_el[1].mVec, czxy, btZeroVec());
+	cooxyz = vec_sld(tmp, tmp, 12);
+	co = vec_sub(co, vec_sld(cooxyz, tmp, 12));
+
+	tmp = vec_madd(m_el[0].mVec, co, btZeroVec());
+	vec_float4 s = vec_re(vec_splat(vec_add(vec_add(tmp, vec_sld(tmp, tmp, 4)), vec_sld(tmp, tmp, 8)), 0));
+	co = vec_madd(co, s, btZeroVec());	
+
+	vec_float4 ehb = vec_madd(m_el[0].mVec, czxy, btZeroVec());
+	tmp = vec_sld(m_el[1].mVec, m_el[1].mVec, 12);	
+	vec_float4 icf = vec_madd(m_el[0].mVec, vec_sld(tmp, m_el[1].mVec, 8), btZeroVec());
+
+	tmp = vec_sld(m_el[0].mVec, m_el[0].mVec, 12); 
+	ehb = vec_madd(s, vec_sub(ehb, vec_madd(m_el[2].mVec, vec_sld(tmp, m_el[0].mVec, 12), btZeroVec())), btZeroVec());	
+	icf = vec_madd(s, vec_sub(icf, vec_madd(m_el[1].mVec, vec_sld(tmp, m_el[0].mVec, 8), btZeroVec())), btZeroVec());	
+
+	
+	vec_float4 cfxi = vec_sld(icf, icf, 4);
+	vec_float4 bxeh = vec_sld(ehb, ehb, 8);
+
+	return btMatrix3x3(vec_vmrghw(vec_vmrghw(co, cfxi), bxeh),
+						vec_vmrglw(vec_vmrghw(co, cfxi), bxeh),
+						vec_vmrghw(vec_vmrglw(co, vec_sld(icf, icf, 8)), vec_sld(ehb, ehb, 4)));
+# 935 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+}
+
+inline __attribute__((always_inline)) btMatrix3x3 
+btMatrix3x3::transposeTimes(const btMatrix3x3& m) const
+{
+
+	
+	vec_float4 aei, dhc, gbf;
+	vec_float4 tmp;
+	aei = dhc = gbf = btZeroVec();
+
+	for(int i = 0; i < 3; ++i)
+	{
+		aei = vec_madd(m_el[i].mVec, m.m_el[i].mVec, aei);
+
+		vec_float4 oxyz = vec_sld(m_el[i].mVec, m_el[i].mVec, 12);	
+		tmp = vec_sld(oxyz, m_el[i].mVec, 4);								
+		
+		dhc = vec_madd(vec_sld(tmp, tmp, 4), m.m_el[i].mVec, dhc);			
+		gbf = vec_madd(vec_vmrghw(vec_vmrglw(m_el[i].mVec, oxyz), m_el[i].mVec), m.m_el[i].mVec, gbf);
+	}
+	
+	tmp = vec_sld(gbf, gbf, 8);
+	return btMatrix3x3(vec_vmrghw(vec_vmrghw(aei, vec_sld(dhc, dhc, 8)), vec_sld(gbf, gbf, 4)),
+							vec_vmrghw(vec_vmrghw(dhc, tmp), vec_sld(aei, aei, 4)),
+							vec_vmrghw(vec_vmrglw(tmp, aei), vec_sld(dhc, dhc, 4)));
+# 973 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+}
+
+inline __attribute__((always_inline)) btMatrix3x3 
+btMatrix3x3::timesTranspose(const btMatrix3x3& m) const
+{
+
+	
+	btMatrix3x3 mxtmp;
+	btMatrix3x3 ret;
+	for(int i = 0; i < 3; ++i)
+	{
+		mxtmp = btMatrix3x3(vec_madd(m_el[i].mVec, m.m_el[0].mVec, btZeroVec()),
+											vec_madd(m_el[i].mVec, m.m_el[1].mVec, btZeroVec()),
+											vec_madd(m_el[i].mVec, m.m_el[2].mVec, btZeroVec()));
+
+		mxtmp = mxtmp.transpose();
+	
+		ret.m_el[i].mVec = vec_add(vec_add(mxtmp.m_el[0].mVec, mxtmp.m_el[1].mVec), mxtmp.m_el[2].mVec);
+	}
+	
+	return ret;
+# 1000 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+}
+
+inline __attribute__((always_inline)) btVector3 
+operator*(const btMatrix3x3& m, const btVector3& v) 
+{
+
+	
+	btMatrix3x3 tmp;
+	tmp[0] = vec_madd(m[0].mVec, v.mVec, btZeroVec());
+	tmp[1] = vec_madd(m[1].mVec, v.mVec, btZeroVec());
+	tmp[2] = vec_madd(m[2].mVec, v.mVec, btZeroVec());
+
+	tmp = tmp.transpose();
+
+	return vec_add(vec_add(tmp[0].mVec, tmp[1].mVec), tmp[2].mVec);
+
+
+
+}
+
+inline __attribute__((always_inline)) btVector3
+operator*(const btVector3& v, const btMatrix3x3& m)
+{
+
+	
+	btMatrix3x3 mt = m.transpose();
+
+	btMatrix3x3 back = btMatrix3x3(
+						vec_madd(mt[0].mVec, v.mVec, btZeroVec()),
+						vec_madd(mt[1].mVec, v.mVec, btZeroVec()),
+						vec_madd(mt[2].mVec, v.mVec, btZeroVec()));
+
+	mt = back.transpose();
+	return btVector3(vec_add(mt[2].mVec, vec_add(mt[0].mVec, mt[1].mVec)));
+
+
+
+}
+
+inline __attribute__((always_inline)) btMatrix3x3 
+operator*(const btMatrix3x3& m1, const btMatrix3x3& m2)
+{
+
+	
+
+
+
+
+
+
+
+
+
+ 
+	btMatrix3x3 mt = m1.transpose();
+	
+	
+
+ 
+	vec_float4 aei = vec_madd(m2[2].mVec, mt[2].mVec, vec_madd(m2[1].mVec, mt[1].mVec, vec_madd(m2[0].mVec, mt[0].mVec, btZeroVec())));	
+
+	vec_float4 tmp3;
+	vec_float4 bdg = btZeroVec();
+	vec_float4 cfh = btZeroVec();
+	for(int i = 0; i < 3; ++i)
+	{
+		tmp3 = vec_vmrghw(m2[i].mVec, m2[i].mVec);
+		bdg = vec_madd(vec_sld(tmp3, tmp3, 12), mt[i].mVec, bdg); 
+
+		tmp3 = vec_sld(m2[i].mVec, m2[i].mVec, 4);
+		tmp3 = vec_vmrghw(tmp3, tmp3);
+		cfh = vec_madd(vec_sld(tmp3, tmp3, 8), mt[i].mVec, cfh);	
+	}
+	
+	
+	tmp3 = vec_vmrghw(aei, cfh);	
+	vec_float4 tmp = vec_vmrghw(tmp3, bdg);
+	
+	return btMatrix3x3(
+		tmp,
+		vec_sld(tmp, vec_sld(tmp3, tmp3, 8), 12),
+		vec_vmrglw(vec_sld(aei, vec_vmrglw(bdg, aei), 8), cfh));
+# 1088 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+ 
+inline __attribute__((always_inline)) bool operator==(const btMatrix3x3& m1, const btMatrix3x3& m2)
+{
+# 1116 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+	return ( m1[0][0] == m2[0][0] && m1[1][0] == m2[1][0] && m1[2][0] == m2[2][0] &&
+		m1[0][1] == m2[0][1] && m1[1][1] == m2[1][1] && m1[2][1] == m2[2][1] &&
+		m1[0][2] == m2[0][2] && m1[1][2] == m2[1][2] && m1[2][2] == m2[2][2] );
+
+}
+
+
+
+struct	btMatrix3x3FloatData
+{
+	
+	btVector3 m_el[3];
+};
+# 1135 "..\\..\\src\\LinearMath/btMatrix3x3.h"
+
+
+struct	btMatrix3x3DoubleData
+{
+	btVector3DoubleData m_el[3];
+};
+
+
+	
+inline __attribute__((always_inline))	void	btMatrix3x3::serialize(struct	btMatrix3x3FloatData& dataOut) const
+{
+	for (int i=0;i<3;i++)
+
+		dataOut.m_el[i] = m_el[i];
+
+
+
+}
+
+inline __attribute__((always_inline))	void	btMatrix3x3::serializeFloat(struct	btMatrix3x3FloatData& dataOut) const
+{
+	for (int i=0;i<3;i++)
+
+		dataOut.m_el[i] = m_el[i];
+
+
+
+}
+
+
+inline __attribute__((always_inline))	void	btMatrix3x3::deSerialize(const struct	btMatrix3x3FloatData& dataIn)
+{
+	for (int i=0;i<3;i++)
+
+		m_el[i] = dataIn.m_el[i];
+
+
+
+}
+
+inline __attribute__((always_inline))	void	btMatrix3x3::deSerializeFloat(const struct	btMatrix3x3FloatData& dataIn)
+{
+	for (int i=0;i<3;i++)
+
+		m_el[i] = dataIn.m_el[i];
+
+
+
+}
+
+inline __attribute__((always_inline))	void	btMatrix3x3::deSerializeDouble(const struct	btMatrix3x3DoubleData& dataIn)
+{
+
+
+
+
+	((0) ? (void)0 : ::std:: _Assert("..\\..\\src\\LinearMath/btMatrix3x3.h" ":" "1191" " " "0", 0));
+
+
+}
+
+
+# 20 "..\\..\\src\\LinearMath/btTransform.h"
+
+
+
+
+
+
+
+
+
+
+
+ 
+class btTransform {
+	
+  
+	btMatrix3x3 m_basis;
+  
+	btVector3   m_origin;
+
+public:
+	
+   
+	btTransform() {}
+  
+
+ 
+	explicit inline __attribute__((always_inline)) btTransform(const btQuaternion& q, 
+
+		const btVector3& c = btVector3(btZeroVec())) 
+
+
+
+		: m_basis(q),
+		m_origin(c)
+	{}
+
+  
+
+ 
+	explicit inline __attribute__((always_inline)) btTransform(const btMatrix3x3& b, 
+
+		const btVector3& c = btVector3(btZeroVec())) 
+
+
+
+		: m_basis(b),
+		m_origin(c)
+	{}
+	explicit inline __attribute__((always_inline)) btTransform(const btVector3& c)
+		: m_basis(),
+		m_origin(c)
+	{
+		m_basis.setIdentity();
+	}
+   
+	inline __attribute__((always_inline)) btTransform (const btTransform& other)
+		: m_basis(other.m_basis),
+		m_origin(other.m_origin)
+	{
+	}
+   
+	inline __attribute__((always_inline)) btTransform& operator=(const btTransform& other)
+	{
+		m_basis = other.m_basis;
+		m_origin = other.m_origin;
+		return *this;
+	}
+
+
+  
+
+
+ 
+		inline __attribute__((always_inline)) void mult(const btTransform& t1, const btTransform& t2) {
+			m_basis = t1.m_basis * t2.m_basis;
+			m_origin = t1(t2.m_origin);
+		}
+
+
+
+
+
+
+ 
+
+ 
+	inline __attribute__((always_inline)) btVector3 operator()(const btVector3& x) const
+	{
+
+		
+		return btVector3(vec_add(vec_dot3mx(m_basis.get128ptr(), x.mVec), m_origin.mVec));
+
+
+
+
+
+	}
+
+   
+	inline __attribute__((always_inline)) btVector3 operator*(const btVector3& x) const
+	{
+		return (*this)(x);
+	}
+
+   
+	inline __attribute__((always_inline)) btQuaternion operator*(const btQuaternion& q) const
+	{
+		return getRotation() * q;
+	}
+
+   
+	inline __attribute__((always_inline)) btMatrix3x3&       getBasis()          { return m_basis; }
+   
+	inline __attribute__((always_inline)) const btMatrix3x3& getBasis()    const { return m_basis; }
+
+   
+	inline __attribute__((always_inline)) btVector3&         getOrigin()         { return m_origin; }
+   
+	inline __attribute__((always_inline)) const btVector3&   getOrigin()   const { return m_origin; }
+
+   
+	btQuaternion getRotation() const { 
+		btQuaternion q;
+		m_basis.getRotation(q);
+		return q;
+	}
+	
+# 167 "..\\..\\src\\LinearMath/btTransform.h"
+
+  
+ 
+	inline __attribute__((always_inline)) void setOrigin(const btVector3& origin) 
+	{ 
+		m_origin = origin;
+	}
+
+	inline __attribute__((always_inline)) btVector3 invXform(const btVector3& inVec) const;
+
+
+   
+	inline __attribute__((always_inline)) void setBasis(const btMatrix3x3& basis)
+	{ 
+		m_basis = basis;
+	}
+
+   
+	inline __attribute__((always_inline)) void setRotation(const btQuaternion& q)
+	{
+		m_basis.setRotation(q);
+	}
+
+
+   
+	void setIdentity()
+	{
+
+		
+		m_basis.setIdentity();
+		m_origin = btVector3(btZeroVec());
+
+
+
+
+
+	}
+
+  
+ 
+	btTransform& operator*=(const btTransform& t) 
+	{
+		m_origin += m_basis * t.m_origin;
+		m_basis *= t.m_basis;
+		return *this;
+	}
+
+   
+	btTransform inverse() const
+	{ 
+		btMatrix3x3 inv = m_basis.transpose();
+		return btTransform(inv, inv * -m_origin);
+	}
+
+  
+
+ 
+	btTransform inverseTimes(const btTransform& t) const;  
+
+   
+	btTransform operator*(const btTransform& t) const;
+
+   
+	static const btTransform&	getIdentity()
+	{
+		static const btTransform identityTransform(btMatrix3x3::getIdentity());
+		return identityTransform;
+	}
+
+	void	serialize(struct	btTransformFloatData& dataOut) const;
+
+	void	serializeFloat(struct	btTransformFloatData& dataOut) const;
+
+	void	deSerialize(const struct	btTransformFloatData& dataIn);
+
+	void	deSerializeDouble(const struct	btTransformDoubleData& dataIn);
+
+	void	deSerializeFloat(const struct	btTransformFloatData& dataIn);
+};
+
+
+inline __attribute__((always_inline)) btVector3
+btTransform::invXform(const btVector3& inVec) const
+{
+	btVector3 v = inVec - m_origin;
+	return (m_basis.transpose() * v);
+}
+
+inline __attribute__((always_inline)) btTransform 
+btTransform::inverseTimes(const btTransform& t) const  
+{
+
+	
+	btVector3 v = vec_sub(t.getOrigin().mVec, m_origin.mVec);
+
+
+
+	return btTransform(m_basis.transposeTimes(t.m_basis),
+			v * m_basis);
+}
+
+inline __attribute__((always_inline)) btTransform 
+btTransform::operator*(const btTransform& t) const
+{
+	return btTransform(m_basis * t.m_basis, 
+		(*this)(t.m_origin));
+}
+
+ 
+inline __attribute__((always_inline)) bool operator==(const btTransform& t1, const btTransform& t2)
+{
+   return ( t1.getBasis()  == t2.getBasis() &&
+            t1.getOrigin() == t2.getOrigin() );
+}
+
+
+
+struct	btTransformFloatData
+{
+	btMatrix3x3FloatData	m_basis;
+	btVector3FloatData	m_origin;
+};
+
+struct	btTransformDoubleData
+{
+	btMatrix3x3DoubleData	m_basis;
+	btVector3DoubleData	m_origin;
+};
+
+
+inline __attribute__((always_inline))	void	btTransform::serialize(btTransformFloatData& dataOut) const
+{
+	m_basis.serialize(dataOut.m_basis);
+	m_origin.serialize(dataOut.m_origin);
+}
+
+inline __attribute__((always_inline))	void	btTransform::serializeFloat(btTransformFloatData& dataOut) const
+{
+	m_basis.serializeFloat(dataOut.m_basis);
+	m_origin.serializeFloat(dataOut.m_origin);
+}
+
+
+inline __attribute__((always_inline))	void	btTransform::deSerialize(const btTransformFloatData& dataIn)
+{
+	m_basis.deSerialize(dataIn.m_basis);
+	m_origin.deSerialize(dataIn.m_origin);
+}
+
+inline __attribute__((always_inline))	void	btTransform::deSerializeFloat(const btTransformFloatData& dataIn)
+{
+	m_basis.deSerializeFloat(dataIn.m_basis);
+	m_origin.deSerializeFloat(dataIn.m_origin);
+}
+
+inline __attribute__((always_inline))	void	btTransform::deSerializeDouble(const btTransformDoubleData& dataIn)
+{
+	m_basis.deSerializeDouble(dataIn.m_basis);
+	m_origin.deSerializeDouble(dataIn.m_origin);
+}
+
+# 20 "..\\..\\src\\BulletCollision/CollisionShapes/btCollisionShape.h"
+# 1 "..\\..\\src\\BulletCollision/BroadphaseCollision/btBroadphaseProxy.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+# 1 "..\\..\\src\\LinearMath/btAlignedAllocator.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+void*	btAlignedAllocInternal	(size_t size, int alignment,int line,const char* filename);
+void	btAlignedFreeInternal	(void* ptr);
+
+
+
+
+
+
+
+
+
+typedef int	size_type;
+
+typedef void *(btAlignedAllocFunc)(size_t size, int alignment, int line, const char* file);
+typedef void (btAlignedFreeFunc)(void *memblock);
+typedef void *(btAllocFunc)(size_t size, int line, const char* file);
+typedef void (btFreeFunc)(void *memblock);
+
+
+void btAlignedAllocSetCustom(btAllocFunc *allocFunc, btFreeFunc *freeFunc);
+
+void btAlignedAllocSetCustomAligned(btAlignedAllocFunc *allocFunc, btAlignedFreeFunc *freeFunc);
+
+
+
+
+template < typename T , unsigned Alignment >
+class btAlignedAllocator {
+	
+	typedef btAlignedAllocator< T , Alignment > self_type;
+	
+public:
+
+	
+	btAlignedAllocator() {}
+	
+
+ 
+
+	template < typename Other >
+	btAlignedAllocator( const btAlignedAllocator< Other , Alignment > & ) {}
+
+	typedef const T*         const_pointer;
+	typedef const T&         const_reference;
+	typedef T*               pointer;
+	typedef T&               reference;
+	typedef T                value_type;
+
+	pointer       address   ( reference        ref ) const                           { return &ref; }
+	const_pointer address   ( const_reference  ref ) const                           { return &ref; }
+	pointer       allocate  ( size_type        n   , const_pointer *      hint = 0 ) {
+		(void)hint;
+		return reinterpret_cast< pointer >(btAlignedAllocInternal(sizeof(value_type) * n,Alignment,77,"..\\..\\src\\LinearMath/btAlignedAllocator.h"));
+	}
+	void          construct ( pointer          ptr , const value_type &   value    ) { new (ptr) value_type( value ); }
+	void          deallocate( pointer          ptr ) {
+		btAlignedFreeInternal(reinterpret_cast< void * >( ptr ));
+	}
+	void          destroy   ( pointer          ptr )                                 { ptr->~value_type(); }
+	
+
+	template < typename O > struct rebind {
+		typedef btAlignedAllocator< O , Alignment > other;
+	};
+	template < typename O >
+	self_type & operator=( const btAlignedAllocator< O , Alignment > & ) { return *this; }
+
+	friend bool operator==( const self_type & , const self_type & ) { return true; }
+};
+
+
+
+
+
+# 22 "..\\..\\src\\BulletCollision/BroadphaseCollision/btBroadphaseProxy.h"
+
+
+
+
+
+
+enum BroadphaseNativeTypes
+{
+	
+	BOX_SHAPE_PROXYTYPE,
+	TRIANGLE_SHAPE_PROXYTYPE,
+	TETRAHEDRAL_SHAPE_PROXYTYPE,
+	CONVEX_TRIANGLEMESH_SHAPE_PROXYTYPE,
+	CONVEX_HULL_SHAPE_PROXYTYPE,
+	CONVEX_POINT_CLOUD_SHAPE_PROXYTYPE,
+	CUSTOM_POLYHEDRAL_SHAPE_TYPE,
+
+IMPLICIT_CONVEX_SHAPES_START_HERE,
+	SPHERE_SHAPE_PROXYTYPE,
+	MULTI_SPHERE_SHAPE_PROXYTYPE,
+	CAPSULE_SHAPE_PROXYTYPE,
+	CONE_SHAPE_PROXYTYPE,
+	CONVEX_SHAPE_PROXYTYPE,
+	CYLINDER_SHAPE_PROXYTYPE,
+	UNIFORM_SCALING_SHAPE_PROXYTYPE,
+	MINKOWSKI_SUM_SHAPE_PROXYTYPE,
+	MINKOWSKI_DIFFERENCE_SHAPE_PROXYTYPE,
+	BOX_2D_SHAPE_PROXYTYPE,
+	CONVEX_2D_SHAPE_PROXYTYPE,
+	CUSTOM_CONVEX_SHAPE_TYPE,
+
+CONCAVE_SHAPES_START_HERE,
+	
+	TRIANGLE_MESH_SHAPE_PROXYTYPE,
+	SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE,
+	
+	FAST_CONCAVE_MESH_PROXYTYPE,
+	
+	TERRAIN_SHAPE_PROXYTYPE,
+
+	GIMPACT_SHAPE_PROXYTYPE,
+
+    MULTIMATERIAL_TRIANGLE_MESH_PROXYTYPE,
+	
+	EMPTY_SHAPE_PROXYTYPE,
+	STATIC_PLANE_PROXYTYPE,
+	CUSTOM_CONCAVE_SHAPE_TYPE,
+CONCAVE_SHAPES_END_HERE,
+
+	COMPOUND_SHAPE_PROXYTYPE,
+
+	SOFTBODY_SHAPE_PROXYTYPE,
+	HFFLUID_SHAPE_PROXYTYPE,
+	HFFLUID_BUOYANT_CONVEX_SHAPE_PROXYTYPE,
+	INVALID_SHAPE_PROXYTYPE,
+
+	MAX_BROADPHASE_COLLISION_TYPES
+	
+};
+
+
+
+
+struct __attribute__ ((aligned (16))) btBroadphaseProxy
+{
+
+inline __attribute__((always_inline)) void* operator new(size_t sizeInBytes) { return btAlignedAllocInternal(sizeInBytes,16,88,"..\\..\\src\\BulletCollision/BroadphaseCollision/btBroadphaseProxy.h"); } inline __attribute__((always_inline)) void operator delete(void* ptr) { btAlignedFreeInternal(ptr); } inline __attribute__((always_inline)) void* operator new(size_t, void* ptr) { return ptr; } inline __attribute__((always_inline)) void operator delete(void*, void*) { } inline __attribute__((always_inline)) void* operator new[](size_t sizeInBytes) { return btAlignedAllocInternal(sizeInBytes,16,88,"..\\..\\src\\BulletCollision/BroadphaseCollision/btBroadphaseProxy.h"); } inline __attribute__((always_inline)) void operator delete[](void* ptr) { btAlignedFreeInternal(ptr); } inline __attribute__((always_inline)) void* operator new[](size_t, void* ptr) { return ptr; } inline __attribute__((always_inline)) void operator delete[](void*, void*) { };
+	
+	
+	enum CollisionFilterGroups
+	{
+	        DefaultFilter = 1,
+	        StaticFilter = 2,
+	        KinematicFilter = 4,
+	        DebrisFilter = 8,
+			SensorTrigger = 16,
+			CharacterFilter = 32,
+	        AllFilter = -1 
+	};
+
+	
+	void*	m_clientObject;
+	short int m_collisionFilterGroup;
+	short int m_collisionFilterMask;
+	unsigned int m_interactionLayer;
+	void*	m_multiSapParentProxy;		
+	int			m_uniqueId;
+
+	btVector3	m_aabbMin;
+	btVector3	m_aabbMax;
+
+	inline __attribute__((always_inline)) int getUid() const
+	{
+		return m_uniqueId;
+	}
+
+	
+	btBroadphaseProxy() :m_clientObject(0),m_multiSapParentProxy(0)
+	{
+	}
+
+	btBroadphaseProxy(const btVector3& aabbMin,const btVector3& aabbMax,void* userPtr,short int collisionFilterGroup, short int collisionFilterMask,void* multiSapParentProxy=0, unsigned int interactionLayer = 0xffffffff)
+		:m_clientObject(userPtr),
+		m_collisionFilterGroup(collisionFilterGroup),
+		m_collisionFilterMask(collisionFilterMask),
+		m_interactionLayer(interactionLayer),
+		m_aabbMin(aabbMin),
+		m_aabbMax(aabbMax)
+	{
+		m_multiSapParentProxy = multiSapParentProxy;
+	}
+
+	
+
+	static inline __attribute__((always_inline)) bool isPolyhedral(int proxyType)
+	{
+		return (proxyType  < IMPLICIT_CONVEX_SHAPES_START_HERE);
+	}
+
+	static inline __attribute__((always_inline)) bool	isConvex(int proxyType)
+	{
+		return (proxyType < CONCAVE_SHAPES_START_HERE);
+	}
+
+	static inline __attribute__((always_inline)) bool	isConcave(int proxyType)
+	{
+		return ((proxyType > CONCAVE_SHAPES_START_HERE) &&
+			(proxyType < CONCAVE_SHAPES_END_HERE));
+	}
+	static inline __attribute__((always_inline)) bool	isCompound(int proxyType)
+	{
+		return (proxyType == COMPOUND_SHAPE_PROXYTYPE);
+	}
+
+	static inline __attribute__((always_inline)) bool	isSoftBody(int proxyType)
+	{
+		return (proxyType == SOFTBODY_SHAPE_PROXYTYPE);
+	}
+
+	static inline __attribute__((always_inline)) bool isInfinite(int proxyType)
+	{
+		return (proxyType == STATIC_PLANE_PROXYTYPE);
+	}
+
+	static inline __attribute__((always_inline)) bool isConvex2d(int proxyType)
+	{
+		return (proxyType == BOX_2D_SHAPE_PROXYTYPE) ||	(proxyType == CONVEX_2D_SHAPE_PROXYTYPE);
+	}
+
+	
+}
+;
+
+class btCollisionAlgorithm;
+
+struct btBroadphaseProxy;
+
+
+
+
+
+struct __attribute__ ((aligned (16))) btBroadphasePair
+{
+	btBroadphasePair ()
+		:
+	m_pProxy0(0),
+		m_pProxy1(0),
+		m_algorithm(0),
+		m_internalInfo1(0)
+	{
+	}
+
+inline __attribute__((always_inline)) void* operator new(size_t sizeInBytes) { return btAlignedAllocInternal(sizeInBytes,16,194,"..\\..\\src\\BulletCollision/BroadphaseCollision/btBroadphaseProxy.h"); } inline __attribute__((always_inline)) void operator delete(void* ptr) { btAlignedFreeInternal(ptr); } inline __attribute__((always_inline)) void* operator new(size_t, void* ptr) { return ptr; } inline __attribute__((always_inline)) void operator delete(void*, void*) { } inline __attribute__((always_inline)) void* operator new[](size_t sizeInBytes) { return btAlignedAllocInternal(sizeInBytes,16,194,"..\\..\\src\\BulletCollision/BroadphaseCollision/btBroadphaseProxy.h"); } inline __attribute__((always_inline)) void operator delete[](void* ptr) { btAlignedFreeInternal(ptr); } inline __attribute__((always_inline)) void* operator new[](size_t, void* ptr) { return ptr; } inline __attribute__((always_inline)) void operator delete[](void*, void*) { };
+
+	btBroadphasePair(const btBroadphasePair& other)
+		:		m_pProxy0(other.m_pProxy0),
+				m_pProxy1(other.m_pProxy1),
+				m_algorithm(other.m_algorithm),
+				m_internalInfo1(other.m_internalInfo1)
+	{
+	}
+	btBroadphasePair(btBroadphaseProxy& proxy0,btBroadphaseProxy& proxy1)
+	{
+
+		
+		if (proxy0.m_uniqueId < proxy1.m_uniqueId)
+        { 
+            m_pProxy0 = &proxy0; 
+            m_pProxy1 = &proxy1; 
+        }
+        else 
+        { 
+			m_pProxy0 = &proxy1; 
+            m_pProxy1 = &proxy0; 
+        }
+
+		m_algorithm = 0;
+		m_internalInfo1 = 0;
+
+	}
+	
+	btBroadphaseProxy* m_pProxy0;
+	btBroadphaseProxy* m_pProxy1;
+	
+	mutable btCollisionAlgorithm* m_algorithm;
+	union { void* m_internalInfo1; int m_internalTmpValue;};
+
+};
+
+
+
+
+
+
+
+
+ 
+
+
+
+class btBroadphasePairSortPredicate
+{
+	public:
+
+		bool operator() ( const btBroadphasePair& a, const btBroadphasePair& b )
+		{
+			const int uidA0 = a.m_pProxy0 ? a.m_pProxy0->m_uniqueId : -1;
+			const int uidB0 = b.m_pProxy0 ? b.m_pProxy0->m_uniqueId : -1;
+			const int uidA1 = a.m_pProxy1 ? a.m_pProxy1->m_uniqueId : -1;
+			const int uidB1 = b.m_pProxy1 ? b.m_pProxy1->m_uniqueId : -1;
+
+			 return uidA0 > uidB0 || 
+				(a.m_pProxy0 == b.m_pProxy0 && uidA1 > uidB1) ||
+				(a.m_pProxy0 == b.m_pProxy0 && a.m_pProxy1 == b.m_pProxy1 && a.m_algorithm > b.m_algorithm); 
+		}
+};
+
+
+inline __attribute__((always_inline)) bool operator==(const btBroadphasePair& a, const btBroadphasePair& b) 
+{
+	 return (a.m_pProxy0 == b.m_pProxy0) && (a.m_pProxy1 == b.m_pProxy1);
+}
+
+
+
+
+# 23 "..\\..\\src\\BulletCollision/CollisionShapes/btCollisionShape.h"
+class btSerializer;
+class btMaterial;
+class btCollisionObject;
+
+
+class btCollisionShape
+{
+protected:
+	int m_shapeType;
+	void* m_userPointer;
+	const btMaterial* m_material;
+
+public:
+
+	btCollisionShape() : m_shapeType (INVALID_SHAPE_PROXYTYPE), m_userPointer(0), m_material(0)
+	{
+	}
+
+	virtual ~btCollisionShape()
+	{
+	}
+
+	void setMaterial(const btMaterial* mat);
+
+	const btMaterial* getMaterial() const
+	{
+		return m_material;
+	}
+
+	
+	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const =0;
+
+	virtual void	getBoundingSphere(btVector3& center,btScalar& radius) const;
+
+	
+	virtual btScalar	getAngularMotionDisc() const;
+
+	virtual btScalar	getContactBreakingThreshold(btScalar defaultContactThresholdFactor) const;
+
+	virtual btScalar getLineIntersection(const btCollisionObject* obj, const btTransform& colObjWorldTransform, const btVector3& from, const btVector3& to, btVector3& contactNormal, const btMaterial*& contactMaterial) const
+	{
+		return btScalar(-2);
+	}
+
+	
+	
+	void calculateTemporalAabb(const btTransform& curTrans,const btVector3& linvel,const btVector3& angvel,btScalar timeStep, btVector3& temporalAabbMin,btVector3& temporalAabbMax) const;
+
+
+
+	inline __attribute__((always_inline)) bool	isPolyhedral() const
+	{
+		return btBroadphaseProxy::isPolyhedral(getShapeType());
+	}
+
+	inline __attribute__((always_inline)) bool	isConvex2d() const
+	{
+		return btBroadphaseProxy::isConvex2d(getShapeType());
+	}
+
+	inline __attribute__((always_inline)) bool	isConvex() const
+	{
+		return btBroadphaseProxy::isConvex(getShapeType());
+	}
+	inline __attribute__((always_inline)) bool	isConcave() const
+	{
+		return btBroadphaseProxy::isConcave(getShapeType());
+	}
+	inline __attribute__((always_inline)) bool	isCompound() const
+	{
+		return btBroadphaseProxy::isCompound(getShapeType());
+	}
+
+	inline __attribute__((always_inline)) bool	isSoftBody() const
+	{
+		return btBroadphaseProxy::isSoftBody(getShapeType());
+	}
+
+	
+	inline __attribute__((always_inline)) bool isInfinite() const
+	{
+		return btBroadphaseProxy::isInfinite(getShapeType());
+	}
+
+
+	virtual void	setLocalScaling(const btVector3& scaling) =0;
+	virtual const btVector3& getLocalScaling() const =0;
+	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const = 0;
+
+
+
+	virtual const char*	getName()const =0 ;
+
+
+	
+	int		getShapeType() const { return m_shapeType; }
+	virtual void	setMargin(btScalar margin) = 0;
+	virtual btScalar	getMargin() const = 0;
+
+	
+	
+	void	setUserPointer(void*  userPtr)
+	{
+		m_userPointer = userPtr;
+	}
+
+	void*	getUserPointer() const
+	{
+		return m_userPointer;
+	}
+
+	virtual	int	calculateSerializeBufferSize() const;
+
+	
+	virtual	const char*	serialize(void* dataBuffer, btSerializer* serializer) const;
+
+	virtual void	serializeSingleShape(btSerializer* serializer) const;
+
+};	
+
+
+struct	btCollisionShapeData
+{
+	char	*m_name;
+	int		m_shapeType;
+	char	m_padding[4];
+};
+
+inline __attribute__((always_inline))	int	btCollisionShape::calculateSerializeBufferSize() const
+{
+	return sizeof(btCollisionShapeData);
+}
+
+
+
+# 20 "..\\..\\src\\BulletCollision/CollisionShapes/btConvexShape.h"
+
+# 1 "..\\..\\src\\BulletCollision/CollisionShapes/btCollisionMargin.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+# 25 "..\\..\\src\\BulletCollision/CollisionShapes/btConvexShape.h"
+
+
+
+
+
+
+class __attribute__ ((aligned (16))) btConvexShape : public btCollisionShape
+{
+
+
+public:
+
+	inline __attribute__((always_inline)) void* operator new(size_t sizeInBytes) { return btAlignedAllocInternal(sizeInBytes,16,37,"..\\..\\src\\BulletCollision/CollisionShapes/btConvexShape.h"); } inline __attribute__((always_inline)) void operator delete(void* ptr) { btAlignedFreeInternal(ptr); } inline __attribute__((always_inline)) void* operator new(size_t, void* ptr) { return ptr; } inline __attribute__((always_inline)) void operator delete(void*, void*) { } inline __attribute__((always_inline)) void* operator new[](size_t sizeInBytes) { return btAlignedAllocInternal(sizeInBytes,16,37,"..\\..\\src\\BulletCollision/CollisionShapes/btConvexShape.h"); } inline __attribute__((always_inline)) void operator delete[](void* ptr) { btAlignedFreeInternal(ptr); } inline __attribute__((always_inline)) void* operator new[](size_t, void* ptr) { return ptr; } inline __attribute__((always_inline)) void operator delete[](void*, void*) { };
+
+	btConvexShape ();
+
+	virtual ~btConvexShape();
+
+	virtual btVector3	localGetSupportingVertex(const btVector3& vec)const = 0;
+
+	
+
+	virtual btVector3	localGetSupportingVertexWithoutMargin(const btVector3& vec) const=0;
+
+
+	btVector3 localGetSupportVertexWithoutMarginNonVirtual (const btVector3& vec) const;
+	btVector3 localGetSupportVertexNonVirtual (const btVector3& vec) const;
+	btScalar getMarginNonVirtual () const;
+	void getAabbNonVirtual (const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
+
+	
+	
+	virtual void	batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const= 0;
+
+	
+	void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const =0;
+
+	virtual void getAabbSlow(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const =0;
+
+	virtual void	setLocalScaling(const btVector3& scaling) =0;
+	virtual const btVector3& getLocalScaling() const =0;
+
+	virtual void	setMargin(btScalar margin)=0;
+
+	virtual btScalar	getMargin() const=0;
+
+	virtual int		getNumPreferredPenetrationDirections() const=0;
+	
+	virtual void	getPreferredPenetrationDirection(int index, btVector3& penetrationVector) const=0;
+};
+# 20 "..\\..\\src\\BulletCollision/CollisionShapes/btConvexInternalShape.h"
+# 1 "..\\..\\src\\LinearMath/btAabbUtil2.h"
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+	const vec_int4 btAabbMinus = {1, 2, 4, 0};
+	const vec_int4 btAabbPlus = {8, 0x10, 0x20, 0};
+
+
+
+inline __attribute__((always_inline)) void AabbExpand (btVector3& aabbMin,
+								   btVector3& aabbMax,
+								   const btVector3& expansionMin,
+								   const btVector3& expansionMax)
+{
+	aabbMin = aabbMin + expansionMin;
+	aabbMax = aabbMax + expansionMax;
+}
+
+
+inline __attribute__((always_inline)) bool TestPointAgainstAabb2(const btVector3 &aabbMin1, const btVector3 &aabbMax1,
+								const btVector3 &point)
+{	
+
+	
+	vec_int4 cond = (vec_int4)vec_or(vec_cmpgt(aabbMin1.mVec, point.mVec), vec_cmplt(aabbMax1.mVec, point.mVec));
+	
+	cond = vec_sel(cond, btIntZero, btSelVec3);
+	bool overlap = vec_all_eq(cond, btIntZero);
+# 55 "..\\..\\src\\LinearMath/btAabbUtil2.h"
+	return overlap;
+}
+
+
+
+inline __attribute__((always_inline)) bool TestAabbAgainstAabb2(const btVector3 &aabbMin1, const btVector3 &aabbMax1,
+								const btVector3 &aabbMin2, const btVector3 &aabbMax2)
+{
+
+	
+	vec_int4 cond = (vec_int4)vec_or(vec_cmpgt(aabbMin1.mVec, aabbMax2.mVec), vec_cmplt(aabbMax1.mVec, aabbMin2.mVec));
+	
+	cond = vec_sel(cond, btIntZero, btSelVec3);
+	bool overlap = vec_all_eq(cond, btIntZero);
+# 75 "..\\..\\src\\LinearMath/btAabbUtil2.h"
+	return overlap;
+}
+
+
+inline __attribute__((always_inline)) bool TestTriangleAgainstAabb2(const btVector3 *vertices,
+									const btVector3 &aabbMin, const btVector3 &aabbMax)
+{
+	const btVector3 &p1 = vertices[0];
+	const btVector3 &p2 = vertices[1];
+	const btVector3 &p3 = vertices[2];
+
+
+	
+	vec_int4 cond = (vec_int4)vec_or(vec_cmpgt(vec_min(vec_min(p1.mVec, p2.mVec), p3.mVec), aabbMax.mVec), vec_cmplt(vec_max(vec_max(p1.mVec, p2.mVec), p3.mVec), aabbMin.mVec));
+	return vec_all_eq(vec_sel(cond, btIntZero, btSelVec3), btIntZero);
+# 101 "..\\..\\src\\LinearMath/btAabbUtil2.h"
+}
+
+inline __attribute__((always_inline)) int	btOutcode(const btVector3& p,const btVector3& halfExtent) 
+{
+# 112 "..\\..\\src\\LinearMath/btAabbUtil2.h"
+	return (p.getX()  < -halfExtent.getX() ? 0x01 : 0x0) |    
+		   (p.getX() >  halfExtent.getX() ? 0x08 : 0x0) |
+		   (p.getY() < -halfExtent.getY() ? 0x02 : 0x0) |    
+		   (p.getY() >  halfExtent.getY() ? 0x10 : 0x0) |
+		   (p.getZ() < -halfExtent.getZ() ? 0x4 : 0x0) |    
+		   (p.getZ() >  halfExtent.getZ() ? 0x20 : 0x0);
+
+}
+
+
+
+inline __attribute__((always_inline)) bool btRayAabb2(const btVector3& rayFrom,
+								  const btVector3& rayInvDirection,
+
+								  const vec_bint4 raySign,
+								  const btVector3* bounds,
+								  
+								  vec_float4 lambda_min,
+								  vec_float4 lambda_max)
+# 138 "..\\..\\src\\LinearMath/btAabbUtil2.h"
+{
+
+	
+	btVector3 t0 = (bounds[0] - rayFrom) * rayInvDirection;
+	btVector3 t1 = (bounds[1] - rayFrom) * rayInvDirection;
+	
+	
+	vec_float4 bmin = vec_sel(t0.mVec, t1.mVec, raySign);
+	vec_float4 bmax = vec_sel(t1.mVec, t0.mVec, raySign);
+	
+	
+	
+	
+	
+	
+	vec_float4 xdef = vec_sld(bmax, bmax, 12);
+	vec_bint4 cond1 = vec_and(vec_cmplt(bmin, vec_sld(xdef, bmax, 8)), vec_cmplt(bmin, vec_sld(xdef, bmax, 12)));
+	vec_bint4 cond2 = vec_and(vec_cmplt(bmin, lambda_max), vec_cmpgt(bmax, lambda_min));
+	bool vecret = vec_all_ne(vec_sel((vec_uint4)vec_and(cond1, cond2), btSelVec3, btSelVec3), (vec_uint4)btIntZero);
+
+	return vecret;
+# 186 "..\\..\\src\\LinearMath/btAabbUtil2.h"
+}
+
+inline __attribute__((always_inline)) bool btRayAabb(const btVector3& rayFrom, 
+								 const btVector3& rayTo, 
+								 const btVector3& aabbMin, 
+								 const btVector3& aabbMax,
+					  btScalar& param, btVector3& normal) 
+{
+	btVector3 aabbHalfExtent = (aabbMax-aabbMin)* btScalar(0.5);
+	btVector3 aabbCenter = (aabbMax+aabbMin)* btScalar(0.5);
+	btVector3	source = rayFrom - aabbCenter;
+	btVector3	target = rayTo - aabbCenter;
+	
+
+	
+	
+	vec_float4 minusHalf = vec_sub(btZeroVec(), aabbHalfExtent.mVec);
+	vec_int4 sMinRes = vec_sel((vec_int4)vec_cmplt(source.mVec, minusHalf), btIntZero, btSelVec3);	
+	vec_bint4 sPlusRes = vec_cmpgt(source.mVec, aabbHalfExtent.mVec); 
+	
+	vec_int4 tMinRes = vec_sel((vec_int4)vec_cmplt(target.mVec, minusHalf), btIntZero, btSelVec3);
+	vec_bint4 tPlusRes = vec_cmpgt(target.mVec, aabbHalfExtent.mVec); 
+	
+	
+	if(vec_all_eq(vec_and(sMinRes, tMinRes), btIntZero) &&	vec_all_eq(vec_sel((vec_int4)vec_and(sPlusRes, tPlusRes), btIntZero, btSelVec3), btIntZero))
+	{
+		btScalar lambda_enter = 0;
+		btScalar lambda_exit  = param;
+		btVector3 r = target - source;
+		int i;
+		btScalar	normSign = 1;	
+		btVector3	hitNormal = btZeroVec();	
+		int bit=1;
+
+		if(!(vec_all_eq(sMinRes, btIntZero), vec_all_eq(vec_sel(tMinRes, btIntZero, btSelVec3), btIntZero)))
+		{
+			btVector3 lambdaPlus = (-source - aabbHalfExtent) / r;
+			btVector3 lambdaMinus = (-source + aabbHalfExtent) / r;
+			
+			
+			vec_float4 lpcut = vec_max(btZeroVec(), vec_sel(btZeroVec(), lambdaPlus.mVec, (vec_bint4)sMinRes));	
+			vec_float4 lmcut = vec_max(btZeroVec(), vec_sel(btZeroVec(), lambdaMinus.mVec, (vec_bint4)sMinRes));
+			
+			
+			if(vec_any_ne(sMinRes, btIntZero))
+			{
+				
+				lpcut = vec_sel(lpcut, btZeroVec(), btSelVec3);	
+				lmcut = vec_sel(lmcut, btZeroVec(), btSelVec3);	
+				
+				
+				btVector3 maxlambda = vec_max(lpcut, lmcut);
+				vec_bint4 xy_yz_z0 = vec_cmpgt(maxlambda.mVec, vec_sld(maxlambda.mVec, maxlambda.mVec, 4));
+				vec_bint4 xyz_yz0_z0x = vec_and(xy_yz_z0, vec_cmpgt(maxlambda.mVec, vec_sld(maxlambda.mVec, maxlambda.mVec, 8)));
+				vec_bint4 xyz0_yz0x_z0xy = vec_and(xyz_yz0_z0x, vec_cmpgt(maxlambda.mVec, vec_sld(maxlambda.mVec, maxlambda.mVec, 12)));	
+				hitNormal.mVec = vec_sel(btZeroVec(), vec_float4(1.f), xyz0_yz0x_z0xy);
+				vec_bint4 lambdaMask = vec_cmpge(lmcut, lpcut);
+				hitNormal.mVec = vec_sel(hitNormal.mVec, vec_sub(btZeroVec(), hitNormal.mVec), lambdaMask);
+				
+				float *tmp = maxlambda.m_floats;
+				
+				lambda_enter = (tmp[0] < tmp[1]) ? ((tmp[1] < tmp[2]) ? tmp[2] : tmp[1]) : ((tmp[0] < tmp[2]) ? tmp[2] : tmp[0]);
+			}
+			
+			else if(vec_any_ne(tMinRes, btIntZero))
+			{
+				btVector3 minlambda = vec_min(lpcut, lmcut);
+				float *tmp = minlambda.m_floats;
+				
+				lambda_exit = (tmp[0] > tmp[1]) ? ((tmp[1] > tmp[2]) ? tmp[2] : tmp[1]) : ((tmp[0] > tmp[2]) ? tmp[2] : tmp[0]);
+			}
+		}
+# 295 "..\\..\\src\\LinearMath/btAabbUtil2.h"
+		if (lambda_enter <= lambda_exit)
+		{
+			param = lambda_enter;
+			normal = hitNormal;
+			return true;
+		}
+	}
+	return false;
+}
+
+
+
+inline __attribute__((always_inline))	void btTransformAabb(const btVector3& halfExtents, btScalar margin,const btTransform& t,btVector3& aabbMinOut,btVector3& aabbMaxOut)
+{
+
+	
+	vec_float4 halfExtentsWithMargin = vec_add(halfExtents.mVec, vec_float4(margin));
+	btMatrix3x3 abs_b = t.getBasis().absolute();  
+	btVector3 center = t.getOrigin();
+
+	btVector3 extent = btVector3(vec_dot3mx(abs_b.get128ptr(), halfExtentsWithMargin));
+
+	aabbMinOut = vec_sub(center.mVec, extent.mVec);
+	aabbMaxOut = vec_add(center.mVec, extent.mVec);
+# 330 "..\\..\\src\\LinearMath/btAabbUtil2.h"
+}
+
+
+inline __attribute__((always_inline))	void btTransformAabb(const btVector3& localAabbMin,const btVector3& localAabbMax, btScalar margin,const btTransform& trans,btVector3& aabbMinOut,btVector3& aabbMaxOut)
+{
+		((localAabbMin . getX() <= localAabbMax . getX()) ? (void)0 : ::std:: _Assert("..\\..\\src\\LinearMath/btAabbUtil2.h" ":" "335" " " "localAabbMin.getX() <= localAabbMax.getX()", 0));
+		((localAabbMin . getY() <= localAabbMax . getY()) ? (void)0 : ::std:: _Assert("..\\..\\src\\LinearMath/btAabbUtil2.h" ":" "336" " " "localAabbMin.getY() <= localAabbMax.getY()", 0));
+		((localAabbMin . getZ() <= localAabbMax . getZ()) ? (void)0 : ::std:: _Assert("..\\..\\src\\LinearMath/btAabbUtil2.h" ":" "337" " " "localAabbMin.getZ() <= localAabbMax.getZ()", 0));
+
+		
+
+		
+		vec_float4 half = vec_float4(0.5f);
+		vec_float4 localHalfExtents = vec_madd(half, vec_sub(localAabbMax.mVec, localAabbMin.mVec), btZeroVec());
+		localHalfExtents = vec_add(localHalfExtents, vec_float4(margin));
+		btVector3 localCenter = vec_madd(half, vec_add(localAabbMax.mVec, localAabbMin.mVec), btZeroVec());
+		btMatrix3x3 abs_b = trans.getBasis().absolute();  
+		vec_float4 center = trans(localCenter).mVec;
+		vec_float4 extent = vec_dot3mx(abs_b.get128ptr(), localHalfExtents);
+
+		aabbMinOut = vec_sub(center, extent);
+		aabbMaxOut = vec_add(center, extent);
+# 366 "..\\..\\src\\LinearMath/btAabbUtil2.h"
+}
+
+
+
+	
+	inline __attribute__((always_inline)) unsigned testQuantizedAabbAgainstQuantizedAabb(const unsigned short int* aabbMin1,const unsigned short int* aabbMax1,const unsigned short int* aabbMin2,const unsigned short int* aabbMax2)
+	{		
+		return static_cast<unsigned int>(btSelect((unsigned)((aabbMin1[0] <= aabbMax2[0]) & (aabbMax1[0] >= aabbMin2[0])
+			& (aabbMin1[2] <= aabbMax2[2]) & (aabbMax1[2] >= aabbMin2[2])
+			& (aabbMin1[1] <= aabbMax2[1]) & (aabbMax1[1] >= aabbMin2[1])),
+			1, 0));
+	}
+# 388 "..\\..\\src\\LinearMath/btAabbUtil2.h"
+
+
+
+
+# 21 "..\\..\\src\\BulletCollision/CollisionShapes/btConvexInternalShape.h"
+
+
+
+class btConvexInternalShape : public btConvexShape
+{
+
+	protected:
+
+	
+	btVector3	m_localScaling;
+
+	btVector3	m_implicitShapeDimensions;
+	
+	btScalar	m_collisionMargin;
+
+	btScalar	m_padding;
+
+	btConvexInternalShape();
+
+public:
+
+	
+
+	virtual ~btConvexInternalShape()
+	{
+
+	}
+
+	virtual btVector3	localGetSupportingVertex(const btVector3& vec)const;
+
+	const btVector3& getImplicitShapeDimensions() const
+	{
+		return m_implicitShapeDimensions;
+	}
+
+	
+	
+	
+	
+	void	setImplicitShapeDimensions(const btVector3& dimensions)
+	{
+		m_implicitShapeDimensions = dimensions;
+	}
+
+	
+	void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const
+	{
+		getAabbSlow(t,aabbMin,aabbMax);
+	}
+
+
+	
+	virtual void getAabbSlow(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
+
+
+	virtual void	setLocalScaling(const btVector3& scaling);
+	virtual const btVector3& getLocalScaling() const 
+	{
+		return m_localScaling;
+	}
+
+	const btVector3& getLocalScalingNV() const 
+	{
+		return m_localScaling;
+	}
+
+	virtual void	setMargin(btScalar margin)
+	{
+		m_collisionMargin = margin;
+	}
+	virtual btScalar	getMargin() const
+	{
+		return m_collisionMargin;
+	}
+
+	btScalar	getMarginNV() const
+	{
+		return m_collisionMargin;
+	}
+
+	virtual int		getNumPreferredPenetrationDirections() const
+	{
+		return 0;
+	}
+	
+	virtual void	getPreferredPenetrationDirection(int index, btVector3& penetrationVector) const
+	{
+		(void)penetrationVector;
+		(void)index;
+		((0) ? (void)0 : ::std:: _Assert("..\\..\\src\\BulletCollision/CollisionShapes/btConvexInternalShape.h" ":" "110" " " "0", 0));
+	}
+
+	virtual	int	calculateSerializeBufferSize() const;
+
+	
+	virtual	const char*	serialize(void* dataBuffer, btSerializer* serializer) const;
+
+	
+};
+
+
+struct	btConvexInternalShapeData
+{
+	btCollisionShapeData	m_collisionShapeData;
+
+	btVector3FloatData	m_localScaling;
+
+	btVector3FloatData	m_implicitShapeDimensions;
+	
+	float			m_collisionMargin;
+
+	int	m_padding;
+
+};
+
+
+
+inline __attribute__((always_inline))	int	btConvexInternalShape::calculateSerializeBufferSize() const
+{
+	return sizeof(btConvexInternalShapeData);
+}
+
+
+inline __attribute__((always_inline))	const char*	btConvexInternalShape::serialize(void* dataBuffer, btSerializer* serializer) const
+{
+	btConvexInternalShapeData* shapeData = (btConvexInternalShapeData*) dataBuffer;
+	btCollisionShape::serialize(&shapeData->m_collisionShapeData, serializer);
+
+	m_implicitShapeDimensions.serializeFloat(shapeData->m_implicitShapeDimensions);
+	m_localScaling.serializeFloat(shapeData->m_localScaling);
+	shapeData->m_collisionMargin = float(m_collisionMargin);
+
+	return "btConvexInternalShapeData";
+}
+
+
+
+
+
+class btConvexInternalAabbCachingShape : public btConvexInternalShape
+{
+	btVector3	m_localAabbMin;
+	btVector3	m_localAabbMax;
+	bool		m_isLocalAabbValid;
+	
+protected:
+					
+	btConvexInternalAabbCachingShape();
+	
+	void setCachedLocalAabb (const btVector3& aabbMin, const btVector3& aabbMax)
+	{
+		m_isLocalAabbValid = true;
+		m_localAabbMin = aabbMin;
+		m_localAabbMax = aabbMax;
+	}
+
+	inline void getCachedLocalAabb (btVector3& aabbMin, btVector3& aabbMax) const
+	{
+		((m_isLocalAabbValid) ? (void)0 : ::std:: _Assert("..\\..\\src\\BulletCollision/CollisionShapes/btConvexInternalShape.h" ":" "179" " " "m_isLocalAabbValid", 0));
+		aabbMin = m_localAabbMin;
+		aabbMax = m_localAabbMax;
+	}
+
+	inline void getNonvirtualAabb(const btTransform& trans,btVector3& aabbMin,btVector3& aabbMax, btScalar margin) const
+	{
+
+		
+		((m_isLocalAabbValid) ? (void)0 : ::std:: _Assert("..\\..\\src\\BulletCollision/CollisionShapes/btConvexInternalShape.h" ":" "188" " " "m_isLocalAabbValid", 0));
+		btTransformAabb(m_localAabbMin,m_localAabbMax,margin,trans,aabbMin,aabbMax);
+	}
+		
+public:
+		
+	virtual void	setLocalScaling(const btVector3& scaling);
+
+	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
+
+	void	recalcLocalAabb();
+
+};
+
+# 26 "e:\\EnforceNG\\bullet-2.76\\src\\BulletCollision\\NarrowPhaseCollision\\btGjkEpa2.cpp"
+# 1 "..\\..\\src\\BulletCollision/CollisionShapes/btSphereShape.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+class __attribute__ ((aligned (16))) btSphereShape : public btConvexInternalShape
+
+{
+	
+public:
+	inline __attribute__((always_inline)) void* operator new(size_t sizeInBytes) { return btAlignedAllocInternal(sizeInBytes,16,27,"..\\..\\src\\BulletCollision/CollisionShapes/btSphereShape.h"); } inline __attribute__((always_inline)) void operator delete(void* ptr) { btAlignedFreeInternal(ptr); } inline __attribute__((always_inline)) void* operator new(size_t, void* ptr) { return ptr; } inline __attribute__((always_inline)) void operator delete(void*, void*) { } inline __attribute__((always_inline)) void* operator new[](size_t sizeInBytes) { return btAlignedAllocInternal(sizeInBytes,16,27,"..\\..\\src\\BulletCollision/CollisionShapes/btSphereShape.h"); } inline __attribute__((always_inline)) void operator delete[](void* ptr) { btAlignedFreeInternal(ptr); } inline __attribute__((always_inline)) void* operator new[](size_t, void* ptr) { return ptr; } inline __attribute__((always_inline)) void operator delete[](void*, void*) { };
+
+	btSphereShape (btScalar radius) : btConvexInternalShape ()
+	{
+		m_shapeType = SPHERE_SHAPE_PROXYTYPE;
+		m_implicitShapeDimensions.setX(radius);
+		m_collisionMargin = radius;
+	}
+	
+	virtual btVector3	localGetSupportingVertex(const btVector3& vec)const;
+	virtual btVector3	localGetSupportingVertexWithoutMargin(const btVector3& vec)const;
+	
+	virtual void	batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const;
+
+
+	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const;
+
+	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
+
+	btScalar	getRadius() const { return m_implicitShapeDimensions.getX() * m_localScaling.getX();}
+
+	void	setUnscaledRadius(btScalar	radius)
+	{
+		m_implicitShapeDimensions.setX(radius);
+		btConvexInternalShape::setMargin(radius);
+	}
+
+	
+	virtual const char*	getName()const {return "SPHERE";}
+
+	virtual void	setMargin(btScalar margin)
+	{
+		btConvexInternalShape::setMargin(margin);
+	}
+	virtual btScalar	getMargin() const
+	{
+		
+		
+		return getRadius();
+	}
+
+
+};
+
+
+# 27 "e:\\EnforceNG\\bullet-2.76\\src\\BulletCollision\\NarrowPhaseCollision\\btGjkEpa2.cpp"
+# 1 "e:\\EnforceNG\\bullet-2.76\\src\\BulletCollision\\NarrowPhaseCollision\\btGjkEpa2.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+ 
+
+
+
+
+
+struct	btGjkEpaSolver2
+{
+struct	sResults
+	{
+	enum eStatus
+		{
+		Separated,		  
+		Penetrating,	  
+		GJK_Failed,		  
+		EPA_Failed		  
+		}		status;
+	btVector3	witnesses[2];
+	btVector3	normal;
+	btScalar	distance;
+	};
+
+static int		StackSizeRequirement();
+
+static bool		Distance(	const btConvexShape* shape0,const btTransform& wtrs0,
+							const btConvexShape* shape1,const btTransform& wtrs1,
+							const btVector3& guess,
+							sResults& results);
+
+static bool		Penetration(const btConvexShape* shape0,const btTransform& wtrs0,
+							const btConvexShape* shape1,const btTransform& wtrs1,
+							const btVector3& guess,
+							sResults& results,
+							bool usemargins=true);
+
+static btScalar	SignedDistance(	const btVector3& position,
+								btScalar margin,
+								const btConvexShape* shape,
+								const btTransform& wtrs,
+								sResults& results);
+							
+static bool		SignedDistance(	const btConvexShape* shape0,const btTransform& wtrs0,
+								const btConvexShape* shape1,const btTransform& wtrs1,
+								const btVector3& guess,
+								sResults& results);
+
+
+};
+# 28 "e:\\EnforceNG\\bullet-2.76\\src\\BulletCollision\\NarrowPhaseCollision\\btGjkEpa2.cpp"
+
+# 1 "C:/PS3SDK\\target\\ppu\\include/stdio.h"
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+namespace std {
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+		 
+
+
+
+
+
+
+
+
+# 49 "C:/PS3SDK\\target\\ppu\\include/stdio.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		 
+
+
+typedef struct _Mbstatet
+	{	 
+	unsigned long _Wchar;
+	unsigned short _Byte, _State;
+	} _Mbstatet;
+ 
+
+
+
+
+typedef struct fpos_t
+	{	 
+	long _Off;	 
+	_Mbstatet _Wstate;
+	} fpos_t;
+
+
+
+typedef struct _Filet
+	{	 
+	unsigned short _Mode;
+	unsigned char _Idx;
+	signed short _Handle;
+
+	unsigned char *_Buf, *_Bend, *_Next;
+	unsigned char *_Rend, *_Wend, *_Rback;
+
+	_Wchart *_WRback, _WBack[2];
+	unsigned char *_Rsave, *_WRend, *_WWend;
+
+	_Mbstatet _Wstate;
+	struct _Filet *_Next_elem;
+	unsigned char _Back[3], _Cbuf;
+
+	_Rmtx *_stream_mtx;
+
+	uint64_t fpos;
+	uint64_t _Rsize;
+	uint64_t _offset;
+	unsigned char *_BRend;
+	unsigned short _Bflag;
+	} _Filet;
+typedef _Filet FILE;
+
+		 
+extern "C" {
+extern FILE _Stdin, _Stdout, _Stderr;
+
+void clearerr(FILE *);
+int fclose(FILE *);
+int feof(FILE *);
+int ferror(FILE *);
+int fflush(FILE *);
+int fgetc(FILE *);
+int fgetpos(FILE *, fpos_t *);
+char *fgets(char *, int, FILE *);
+FILE *fopen(const char *, const char *);
+FILE *fdopen(int, const char *);
+int fileno(FILE *);
+int fprintf(FILE *, const char *, ...);
+int fputc(int, FILE *);
+int fputs(const char *, FILE *);
+size_t fread(void *, size_t, size_t, FILE *);
+FILE *freopen(const char *, const char *,
+	FILE *);
+int fscanf(FILE * , const char *, ...);
+int fseek(FILE *, long, int);
+int fsetpos(FILE *, const fpos_t *);
+long ftell(FILE *);
+size_t fwrite(const void *, size_t, size_t,
+	FILE *);
+char *gets(char *);
+void perror(const char *);
+int printf(const char *, ...);
+int puts(const char *);
+int remove(const char *);
+int rename(const char *, const char *);
+void rewind(FILE *);
+int scanf(const char *, ...);
+void setbuf(FILE * , char *);
+int setvbuf(FILE * , char *, int, size_t);
+int sprintf(char *, const char *, ...);
+int sscanf(const char *, const char *, ...);
+int ungetc(int, FILE *);
+int vfprintf(FILE *, const char *, _Va_list);
+int vprintf(const char *, _Va_list);
+int vsprintf(char *, const char *, _Va_list);
+
+long _Fgpos(FILE *, fpos_t *);
+int _Flocale(FILE *, const char *, int);
+void _Fsetlocale(FILE *, int);
+int _Fspos(FILE *, const fpos_t *, long, int);
+
+
+void _Lockfilelock(_Filet *);
+void _Unlockfilelock(_Filet *);
+
+
+
+int snprintf(char *, size_t,
+	const char *, ...);
+int vsnprintf(char *, size_t,
+	const char *, _Va_list);
+int vfscanf(FILE *,
+	const char *, _Va_list);
+int vscanf(const char *, _Va_list);
+int vsscanf(const char *,
+	const char *, _Va_list);
+
+# 187 "C:/PS3SDK\\target\\ppu\\include/stdio.h"
+}
+
+
+		 
+extern "C" {
+int getc(FILE *);
+int getchar(void);
+int putc(int, FILE *);
+int putchar(int);
+}
+
+# 258 "C:/PS3SDK\\target\\ppu\\include/stdio.h"
+}
+
+
+
+
+
+using ::std:: fpos_t; using ::std:: FILE;
+using ::std:: clearerr; using ::std:: fclose; using ::std:: feof;
+using ::std:: ferror; using ::std:: fflush; using ::std:: fgetc;
+using ::std:: fgetpos; using ::std:: fgets; using ::std:: fopen;
+using ::std:: fileno; using ::std:: fdopen;
+using ::std:: fprintf; using ::std:: fputc; using ::std:: fputs;
+using ::std:: fread; using ::std:: freopen; using ::std:: fscanf;
+using ::std:: fseek; using ::std:: fsetpos; using ::std:: ftell;
+using ::std:: fwrite; using ::std:: getc; using ::std:: getchar;
+using ::std:: gets; using ::std:: perror;
+using ::std:: putc; using ::std:: putchar;
+using ::std:: printf; using ::std:: puts; using ::std:: remove;
+using ::std:: rename; using ::std:: rewind; using ::std:: scanf;
+using ::std:: setbuf; using ::std:: setvbuf; using ::std:: sprintf;
+using ::std:: sscanf;
+using ::std:: ungetc; using ::std:: vfprintf; using ::std:: vprintf;
+using ::std:: vsprintf;
+
+
+using ::std:: snprintf; using ::std:: vsnprintf;
+using ::std:: vfscanf; using ::std:: vscanf; using ::std:: vsscanf;
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+# 31 "e:\\EnforceNG\\bullet-2.76\\src\\BulletCollision\\NarrowPhaseCollision\\btGjkEpa2.cpp"
+
+
+
+
+
+
+namespace gjkepa2_impl
+{
+
+	
+
+	  
+# 50 "e:\\EnforceNG\\bullet-2.76\\src\\BulletCollision\\NarrowPhaseCollision\\btGjkEpa2.cpp"
+
+	  
+# 59 "e:\\EnforceNG\\bullet-2.76\\src\\BulletCollision\\NarrowPhaseCollision\\btGjkEpa2.cpp"
+
+
+	
+	typedef unsigned int	U;
+	typedef unsigned char	U1;
+
+	
+	struct	MinkowskiDiff
+	{
+		const btConvexShape*	m_shapes[2];
+		btMatrix3x3				m_toshape1;
+		btTransform				m_toshape0;
+
+
+
+		btVector3				(btConvexShape::*Ls)(const btVector3&) const;
+
+		
+
+		MinkowskiDiff()
+		{
+
+		}
+# 108 "e:\\EnforceNG\\bullet-2.76\\src\\BulletCollision\\NarrowPhaseCollision\\btGjkEpa2.cpp"
+		void					EnableMargin(bool enable)
+		{
+			if(enable)
+				Ls=&btConvexShape::localGetSupportVertexNonVirtual;
+			else
+				Ls=&btConvexShape::localGetSupportVertexWithoutMarginNonVirtual;
+		}	
+		inline btVector3		Support0(const btVector3& d) const
+		{
+			return(((m_shapes[0])->*(Ls))(d));
+		}
+		inline btVector3		Support1(const btVector3& d) const
+		{
+			return(m_toshape0*((m_shapes[1])->*(Ls))(m_toshape1*d));
+		}
+
+
+		inline btVector3		Support(const btVector3& d) const
+		{
+			return(Support0(d)-Support1(-d));
+		}
+		btVector3				Support(const btVector3& d,U index) const
+		{
+			if(index)
+				return(Support1(d));
+			else
+				return(Support0(d));
+		}
+	};
+
+	typedef	MinkowskiDiff	tShape;
+
+
+	
+	struct	GJK
+	{
+		  
+		struct	sSV
+		{
+			btVector3	d,w;
+		};
+		struct	sSimplex
+		{
+			sSV*		c[4];
+			btScalar	p[4];
+			U			rank;
+		};
+		struct	eStatus	{ enum _ {
+			Valid,
+			Inside,
+			Failed		};};
+			  
+			tShape			m_shape;
+			btVector3		m_ray;
+			btScalar		m_distance;
+			sSimplex		m_simplices[2];
+			sSV				m_store[4];
+			sSV*			m_free[4];
+			U				m_nfree;
+			U				m_current;
+			sSimplex*		m_simplex;
+			eStatus::_		m_status;
+			  
+			GJK()
+			{
+				Initialize();
+			}
+			void				Initialize()
+			{
+				m_ray = btZeroVec();
+				m_nfree		=	0;
+				m_status	=	eStatus::Failed;
+				m_current	=	0;
+				m_distance	=	0;
+			}
+			eStatus::_			Evaluate(const tShape& shapearg,const btVector3& guess)
+			{
+				U			iterations=0;
+				btScalar	sqdist=0;
+				btScalar	alpha=0;
+				btVector3	lastw[4];
+				U			clastw=0;
+				  
+				m_free[0]			=	&m_store[0];
+				m_free[1]			=	&m_store[1];
+				m_free[2]			=	&m_store[2];
+				m_free[3]			=	&m_store[3];
+				m_nfree				=	4;
+				m_current			=	0;
+				m_status			=	eStatus::Valid;
+				m_shape				=	shapearg;
+				m_distance			=	0;
+				  
+				m_simplices[0].rank	=	0;
+				m_ray				=	guess;
+				const btScalar	sqrl=	m_ray.length2();
+
+				appendvertice(m_simplices[0],sqrl>0?-m_ray:btIdentVec0);
+
+
+
+				m_simplices[0].p[0]	=	1;
+				m_ray				=	m_simplices[0].c[0]->w;	
+				sqdist				=	sqrl;
+				lastw[0]			=
+					lastw[1]			=
+					lastw[2]			=
+					lastw[3]			=	m_ray;
+				  
+				do	{
+					const U		next=1-m_current;
+					sSimplex&	cs=m_simplices[m_current];
+					sSimplex&	ns=m_simplices[next];
+					  
+					const btScalar	rl=m_ray.length();
+					if(rl<((btScalar)0.0001))
+					{  
+						m_status=eStatus::Inside;
+						break;
+					}
+					  
+					appendvertice(cs,-m_ray);
+					const btVector3&	w=cs.c[cs.rank-1]->w;
+					bool				found=false;
+					for(U i=0;i<4;++i)
+					{
+						if((w-lastw[i]).length2()<((btScalar)0.0001))
+						{ found=true;break; }
+					}
+					if(found)
+					{  
+						removevertice(m_simplices[m_current]);
+						break;
+					}
+					else
+					{  
+						lastw[clastw=(clastw+1)&3]=w;
+					}
+					  
+					const btScalar	omega=btDot(m_ray,w)/rl;
+					alpha=btMax(omega,alpha);
+					if(((rl-alpha)-(((btScalar)0.0001)*rl))<=0)
+					{  
+						removevertice(m_simplices[m_current]);
+						break;
+					}		
+					  
+					btScalar	weights[4];
+					U			mask=0;
+					switch(cs.rank)
+					{
+					case	2:	sqdist=projectorigin(	cs.c[0]->w,
+									cs.c[1]->w,
+									weights,mask);break;
+					case	3:	sqdist=projectorigin(	cs.c[0]->w,
+									cs.c[1]->w,
+									cs.c[2]->w,
+									weights,mask);break;
+					case	4:	sqdist=projectorigin(	cs.c[0]->w,
+									cs.c[1]->w,
+									cs.c[2]->w,
+									cs.c[3]->w,
+									weights,mask);break;
+					}
+					if(sqdist>=0)
+					{  
+						ns.rank		=	0;
+						m_ray		=	btZeroVec();
+						m_current	=	next;
+						for(U i=0,ni=cs.rank;i<ni;++i)
+						{
+							if(mask&(1<<i))
+							{
+								ns.c[ns.rank]		=	cs.c[i];
+								ns.p[ns.rank++]		=	weights[i];
+								m_ray				+=	cs.c[i]->w*weights[i];
+							}
+							else
+							{
+								m_free[m_nfree++]	=	cs.c[i];
+							}
+						}
+						if(mask==15) m_status=eStatus::Inside;
+					}
+					else
+					{  
+						removevertice(m_simplices[m_current]);
+						break;
+					}
+					m_status=((++iterations)<128)?m_status:eStatus::Failed;
+				} while(m_status==eStatus::Valid);
+				m_simplex=&m_simplices[m_current];
+				switch(m_status)
+				{
+				case	eStatus::Valid:		m_distance=m_ray.length();break;
+				case	eStatus::Inside:	m_distance=0;break;
+				default:
+					{
+					}
+				}	
+				return(m_status);
+			}
+			bool					EncloseOrigin()
+			{
+				switch(m_simplex->rank)
+				{
+				case	1:
+					{
+						for(U i=0;i<3;++i)
+						{
+							btVector3		axis=btZeroVec();
+							axis[i]=1;
+							appendvertice(*m_simplex, axis);
+							if(EncloseOrigin())	return(true);
+							removevertice(*m_simplex);
+							appendvertice(*m_simplex,-axis);
+							if(EncloseOrigin())	return(true);
+							removevertice(*m_simplex);
+						}
+					}
+					break;
+				case	2:
+					{
+						const btVector3	d=m_simplex->c[1]->w-m_simplex->c[0]->w;
+						for(U i=0;i<3;++i)
+						{
+							btVector3		axis=btZeroVec();
+							axis[i]=1;
+							const btVector3	p=btCross(d,axis);
+							if(p.length2()>0)
+							{
+								appendvertice(*m_simplex, p);
+								if(EncloseOrigin())	return(true);
+								removevertice(*m_simplex);
+								appendvertice(*m_simplex,-p);
+								if(EncloseOrigin())	return(true);
+								removevertice(*m_simplex);
+							}
+						}
+					}
+					break;
+				case	3:
+					{
+						const btVector3	n=btCross(m_simplex->c[1]->w-m_simplex->c[0]->w,
+							m_simplex->c[2]->w-m_simplex->c[0]->w);
+						if(n.length2()>0)
+						{
+							appendvertice(*m_simplex,n);
+							if(EncloseOrigin())	return(true);
+							removevertice(*m_simplex);
+							appendvertice(*m_simplex,-n);
+							if(EncloseOrigin())	return(true);
+							removevertice(*m_simplex);
+						}
+					}
+					break;
+				case	4:
+					{
+						if(btFabs(det(	m_simplex->c[0]->w-m_simplex->c[3]->w,
+							m_simplex->c[1]->w-m_simplex->c[3]->w,
+							m_simplex->c[2]->w-m_simplex->c[3]->w))>0)
+							return(true);
+					}
+					break;
+				}
+				return(false);
+			}
+			  
+			void				getsupport(const btVector3& d,sSV& sv) const
+			{
+				sv.d	=	d/d.length();
+				sv.w	=	m_shape.Support(sv.d);
+			}
+			void				removevertice(sSimplex& simplex)
+			{
+				m_free[m_nfree++]=simplex.c[--simplex.rank];
+			}
+			void				appendvertice(sSimplex& simplex,const btVector3& v)
+			{
+				simplex.p[simplex.rank]=0;
+				simplex.c[simplex.rank]=m_free[--m_nfree];
+				getsupport(v,*simplex.c[simplex.rank++]);
+			}
+			static btScalar		det(const btVector3& a,const btVector3& b,const btVector3& c)
+			{
+# 416 "e:\\EnforceNG\\bullet-2.76\\src\\BulletCollision\\NarrowPhaseCollision\\btGjkEpa2.cpp"
+				return(	a.getY()*b.getZ()*c.getX()+a.getZ()*b.getX()*c.getY()-
+					a.getX()*b.getZ()*c.getY()-a.getY()*b.getX()*c.getZ()+
+					a.getX()*b.getY()*c.getZ()-a.getZ()*b.getY()*c.getX());
+
+			}
+			static btScalar		projectorigin(	const btVector3& a,
+				const btVector3& b,
+				btScalar* w,U& m)
+			{
+				const btVector3	d=b-a;
+				const btScalar	l=d.length2();
+				if(l>((btScalar)0.0))
+				{
+					const btScalar	t(l>btScalar(0.f)?-btDot(a,d)/l:btScalar(0.f));
+					if(t>=1)		{ w[0]=0;w[1]=1;m=2;return(b.length2()); }
+					else if(t<=0)	{ w[0]=1;w[1]=0;m=1;return(a.length2()); }
+					else			{ w[0]=1-(w[1]=t);m=3;return((a+d*t).length2()); }
+				}
+				return(-1);
+			}
+			static btScalar		projectorigin(	const btVector3& a,
+				const btVector3& b,
+				const btVector3& c,
+				btScalar* w,U& m)
+			{
+				static const U		imd3[]={1,2,0};
+				const btVector3*	vt[]={&a,&b,&c};
+				const btVector3		dl[]={a-b,b-c,c-a};
+				const btVector3		n=btCross(dl[0],dl[1]);
+				const btScalar		l=n.length2();
+				if(l>((btScalar)0.0))
+				{
+					btScalar	mindist=-1;
+					btScalar	subw[2]={0.f,0.f};
+					U			subm(0);
+					for(U i=0;i<3;++i)
+					{
+						if(btDot(*vt[i],btCross(dl[i],n))>0)
+						{
+							const U			j=imd3[i];
+							const btScalar	subd(projectorigin(*vt[i],*vt[j],subw,subm));
+							if((mindist<0)||(subd<mindist))
+							{
+								mindist		=	subd;
+								m			=	static_cast<U>(((subm&1)?1<<i:0)+((subm&2)?1<<j:0));
+								w[i]		=	subw[0];
+								w[j]		=	subw[1];
+								w[imd3[j]]	=	0;				
+							}
+						}
+					}
+					if(mindist<0)
+					{
+						const btScalar	d=btDot(a,n);	
+						const btScalar	s=btSqrt(l);
+						const btVector3	p=n*(d/l);
+						mindist	=	p.length2();
+						m		=	7;
+						w[0]	=	(btCross(dl[1],b-p)).length()/s;
+						w[1]	=	(btCross(dl[2],c-p)).length()/s;
+						w[2]	=	1-(w[0]+w[1]);
+					}
+					return(mindist);
+				}
+				return(-1);
+			}
+			static btScalar		projectorigin(	const btVector3& a,
+				const btVector3& b,
+				const btVector3& c,
+				const btVector3& d,
+				btScalar* w,U& m)
+			{
+				static const U		imd3[]={1,2,0};
+				const btVector3*	vt[]={&a,&b,&c,&d};
+				const btVector3		dl[]={a-d,b-d,c-d};
+				const btScalar		vl=det(dl[0],dl[1],dl[2]);
+				const bool			ng=(vl*btDot(a,btCross(b-c,a-b)))<=0;
+				if(ng&&(btFabs(vl)>((btScalar)0.0)))
+				{
+					btScalar	mindist=-1;
+					btScalar	subw[3]={0.f,0.f,0.f};
+					U			subm(0);
+					for(U i=0;i<3;++i)
+					{
+						const U			j=imd3[i];
+						const btScalar	s=vl*btDot(d,btCross(dl[i],dl[j]));
+						if(s>0)
+						{
+							const btScalar	subd=projectorigin(*vt[i],*vt[j],d,subw,subm);
+							if((mindist<0)||(subd<mindist))
+							{
+								mindist		=	subd;
+								m			=	static_cast<U>((subm&1?1<<i:0)+
+									(subm&2?1<<j:0)+
+									(subm&4?8:0));
+								w[i]		=	subw[0];
+								w[j]		=	subw[1];
+								w[imd3[j]]	=	0;
+								w[3]		=	subw[2];
+							}
+						}
+					}
+					if(mindist<0)
+					{
+						mindist	=	0;
+						m		=	15;
+						w[0]	=	det(c,b,d)/vl;
+						w[1]	=	det(a,c,d)/vl;
+						w[2]	=	det(b,a,d)/vl;
+						w[3]	=	1-(w[0]+w[1]+w[2]);
+					}
+					return(mindist);
+				}
+				return(-1);
+			}
+	};
+
+	
+	struct	EPA
+	{
+		  
+		typedef	GJK::sSV	sSV;
+		struct	sFace
+		{
+			btVector3	n;
+			btScalar	d;
+			btScalar	p;
+			sSV*		c[3];
+			sFace*		f[3];
+			sFace*		l[2];
+			U1			e[3];
+			U1			pass;
+		};
+		struct	sList
+		{
+			sFace*		root;
+			U			count;
+			sList() : root(0),count(0)	{}
+		};
+		struct	sHorizon
+		{
+			sFace*		cf;
+			sFace*		ff;
+			U			nf;
+			sHorizon() : cf(0),ff(0),nf(0)	{}
+		};
+		struct	eStatus { enum _ {
+			Valid,
+			Touching,
+			Degenerated,
+			NonConvex,
+			InvalidHull,		
+			OutOfFaces,
+			OutOfVertices,
+			AccuraryReached,
+			FallBack,
+			Failed		};};
+			  
+			eStatus::_		m_status;
+			GJK::sSimplex	m_result;
+			btVector3		m_normal;
+			btScalar		m_depth;
+			sSV				m_sv_store[64];
+			sFace			m_fc_store[(64*2)];
+			U				m_nextsv;
+			sList			m_hull;
+			sList			m_stock;
+			  
+			EPA()
+			{
+				Initialize();	
+			}
+
+
+			static inline void		bind(sFace* fa,U ea,sFace* fb,U eb)
+			{
+				fa->e[ea]=(U1)eb;fa->f[ea]=fb;
+				fb->e[eb]=(U1)ea;fb->f[eb]=fa;
+			}
+			static inline void		append(sList& list,sFace* face)
+			{
+				face->l[0]	=	0;
+				face->l[1]	=	list.root;
+				if(list.root) list.root->l[0]=face;
+				list.root	=	face;
+				++list.count;
+			}
+			static inline void		remove(sList& list,sFace* face)
+			{
+				if(face->l[1]) face->l[1]->l[0]=face->l[0];
+				if(face->l[0]) face->l[0]->l[1]=face->l[1];
+				if(face==list.root) list.root=face->l[1];
+				--list.count;
+			}
+
+
+			void				Initialize()
+			{
+				m_status	=	eStatus::Failed;
+				m_normal	=	btZeroVec();
+				m_depth		=	0;
+				m_nextsv	=	0;
+				for(U i=0;i<(64*2);++i)
+				{
+					append(m_stock,&m_fc_store[(64*2)-i-1]);
+				}
+			}
+			eStatus::_			Evaluate(GJK& gjk,const btVector3& guess)
+			{
+				GJK::sSimplex&	simplex=*gjk.m_simplex;
+				if((simplex.rank>1)&&gjk.EncloseOrigin())
+				{
+
+					  
+					while(m_hull.root)
+					{
+						sFace*	f = m_hull.root;
+						remove(m_hull,f);
+						append(m_stock,f);
+					}
+					m_status	=	eStatus::Valid;
+					m_nextsv	=	0;
+					  
+					if(gjk.det(	simplex.c[0]->w-simplex.c[3]->w,
+						simplex.c[1]->w-simplex.c[3]->w,
+						simplex.c[2]->w-simplex.c[3]->w)<0)
+					{
+						btSwap(simplex.c[0],simplex.c[1]);
+						btSwap(simplex.p[0],simplex.p[1]);
+					}
+					  
+					sFace*	tetra[]={newface(simplex.c[0],simplex.c[1],simplex.c[2],true),
+						newface(simplex.c[1],simplex.c[0],simplex.c[3],true),
+						newface(simplex.c[2],simplex.c[1],simplex.c[3],true),
+						newface(simplex.c[0],simplex.c[2],simplex.c[3],true)};
+					if(m_hull.count==4)
+					{
+						sFace*		best=findbest();
+						sFace		outer=*best;
+						U			pass=0;
+						U			iterations=0;
+						bind(tetra[0],0,tetra[1],0);
+						bind(tetra[0],1,tetra[2],0);
+						bind(tetra[0],2,tetra[3],0);
+						bind(tetra[1],1,tetra[3],2);
+						bind(tetra[1],2,tetra[2],1);
+						bind(tetra[2],2,tetra[3],1);
+						m_status=eStatus::Valid;
+						for(;iterations<255;++iterations)
+						{
+							if(m_nextsv<64)
+							{	
+								sHorizon		horizon;
+								sSV*			w=&m_sv_store[m_nextsv++];
+								bool			valid=true;					
+								best->pass	=	(U1)(++pass);
+								gjk.getsupport(best->n,*w);
+								const btScalar	wdist=btDot(best->n,w->w)-best->d;
+								if(wdist>((btScalar)0.0001))
+								{
+									for(U j=0;(j<3)&&valid;++j)
+									{
+										valid&=expand(	pass,w,
+											best->f[j],best->e[j],
+											horizon);
+									}
+									if(valid&&(horizon.nf>=3))
+									{
+										bind(horizon.cf,1,horizon.ff,2);
+										remove(m_hull,best);
+										append(m_stock,best);
+										best=findbest();
+										if(best->p>=outer.p) outer=*best;
+									} else { m_status=eStatus::InvalidHull;break; }
+								} else { m_status=eStatus::AccuraryReached;break; }
+							} else { m_status=eStatus::OutOfVertices;break; }
+						}
+						const btVector3	projection=outer.n*outer.d;
+						m_normal	=	outer.n;
+						m_depth		=	outer.d;
+						m_result.rank	=	3;
+						m_result.c[0]	=	outer.c[0];
+						m_result.c[1]	=	outer.c[1];
+						m_result.c[2]	=	outer.c[2];
+						m_result.p[0]	=	btCross(	outer.c[1]->w-projection,
+							outer.c[2]->w-projection).length();
+						m_result.p[1]	=	btCross(	outer.c[2]->w-projection,
+							outer.c[0]->w-projection).length();
+						m_result.p[2]	=	btCross(	outer.c[0]->w-projection,
+							outer.c[1]->w-projection).length();
+						const btScalar	sum=m_result.p[0]+m_result.p[1]+m_result.p[2];
+						m_result.p[0]	/=	sum;
+						m_result.p[1]	/=	sum;
+						m_result.p[2]	/=	sum;
+						return(m_status);
+					}
+				}
+				  
+				m_status	=	eStatus::FallBack;
+				m_normal	=	-guess;
+				const btScalar	nl=m_normal.length();
+				if(nl>0)
+					m_normal	=	m_normal/nl;
+				else
+
+					m_normal	=	btIdentVec0;
+
+
+
+				m_depth	=	0;
+				m_result.rank=1;
+				m_result.c[0]=simplex.c[0];
+				m_result.p[0]=1;	
+				return(m_status);
+			}
+			sFace*				newface(sSV* a,sSV* b,sSV* c,bool forced)
+			{
+				if(m_stock.root)
+				{
+					sFace*	face=m_stock.root;
+					remove(m_stock,face);
+					append(m_hull,face);
+					face->pass	=	0;
+					face->c[0]	=	a;
+					face->c[1]	=	b;
+					face->c[2]	=	c;
+					face->n		=	btCross(b->w-a->w,c->w-a->w);
+					const btScalar	l=face->n.length();
+					const bool		v=l>((btScalar)0.0001);
+
+					btScalar tmp = btMin(
+						btDot(a->w,btCross(face->n,a->w-b->w)),
+						btDot(b->w,btCross(face->n,b->w-c->w)));
+					face->p		=	btMin(tmp,
+						btDot(c->w,btCross(face->n,c->w-a->w)))	/
+						(v?l:btScalar(1.f));
+					face->p		=	face->p >= -((btScalar)0.01)?btScalar(0.f):face->p;
+					if(v)
+					{
+						face->d		=	btDot(a->w,face->n)/l;
+						face->n		/=	l;
+						if(forced||(face->d>=-((btScalar)0.00001)))
+						{
+							return(face);
+						} else m_status=eStatus::NonConvex;
+					} else m_status=eStatus::Degenerated;
+					remove(m_hull,face);
+					append(m_stock,face);
+					return(0);
+				}
+				m_status=m_stock.root?eStatus::OutOfVertices:eStatus::OutOfFaces;
+				return(0);
+			}
+			sFace*				findbest()
+			{
+				sFace*		minf=m_hull.root;
+				btScalar	mind=minf->d*minf->d;
+				btScalar	maxp=minf->p;
+				for(sFace* f=minf->l[1];f;f=f->l[1])
+				{
+					const btScalar	sqd=f->d*f->d;
+					if((f->p>=maxp)&&(sqd<mind))
+					{
+						minf=f;
+						mind=sqd;
+						maxp=f->p;
+					}
+				}
+				return(minf);
+			}
+			bool				expand(U pass,sSV* w,sFace* f,U e,sHorizon& horizon)
+			{
+				static const U	i1m3[]={1,2,0};
+				static const U	i2m3[]={2,0,1};
+				if(f->pass!=pass)
+				{
+					const U	e1=i1m3[e];
+					if((btDot(f->n,w->w)-f->d)<-((btScalar)0.00001))
+					{
+						sFace*	nf=newface(f->c[e1],f->c[e],w,false);
+						if(nf)
+						{
+							bind(nf,0,f,e);
+							if(horizon.cf) bind(horizon.cf,1,nf,2); else horizon.ff=nf;
+							horizon.cf=nf;
+							++horizon.nf;
+							return(true);
+						}
+					}
+					else
+					{
+						const U	e2=i2m3[e];
+						f->pass		=	(U1)pass;
+						if(	expand(pass,w,f->f[e1],f->e[e1],horizon)&&
+							expand(pass,w,f->f[e2],f->e[e2],horizon))
+						{
+							remove(m_hull,f);
+							append(m_stock,f);
+							return(true);
+						}
+					}
+				}
+				return(false);
+			}
+
+	};
+
+	
+	static void	Initialize(	const btConvexShape* shape0,const btTransform& wtrs0,
+		const btConvexShape* shape1,const btTransform& wtrs1,
+		btGjkEpaSolver2::sResults& results,
+		tShape& shape,
+		bool withmargins)
+	{
+		  
+		results.witnesses[0]	=
+			results.witnesses[1]	=	btZeroVec();
+		results.status			=	btGjkEpaSolver2::sResults::Separated;
+		  
+		shape.m_shapes[0]		=	shape0;
+		shape.m_shapes[1]		=	shape1;
+		shape.m_toshape1		=	wtrs1.getBasis().transposeTimes(wtrs0.getBasis());
+		shape.m_toshape0		=	wtrs0.inverseTimes(wtrs1);
+		shape.EnableMargin(withmargins);
+	}
+
+}
+
+
+
+
+
+using namespace	gjkepa2_impl;
+
+
+int			btGjkEpaSolver2::StackSizeRequirement()
+{
+	return(sizeof(GJK)+sizeof(EPA));
+}
+
+
+bool		btGjkEpaSolver2::Distance(	const btConvexShape*	shape0,
+									  const btTransform&		wtrs0,
+									  const btConvexShape*	shape1,
+									  const btTransform&		wtrs1,
+									  const btVector3&		guess,
+									  sResults&				results)
+{
+	tShape			shape;
+	Initialize(shape0,wtrs0,shape1,wtrs1,results,shape,false);
+	GJK				gjk;
+	GJK::eStatus::_	gjk_status=gjk.Evaluate(shape,guess);
+	if(gjk_status==GJK::eStatus::Valid)
+	{
+		btVector3	w0 = btZeroVec();
+		btVector3	w1 = btZeroVec();
+		for(U i=0;i<gjk.m_simplex->rank;++i)
+		{
+			const btScalar	p=gjk.m_simplex->p[i];
+			w0+=shape.Support( gjk.m_simplex->c[i]->d,0)*p;
+			w1+=shape.Support(-gjk.m_simplex->c[i]->d,1)*p;
+		}
+		results.witnesses[0]	=	wtrs0*w0;
+		results.witnesses[1]	=	wtrs0*w1;
+		results.normal			=	w0-w1;
+		results.distance		=	results.normal.length();
+		results.normal			/=	results.distance>((btScalar)0.0001)?results.distance:btScalar(1.f);
+		return(true);
+	}
+	else
+	{
+		results.status	=	gjk_status==GJK::eStatus::Inside?
+			sResults::Penetrating	:
+		sResults::GJK_Failed	;
+		return(false);
+	}
+}
+
+
+bool	btGjkEpaSolver2::Penetration(	const btConvexShape*	shape0,
+									 const btTransform&		wtrs0,
+									 const btConvexShape*	shape1,
+									 const btTransform&		wtrs1,
+									 const btVector3&		guess,
+									 sResults&				results,
+									 bool					usemargins)
+{
+	tShape			shape;
+	Initialize(shape0,wtrs0,shape1,wtrs1,results,shape,usemargins);
+	GJK				gjk;	
+	GJK::eStatus::_	gjk_status=gjk.Evaluate(shape,-guess);
+	switch(gjk_status)
+	{
+	case	GJK::eStatus::Inside:
+		{
+			EPA				epa;
+			EPA::eStatus::_	epa_status=epa.Evaluate(gjk,-guess);
+			if(epa_status!=EPA::eStatus::Failed)
+			{
+				btVector3	w0=btZeroVec();
+				for(U i=0;i<epa.m_result.rank;++i)
+				{
+					w0+=shape.Support(epa.m_result.c[i]->d,0)*epa.m_result.p[i];
+				}
+				results.status			=	sResults::Penetrating;
+				results.witnesses[0]	=	wtrs0*w0;
+				results.witnesses[1]	=	wtrs0*(w0-epa.m_normal*epa.m_depth);
+				results.normal			=	-epa.m_normal;
+				results.distance		=	-epa.m_depth;
+				return(true);
+			} else results.status=sResults::EPA_Failed;
+		}
+		break;
+	case	GJK::eStatus::Failed:
+		results.status=sResults::GJK_Failed;
+		break;
+		default:
+					{
+					}
+	}
+	return(false);
+}
+
+
+
+btScalar	btGjkEpaSolver2::SignedDistance(const btVector3& position,
+											btScalar margin,
+											const btConvexShape* shape0,
+											const btTransform& wtrs0,
+											sResults& results)
+{
+	tShape			shape;
+	btSphereShape	shape1(margin);
+	btTransform		wtrs1(btQuaternion(0,0,0,1),position);
+	Initialize(shape0,wtrs0,&shape1,wtrs1,results,shape,false);
+	GJK				gjk;	
+
+	GJK::eStatus::_	gjk_status=gjk.Evaluate(shape,btOne);
+
+
+
+	if(gjk_status==GJK::eStatus::Valid)
+	{
+		btVector3	w0=btZeroVec();
+		btVector3	w1=btZeroVec();
+		for(U i=0;i<gjk.m_simplex->rank;++i)
+		{
+			const btScalar	p=gjk.m_simplex->p[i];
+			w0+=shape.Support( gjk.m_simplex->c[i]->d,0)*p;
+			w1+=shape.Support(-gjk.m_simplex->c[i]->d,1)*p;
+		}
+		results.witnesses[0]	=	wtrs0*w0;
+		results.witnesses[1]	=	wtrs0*w1;
+		const btVector3	delta=	results.witnesses[1]-
+			results.witnesses[0];
+		const btScalar	margin=	shape0->getMarginNonVirtual()+
+			shape1.getMarginNonVirtual();
+		const btScalar	length=	delta.length();	
+		results.normal			=	delta/length;
+		results.witnesses[0]	+=	results.normal*margin;
+		return(length-margin);
+	}
+	else
+	{
+		if(gjk_status==GJK::eStatus::Inside)
+		{
+			if(Penetration(shape0,wtrs0,&shape1,wtrs1,gjk.m_ray,results))
+			{
+				const btVector3	delta=	results.witnesses[0]-
+					results.witnesses[1];
+				const btScalar	length=	delta.length();
+				if (length >= 1.1920928955078125e-07f)
+					results.normal	=	delta/length;			
+				return(-length);
+			}
+		}	
+	}
+	return(3.4028234663852885981170418348451692544e+38f);
+}
+
+
+bool	btGjkEpaSolver2::SignedDistance(const btConvexShape*	shape0,
+										const btTransform&		wtrs0,
+										const btConvexShape*	shape1,
+										const btTransform&		wtrs1,
+										const btVector3&		guess,
+										sResults&				results)
+{
+	if(!Distance(shape0,wtrs0,shape1,wtrs1,guess,results))
+		return(Penetration(shape0,wtrs0,shape1,wtrs1,guess,results,false));
+	else
+		return(true);
+}
+
+
+  
+
+# 1020 "e:\\EnforceNG\\bullet-2.76\\src\\BulletCollision\\NarrowPhaseCollision\\btGjkEpa2.cpp"
+

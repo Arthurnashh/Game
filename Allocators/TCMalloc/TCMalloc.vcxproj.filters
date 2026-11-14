@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include=".\addressmap-inl.h" />
+    <ClInclude Include=".\base\atomicops-internals-arm-gcc.h" />
+    <ClInclude Include=".\base\atomicops-internals-linuxppc.h" />
+    <ClInclude Include=".\base\atomicops-internals-x86-msvc.h" />
+    <ClInclude Include=".\base\atomicops-internals-xbox.h" />
+    <ClInclude Include=".\base\atomicops.h" />
+    <ClInclude Include=".\base\basictypes.h" />
+    <ClInclude Include=".\base\commandlineflags.h" />
+    <ClInclude Include=".\base\cycleclock.h" />
+    <ClInclude Include=".\base\dynamic_annotations.h" />
+    <ClInclude Include=".\base\googleinit.h" />
+    <ClInclude Include=".\base\logging.h" />
+    <ClInclude Include=".\base\low_level_alloc.h" />
+    <ClInclude Include=".\base\spinlock.h" />
+    <ClInclude Include=".\base\spinlock_internal.h" />
+    <ClInclude Include=".\base\spinlock_win32-inl.h" />
+    <ClInclude Include=".\base\stl_allocator.h" />
+    <ClInclude Include=".\base\synchronization_profiling.h" />
+    <ClInclude Include=".\base\sysinfo.h" />
+    <ClInclude Include=".\base\thread_annotations.h" />
+    <ClInclude Include=".\central_freelist.h" />
+    <ClInclude Include=".\common.h" />
+    <ClInclude Include=".\google\heap-checker.h" />
+    <ClInclude Include=".\google\heap-profiler.h" />
+    <ClInclude Include=".\google\malloc_extension.h" />
+    <ClInclude Include=".\google\profiler.h" />
+    <ClInclude Include=".\google\stacktrace.h" />
+    <ClInclude Include=".\internal_logging.h" />
+    <ClInclude Include=".\linked_list.h" />
+    <ClInclude Include=".\packed-cache-inl.h" />
+    <ClInclude Include=".\pagemap.h" />
+    <ClInclude Include=".\page_heap.h" />
+    <ClInclude Include=".\page_heap_allocator.h" />
+    <ClInclude Include=".\raw_printer.h" />
+    <ClInclude Include=".\sampler.h" />
+    <ClInclude Include=".\span.h" />
+    <ClInclude Include=".\static_vars.h" />
+    <ClInclude Include=".\symbolize.h" />
+    <ClInclude Include=".\system-alloc.h" />
+    <ClInclude Include=".\tcmalloc.h" />
+    <ClInclude Include=".\tcmalloc_guard.h" />
+    <ClInclude Include=".\thread_cache.h" />
+    <ClInclude Include=".\windows\config.h" />
+    <ClInclude Include=".\windows\port.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="TCMalloc_bi.cpp" />
+    <ClCompile Include=".\base\dynamic_annotations.c" />
+    <ClCompile Include=".\base\logging.cc" />
+    <ClCompile Include=".\base\low_level_alloc.cc" />
+    <ClCompile Include=".\base\spinlock.cc" />
+    <ClCompile Include=".\base\spinlock_internal.cc" />
+    <ClCompile Include=".\base\sysinfo.cc" />
+    <ClCompile Include=".\central_freelist.cc" />
+    <ClCompile Include=".\common.cc" />
+    <ClCompile Include=".\internal_logging.cc" />
+    <ClCompile Include=".\malloc_extension.cc" />
+    <ClCompile Include=".\page_heap.cc" />
+    <ClCompile Include=".\raw_printer.cc" />
+    <ClCompile Include=".\sampler.cc" />
+    <ClCompile Include=".\span.cc" />
+    <ClCompile Include=".\static_vars.cc" />
+    <ClCompile Include=".\symbolize.cc" />
+    <ClCompile Include=".\tcmalloc.cc" />
+    <ClCompile Include=".\thread_cache.cc" />
+    <ClCompile Include=".\windows\port.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="base">
+      <UniqueIdentifier>{89f541eb-0249-4ead-878c-1b21bff443ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="google">
+      <UniqueIdentifier>{fa27545d-2a36-486a-a5b9-3ea0e5744092}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="windows">
+      <UniqueIdentifier>{e2849563-f5f8-40a6-96cf-1f813890d13f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

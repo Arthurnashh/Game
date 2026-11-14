@@ -1,0 +1,12 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+#if _VBS1
+IDI_ICON1                 ICON    DISCARDABLE     "vbs1.ico"
+#else
+IDI_ICON1                 ICON    DISCARDABLE     "helisim.ico"
+#endif

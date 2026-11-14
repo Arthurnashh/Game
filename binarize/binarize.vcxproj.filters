@@ -1,0 +1,2770 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Library">
+      <UniqueIdentifier>{efaa206c-8222-4885-9d4e-4f17d9cd35f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Headers">
+      <UniqueIdentifier>{bf4ceb67-6111-44b1-94cf-9feeaadfce3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Network">
+      <UniqueIdentifier>{e7062565-098b-4dcf-a37a-03d98176dd0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Mission">
+      <UniqueIdentifier>{d8a6e967-ca1b-4492-ba50-ef3224b99f94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Sound">
+      <UniqueIdentifier>{1a0081f7-78e8-44ab-8ed3-3e298414158b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\UI">
+      <UniqueIdentifier>{265b5fea-67a3-455a-93d6-5b2cb130ba53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Cloth">
+      <UniqueIdentifier>{f2f5e2a6-dbda-4e0a-954a-0c78d3a2ce52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Cloth\Cloth Sources">
+      <UniqueIdentifier>{923c64f6-1919-48be-8ab5-2929404d98ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Cloth\Cloth Headers">
+      <UniqueIdentifier>{a1765487-1ec3-4593-9f27-66c19934d89c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Vehicles">
+      <UniqueIdentifier>{0c1bac5e-d011-4bfd-8a63-9c02c0deaebf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Sources">
+      <UniqueIdentifier>{98ad2d38-ae2f-4f83-9a21-ea5a7b89d6be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\VerConfig">
+      <UniqueIdentifier>{80ed0690-6ffa-4b16-b6f8-11b92da57302}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\InGameUI">
+      <UniqueIdentifier>{5b060039-7357-4622-a1ae-3da5a7c6eeed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Global Headers">
+      <UniqueIdentifier>{72d2e12d-b479-4908-a2d0-83930a049c52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Checksum">
+      <UniqueIdentifier>{9be579c5-e1fc-4bc0-8530-794536ed6fbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\JPG">
+      <UniqueIdentifier>{3853be3c-002f-4cf4-8f18-ae771e545552}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\MBCS">
+      <UniqueIdentifier>{c0702a4c-d278-47ba-92d3-37fcc6b2f60b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\ParamFileExt">
+      <UniqueIdentifier>{edf882e7-0668-434f-94de-11aafd246102}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\QStreamExt">
+      <UniqueIdentifier>{8f924dd0-4943-4581-8924-e0149883369f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\QStreamExt\Encryption">
+      <UniqueIdentifier>{6a7739cf-9cd9-4230-8f5f-2d011f5e6a0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\EvaluatorExt">
+      <UniqueIdentifier>{9cad89d7-b2f0-4e69-b0dc-1e4a364518c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\StringtableExt">
+      <UniqueIdentifier>{e74ac998-5ea2-4570-97f2-5a9cd3309e47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Optimize">
+      <UniqueIdentifier>{82fef6fa-86cf-4a09-b663-e8166df456d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Optimize\Speed">
+      <UniqueIdentifier>{e56eb224-1124-4788-83f9-67ad1bd97e9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\ParamArchiveExt">
+      <UniqueIdentifier>{2102f60c-5f86-4e44-a088-d8dc333c61b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\AI">
+      <UniqueIdentifier>{a080b52d-42ae-424e-9a41-d6e290a96c9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Marina">
+      <UniqueIdentifier>{3a6c49ca-3e6f-4579-bd32-7b7d0bf3c5b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Marina\CarColl">
+      <UniqueIdentifier>{bc4111ae-0287-44cf-a1f3-80439431217f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\MSStrip">
+      <UniqueIdentifier>{93a37a65-b8a2-44f7-907f-cabd67ff86f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\TimeMaganer">
+      <UniqueIdentifier>{52be0fdb-4139-45a3-a986-93ee302a321e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\DepMake">
+      <UniqueIdentifier>{9f014df1-da27-45da-8ae1-7425ea020fa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\SaveGame">
+      <UniqueIdentifier>{f45d82e2-7279-46e7-a232-1bd12b1d98d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Shape">
+      <UniqueIdentifier>{8c06c3fd-d111-45b9-8e73-356ce1bfdd9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\TerSynth">
+      <UniqueIdentifier>{ed031008-3644-4586-9d74-a464118b0e40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Memory">
+      <UniqueIdentifier>{414202de-4ab6-4b21-b96b-291cfdf90cb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element">
+      <UniqueIdentifier>{390d709f-b625-4249-a200-6161b50b4a08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\PCH">
+      <UniqueIdentifier>{701ba729-7637-4a2f-82be-73de779910f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\ParamFile">
+      <UniqueIdentifier>{ad62fc2d-be85-4d40-8d2e-1c64cf2f6a65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Evaluator">
+      <UniqueIdentifier>{49d961ce-333d-4754-87fc-88a1a977496a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Common">
+      <UniqueIdentifier>{961ea4bb-85f3-46a9-9177-a083a3a76308}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\QStream">
+      <UniqueIdentifier>{120228cf-fe9e-4377-b433-f76fbc3a179c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\PreprocC">
+      <UniqueIdentifier>{15822cb1-dc82-4a20-a797-7ac7782e1024}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Stringtable">
+      <UniqueIdentifier>{d60e46e1-263e-40c9-9e7e-78697aa911e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\XML">
+      <UniqueIdentifier>{c5c2a825-becb-4b6b-b908-00b86395aa55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\ElementNetwork">
+      <UniqueIdentifier>{94651552-dc39-4431-a755-f8529f55357e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Calendar">
+      <UniqueIdentifier>{fa1def5d-186a-4c38-baec-1db30bdc2777}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Modules">
+      <UniqueIdentifier>{9e9f50b1-3d78-4ed6-b9bd-95a805845399}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Math">
+      <UniqueIdentifier>{d92e89ef-4329-4872-9f0e-3b2daaf31eca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\FreeOnDemand">
+      <UniqueIdentifier>{94a7e668-7653-4edf-9001-813044eac7aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Interfaces">
+      <UniqueIdentifier>{4c67b204-9cad-4ad3-aa6b-c2c007ca34d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\CRC">
+      <UniqueIdentifier>{3d1f5fe5-c9f1-4de0-a508-4cdd2fa4bb58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\ParamArchive">
+      <UniqueIdentifier>{f192d5e2-ccb6-4856-9b61-7188c163b154}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Clipboard">
+      <UniqueIdentifier>{5b4e45cc-4b7f-444e-84f8-50b2089cafb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Debugging">
+      <UniqueIdentifier>{6e410e1b-cc04-4e58-b317-d6a4195fc282}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Color">
+      <UniqueIdentifier>{c89ca9fb-7994-4253-939d-a5efaae0637b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Time">
+      <UniqueIdentifier>{4e1e14a3-c682-44f5-b0ea-22eaf49862d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\DebugWindow">
+      <UniqueIdentifier>{0cc15302-ffb6-45f4-9020-d91185872699}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Enum">
+      <UniqueIdentifier>{8157cdf0-d6f3-41f5-8e73-61f1de1a7476}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Statistics">
+      <UniqueIdentifier>{cfbbea44-f2eb-4d29-b5e0-5ce235258534}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\HierWalker">
+      <UniqueIdentifier>{318233b4-ff81-4714-b494-15f2c597bd84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Breakpoint">
+      <UniqueIdentifier>{ce4d10ce-ff18-473c-b164-a5c70dd0d4b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Speech">
+      <UniqueIdentifier>{c12a543d-e850-4c22-adb9-d50c6191b5c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\HiResTime">
+      <UniqueIdentifier>{b8d0d30e-e88d-4742-8e98-3ff00ce65590}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Activity">
+      <UniqueIdentifier>{3774f041-661f-48cd-8dac-d709337f6ee2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\BIDebugEngine">
+      <UniqueIdentifier>{7fb9cf2d-d349-4a18-bc27-f81f1f57da94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\FileBinMake">
+      <UniqueIdentifier>{696a49df-9c4c-452e-b48b-f953b1f3fdba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\SimpleExpression">
+      <UniqueIdentifier>{5abf403f-85ac-47bb-83d0-5681e44047dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Graph">
+      <UniqueIdentifier>{8520fca6-8e3c-4c8e-8eff-449030a5f863}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\DataSignatures">
+      <UniqueIdentifier>{af8eab05-aad1-415d-84a0-cbc4b59b7c6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\PerlinNoise">
+      <UniqueIdentifier>{3972266e-43cb-422f-a845-447de218eaba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\FileServer">
+      <UniqueIdentifier>{35c4421e-beb4-470b-9a21-1988c517d504}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\SoundFile">
+      <UniqueIdentifier>{6c27c14f-f28b-4d20-8128-a13bb8103704}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\MultiThread">
+      <UniqueIdentifier>{1bdd5a6a-068c-4429-bc19-b6f7dea781e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\MultiThread\Win32">
+      <UniqueIdentifier>{caff946e-9029-46c2-9a4c-7b6788a964b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Multicore">
+      <UniqueIdentifier>{6eb62cd2-b55d-4b3e-accc-f8d83ed72f15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\MemoryStore">
+      <UniqueIdentifier>{beeb77aa-4661-40f1-83f5-689bb5606383}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\LZO">
+      <UniqueIdentifier>{9a2c01dd-ea57-4c29-9fe0-090844ff6985}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\ActiveObject">
+      <UniqueIdentifier>{ce78e554-2a11-4769-ad31-374b474457a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Essence">
+      <UniqueIdentifier>{1886b79e-69bb-4222-9437-4c1c7c06ba40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Essence\Algorithms">
+      <UniqueIdentifier>{09078610-8a90-422b-a07a-6902cbdde236}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Essence\EssenceCommon">
+      <UniqueIdentifier>{a2d04009-7932-4315-8299-088e0be65778}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Essence\Containers">
+      <UniqueIdentifier>{37421e22-6192-4d71-b0ef-7f899360cde1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Essence\Framework">
+      <UniqueIdentifier>{5f5b0d16-87f5-4ddb-a855-1a0facd0d06a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Essence\Memory">
+      <UniqueIdentifier>{4fbd14e9-2215-447e-b4ee-f11b982e3894}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Essence\Strings">
+      <UniqueIdentifier>{a31fd514-4c48-4562-933c-e6caf1be7af7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Essence\Types">
+      <UniqueIdentifier>{166454af-7e40-4d87-b652-813803237ac2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Essence\Threads">
+      <UniqueIdentifier>{f23a03fb-366a-4fa9-8d2d-a55ed2c8d8c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Essence\Files">
+      <UniqueIdentifier>{adc59e02-41c7-4e41-81f1-db48b3c07c8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Essence\ErrorProp">
+      <UniqueIdentifier>{d92317b1-db4d-45dc-9b69-589771e2538f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Essence\ReportStack">
+      <UniqueIdentifier>{577ca102-a4b7-4ecf-98dd-e34fd1e237e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Deploy">
+      <UniqueIdentifier>{79e53b59-9cc3-4c69-a71b-02c2650739db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Deploy\Manual">
+      <UniqueIdentifier>{978c0c9f-9888-4fc3-963b-b548c581c7f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Doc">
+      <UniqueIdentifier>{e3c93e6c-9818-4a64-83be-64ebb521e075}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rv">
+      <UniqueIdentifier>{bf09bb57-82d3-4235-8413-83d828736129}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rv\SpeechRecognition">
+      <UniqueIdentifier>{2d5b54df-7afe-4188-aca6-8e953429fd0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Element\Credits">
+      <UniqueIdentifier>{be00ac2c-51b7-476c-8233-2908fe0946f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Java">
+      <UniqueIdentifier>{b8ae748b-b231-4a60-9e4f-efbf60908341}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\Inventory">
+      <UniqueIdentifier>{b64c18d4-50c5-45f6-a2ab-221ef3e0ba8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\WorldRes">
+      <UniqueIdentifier>{6f24b787-f011-40cd-90ce-3eea7357465a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enforce">
+      <UniqueIdentifier>{ba00d3ed-9ccf-445e-a7b4-fa2ae247cfa2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enforce\Common">
+      <UniqueIdentifier>{1246cc2e-ab3c-4b3d-a720-3bba0998451f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enforce\Engine">
+      <UniqueIdentifier>{b3cac1ef-7703-43c2-8451-51dc455781a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enforce\Physics">
+      <UniqueIdentifier>{0b69c337-d65d-456f-83ea-cb936f896476}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enforce\BaseWorld">
+      <UniqueIdentifier>{ef8da83e-16f2-4c40-9760-60582ff6a55b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Lib\appFrameExt.hpp">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\camShake.hpp">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\drawText.hpp">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\fileLocator.hpp">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\freeTrack.hpp">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\freeTrackClient.hpp">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\mapObject.hpp">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\objectId.hpp">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\objLink.hpp">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\serializeBinExt.hpp">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\animation.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\camEffects.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\camera.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\cast.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\clip2d.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\clipShape.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\detector.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\dikCodes.h">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\dynSound.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Eax.h">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\engine.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\engineDll.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\font.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\fsm.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\global.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\handledList.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\heads.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\heap.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\interpol.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Joystick.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\keyInput.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\landFile.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\landscape.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\languages.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\lights.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\lockCache.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\memcheck.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\MemGrow.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\object.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\objectClasses.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\objectHierarchy.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\oggtext.h">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\pactext.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\pathSteer.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\roads.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\rtAnimation.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\saveVersion.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\scene.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\scripts.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\sentences.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\speaker.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\textbank.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\titEffects.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\tlVertex.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\types.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\visibility.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\visual.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\weapons.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\winpch.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\world.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Network\match.h">
+      <Filter>Library\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Network\messageFactory.hpp">
+      <Filter>Library\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Network\netTransport.hpp">
+      <Filter>Library\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Network\netTransportCommon.hpp">
+      <Filter>Library\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Network\network.hpp">
+      <Filter>Library\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Network\networkImpl.hpp">
+      <Filter>Library\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Network\networkObject.hpp">
+      <Filter>Library\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Network\voiceXbox.hpp">
+      <Filter>Library\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\arcadeTemplate.hpp">
+      <Filter>Library\Mission</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\ArcadeWaypoint.hpp">
+      <Filter>Library\Mission</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\location.hpp">
+      <Filter>Library\Mission</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\riffFile.hpp">
+      <Filter>Library\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\soundScene.hpp">
+      <Filter>Library\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\soundsys.hpp">
+      <Filter>Library\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\autoComplete.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ui\chat.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ui\contextMenu.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ui\displayUI.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\ui\dispMissionEditor.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ui\menu.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\ui\missionDirs.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\ui\missionEditor.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ui\optionsUI.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Ui\progressDisplay.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ui\resincl.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ui\uiActions.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ui\uiControls.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ui\uiMap.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\ui\uiViewport.hpp">
+      <Filter>Library\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Cloth\ClothObject.h">
+      <Filter>Library\Cloth\Cloth Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\airplane.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\allAIVehicles.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\allVehicles.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\animSource.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\cameraHold.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\car.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Curve3D.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\door.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\envTracker.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\fireplace.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\fsmEntity.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\gearBox.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\head.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\helicopter.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\house.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\hudDesc.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\identity.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\laserTarget.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\memberCalls.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\motion.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\motorcycle.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\parachute.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\person.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\pilotHead.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\planeOrHeli.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\proxyWeapon.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\randomShape.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\recoil.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\seaGull.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\ship.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\shots.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\smokes.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\soldierOld.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\tank.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\tankOrCar.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\thing.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\tracks.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\transport.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\turret.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\vehicle.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\vehicleAI.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\vehSupply.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\wounds.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\fixed.hpp">
+      <Filter>Library\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\invisibleVeh.hpp">
+      <Filter>Library\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cfg\manActions.hpp">
+      <Filter>Library\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\manActs.hpp">
+      <Filter>Library\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\move_actions.hpp">
+      <Filter>Library\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\NPClientWraps.h">
+      <Filter>Library\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\objLine.hpp">
+      <Filter>Library\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\progress.hpp">
+      <Filter>Library\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\trackIR.hpp">
+      <Filter>Library\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\txtPreload.hpp">
+      <Filter>Library\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\afxConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\consoleConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\dedServerConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\demoConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\desReleaseConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\mpDemoConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\mpTestConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\mpTestServerConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\normalConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\resistanceConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\resistanceServerConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\sReleaseConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\VBS1Config.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\VBS1DemoConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\wpch.hpp">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\xboxConfig.h">
+      <Filter>Library\VerConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ui\inGameUI.hpp">
+      <Filter>Library\InGameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ui\InGameUIImpl.hpp">
+      <Filter>Library\InGameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\vkCodes.h">
+      <Filter>Library\Global Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\integrity.hpp">
+      <Filter>Library\Checksum</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\jpgImport.hpp">
+      <Filter>Library\JPG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\mbcs.hpp">
+      <Filter>Library\MBCS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\paramFileExt.hpp">
+      <Filter>Library\ParamFileExt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\gameStateExt.hpp">
+      <Filter>Library\EvaluatorExt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\stringids.hpp">
+      <Filter>Library\StringtableExt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\stringtableExt.hpp">
+      <Filter>Library\StringtableExt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\paramArchiveExt.hpp">
+      <Filter>Library\ParamArchiveExt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ai\ai.hpp">
+      <Filter>Library\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ai\aiDefs.hpp">
+      <Filter>Library\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ai\aiRadio.hpp">
+      <Filter>Library\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ai\aiTypes.hpp">
+      <Filter>Library\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Ai\fsmScripted.hpp">
+      <Filter>Library\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ai\operMap.hpp">
+      <Filter>Library\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Ai\pathPlanner.hpp">
+      <Filter>Library\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Marina\CarCollisions.hpp">
+      <Filter>Library\Marina\CarColl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Marina\DampedSpring.hpp">
+      <Filter>Library\Marina\CarColl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Marina\Dampers.hpp">
+      <Filter>Library\Marina\CarColl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Marina\Dantzig_old.hpp">
+      <Filter>Library\Marina\CarColl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Marina\marina_old.hpp">
+      <Filter>Library\Marina\CarColl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Marina\MarinaArray_old.hpp">
+      <Filter>Library\Marina\CarColl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\Marina\MatrixA_old.hpp">
+      <Filter>Library\Marina\CarColl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\MSStrip\xbstrip.h">
+      <Filter>Library\MSStrip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\timeManager.hpp">
+      <Filter>Library\TimeMaganer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\depMake.hpp">
+      <Filter>Library\DepMake</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\gameDirs.hpp">
+      <Filter>Library\SaveGame</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\saveGame.hpp">
+      <Filter>Library\SaveGame</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Shape\data3d.h">
+      <Filter>Library\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Shape\edges.hpp">
+      <Filter>Library\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Shape\faceArray.hpp">
+      <Filter>Library\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Shape\mapTypes.hpp">
+      <Filter>Library\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Shape\material.hpp">
+      <Filter>Library\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Shape\modelConfig.hpp">
+      <Filter>Library\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Shape\plane.hpp">
+      <Filter>Library\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Shape\poly.hpp">
+      <Filter>Library\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Shape\Shape.hpp">
+      <Filter>Library\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Shape\SpecLods.hpp">
+      <Filter>Library\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Shape\vertex.hpp">
+      <Filter>Library\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\TerSynth\terrain.h">
+      <Filter>Library\TerSynth</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\TerSynth\tersynth.h">
+      <Filter>Library\TerSynth</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\TerSynth\tersynth_helpers.h">
+      <Filter>Library\TerSynth</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Lib\MemHeap.hpp">
+      <Filter>Library\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\elementpch.hpp">
+      <Filter>Element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Pch\afxConfig.h">
+      <Filter>Element\PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Pch\ext_options.hpp">
+      <Filter>Element\PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Pch\libIncludes.hpp">
+      <Filter>Element\PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Pch\normalConfig.h">
+      <Filter>Element\PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Pch\sReleaseConfig.h">
+      <Filter>Element\PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Pch\stdIncludes.h">
+      <Filter>Element\PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\ParamFile\classDbParamFile.hpp">
+      <Filter>Element\ParamFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\ParamFile\paramFile.hpp">
+      <Filter>Element\ParamFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\ParamFile\paramFileCtx.hpp">
+      <Filter>Element\ParamFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Evaluator\evaluatorExpress.hpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Evaluator\express.hpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Evaluator\scriptVM.hpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Common\isaac.hpp">
+      <Filter>Element\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Common\perfLog.hpp">
+      <Filter>Element\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Common\perfProf.hpp">
+      <Filter>Element\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Common\randomGen.hpp">
+      <Filter>Element\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Common\randomJames.h">
+      <Filter>Element\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\QStream\fileCompress.hpp">
+      <Filter>Element\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\QStream\fileinfo.h">
+      <Filter>Element\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\QStream\iQFBank.hpp">
+      <Filter>Element\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\QStream\packFiles.hpp">
+      <Filter>Element\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\QStream\QBStream.hpp">
+      <Filter>Element\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\QStream\QStream.hpp">
+      <Filter>Element\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\QStream\serializeBin.hpp">
+      <Filter>Element\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\PreprocC\Preproc.h">
+      <Filter>Element\PreprocC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\PreprocC\preprocC.hpp">
+      <Filter>Element\PreprocC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\stringtable\iExtParser.hpp">
+      <Filter>Element\Stringtable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Stringtable\localizeStringtable.hpp">
+      <Filter>Element\Stringtable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Stringtable\stringtable.hpp">
+      <Filter>Element\Stringtable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\stringtable\stringtableImpl.hpp">
+      <Filter>Element\Stringtable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Stringtable\stringtableParserXML.hpp">
+      <Filter>Element\Stringtable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Xml\inet.hpp">
+      <Filter>Element\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Xml\xml.hpp">
+      <Filter>Element\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Network\directchannel.hpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Network\netapi.hpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Network\netchannel.hpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Network\netglobal.hpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Network\netmessage.hpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Network\netpch.hpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Network\netpeer.hpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Network\netpeerxbox.hpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Network\netXboxConfig.hpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Network\peerfactory.hpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Network\peerfactoryxbox.hpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Calendar\eventToCallback.hpp">
+      <Filter>Element\Calendar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Calendar\pocalendar.hpp">
+      <Filter>Element\Calendar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Modules\modules.hpp">
+      <Filter>Element\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Math\math3d.hpp">
+      <Filter>Element\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Math\math3dK.hpp">
+      <Filter>Element\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Math\math3dP.hpp">
+      <Filter>Element\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Math\math3dT.hpp">
+      <Filter>Element\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Math\mathDefs.hpp">
+      <Filter>Element\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Math\mathOpt.hpp">
+      <Filter>Element\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Math\vecTempl.hpp">
+      <Filter>Element\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\FreeOnDemand\memFreeReq.hpp">
+      <Filter>Element\FreeOnDemand</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Interfaces\iAppInfo.hpp">
+      <Filter>Element\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Interfaces\iClassDb.hpp">
+      <Filter>Element\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Interfaces\iEval.hpp">
+      <Filter>Element\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Interfaces\iFileMake.hpp">
+      <Filter>Element\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Interfaces\iLocalize.hpp">
+      <Filter>Element\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Interfaces\iPreproc.hpp">
+      <Filter>Element\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Interfaces\iSumCalc.hpp">
+      <Filter>Element\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Crc\crc.hpp">
+      <Filter>Element\CRC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Crc\sumCalcCrc.hpp">
+      <Filter>Element\CRC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\ParamArchive\paramArchive.hpp">
+      <Filter>Element\ParamArchive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\ParamArchive\paramArchiveDb.hpp">
+      <Filter>Element\ParamArchive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\ParamFile\paramFileDecl.hpp">
+      <Filter>Element\ParamArchive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\ParamArchive\serializeClass.hpp">
+      <Filter>Element\ParamArchive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Clipboard\clipboard.hpp">
+      <Filter>Element\Clipboard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Debugging\debugTrap.hpp">
+      <Filter>Element\Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Debugging\imexhnd.h">
+      <Filter>Element\Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Debugging\mapFile.hpp">
+      <Filter>Element\Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Debugging\xboxFileFormats.h">
+      <Filter>Element\Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Color\colors.hpp">
+      <Filter>Element\Color</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Color\colorsFloat.hpp">
+      <Filter>Element\Color</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Color\colorsK.hpp">
+      <Filter>Element\Color</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Time\time.hpp">
+      <Filter>Element\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\DebugWindow\debugWin.hpp">
+      <Filter>Element\DebugWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\DebugWindow\debugWinImpl.hpp">
+      <Filter>Element\DebugWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Enum\dynEnum.hpp">
+      <Filter>Element\Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Enum\enumNames.hpp">
+      <Filter>Element\Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Enum\idString.hpp">
+      <Filter>Element\Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Statistics\statistics.hpp">
+      <Filter>Element\Statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\HierWalker\hierWalker.hpp">
+      <Filter>Element\HierWalker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Breakpoint\breakpoint.h">
+      <Filter>Element\Breakpoint</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Speech\dpcm\dpcm.hpp">
+      <Filter>Element\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Speech\microsoft\mscelp.hpp">
+      <Filter>Element\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Speech\lpc\openlpc.hpp">
+      <Filter>Element\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Speech\Pcm\pcm.hpp">
+      <Filter>Element\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Speech\speex\speex.hpp">
+      <Filter>Element\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Speech\vonApp.hpp">
+      <Filter>Element\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Speech\vonCodec.hpp">
+      <Filter>Element\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Speech\vonNet.hpp">
+      <Filter>Element\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Speech\vonPch.hpp">
+      <Filter>Element\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\hirestime\hiResTime.hpp">
+      <Filter>Element\HiResTime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\activity\activity.hpp">
+      <Filter>Element\Activity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\bidebugengine\biDebugEngine.hpp">
+      <Filter>Element\BIDebugEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\bidebugengine\debugEngineInterface.hpp">
+      <Filter>Element\BIDebugEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\FileBinMake\fileBinMake.hpp">
+      <Filter>Element\FileBinMake</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\SimpleExpression\simpleExpression.hpp">
+      <Filter>Element\SimpleExpression</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\graph\clique.hpp">
+      <Filter>Element\Graph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\datasignatures\dataSignatures.hpp">
+      <Filter>Element\DataSignatures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\PerlinNoise\perlinNoise.hpp">
+      <Filter>Element\PerlinNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\FileServer\fileServer.hpp">
+      <Filter>Element\FileServer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\FileServer\fileServerAsync.hpp">
+      <Filter>Element\FileServer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\FileServer\fileServerMT.hpp">
+      <Filter>Element\FileServer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\FileServer\multithread.hpp">
+      <Filter>Element\FileServer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\SoundFile\soundFile.hpp">
+      <Filter>Element\SoundFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\common\Array.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\common\Assert.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\BlockerSimpleBase.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\common\CommonDefs.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\CriticalSection.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\CriticalSectionBlocker.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\IBlocker.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\common\IMultiInterface.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\Interlocked.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\IRunnable.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\IThreadMessage.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\common\LateConstructed.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\MessageThread.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\MTCommon.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\common\Ref.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\SleepBlocker.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\SmartRefCount.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\Synchronized.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\SyncRefCount.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\SyncTypes.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\Thread.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\ThreadBase.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\ThreadHook.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\Tls.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\common\VarArg++.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\waitFunctions.h">
+      <Filter>Element\MultiThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\src-windows\common_Win.h">
+      <Filter>Element\MultiThread\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\src-windows\interlocked.h">
+      <Filter>Element\MultiThread\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MultiThread2\multithread\src-windows\waitFunctions_win.h">
+      <Filter>Element\MultiThread\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\multicore\jobs.hpp">
+      <Filter>Element\Multicore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\multicore\multicore.hpp">
+      <Filter>Element\Multicore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\MemoryStore\memStore.hpp">
+      <Filter>Element\MemoryStore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\ActiveObject\activeObject.hpp">
+      <Filter>Element\ActiveObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\essencepch.hpp">
+      <Filter>Essence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\platform.hpp">
+      <Filter>Essence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Algorithms\aStar.hpp">
+      <Filter>Essence\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Algorithms\bSearch.hpp">
+      <Filter>Essence\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Algorithms\crc32.h">
+      <Filter>Essence\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Algorithms\qsort.hpp">
+      <Filter>Essence\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Algorithms\splineEqD.hpp">
+      <Filter>Essence\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Common\fltopts.hpp">
+      <Filter>Essence\EssenceCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Common\global.hpp">
+      <Filter>Essence\EssenceCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Common\mathND.hpp">
+      <Filter>Essence\EssenceCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Common\win.h">
+      <Filter>Essence\EssenceCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\array.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\array2D.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\bankArray.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\bankInitArray.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\bigArray.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\bitmask.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\boolArray.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\cachelist.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\compactBuf.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\forEach.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\hashMap.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\list.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\listBidir.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\maps.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\quadtree.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\quadtreeCont.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\quadtreeEx.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\rStringArray.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\smallArray.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\sortedArray.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\staticArray.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\streamArray.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\typeDefines.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\typeGenTemplates.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\typeOpts.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Containers\typeTemplates.hpp">
+      <Filter>Essence\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Framework\appFrame.hpp">
+      <Filter>Essence\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Framework\debugLog.hpp">
+      <Filter>Essence\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Framework\logflags.hpp">
+      <Filter>Essence\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Framework\netlog.hpp">
+      <Filter>Essence\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Framework\optDefault.hpp">
+      <Filter>Essence\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Framework\optEnable.hpp">
+      <Filter>Essence\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Framework\potime.hpp">
+      <Filter>Essence\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Memory\checkMem.hpp">
+      <Filter>Essence\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Memory\debugAlloc.hpp">
+      <Filter>Essence\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Memory\debugNew.hpp">
+      <Filter>Essence\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Memory\defNew.hpp">
+      <Filter>Essence\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Memory\defNormNew.hpp">
+      <Filter>Essence\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Memory\fastAlloc.hpp">
+      <Filter>Essence\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Memory\memAlloc.hpp">
+      <Filter>Essence\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Memory\normalNew.hpp">
+      <Filter>Essence\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Strings\bstring.hpp">
+      <Filter>Essence\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Strings\rString.hpp">
+      <Filter>Essence\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Types\enum_decl.hpp">
+      <Filter>Essence\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Types\lLinks.hpp">
+      <Filter>Essence\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Types\memtype.h">
+      <Filter>Essence\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Types\pointers.hpp">
+      <Filter>Essence\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Types\removeLinks.hpp">
+      <Filter>Essence\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Types\scopeLock.hpp">
+      <Filter>Essence\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Types\softLinks.hpp">
+      <Filter>Essence\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Threads\multisync.hpp">
+      <Filter>Essence\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Threads\pocritical.hpp">
+      <Filter>Essence\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Threads\posemaphore.hpp">
+      <Filter>Essence\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Threads\pothread.hpp">
+      <Filter>Essence\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Threads\threadSync.hpp">
+      <Filter>Essence\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Files\commandLine.hpp">
+      <Filter>Essence\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Files\fileContainer.hpp">
+      <Filter>Essence\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\Files\filenames.hpp">
+      <Filter>Essence\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\ErrorProp\errorProp.hpp">
+      <Filter>Essence\ErrorProp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Es\reportStack\reportStack.hpp">
+      <Filter>Essence\ReportStack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\RV\speechrecognition\fonix.hpp">
+      <Filter>Rv\SpeechRecognition</Filter>
+    </ClInclude>
+    <ClInclude Include="..\RV\speechrecognition\voiceCapture.hpp">
+      <Filter>Rv\SpeechRecognition</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\engDummy.hpp" />
+    <ClInclude Include="..\posAccess\posAccess.hpp" />
+    <ClInclude Include="..\posAccess\posAccessDummy.hpp" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="..\El\LZO\acc_fccm.h">
+      <Filter>Element\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\LZO\config1x.h">
+      <Filter>Element\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\LZO\lzo_conf.h">
+      <Filter>Element\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\LZO\lzo_dict.h">
+      <Filter>Element\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\LZO\lzo_ptr.h">
+      <Filter>Element\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\LZO\miniacc.h">
+      <Filter>Element\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\LZO\plzo1_c_dict.h">
+      <Filter>Element\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\LZO\plzo1_d_fc.h">
+      <Filter>Element\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Credits\credits.hpp">
+      <Filter>Element\Credits</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extern\Java\jni_md.h">
+      <Filter>Library\Java</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\jvmInit.hpp">
+      <Filter>Library\Java</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\jvmUI.hpp">
+      <Filter>Library\Java</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extern\Java\jni.h">
+      <Filter>Library\Java</Filter>
+    </ClInclude>
+    <ClInclude Include="..\El\Evaluator\jvmImpl.hpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Network\geoLoc.hpp" />
+    <ClInclude Include="..\lib\Network\httpRequest.h" />
+    <ClInclude Include="..\lib\Network\pingLoc.hpp" />
+    <ClInclude Include="..\lib\Inventory\inventory.hpp">
+      <Filter>Library\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Inventory\magazine.hpp">
+      <Filter>Library\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Inventory\weapon.hpp">
+      <Filter>Library\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\json.hpp">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\zombie.hpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\WorldRes\WorldLoot.h">
+      <Filter>Library\WorldRes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\WorldRes\WorldRes.h">
+      <Filter>Library\WorldRes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Common\enf_array.h">
+      <Filter>Enforce\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Common\enf_hashmap.h">
+      <Filter>Enforce\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Common\enf_mathlib.h">
+      <Filter>Enforce\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Common\enf_set.h">
+      <Filter>Enforce\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Common\enf_staticbuffer.h">
+      <Filter>Enforce\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Common\enf_strings.h">
+      <Filter>Enforce\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Physics\enf_btHeightfieldTerrainShape.h">
+      <Filter>Enforce\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Physics\enf_physicsbullet.h">
+      <Filter>Enforce\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Physics\enf_physicsbulletinternal.h">
+      <Filter>Enforce\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Physics\enf_physicsragdoll.h">
+      <Filter>Enforce\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Physics\enf_worldphysics.h">
+      <Filter>Enforce\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Physics\ragdolls.h">
+      <Filter>Enforce\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\enf_item.h">
+      <Filter>Enforce\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Common\enf_mathlib2d.h">
+      <Filter>Enforce\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Common\enf_winding.h">
+      <Filter>Enforce\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\enf_shapes.h">
+      <Filter>Enforce\BaseWorld</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\scenery.hpp">
+      <Filter>Library\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enforce\include\Common\enf_quicksort.h">
+      <Filter>Enforce\Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\lib\camShake.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\drawText.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\fileLocator.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\freeTrack.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\freeTrackClient.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\landWeather.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\mapObject.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\objectId.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\serializeBinExt.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Network\match.cpp">
+      <Filter>Library\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Network\netTransportNet.cpp">
+      <Filter>Library\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Network\netTransportXbox.cpp">
+      <Filter>Library\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Network\network.cpp">
+      <Filter>Library\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Network\networkClient.cpp">
+      <Filter>Library\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Network\networkMsg.cpp">
+      <Filter>Library\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Network\networkServer.cpp">
+      <Filter>Library\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Network\voiceXbox.cpp">
+      <Filter>Library\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\arcadeTemplate.cpp">
+      <Filter>Library\Mission</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\location.cpp">
+      <Filter>Library\Mission</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\soundScene.cpp">
+      <Filter>Library\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\soundSys.cpp">
+      <Filter>Library\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\autoComplete.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\chat.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\contextMenu.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\displayUI.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\ui\dispMissionEditor.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\UI\HUDInfo.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\menu.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\ui\missionDirs.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\ui\missionEditor.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\ui\missionEditorExport.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\optionsUI.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Ui\progressDisplay.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\uiArcade.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\uiContainers.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\uiControls.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\uiControlsExt.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\uiMap.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\uiMapExport.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\uiMapExt.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\ui\uiViewport.cpp">
+      <Filter>Library\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Cloth\ClothObject.cpp">
+      <Filter>Library\Cloth\Cloth Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\airplane.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\animSource.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\camera.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\cameraHold.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\car.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Curve3D.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\detector.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\door.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\dynSound.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\envTracker.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\fsmEntity.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\gearBox.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\head.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\helicopter.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\house.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\hudDesc.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\identity.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\laserTarget.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\motion.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\motorcycle.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\parachute.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\person.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\planeOrHeli.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\proxyWeapon.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\randomShape.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\recoil.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\seaGull.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\ship.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\shots.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\simul.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\smokes.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\soldierOld.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\tank.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\tankOrCar.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\target.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\thing.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\tracks.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\transport.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\turret.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\vehicleAI.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\vehicleTypes.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\vehSupply.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\wounds.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\camEffects.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\dammage.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\engine.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\engineDraw.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\fileServerUseGameSettings.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\fireplace.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\font.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\fontDraw.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\frame.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\fsm.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\geography.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\heads.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\interpol.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\invisibleVeh.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Joystick.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\landSave.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\lights.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\mainCommon.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\mainInput.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\NPClientWraps.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\objectClasses.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\objLine.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\oggtext.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\onExit.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\onExitLib.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\pactext.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\pathSteer.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\roads.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\scripts.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\shapeLand.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\speaker.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\titEffects.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\trackIR.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\txtBank.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\txtPreload.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\viewer.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\visibility.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\weapons.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\world.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\wpch.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\inGameUI.cpp">
+      <Filter>Library\InGameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ui\inGameUIDraw.cpp">
+      <Filter>Library\InGameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\jpgImport.cpp">
+      <Filter>Library\JPG</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\mbcs.cpp">
+      <Filter>Library\MBCS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\paramFileExt.cpp">
+      <Filter>Library\ParamFileExt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Encryption\VBS1.cpp">
+      <Filter>Library\QStreamExt\Encryption</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Encryption\XOR1024.cpp">
+      <Filter>Library\QStreamExt\Encryption</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\gameStateExt.cpp">
+      <Filter>Library\EvaluatorExt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\stringtableExt.cpp">
+      <Filter>Library\StringtableExt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\animation.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\clipdraw.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\clipShape.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\collisions.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\drawpoly.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\landClutter.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\landscape.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\lockCache.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\object.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\rtAnimation.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\scene.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\shadow.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\ShapeDraw.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\StdLib.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\transLight.cpp">
+      <Filter>Library\Optimize\Speed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\paramArchiveExt.cpp">
+      <Filter>Library\ParamArchiveExt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ai\aiCenter.cpp">
+      <Filter>Library\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ai\aiRadio.cpp">
+      <Filter>Library\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ai\aiUnit.cpp">
+      <Filter>Library\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Ai\fsmScripted.cpp">
+      <Filter>Library\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ai\operMap.cpp">
+      <Filter>Library\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Ai\pathPlanner.cpp">
+      <Filter>Library\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\AI\suppressMap.cpp">
+      <Filter>Library\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Marina\CarCollisions.cpp">
+      <Filter>Library\Marina\CarColl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Marina\dampers.cpp">
+      <Filter>Library\Marina\CarColl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Marina\Dantzig_old.cpp">
+      <Filter>Library\Marina\CarColl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\Marina\mtl_lu_solve.cpp">
+      <Filter>Library\Marina\CarColl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\MSStrip\xbstrip.cpp">
+      <Filter>Library\MSStrip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\timeManager.cpp">
+      <Filter>Library\TimeMaganer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\depMakeUseBinMake.cpp">
+      <Filter>Library\DepMake</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\gameDirs.cpp">
+      <Filter>Library\SaveGame</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\saveGame.cpp">
+      <Filter>Library\SaveGame</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Shape\edges.cpp">
+      <Filter>Library\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Shape\faceArray.cpp">
+      <Filter>Library\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Shape\material.cpp">
+      <Filter>Library\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Shape\modelConfig.cpp">
+      <Filter>Library\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Shape\plane.cpp">
+      <Filter>Library\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Shape\poly.cpp">
+      <Filter>Library\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Shape\Shape.cpp">
+      <Filter>Library\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Shape\shapeFile.cpp">
+      <Filter>Library\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Shape\vertex.cpp">
+      <Filter>Library\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\TerSynth\terrain.cpp">
+      <Filter>Library\TerSynth</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\TerSynth\tersynth.cpp">
+      <Filter>Library\TerSynth</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\TerSynth\tersynth_helpers.cpp">
+      <Filter>Library\TerSynth</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\MemGrow.cpp">
+      <Filter>Library\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lib\memTable.cpp">
+      <Filter>Library\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\ParamFile\classDbParamFile.cpp">
+      <Filter>Element\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\ParamFile\paramFile.cpp">
+      <Filter>Element\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\ParamFile\paramFileCtx.cpp">
+      <Filter>Element\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\ParamFile\paramFileUseEvalExpress.cpp">
+      <Filter>Element\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\ParamFile\paramFileUseLocalizeStringtable.cpp">
+      <Filter>Element\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\ParamFile\paramFileUsePreprocC.cpp">
+      <Filter>Element\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\ParamFile\paramFileUseSumCalcCrc.cpp">
+      <Filter>Element\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Evaluator\evaluatorExpress.cpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Evaluator\evalUseBIDebugEngine.cpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Evaluator\evalUseLocalizeStringtable.cpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Evaluator\express.cpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Evaluator\expressCompiler.cpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Evaluator\expressInterpreter.cpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Evaluator\scriptVM.cpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Evaluator\scriptVMUsePreprocC.cpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Common\globalAlive.cpp">
+      <Filter>Element\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Common\perfLog.cpp">
+      <Filter>Element\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Common\randomGen.cpp">
+      <Filter>Element\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Common\randomJames.cpp">
+      <Filter>Element\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\QStream\fileCompress.cpp">
+      <Filter>Element\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\QStream\packFiles.cpp">
+      <Filter>Element\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\QStream\qbstream.cpp">
+      <Filter>Element\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\QStream\qstream.cpp">
+      <Filter>Element\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\QStream\qstreamUseBankQFBank.cpp">
+      <Filter>Element\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\QStream\serializeBin.cpp">
+      <Filter>Element\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\QStream\ssCompress.cpp">
+      <Filter>Element\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\PreprocC\Preproc.cpp">
+      <Filter>Element\PreprocC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\PreprocC\preprocC.cpp">
+      <Filter>Element\PreprocC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Stringtable\localizeStringtable.cpp">
+      <Filter>Element\Stringtable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Stringtable\stringtable.cpp">
+      <Filter>Element\Stringtable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Stringtable\stringtableParserXML.cpp">
+      <Filter>Element\Stringtable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\stringtable\stringtableUseExtParserXML.cpp">
+      <Filter>Element\Stringtable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Stringtable\stringtableUsePreprocC.cpp">
+      <Filter>Element\Stringtable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Xml\inet.cpp">
+      <Filter>Element\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Xml\xml.cpp">
+      <Filter>Element\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Network\directchannel.cpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Network\netapi.cpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Network\netchannel.cpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Network\netmessage.cpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Network\netpeer.cpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Network\netpeerxbox.cpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Network\netpool.cpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Network\peerfactory.cpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Network\peerfactoryxbox.cpp">
+      <Filter>Element\ElementNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Calendar\eventToCallback.cpp">
+      <Filter>Element\Calendar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Calendar\pocalendar.cpp">
+      <Filter>Element\Calendar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Modules\modules.cpp">
+      <Filter>Element\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Math\math3dK.cpp">
+      <Filter>Element\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Math\math3dP.cpp">
+      <Filter>Element\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Math\math3DPK.cpp">
+      <Filter>Element\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Math\math3dT.cpp">
+      <Filter>Element\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Math\mathOpt.cpp">
+      <Filter>Element\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Math\matrixP3.cpp">
+      <Filter>Element\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\FreeOnDemand\memFreeReq.cpp">
+      <Filter>Element\FreeOnDemand</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Crc\crc.cpp">
+      <Filter>Element\CRC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\ParamArchive\paramArchive.cpp">
+      <Filter>Element\ParamArchive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\ParamArchive\paramArchiveDb.cpp">
+      <Filter>Element\ParamArchive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\ParamArchive\paramArchiveUseDbParamFile.cpp">
+      <Filter>Element\ParamArchive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Clipboard\clipboard.cpp">
+      <Filter>Element\Clipboard</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Debugging\debugTrap.cpp">
+      <Filter>Element\Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Debugging\imexhnd.cpp">
+      <Filter>Element\Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Debugging\mapFile.cpp">
+      <Filter>Element\Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Color\colorsK.cpp">
+      <Filter>Element\Color</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Color\colorsP.cpp">
+      <Filter>Element\Color</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Time\time.cpp">
+      <Filter>Element\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\DebugWindow\debugWin.cpp">
+      <Filter>Element\DebugWindow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Enum\dynEnum.cpp">
+      <Filter>Element\Enum</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Enum\enumNames.cpp">
+      <Filter>Element\Enum</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Enum\idString.cpp">
+      <Filter>Element\Enum</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Statistics\statistics.cpp">
+      <Filter>Element\Statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\HierWalker\hierWalker.cpp">
+      <Filter>Element\HierWalker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Breakpoint\breakpoint.cpp">
+      <Filter>Element\Breakpoint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Speech\dpcm\dpcm.cpp">
+      <Filter>Element\Speech</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Speech\microsoft\mscelp.cpp">
+      <Filter>Element\Speech</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Speech\lpc\openlpc.cpp">
+      <Filter>Element\Speech</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Speech\Pcm\pcm.cpp">
+      <Filter>Element\Speech</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Speech\speex\speex.cpp">
+      <Filter>Element\Speech</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Speech\vonApp.cpp">
+      <Filter>Element\Speech</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Speech\vonCodec.cpp">
+      <Filter>Element\Speech</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\hirestime\hiResTime.cpp">
+      <Filter>Element\HiResTime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\activity\activity.cpp">
+      <Filter>Element\Activity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\bidebugengine\biDebugEngine.cpp">
+      <Filter>Element\BIDebugEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\FileBinMake\fileBinMake.cpp">
+      <Filter>Element\FileBinMake</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\SimpleExpression\simpleExpression.cpp">
+      <Filter>Element\SimpleExpression</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\graph\clique.cpp">
+      <Filter>Element\Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\datasignatures\dataSignatures.cpp">
+      <Filter>Element\DataSignatures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\PerlinNoise\perlinNoise.cpp">
+      <Filter>Element\PerlinNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\FileServer\fileServer.cpp">
+      <Filter>Element\FileServer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\FileServer\fileServerAsync.cpp">
+      <Filter>Element\FileServer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\FileServer\multithread.cpp">
+      <Filter>Element\FileServer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\SoundFile\soundFile.cpp">
+      <Filter>Element\SoundFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\MultiThread2\common\LateConstructed.cpp">
+      <Filter>Element\MultiThread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\MultiThread2\common\src-windows\AssertBis.cpp">
+      <Filter>Element\MultiThread\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\MultiThread2\multithread\src-windows\BlockerSimpleBase.cpp">
+      <Filter>Element\MultiThread\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\MultiThread2\multithread\src-windows\CriticalSection.cpp">
+      <Filter>Element\MultiThread\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\MultiThread2\multithread\src-portable\Synchronized.cpp">
+      <Filter>Element\MultiThread\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\MultiThread2\multithread\src-windows\ThreadBase.cpp">
+      <Filter>Element\MultiThread\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\MultiThread2\multithread\src-portable\ThreadHook.cpp">
+      <Filter>Element\MultiThread\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\MultiThread2\multithread\src-windows\Tls.cpp">
+      <Filter>Element\MultiThread\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\MultiThread2\multithread\src-windows\waitFunctions.cpp">
+      <Filter>Element\MultiThread\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\multicore\jobs.cpp">
+      <Filter>Element\Multicore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\multicore\multicore.cpp">
+      <Filter>Element\Multicore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\MemoryStore\memStore.cpp">
+      <Filter>Element\MemoryStore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\ActiveObject\activeObject.cpp">
+      <Filter>Element\ActiveObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Algorithms\crc32.cpp">
+      <Filter>Essence\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Containers\bitmask.cpp">
+      <Filter>Essence\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Containers\maps.cpp">
+      <Filter>Essence\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Framework\appFrame.cpp">
+      <Filter>Essence\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Framework\netlog.cpp">
+      <Filter>Essence\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Framework\potime.cpp">
+      <Filter>Essence\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Memory\debugAlloc.cpp">
+      <Filter>Essence\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Memory\fastAlloc.cpp">
+      <Filter>Essence\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Strings\rString.cpp">
+      <Filter>Essence\Strings</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Types\lLinks.cpp">
+      <Filter>Essence\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Types\softLinks.cpp">
+      <Filter>Essence\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Threads\pocritical.cpp">
+      <Filter>Essence\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Threads\posemaphore.cpp">
+      <Filter>Essence\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Threads\pothread.cpp">
+      <Filter>Essence\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Threads\threadSync.cpp">
+      <Filter>Essence\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\Files\filenames.cpp">
+      <Filter>Essence\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\ErrorProp\errorProp.cpp">
+      <Filter>Essence\ErrorProp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Es\reportStack\reportStack.cpp">
+      <Filter>Essence\ReportStack</Filter>
+    </ClCompile>
+    <ClCompile Include="..\RV\speechrecognition\fonix.cpp">
+      <Filter>Rv\SpeechRecognition</Filter>
+    </ClCompile>
+    <ClCompile Include="..\RV\speechrecognition\voiceCapture.cpp">
+      <Filter>Rv\SpeechRecognition</Filter>
+    </ClCompile>
+    <ClCompile Include="binarize.cpp" />
+    <ClCompile Include="..\LIB\engDummy.cpp" />
+    <ClCompile Include="..\posAccess\posAccess.cpp" />
+    <ClCompile Include="StdAfx.cpp" />
+    <ClCompile Include="..\El\LZO\lzo1x_d4.c">
+      <Filter>Element\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\LZO\lzo1x_dStream.cpp">
+      <Filter>Element\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\LZO\lzo_init.c">
+      <Filter>Element\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\LZO\pinit.c">
+      <Filter>Element\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\LZO\plzo1x_1f.c">
+      <Filter>Element\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Credits\credits.cpp">
+      <Filter>Element\Credits</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\progressScr.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\jvmInit.cpp">
+      <Filter>Library\Java</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\jvmInitHelper.cpp">
+      <Filter>Library\Java</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\jvmUI.cpp">
+      <Filter>Library\Java</Filter>
+    </ClCompile>
+    <ClCompile Include="..\El\Evaluator\jvmImpl.cpp">
+      <Filter>Element\Evaluator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Network\geoLoc.cpp" />
+    <ClCompile Include="..\lib\Network\httpRequest.cpp" />
+    <ClCompile Include="..\lib\Network\pingLoc.cpp" />
+    <ClCompile Include="..\lib\Inventory\inventory.cpp">
+      <Filter>Library\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Inventory\magazine.cpp">
+      <Filter>Library\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Inventory\weapon.cpp">
+      <Filter>Library\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\json.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\videoOptionsConfig.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\zombie.cpp">
+      <Filter>Library\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\WorldRes\WorldLoot.cpp">
+      <Filter>Library\WorldRes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\WorldRes\WorldRes.cpp">
+      <Filter>Library\WorldRes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Enforce\src\common\enf_staticbuffer.cpp">
+      <Filter>Enforce\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Enforce\src\common\enf_strings.cpp">
+      <Filter>Enforce\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Enforce\src\Physics\enf_physicsbulletmanager.cpp">
+      <Filter>Enforce\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Enforce\src\Physics\enf_physicsbulletworld.cpp">
+      <Filter>Enforce\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Enforce\src\Physics\enf_physicscontrollers.cpp">
+      <Filter>Enforce\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Enforce\src\Physics\enf_physicsragdoll.cpp">
+      <Filter>Enforce\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Enforce\src\Physics\enf_worldphysics.cpp">
+      <Filter>Enforce\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Enforce\src\enf_item.cpp">
+      <Filter>Enforce\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Enforce\src\Physics\enf_btHeightfieldTerrainShape.cpp">
+      <Filter>Enforce\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\scenery.cpp">
+      <Filter>Library\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Enforce\src\enf_shapes.cpp">
+      <Filter>Enforce\BaseWorld</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Enforce\src\common\enf_mathlib.cpp">
+      <Filter>Enforce\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Enforce\src\enf_intersection.cpp">
+      <Filter>Enforce\Common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\lib\TerSynth\readme.txt">
+      <Filter>Library\TerSynth</Filter>
+    </None>
+    <None Include="..\El\Math\matrix.asm">
+      <Filter>Element\Math</Filter>
+    </None>
+    <None Include="B:\build\BuildBinarize.bat">
+      <Filter>Deploy</Filter>
+    </None>
+    <None Include="deploy.bat">
+      <Filter>Deploy\Manual</Filter>
+    </None>
+    <None Include="X:\update\getCfg.bat">
+      <Filter>Deploy\Manual</Filter>
+    </None>
+    <None Include="putBin.bat">
+      <Filter>Deploy\Manual</Filter>
+    </None>
+    <None Include="putFP2Bin.bat">
+      <Filter>Deploy\Manual</Filter>
+    </None>
+    <None Include="ReadMe.txt">
+      <Filter>Doc</Filter>
+    </None>
+    <None Include="..\El\LZO\lzo1_d.ch">
+      <Filter>Element\LZO</Filter>
+    </None>
+    <None Include="..\El\LZO\lzo1x_d.ch">
+      <Filter>Element\LZO</Filter>
+    </None>
+    <None Include="..\El\LZO\lzo_dll.ch">
+      <Filter>Element\LZO</Filter>
+    </None>
+    <None Include="..\El\LZO\lzo_func.ch">
+      <Filter>Element\LZO</Filter>
+    </None>
+    <None Include="..\El\LZO\plzo1_c.ch">
+      <Filter>Element\LZO</Filter>
+    </None>
+    <None Include="..\El\LZO\plzo1_c_copy_lit.ch">
+      <Filter>Element\LZO</Filter>
+    </None>
+    <None Include="..\El\LZO\plzo1_c_copy_lit_impl.ch">
+      <Filter>Element\LZO</Filter>
+    </None>
+    <None Include="..\El\LZO\plzo1x_c.ch">
+      <Filter>Element\LZO</Filter>
+    </None>
+    <None Include="..\El\LZO\plzo1x_d.ch">
+      <Filter>Element\LZO</Filter>
+    </None>
+  </ItemGroup>
+</Project>

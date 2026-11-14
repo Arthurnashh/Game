@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+
+<module name="ParamFile">
+
+	<description>
+		Structured database used for storing classes and values.
+	</description>
+
+	<files>
+		<ref_file name="El/ParamFile/paramFile.hpp"/>
+		<ref_file name="El/ParamFile/paramFile.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+		<ref_file name="El/Common/perfLog.hpp"/>
+		<ref_module name="El/QStream"/>
+	</dependencies>
+
+	<structure>
+		<submodule name="ParamFileCtx">
+			<description>
+				Introduces replacement of ParamEntry that can be used to perform search with context.
+			</description>
+			<files>
+				<ref_file name="El/ParamFile/paramFileCtx.hpp"/>
+				<ref_file name="El/ParamFile/paramFileCtx.cpp"/>
+			</files>
+		</submodule>
+	</structure>
+
+	<interfaces>
+		<interface file="El/Interfaces/iClassDb.hpp" class="ClassDbFunctions">
+			<implementation class="ParamClassDbFunctions"/>
+			<description>
+				Implements common class database using ParamFile database.
+			</description>
+			<files>
+				<ref_file name="El/ParamFile/classDbParamFile.hpp"/>
+				<ref_file name="El/ParamFile/classDbParamFile.cpp"/>
+			</files>
+		</interface>
+	</interfaces>
+
+	<extensions>
+		<use_interface file="El/Interfaces/iEval.hpp" class="EvaluatorFunctions">
+			<description>
+				Add posibility to use expressions as numeric values and macros __EXEC and __EVAL.
+			</description>
+			<use_implementation name="Default" selector="El/ParamFile/paramFileUseEvalDefault.cpp">
+				<description>
+					Default implementation - expressions are not evaluated.
+				</description>
+			</use_implementation>
+			<use_implementation name="Express" selector="El/ParamFile/paramFileUseEvalExpress.cpp">
+				<description>
+					Evaluation by Expression Evaluator.
+				</description>
+				<dependencies>
+					<ref_module name="El/Evaluator"/>
+					<ref_module name="El/ParamArchive"/>
+					<ref_file name="El/Common/isaac.hpp"/>
+					<ref_file name="El/Common/randomGen.hpp"/>
+					<ref_file name="El/Common/randomGen.cpp"/>
+					<ref_file name="El/Common/enumNames.hpp"/>
+				</dependencies>
+			</use_implementation>
+		</use_interface>
+		<use_interface file="El/Interfaces/iLocalize.hpp" class="LocalizeStringFunctions">
+			<description>
+				Add posibility to localize strings values stored in ParamFile.
+			</description>
+			<use_implementation name="Default" selector="El/ParamFile/paramFileUseLocalizeDefault.cpp">
+				<description>
+					Default implementation - no localization.
+				</description>
+			</use_implementation>
+			<use_implementation name="Stringtable" selector="El/ParamFile/paramFileUseLocalizeStringtable.cpp">
+				<description>
+					Localization using stringtable (csv file).
+				</description>
+				<dependencies>
+					<ref_module name="El/Stringtable"/>
+				</dependencies>
+			</use_implementation>
+		</use_interface>
+		<use_interface file="El/Interfaces/iPreproc.hpp" class="PreprocessorFunctions">
+			<description>
+				File can be preprocess before parsing by preprocessor.
+			</description>
+			<use_implementation name="Default" selector="El/ParamFile/paramFileUsePreprocDefault.cpp">
+				<description>
+					Default implementation - no preprocessing.
+				</description>
+			</use_implementation>
+			<use_implementation name="PreprocC" selector="El/ParamFile/paramFileUsePreprocC.cpp">
+				<description>
+					Preprocessing using preprocessor with C++ like syntax.
+				</description>
+				<dependencies>
+					<ref_module name="El/PreprocC"/>
+				</dependencies>
+			</use_implementation>
+		</use_interface>
+		<use_interface file="El/Interfaces/iSumCalc.hpp" class="SumCalculatorFunctions">
+			<description>
+				Add posibility to calculate check sum value for file / subclass / value.
+			</description>
+			<use_implementation name="Default" selector="El/ParamFile/paramFileUseSumCalcDefault.cpp">
+				<description>
+					Default (dummy) implementation.
+				</description>
+			</use_implementation>
+			<use_implementation name="CRC" selector="El/ParamFile/paramFileUseSumCalcCRC.cpp">
+				<description>
+					CRC calculation.
+				</description>
+				<dependencies>
+					<ref_module name="El/CRC"/>
+				</dependencies>
+			</use_implementation>
+		</use_interface>
+	</extensions>
+
+</module>

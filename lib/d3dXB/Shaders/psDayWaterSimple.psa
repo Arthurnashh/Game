@@ -1,0 +1,51 @@
+#include "psDecl.h"
+
+xps.1.1
+
+
+#include "psDecl.h"
+
+// derived from normalMap.psi, added "environmental reflection"
+// specular with alpha, no detail texture
+
+// inputs
+// t2 - V: view for Fresnel term
+// t3 - H: halfway for specular highlight
+
+tex t0
+tex t1 // Normal map
+texm3x2pad  t2, t1_bx2		//  u = ( t1=N ) dot ( t2=V )
+texm3x2tex  t3, t1_bx2		//  v = ( t1=N ) dot ( t3=H )
+
+// t3.rgb - Specular term, t3.a - Fresnel term
+
+// calculate environmental reflection
+dp3 r0.rgba, t1_bx2, v1_bx2 // v1 is env. reflection halfway
+
+
+// multiply cos by 2 to get sharp edge
+// cos 2x = 2 cos^2(x) - 1
+mad_x4 r0.a, r0_sat.a, r0_sat.a, -c[PS_GROUND_REFL_COLOR].a // -c[PS_GROUND_REFL_COLOR].a = -0.5
+
+lrp_d2 r1.rgb, r0_sat.a, c[PS_SKY_REFL_COLOR], c[PS_GROUND_REFL_COLOR]
+
+// Multiply diffuse coeficient by the dot result
+// Add per-vertex lights including ambient from v0 accumulator
+
+mad r0.rgb, t0, c[PS_WAVE_COLOR], v0
+
+// add specular to reflection
+mad r1.rgb, t3, c[PS_SPECULAR], r1
+
+// blend between color of the water body and color of the reflection
+lrp r0.rgb, t3.a, r1, r0
++lrp r0.a, t3.a, 1-zero, v0.a
+
+// final color = s0*s1 + (1-s0)*s2 + s3
+// final alpha = s6.b
+// special registers:
+//   prod = s4*s5, sum  = r0+v1, zero = 0
+//  s0,        s1,         s2,          s3,           s4,       s5,                     s6
+//xfc fog_sat.a, r0_sat.rgb, fog_sat.rgb, prod_sat.rgb, t3_sat.a, c[PS_SPECULAR]_sat.rgb, r0_sat.a
+
+#include "finalCombiner.psi"

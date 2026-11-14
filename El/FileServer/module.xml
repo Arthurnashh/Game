@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="vcs://pgm/doc/module.xsl" type="text/xsl"?>
+
+<module name="FileServer">
+
+	<description>
+		File handle manager support for QStreams.
+	</description>
+
+	<files>
+    <ref_file name="El/FileServer/fileServer.hpp"/>
+    <ref_file name="El/FileServer/fileServerMT.hpp"/>
+    <ref_file name="El/FileServer/fileServer.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+		<ref_file name="El/Common/perfLog.hpp"/>
+		<ref_module name="El/QStream"/>
+	</dependencies>
+
+	<interfaces>
+		<interface file="El/QStream/qStream.hpp" class="QIFileServerFunctions">
+			<implementation class="FileServerST"/>
+			<description>
+				Implements file handle manager using file caching.
+			</description>
+			<files>
+				<ref_file name="El/FileServer/fileServer.hpp"/>
+        <ref_file name="El/FileServer/fileServerMT.hpp"/>
+        <ref_file name="El/FileServer/fileServer.cpp"/>
+      </files>
+		</interface>
+	</interfaces>
+
+	<extensions>
+    <use_interface file="El/QStream/qStream.hpp" class="QIFileServerFunctions">
+      <description>
+        Default file handle manager support.
+      </description>
+      <use_implementation name="Default" selector="El/QStream/qstreamUseFServerDefault.cpp">
+        <description>
+          No file handle caching.
+        </description>
+      </use_implementation>
+    </use_interface>
+    <use_interface file="El/QStream/qStream.hpp" class="QIFileServerFunctions">
+      <description>
+          FileServer caching handle manager support.
+      </description>
+      <use_implementation name="FileServer" selector="El/FileServer/fileServerUseDefaultSettings.cpp">
+        <description>
+          Use file handle caching.
+        </description>
+      </use_implementation>
+    </use_interface>
+    <use_interface file="El/QStream/qStream.hpp" class="QIFileServerFunctions">
+      <description>
+        FileServer caching handle manager support inside Poseidon project.
+      </description>
+      <use_implementation name="GameFileServer" selector="Poseidon/lib/fileServerUseGameSettings.cpp">
+        <description>
+          Use file handle caching with game specific functionality (error reports, etc.).
+        </description>
+      </use_implementation>
+    </use_interface>
+
+  </extensions>
+</module>

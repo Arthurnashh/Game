@@ -1,0 +1,356 @@
+#include "d3dXB/shaders/FPShadersDecl.h"
+
+// water shader, based on normal map shader FPShadersNormal
+// per vertex animation added
+
+xvs.1.1
+
+// not a fragment - complete shader
+// Tell the compiler to not to add the screenspace conversion instructions
+#pragma screenspace
+
+#define UV_GEN // UV is generated from sampled map
+
+// Skinned position and normal
+mul r0, INPUT_POSITION, c[POS_MUL]
+add SKINNED_POSITION, r0, c[POS_ADD]
+
+// *** calculate land height based on current position
+// source data are stored in WATER_DEPTH
+// assume water grid 50m, 9x9 samples (covering 8x8 rectangles)
+
+mad r2.xy, SKINNED_POSITION.xz, c[WATER_DEPTHGRID_GRID_1_GRIDd2].xx, c[WATER_DEPTHGRID_GRID_1_GRIDd2].ww
+
+// there are some borders, but we need to ignore them - saturate in 0..8 range
+max r2.xy, r2.xy, c[CONSTANTS_0_1_765_0d5].x         /// 0
+min r2.xy, r2.xy, c[WATER_DEPTHGRID_GRID_1_GRIDd2].z /// 8 
+
+// r2.xy contains coordinate from 0...8 (8 included)
+
+// normal map is always sampled directly from TexCoord
+// Fill out texture coordinates
+mad r2, r2.xy, c[CONSTANTS_0_1_765_0d5].yyxx, c[CONSTANTS_0_1_765_0d5].xxxy
+dp4 oT1.x, r2, c[TEX_TRANSFORM_MATRIX1_0]
+dp4 oT1.y, r2, c[TEX_TRANSFORM_MATRIX1_1]
+
+#ifndef UV_GEN
+  // UV are used as a source for wave animation as well
+  dp4 r4.x, r2, c[TEX_TRANSFORM_MATRIX0_0]
+  dp4 r4.y, r2, c[TEX_TRANSFORM_MATRIX0_1]
+#endif
+
+
+// but it should not matter,  as we will always multiply them by 0
+frc r0.xy, r2.xy // store fractional parts
+// remove the fractional part from y - this needs to be done for y, as it is multiplied
+add r2.y, r2.y, -r0.y
+mad r3.x, r2.y, c[WATER_DEPTHGRID_GRID_1_GRIDd2].y, r2.x
+mov a0.x, r3.x
+
+// r0.xy contains: xFrac, zFrac
+add r0.zw, c[CONSTANTS_0_1_765_0d5].yyyy, -r0.xyxy
+// r0 contains: xFrac, zFrac, 1-xFrac, 1-zFrac
+
+// (1-xFrac)*(1-zFrac), xFrac*(1-zFrac), (1-xFrac)*zFrac, xFrac*zFrac
+mul r2, r0.zxzx, r0.wwyy
+
+// sample four values of the depth grid
+// bilinear interpolation between the four corners
+// WATER_DEPTH data: depth, u, v, wavesize
+// we want: u, v, depth, wavesize
+mul r5, r2.x, c[WATER_DEPTH+a0.x].yzxw         // y00 (yXZ)
+mad r5, r2.y, c[WATER_DEPTH+1+a0.x].yzxw,   r5 // y10 
+mad r5, r2.z, c[WATER_DEPTH+9+a0.x].yzxw,   r5 // y01
+mad r5, r2.w, c[WATER_DEPTH+9+1+a0.x].yzxw, r5 // y11
+
+// r5.z contains sampled height field of the sea bed (y coordinate)
+
+
+#ifdef UV_GEN
+  mad r0, r5.xy, c[CONSTANTS_0_1_765_0d5].yyxx, c[CONSTANTS_0_1_765_0d5].xxxy
+  // UV are used as a source for wave animation as well
+  dp4 r4.x, r0, c[TEX_TRANSFORM_MATRIX0_0]
+  dp4 r4.y, r0, c[TEX_TRANSFORM_MATRIX0_1]
+#endif
+
+// *** wave simulation
+
+// calculate phase offset for sin. argument - P(y)
+// first version - P(y) = sin(y)
+mul r0.xy, r4.yy, c[WATER_WAVEGEN].xy
+frc r0.xy, r0.xy
+
+// x = x0*2*pi-pi
+mad r0.xy, r0.xy, c[WATER_PI_0p5_PI2_0p25].z, -c[WATER_PI_0p5_PI2_0p25].x
+
+// calculate 2x sin at once, using Taylor series
+mul r1, r0.xyxy, r0.xyxy // r1.xy = r0^2.xy, r1.zw = r0^2.xy
+mul r1.zw, r1.xyxy, r1.xyxy // r1.xy = r0^2.xy, r1.zw = r0^4.xy
+
+mul r2, r0.xyxy, r1.xyzw // r2.xy = r0^3.xy, r2.zw = r0^5.xy
+mul r3, r2.xyzw, r1.zwzw // r3.xy = r0^7.xy, r2.zw = r0^9.xy
+
+mad r0.xy, r2.xy, c[WATER_SIN_TAYLOR_3579].x, r0.xy
+mad r0.xy, r2.zw, c[WATER_SIN_TAYLOR_3579].y, r0.xy
+mad r0.xy, r3.xy, c[WATER_SIN_TAYLOR_3579].z, r0.xy
+mad r0.xy, r3.zw, c[WATER_SIN_TAYLOR_3579].w, r0.xy
+
+mad r4.x, c[WATER_WAVEGEN].z, r0.x, r4.x
+mad r4.x, c[WATER_WAVEGEN].w, r0.y, r4.x
+
+frc r0.xy, r4.xy
+
+// r0.xy from 0 to 1 (x0)
+// wave top is where sin(x)==1 -> x = pi/2 -> x0 = 3/4;
+// white line is on u = 0.5 -> we seek 1/4
+add oT0.x, r4.x, -c[WATER_PI_0p5_PI2_0p25].w
+
+// x = x0*2*pi-pi
+mad r0.xy, r0.xy, c[WATER_PI_0p5_PI2_0p25].z, -c[WATER_PI_0p5_PI2_0p25].x
+
+// r0.xy from -pi to +pi (x)
+
+// calculate 2x sin at once, using Taylor series
+
+mul r1, r0.xyxy, r0.xyxy // r1.xy = r0^2.xy, r1.zw = r0^2.xy
+mul r1.zw, r1.xyxy, r1.xyxy // r1.xy = r0^2.xy, r1.zw = r0^4.xy
+
+mul r2, r0.xyxy, r1.xyzw // r2.xy = r0^3.xy, r2.zw = r0^5.xy
+mul r3, r2.xyzw, r1.zwzw // r3.xy = r0^7.xy, r2.zw = r0^9.xy
+
+mad r4.xy, r2.xy, c[WATER_SIN_TAYLOR_3579].x, r0.xy
+mad r4.xy, r2.zw, c[WATER_SIN_TAYLOR_3579].y, r4.xy
+mad r4.xy, r3.xy, c[WATER_SIN_TAYLOR_3579].z, r4.xy
+mad r4.xy, r3.zw, c[WATER_SIN_TAYLOR_3579].w, r4.xy
+
+mul r2.y, r4.x, c[WATER_PI_0p5_PI2_0p25].y // sum both waves
+mad r2.y, r4.y, c[WATER_PI_0p5_PI2_0p25].y, r2.y // r2.y now contains wave sum
+
+mul r2.zw, r4.xyxy, c[WATER_WAVE_HEIGHT_X_Y_XDER_YDER].xyxy
+add r2.w, r2.z, r2.w // r2.w - animated water position
+
+// calculate peak and shore "ramps"
+
+add r5.w, c[WATER_SEA_LEVEL].x, r2.w // animated world space water level
+add SKINNED_POSITION.y, r2.w, SKINNED_POSITION.y
+
+add r5.w, r5.z, -r5.w // how much is the sea ground above the sea level
+mad r2.xz, r5.zww, c[WATER_PEAK_WHITE].xzz, c[WATER_PEAK_WHITE].yww
+mad r2.w, r5.z, c[WATER_SEA_LEVEL].y, c[WATER_SEA_LEVEL].z
+
+// both wave height and water depth can be negative, but we want 0..1 values only
+max r2.xyzw, r2.xyzw, c[CONSTANTS_0_1_765_0d5].x
+min r2.xyzw, r2.xyzw, c[CONSTANTS_0_1_765_0d5].y
+
+// r2.x - wave top factor (0..1) based on non-animated water depth
+// r2.z - water depth factor (0..1) including animation
+// r2.y - wave amplitude factor (0..1)
+
+// modify transparency based on the "shore" value
+// the more on the shore, the more transparent we want to be are
+
+#define SHORE_A MODULATE_COLOR.w // register shared with SKINNED_T
+add SHORE_A, c[CONSTANTS_0_1_765_0d5].y, -r2.z
+mov ACCUMULATOR_DIFFUSE.x, r2.w // store water body depth factor
+
+mul r2.xy, r2.xy, c[CONSTANTS_0_1_765_0d5].w
+
+mad oT0.y, r2.y, r2.x, r2.z // consider both wave height and water depth, onshore use white
+
+
+
+// calculate partial derivative, sin argument is stored in r0.xy
+
+// calculate cos using Taylor series
+
+// - already done above - mul r1, r0.xyxy, r0.xyxy // r1.xy = r0^2.xy, r1.zw = r0^2.xy
+//- already done above - mul r1.zw, r1.xyxy, r1.xyxy // r1.xy = r0^2.xy, r1.zw = r0^4.xy
+mul r2, r1.xyzw, r1.zwzw // r2.xy = r0^6.xy, r2.zw = r0^8.xy
+
+mov r4.xy, c[CONSTANTS_0_1_765_0d5].y
+mad r4.xy, r1.xy, c[WATER_COS_TAYLOR_2468].x, r4.xy
+mad r4.xy, r1.zw, c[WATER_COS_TAYLOR_2468].y, r4.xy
+mad r4.xy, r2.xy, c[WATER_COS_TAYLOR_2468].z, r4.xy
+mad r4.xy, r2.zw, c[WATER_COS_TAYLOR_2468].w, r4.xy
+
+// sin(A*x+B)' = A*cos(A*x+B)
+
+mul r0.xy, r4.xy, c[WATER_WAVE_HEIGHT_X_Y_XDER_YDER].zw
+
+// Animate the normal and S/T space
+
+// reusing color result registers, as they will be used only on the end
+#define SKINNED_S r4
+#define SKINNED_T MODULATE_COLOR  // we will not need r4 any more
+// never use SKINNED_T.w - we use it for other purposes
+
+// water ST space is fixed:
+// S   = (1,0,0)
+// SxT = (0,1,0) (normal)
+// T   = (0,0,1)
+
+// we can derive normal from the derivations
+
+mov SKINNED_NORMAL.xz, -r0.xyy
+mov SKINNED_NORMAL.yw, c[CONSTANTS_0_1_765_0d5].y
+
+mad SKINNED_NORMAL, c[CONSTANTS_0_1_765_0d5].yxyx, -r0.xyyy, c[CONSTANTS_0_1_765_0d5].xyxy
+
+// normalize the normal
+dp3 SKINNED_NORMAL.w, SKINNED_NORMAL, SKINNED_NORMAL
+rsq  SKINNED_NORMAL.w, SKINNED_NORMAL.w
+mul SKINNED_NORMAL.xyz, SKINNED_NORMAL.xyz, SKINNED_NORMAL.w
+
+// SetDirectionAside((1,0,0)-normal*normal.x).Normalized());
+mad SKINNED_S.xyz, -SKINNED_NORMAL, SKINNED_NORMAL.x, c[CONSTANTS_0_1_765_0d5].yxx
+dp3 SKINNED_S.w, SKINNED_S, SKINNED_S
+rsq  SKINNED_S.w, SKINNED_S.w
+mul SKINNED_S.xyz, SKINNED_S.xyz, SKINNED_S.w
+
+// calculate T as a crossproduct of S and NORMAL
+//  SetDirection(DirectionAside().CrossProduct(normal));
+mul  SKINNED_T.xyz, SKINNED_S.yzx, SKINNED_NORMAL.zxy
+mad  SKINNED_T.xyz, -SKINNED_NORMAL.yzx, SKINNED_S.zxy, SKINNED_T.xyz
+
+/*
+  SetDirectionUp(normal);
+  // Project into the plane
+  Coord t=DirectionUp()*aside;
+  SetDirectionAside((aside-normal*t).Normalized());
+  SetDirection(DirectionAside().CrossProduct(normal));
+*/
+
+// Transform position
+m4x3 TRANSFORMED_POSITION.xyz, SKINNED_POSITION, c[WORLD_VIEW_MATRIX_0]
+mov TRANSFORMED_POSITION.w, c[CONSTANTS_0_1_765_0d5].y
+
+// Project position
+m4x4 r0, TRANSFORMED_POSITION, c[PROJ_MATRIX_0]
+
+// Convert to screenspace
+mul r0.xyz, r0, c[SCREENSPACE_SCALE]
++ rcc r1.x, r0.w
+mad oPos.xyz, r0, r1.x, c[SCREENSPACE_OFFSET]
+mov oPos.w, r0.w
+
+
+
+// -------------------------------------------------------
+
+// --------------------------
+// Move halfway vector to oT3
+
+#define CAMERA_SPACE_POSITION r5
+
+// Calculate model space normalized eye vector (camera to vertex)
+
+add CAMERA_SPACE_POSITION, c[CAMERA_POSITION], -SKINNED_POSITION
+dp3 CAMERA_SPACE_POSITION.w, CAMERA_SPACE_POSITION, CAMERA_SPACE_POSITION
+rsq CAMERA_SPACE_POSITION.w, CAMERA_SPACE_POSITION.w
+
+// Normalize it
+mul CAMERA_SPACE_POSITION.xyz, CAMERA_SPACE_POSITION.xyz, CAMERA_SPACE_POSITION.w
+
+// Transform it into local vertex space
+// move it into oT2
+dp3 oT2.x, -SKINNED_S.xyz, CAMERA_SPACE_POSITION
+dp3 oT2.y, -SKINNED_T.xyz, CAMERA_SPACE_POSITION
+dp3 oT2.z, SKINNED_NORMAL.xyz, CAMERA_SPACE_POSITION
+
+// Calculate the eye halfway vector
+
+add r0.xyz, CAMERA_SPACE_POSITION, -c[LDIRECTION_TRANSFORMED_DIR]
+// no need to normalize, we will normalize after converting to ST space
+
+// Transform it into local vertex space
+dp3 r3.x, -SKINNED_S.xyz, r0
+dp3 r3.y, -SKINNED_T.xyz, r0
+dp3 r3.z, SKINNED_NORMAL.xyz, r0
+
+// Normalize it and move it into oT3
+dp3 r3.w, r3, r3
+rsq r3.w, r3.w
+mul oT3.xyz, r3, r3.w
+
+// calculate reflection halfway vector and transform it into the tangent space
+add r0.xyz, CAMERA_SPACE_POSITION, c[CONSTANTS_0_1_765_0d5].xyx
+
+// Transform it into local vertex space
+dp3 r3.x, -SKINNED_S.xyz, r0
+dp3 r3.y, -SKINNED_T.xyz, r0
+dp3 r3.z, SKINNED_NORMAL.xyz, r0
+
+// Normalize it and move it into oD1 with bx2 conversion
+dp3 r3.w, r3, r3
+rsq r3.w, r3.w
+
+// we need to prepare it for bx2 conversions
+
+mad r3.xyz, r3.xyz, r3.w, c[CONSTANTS_0_1_765_0d5].y
+mul oD1.xyz, r3.xyz, c[CONSTANTS_0_1_765_0d5].w // specular - v1
+
+
+// calculate alpha factor based on viewing angle
+// normalized eye vector
+dp3 r0.w, CAMERA_SPACE_POSITION.xyz, SKINNED_NORMAL.xyz
+
+// consider min. and max. angle
+mad r0.w, c[WATER_REFLECT_ADD_MUL_u_u].y, r0.w, c[WATER_REFLECT_ADD_MUL_u_u].x
+
+// saturate between 0 and 1
+max r0.w, r0.w, c[CONSTANTS_0_1_765_0d5].x
+min r0.w, r0.w, c[CONSTANTS_0_1_765_0d5].y
+
+// def: A = r0.w, W = ACCUMULATOR_DIFFUSE.w
+// when A = 1, we want W to be W (stay as it is)
+// when A = 0, we want W to be 1
+
+
+// Init lights
+
+mov ACCUMULATOR_DIFFUSE.w, INPUT_MAT_A.w
+
+dp3 r1.x, SKINNED_NORMAL, -c[LDIRECTION_TRANSFORMED_DIR]
+max r1.x, r1.x, c[CONSTANTS_0_1_765_0d5].x
+
+// use diffuse component only for shallow water
+// shallow water (ACCUMULATOR_DIFFUSE.x == 1) - use r1.xyz
+mul r1.x, r1.x, ACCUMULATOR_DIFFUSE.x
+// Diffuse color
+mul r1.xyz, r1.x, INPUT_MAT_D
+
+mul ACCUMULATOR_DIFFUSE.xyz, r1.xyz, c[LDIRECTION_D]
+add ACCUMULATOR_DIFFUSE.xyz, ACCUMULATOR_DIFFUSE.xyz, c[MAT_E]
+
+// shallow water (SHORE_A == 0) - use ACCUMULATOR_DIFFUSE.w
+// deep water (SHORE_A == 1) - use c[WATER_SEA_LEVEL].w
+
+// r1.w = SHORE_A * c[WATER_SEA_LEVEL].w + (1-SHORE_A) * ACCUMULATOR_DIFFUSE.w
+// r1.w = SHORE_A * c[WATER_SEA_LEVEL].w + ACCUMULATOR_DIFFUSE.w -SHORE_A * ACCUMULATOR_DIFFUSE.w
+
+mad r1.w, SHORE_A, c[WATER_SEA_LEVEL].w, ACCUMULATOR_DIFFUSE.w
+mad r1.w, -SHORE_A, ACCUMULATOR_DIFFUSE.w, r1.w
+
+//mul ACCUMULATOR_DIFFUSE.w, ACCUMULATOR_DIFFUSE.w, SHORE_A // same as MODULATE_COLOR.w
+
+// W = W*A+1*(1-A) = W*A + 1 - A
+mad ACCUMULATOR_DIFFUSE.w, r1.w, r0.w, c[CONSTANTS_0_1_765_0d5].y // W = W*A+1
+add oD0.w, ACCUMULATOR_DIFFUSE.w, -r0.w // W = W-A
+
+mul ACCUMULATOR_DIFFUSE.xyz, ACCUMULATOR_DIFFUSE, c[ACCOMODATE_EYE]
+
+// used from  DirectionalADForced.vsa
+
+// only ambient part of the directional light used on water
+// no forced diffuse, no casted shadows
+mad oD0.xyz, INPUT_MAT_A, c[LDIRECTION_A], ACCUMULATOR_DIFFUSE
+
+// WriteLights.vsa combined into the code above
+
+// Fog.vsa 
+// Fill out the fog
+dp3 r1.w, TRANSFORMED_POSITION, TRANSFORMED_POSITION
+rsq r0.w, r1.w
+mul r0.w, r0.w, r1.w
+add r0.w, -r0.w, c[FOGEND__RCP_FOGEND_MINUS_FOGSTART__SHADOWVOLUME_OFFSET__SHADOWVOLUME_SIZE].x  // Fog::d<0>
+mul oFog, r0.w, c[FOGEND__RCP_FOGEND_MINUS_FOGSTART__SHADOWVOLUME_OFFSET__SHADOWVOLUME_SIZE].y

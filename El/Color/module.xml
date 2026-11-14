@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+
+<module name="Colors types and calculations">
+
+	<description>
+		Defines types Color and PackedColor and implements basic arithmetic operations on them.
+	</description>
+
+	<files>
+		<ref_file name="El/Color/colors.hpp">Basic include file</ref_file>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+	</dependencies>
+
+	<structure>
+		<submodule name="ColorP">
+			<description>
+				Basic implementation.
+			</description>
+			<files>
+				<ref_file name="El/Color/colorsFloat.hpp"/>
+				<ref_file name="El/Color/colorsP.cpp"/>
+			</files>
+		</submodule>
+		<submodule name="ColorK">
+			<description>
+				Implementation using KNI (Pentium 4) instructions.
+			</description>
+			<files>
+				<ref_file name="El/Color/colorsK.hpp"/>
+				<ref_file name="El/Color/colorsK.cpp"/>
+			</files>
+		</submodule>
+	</structure>
+
+</module>

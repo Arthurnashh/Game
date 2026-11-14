@@ -1,0 +1,35 @@
+#include "psDecl.h"
+
+// HDR Glow
+// POST_FX_PARAM a - glow intensity
+// POST_FX_PARAM rgb - glow multiplier
+
+xps.1.1
+
+tex t0 // framebuffer
+tex t1 // blurred buffer (glowbuffer, a contains ammount of glow)
+tex t2 // blurred buffer (glowbuffer)
+tex t3 // blurred buffer (glowbuffer)
+
+add r0.rgb, t1, -t0
+mad t0, r0_sat, t1.a, t0
+
+add r0.rgb, t2, -t0
+mad t0, r0_sat, t2.a, t0
+
+add r0.rgb, t3, -t0
+mad t0, r0_sat, t3.a, t0
+
+mul_x4 r0.rgb, t0, c[POST_FX_PARAM]
+
+// r0.rgb contains total glow color
+// r0.a contains total ammount of glow
+
+// final color = s0*s1 + (1-s0)*s2 + s3
+// final alpha = s6.b
+// special registers:
+//   prod = s4*s5.
+//   sum  = r0+v1
+//   zero = 0
+//  s0,        s1,         s2,          s3,           s4,           s5,           s6
+xfc fog_sat.a, r0_sat.rgb, fog_sat.rgb, zero_sat.rgb, zero_sat.rgb, zero_sat.rgb, r0_sat.a

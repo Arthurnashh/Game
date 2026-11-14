@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{07513E8A-4EB1-4C07-906D-27E14F59A90B}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SvnAutoUpdater</RootNamespace>
+    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>DayZUpdater</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>DayZUpdater</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..;..\..\extern;..\..\extern\svn-win32-1.7.2\include;..\..\extern\svn-win32-1.7.2\include\apr;..\..\extern\svn-win32-1.7.2\include\apr-util;..\..\extern\svn-win32-1.7.2\include\apr-iconv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>MFC_NEW;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>libapr-1.lib;libsvn_client-1.lib;libsvn_delta-1.lib;libsvn_diff-1.lib;libsvn_fs_base-1.lib;libsvn_fs_fs-1.lib;libsvn_fs_util-1.lib;libsvn_fs-1.lib;libsvn_ra_local-1.lib;libsvn_ra_neon-1.lib;libsvn_ra_serf-1.lib;libsvn_ra_svn-1.lib;libsvn_ra-1.lib;libsvn_repos-1.lib;libsvn_subr-1.lib;libsvn_wc-1.lib;svn_client-1.lib;svn_delta-1.lib;svn_diff-1.lib;svn_fs-1.lib;svn_ra-1.lib;svn_repos-1.lib;svn_subr-1.lib;svn_wc-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\extern;..\..\extern\svn-win32-1.7.2\lib;..\..\extern\svn-win32-1.7.2\lib\apr;..\..\extern\svn-win32-1.7.2\lib\apr-util;..\..\extern\svn-win32-1.7.2\lib\apr-iconv;..\..\extern\svn-win32-1.7.2\lib\sasl;..\..\extern\svn-win32-1.7.2\lib\neon;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>MFC_NEW;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..;..\..\extern\svn-win32-1.7.2\include;..\..\extern\svn-win32-1.7.2\include\apr;..\..\extern\svn-win32-1.7.2\include\apr-util;..\..\extern\svn-win32-1.7.2\include\apr-iconv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\..\extern\svn-win32-1.7.2\lib;..\..\extern\svn-win32-1.7.2\lib\apr;..\..\extern\svn-win32-1.7.2\lib\apr-util;..\..\extern\svn-win32-1.7.2\lib\apr-iconv;..\..\extern\svn-win32-1.7.2\lib\sasl;..\..\extern\svn-win32-1.7.2\lib\neon;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libapr-1.lib;libsvn_client-1.lib;libsvn_delta-1.lib;libsvn_diff-1.lib;libsvn_fs_base-1.lib;libsvn_fs_fs-1.lib;libsvn_fs_util-1.lib;libsvn_fs-1.lib;libsvn_ra_local-1.lib;libsvn_ra_neon-1.lib;libsvn_ra_serf-1.lib;libsvn_ra_svn-1.lib;libsvn_ra-1.lib;libsvn_repos-1.lib;libsvn_subr-1.lib;libsvn_wc-1.lib;svn_client-1.lib;svn_delta-1.lib;svn_diff-1.lib;svn_fs-1.lib;svn_ra-1.lib;svn_repos-1.lib;svn_subr-1.lib;svn_wc-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="res\svnAutoUpdater.ico" />
+    <None Include="res\svnAutoUpdater_s.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="svnAutoUpdater.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pipeManager.cpp" />
+    <ClCompile Include="stdStringFormat.cpp" />
+    <ClCompile Include="svnAccess.cpp" />
+    <ClCompile Include="svnAutoUpdater.cpp" />
+    <ClCompile Include="SystemTraySDK.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Es\Files\commandLine.hpp" />
+    <ClInclude Include="..\..\Es\Files\filenames.hpp" />
+    <ClInclude Include="cl.h" />
+    <ClInclude Include="client_errors.h" />
+    <ClInclude Include="controls.h" />
+    <ClInclude Include="pipeManager.h" />
+    <ClInclude Include="rc.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="stdStringFormat.h" />
+    <ClInclude Include="svnAccess.hpp" />
+    <ClInclude Include="svnAutoUpdater.h" />
+    <ClInclude Include="svn_private_config.h" />
+    <ClInclude Include="SystemTraySDK.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

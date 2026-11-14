@@ -1,0 +1,12 @@
+Cheat list moved to:
+https://wiki.bistudio.com/index.php/Spou%C5%A1t%C4%9Bn%C3%AD_hry_%28Running_the_game%29#Cheaty_.28Cheats.29
+
+
+Command line switches moved to:
+
+https://wiki.bistudio.com/index.php/Spou%C5%A1t%C4%9Bn%C3%AD_hry_%28Running_the_game%29#Voliteln.C3.A9_argumenty_.28Command_line_options.29
+
+
+List of diagnostics Moved to:
+
+https://wiki.bistudio.com/index.php/Spou%C5%A1t%C4%9Bn%C3%AD_hry_%28Running_the_game%29#Diagnostics_commands

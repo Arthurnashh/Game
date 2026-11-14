@@ -1,0 +1,2 @@
+#include "versionNo.h"
+APP_VERSION_MAJOR-APP_VERSION_MINOR

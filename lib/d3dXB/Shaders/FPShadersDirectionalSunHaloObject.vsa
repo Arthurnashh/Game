@@ -1,0 +1,7 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Set the color
+mov ACCUMULATOR_DIFFUSE, c[LDIRECTION_SUNHALOOBJECT_COLOR]
+
+// Multilpy alpha by alpha in diffuse color
+mul ACCUMULATOR_DIFFUSE.w, ACCUMULATOR_DIFFUSE.w, INPUT_MAT_D.w

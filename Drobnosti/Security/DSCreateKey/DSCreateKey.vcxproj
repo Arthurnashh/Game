@@ -1,0 +1,181 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D08C2EB4-1C58-4329-97CC-8E2D0F4C0BD8}</ProjectGuid>
+    <SccProjectName>"$/", AAAAAAAA</SccProjectName>
+    <SccLocalPath>..\..\..</SccLocalPath>
+    <SccProvider>MSSCCI:Microsoft Visual SourceSafe</SccProvider>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..;W:\c\extern;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;MFC_NEW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(OutDir)DSCreateKey.exe</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)DSCreateKey.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..\..;W:\c\extern;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_RELEASE;MFC_NEW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(OutDir)DSCreateKey.exe</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\El\Credits\credits.cpp" />
+    <ClCompile Include="..\..\..\El\LZO\lzo1x_d1.c" />
+    <ClCompile Include="..\..\..\El\LZO\lzo1x_d4.c" />
+    <ClCompile Include="..\..\..\El\LZO\lzo1x_dStream.cpp" />
+    <ClCompile Include="..\..\..\El\LZO\lzo_init.c" />
+    <ClCompile Include="..\..\..\El\LZO\pinit.c" />
+    <ClCompile Include="..\..\..\El\LZO\plzo1x_1f.c" />
+    <ClCompile Include="DSCreateKey.cpp" />
+    <ClCompile Include="..\..\..\El\DataSignatures\dataSignatures.cpp" />
+    <ClCompile Include="..\..\..\El\QStream\qbstream.cpp" />
+    <ClCompile Include="..\..\..\El\QStream\qstream.cpp" />
+    <ClCompile Include="..\..\..\El\QStream\qstreamUseBankDefault.cpp" />
+    <ClCompile Include="..\..\..\El\QStream\qstreamUseFServerDefault.cpp" />
+    <ClCompile Include="..\..\..\El\QStream\serializeBin.cpp" />
+    <ClCompile Include="..\..\..\El\QStream\ssCompress.cpp" />
+    <ClCompile Include="..\..\..\El\Common\perfLog.cpp" />
+    <ClCompile Include="..\..\..\El\ActiveObject\activeObject.cpp" />
+    <ClCompile Include="..\..\..\Es\Framework\appFrame.cpp" />
+    <ClCompile Include="..\..\..\Es\Framework\useAppFrameDefault.cpp" />
+    <ClCompile Include="..\..\..\Es\Files\filenames.cpp" />
+    <ClCompile Include="..\..\..\Es\Strings\rString.cpp" />
+    <ClCompile Include="..\..\..\Es\Memory\debugAlloc.cpp" />
+    <ClCompile Include="..\..\..\Es\Memory\fastAlloc.cpp" />
+    <ClCompile Include="..\..\..\Es\Memory\useMallocMemFunctions.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\El\Credits\credits.hpp" />
+    <ClInclude Include="..\..\..\El\elementpch.hpp" />
+    <ClInclude Include="..\..\..\El\DataSignatures\dataSignatures.hpp" />
+    <ClInclude Include="..\..\..\El\LZO\acc_fccm.h" />
+    <ClInclude Include="..\..\..\El\LZO\config1x.h" />
+    <ClInclude Include="..\..\..\El\LZO\lzo_conf.h" />
+    <ClInclude Include="..\..\..\El\LZO\lzo_dict.h" />
+    <ClInclude Include="..\..\..\El\LZO\lzo_ptr.h" />
+    <ClInclude Include="..\..\..\El\LZO\miniacc.h" />
+    <ClInclude Include="..\..\..\El\LZO\plzo1_c_dict.h" />
+    <ClInclude Include="..\..\..\El\LZO\plzo1_d_fc.h" />
+    <ClInclude Include="..\..\..\El\QStream\QBStream.hpp" />
+    <ClInclude Include="..\..\..\El\QStream\QStream.hpp" />
+    <ClInclude Include="..\..\..\El\QStream\serializeBin.hpp" />
+    <ClInclude Include="..\..\..\El\Common\perfLog.hpp" />
+    <ClInclude Include="..\..\..\El\Common\perfProf.hpp" />
+    <ClInclude Include="..\..\..\El\ActiveObject\activeObject.hpp" />
+    <ClInclude Include="..\..\..\Es\Framework\appFrame.hpp" />
+    <ClInclude Include="..\..\..\Es\Files\fileContainer.hpp" />
+    <ClInclude Include="..\..\..\Es\Files\filenames.hpp" />
+    <ClInclude Include="..\..\..\Es\Strings\rString.hpp" />
+    <ClInclude Include="..\..\..\Es\Memory\debugAlloc.hpp" />
+    <ClInclude Include="..\..\..\Es\Memory\fastAlloc.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\El\LZO\lzo1x_d.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\lzo1_d.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\lzo_dll.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\lzo_func.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1x_c.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1x_d.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1_c.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1_c_copy_lit.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1_c_copy_lit_impl.ch">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="deploy.bat" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

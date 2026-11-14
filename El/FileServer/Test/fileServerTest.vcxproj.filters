@@ -1,0 +1,567 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="El">
+      <UniqueIdentifier>{a8c77ae7-281a-4758-b5ff-0bc1df1d1365}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Common">
+      <UniqueIdentifier>{9c4cf867-4514-46f3-8110-6a24b7ab9f65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\FreeOnDemand">
+      <UniqueIdentifier>{a1d21383-b2a3-4ed8-b380-2536719f7691}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\QStream">
+      <UniqueIdentifier>{efe0e98d-cef0-433d-b633-d28944e2c517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\StringTable">
+      <UniqueIdentifier>{1434a1eb-e2ba-4155-a2bf-ad882a623b90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\FileServer">
+      <UniqueIdentifier>{18ada592-316d-4a83-991f-2cbf92190ea4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Multithread2">
+      <UniqueIdentifier>{149e8df7-1105-4dc0-aef7-d60a3df45699}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\MemoryStore">
+      <UniqueIdentifier>{d5da49e5-d601-4479-ab26-e850a2cfc146}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Multicore">
+      <UniqueIdentifier>{f3331340-634a-407a-a7ff-39dc9d3db49b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\ActiveObject">
+      <UniqueIdentifier>{0fcb5add-6559-4855-8d16-659809bfe0b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Debugging">
+      <UniqueIdentifier>{aa8948ef-bc63-4045-a778-b876bff5fed6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\CRC">
+      <UniqueIdentifier>{8d165170-9c96-4dbd-b139-d706010d1425}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Sleepy">
+      <UniqueIdentifier>{434c926d-aa3e-43ca-9420-d68438926201}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\HiResTime">
+      <UniqueIdentifier>{f2a1577e-0fe9-4fc5-a58c-6248d6fbc502}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\LZO">
+      <UniqueIdentifier>{5153d252-83cc-429e-ad9b-ecbdc1cd8249}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\LZO\lzo">
+      <UniqueIdentifier>{7decaea2-6f20-4ea4-acf6-79a33c56f601}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es">
+      <UniqueIdentifier>{457cecff-9300-407d-8014-1d9eb8cf4e52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Strings">
+      <UniqueIdentifier>{2e03c50b-570e-43bc-9b00-82ca2432601c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Memory">
+      <UniqueIdentifier>{f42db69a-4bef-4e2e-8ffc-8156e54afc73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Framework">
+      <UniqueIdentifier>{0eaba984-fed4-44ea-b375-2247b9c0c141}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Common">
+      <UniqueIdentifier>{82b0adda-dc5a-4697-85da-43ca662996af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Containers">
+      <UniqueIdentifier>{dfd6805a-1101-4368-8708-9775712312e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Types">
+      <UniqueIdentifier>{67af1bdb-f6ce-46c6-a210-042e48922e4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Files">
+      <UniqueIdentifier>{986ed3e1-12c2-416e-947b-475d27947aa2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\ErrorProp">
+      <UniqueIdentifier>{1bdad96b-fe85-413c-960b-ba86128978dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Threads">
+      <UniqueIdentifier>{db0cc64d-3f7d-406e-afcd-07d9205c57a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\HeapManager">
+      <UniqueIdentifier>{1790f015-01be-4436-b6af-091b748047a8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Common\globalAlive.cpp">
+      <Filter>El\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\perfLog.cpp">
+      <Filter>El\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\randomGen.cpp">
+      <Filter>El\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FreeOnDemand\memFreeReq.cpp">
+      <Filter>El\FreeOnDemand</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FreeOnDemand\memFreeReqUseDefault.cpp">
+      <Filter>El\FreeOnDemand</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\QStream\qbStream.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\QStream\qStream.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\QStream\qStreamUseBankQFBank.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\QStream\serializeBin.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\QStream\ssCompress.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Stringtable\localizeStringtable.cpp">
+      <Filter>El\StringTable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Stringtable\stringtable.cpp">
+      <Filter>El\StringTable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Stringtable\stringtableUseExtParserNone.cpp">
+      <Filter>El\StringTable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Stringtable\stringtableUsePreprocDefault.cpp">
+      <Filter>El\StringTable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileServer.cpp">
+      <Filter>El\FileServer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileServerAsync.cpp">
+      <Filter>El\FileServer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileServerUseDefaultSettings.cpp">
+      <Filter>El\FileServer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MultiThread2\common\src-windows\AssertBis.cpp">
+      <Filter>El\Multithread2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MultiThread2\multithread\src-windows\BlockerSimpleBase.cpp">
+      <Filter>El\Multithread2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MultiThread2\multithread\src-windows\CriticalSection.cpp">
+      <Filter>El\Multithread2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MultiThread2\common\LateConstructed.cpp">
+      <Filter>El\Multithread2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\multithread.cpp">
+      <Filter>El\Multithread2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MultiThread2\multithread\src-portable\Synchronized.cpp">
+      <Filter>El\Multithread2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MultiThread2\multithread\src-windows\ThreadBase.cpp">
+      <Filter>El\Multithread2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MultiThread2\multithread\src-portable\ThreadHook.cpp">
+      <Filter>El\Multithread2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MultiThread2\multithread\src-windows\Tls.cpp">
+      <Filter>El\Multithread2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MultiThread2\multithread\src-windows\waitFunctions.cpp">
+      <Filter>El\Multithread2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MemoryStore\memStore.cpp">
+      <Filter>El\MemoryStore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Multicore\multicore.cpp">
+      <Filter>El\Multicore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ActiveObject\activeObject.cpp">
+      <Filter>El\ActiveObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Debugging\debugTrapMinimal.cpp">
+      <Filter>El\Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Debugging\debugUseAppInfoDefault.cpp">
+      <Filter>El\Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Debugging\imexhnd.cpp">
+      <Filter>El\Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Debugging\mapFile.cpp">
+      <Filter>El\Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CRC\crc.cpp">
+      <Filter>El\CRC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sleepy\sleepyAPI.cpp">
+      <Filter>El\Sleepy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\HiResTime\hiResTime.cpp">
+      <Filter>El\HiResTime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LZO\lzo1x_9x.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LZO\lzo1x_d1.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LZO\lzo1x_dStream.cpp">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LZO\lzo_init.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Strings\rString.cpp">
+      <Filter>Es\Strings</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Memory\debugAlloc.cpp">
+      <Filter>Es\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Memory\fastAlloc.cpp">
+      <Filter>Es\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Memory\useMallocMemFunctions.cpp">
+      <Filter>Es\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Framework\appFrame.cpp">
+      <Filter>Es\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Framework\useAppFrameDefault.cpp">
+      <Filter>Es\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Common\platform.cpp">
+      <Filter>Es\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Containers\containersTemplSpec.cpp">
+      <Filter>Es\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Types\lLinks.cpp">
+      <Filter>Es\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Files\filenames.cpp">
+      <Filter>Es\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\ErrorProp\errorProp.cpp">
+      <Filter>Es\ErrorProp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Threads\pocritical.cpp">
+      <Filter>Es\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Threads\threadSync.cpp">
+      <Filter>Es\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Common\perfLog.hpp">
+      <Filter>El\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\randomGen.hpp">
+      <Filter>El\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FreeOnDemand\memFreeReq.hpp">
+      <Filter>El\FreeOnDemand</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\QStream\fileinfo.h">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\QStream\iQFBank.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\QStream\qbStream.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\QStream\qStream.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\QStream\serializeBin.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Stringtable\localizeStringtable.hpp">
+      <Filter>El\StringTable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Stringtable\stringtable.hpp">
+      <Filter>El\StringTable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fileServer.hpp">
+      <Filter>El\FileServer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fileServerAsync.hpp">
+      <Filter>El\FileServer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fileServerMT.hpp">
+      <Filter>El\FileServer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\common\Array.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\common\Assert.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\BlockerSimpleBase.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\src-windows\common_Win.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\common\CommonDefs.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\CriticalSection.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\CriticalSectionBlocker.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\elementpch.hpp">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\IBlocker.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\common\IMultiInterface.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\Interlocked.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\src-windows\interlocked.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\IRunnable.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\IThreadMessage.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\common\LateConstructed.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\MessageThread.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\MTCommon.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\multithread.hpp">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\common\Ref.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\SleepBlocker.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\SmartRefCount.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\Synchronized.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\SyncRefCount.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\SyncTypes.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\Thread.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\ThreadBase.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\ThreadHook.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\Tls.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\common\VarArg++.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\waitFunctions.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MultiThread2\multithread\src-windows\waitFunctions_win.h">
+      <Filter>El\Multithread2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MemoryStore\memStore.hpp">
+      <Filter>El\MemoryStore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Multicore\multicore.hpp">
+      <Filter>El\Multicore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ActiveObject\activeObject.hpp">
+      <Filter>El\ActiveObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Debugging\imexhnd.h">
+      <Filter>El\Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Debugging\mapFile.hpp">
+      <Filter>El\Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CRC\crc.hpp">
+      <Filter>El\CRC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CRC\sumCalcCrc.hpp">
+      <Filter>El\CRC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sleepy\sleepyAPI.hpp">
+      <Filter>El\Sleepy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\HiResTime\hiResTime.hpp">
+      <Filter>El\HiResTime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LZO\config1x.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LZO\lzo_conf.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LZO\lzo_ptr.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LZO\miniacc.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LZO\lzo\lzo1x.h">
+      <Filter>El\LZO\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LZO\lzo\lzoconf.h">
+      <Filter>El\LZO\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LZO\lzo\lzodefs.h">
+      <Filter>El\LZO\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\essencepch.hpp">
+      <Filter>Es</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\platform.hpp">
+      <Filter>Es</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Strings\bstring.hpp">
+      <Filter>Es\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Strings\rString.hpp">
+      <Filter>Es\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Memory\checkMem.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Memory\debugAlloc.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Memory\debugNew.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Memory\fastAlloc.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Memory\memAlloc.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Memory\normalNew.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Framework\appFrame.hpp">
+      <Filter>Es\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Framework\debugLog.hpp">
+      <Filter>Es\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Common\fltopts.hpp">
+      <Filter>Es\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Common\langExt.hpp">
+      <Filter>Es\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Common\win.h">
+      <Filter>Es\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Containers\array.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Containers\bankArray.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Containers\compactBuf.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Containers\hashMap.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Containers\list.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Containers\listBidir.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Containers\offTree.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Containers\rStringArray.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Containers\staticArray.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Containers\typeDefines.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Containers\typeOpts.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Types\lLinks.hpp">
+      <Filter>Es\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Types\memtype.h">
+      <Filter>Es\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Types\pointers.hpp">
+      <Filter>Es\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Types\removeLinks.hpp">
+      <Filter>Es\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Types\softLinks.hpp">
+      <Filter>Es\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Files\commandLine.hpp">
+      <Filter>Es\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Files\fileContainer.hpp">
+      <Filter>Es\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Files\filenames.hpp">
+      <Filter>Es\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\ErrorProp\errorProp.hpp">
+      <Filter>Es\ErrorProp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Threads\multisync.hpp">
+      <Filter>Es\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Threads\pocritical.hpp">
+      <Filter>Es\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Threads\threadSync.hpp">
+      <Filter>Es\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\es\HeapManager\heap.hpp">
+      <Filter>Es\HeapManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\LZO\lzo1_d.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\LZO\lzo1x_d.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\LZO\lzo_dll.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\LZO\lzo_mchw.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\LZO\lzo_swd.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+  </ItemGroup>
+</Project>

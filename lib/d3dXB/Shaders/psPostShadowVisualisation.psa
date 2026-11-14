@@ -1,0 +1,53 @@
+#include "psDecl.h"
+
+xps.1.1
+
+// POST_SHADOW_VIS_PARAM - _shadowFactor
+// POST_SHADOWVIS_RAMPMUL - MUL coef
+// POST_SHADOWVIS_RAMPADD - ADD coef
+
+def c5, 0.0f, 0.0f, 0.0f, 0.94117647059f // F0/255
+def c6, 0.0f, 0.0f, 0.0f, 0.9375f // 0, 0, 0, 1-16/256
+def c7, 0.0625,0,0,1.0 // r selector and scaling factor, 0, 0, a offset
+
+tex t0 // Framebuffer
+tex t1 // Depthbuffer
+
+// Select R component and scale it down
+dp3 r0.rgb, t1, c7 
+
+// Transform alfa from (1-16/256, 1) into (0, 1) - First step
++ add_x4 r0.a, t0.a, -c6.a
+
+// Scale A component up
+add_x4 r1.a, t1.a, -c5.a
+mov_x4 r1.a, r1.a
+
+// Add A (MS) and R (LS) components
+add r0.rgb, r0.rgb, r1.a
+
+// Get the ramp value (shadow disappearing coeficient) from the Z-value
+mad_x4 r0.rgb, -r0.rgb, c[POST_SHADOWVIS_RAMPMUL].a, c[POST_SHADOWVIS_RAMPADD].a
+mov_x4 r0.rgb, r0.rgb
+
+// Transform alfa from (1-16/256, 1) into (0, 1) - Second step
++ mov_x4 r0.a, r0_sat.a
+
+// Important step
+// Multiply inversed transformed alpha value (dot) in A with distance disappearing coeficient in RGB
+mul r0.rgb, r0_sat.rgb, 1-r0.a
+
+// Multiply by shadow factor
+mul r0.rgb, r0_sat.rgb, c[POST_SHADOWVIS_PARAM]
+
+// Affect result by inverse alpha
+//mul r0.rgb, t0.rgb, 1-r0.rgb // Moved to final combiner
+
+// final color = s0*s1 + (1-s0)*s2 + s3
+// final alpha = s6.b
+// special registers:
+//   prod = s4*s5.
+//   sum  = r0+v1
+//   zero = 0
+//  s0,         s1,           s2,         s3,           s4,           s5,           s6
+xfc r0_sat.rgb, zero_sat.rgb, t0_sat.rgb, zero_sat.rgb, zero_sat.rgb, zero_sat.rgb, zero_sat.rgb

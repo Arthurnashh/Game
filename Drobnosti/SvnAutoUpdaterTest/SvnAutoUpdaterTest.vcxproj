@@ -1,0 +1,228 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{254EFC60-25DC-4AE9-88D6-E22AB6E16B17}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SvnAutoUpdaterTest</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>MFC_NEW;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..;..\..\extern</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>MFC_NEW;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..;..\..\extern</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\El\ActiveObject\activeObject.hpp" />
+    <ClInclude Include="..\..\El\Common\perfLog.hpp" />
+    <ClInclude Include="..\..\El\CorelAnalys\corelAnalys.hpp" />
+    <ClInclude Include="..\..\El\Credits\credits.hpp" />
+    <ClInclude Include="..\..\El\elementpch.hpp" />
+    <ClInclude Include="..\..\El\FreeOnDemand\memFreeReq.hpp" />
+    <ClInclude Include="..\..\El\Interfaces\iAppInfo.hpp" />
+    <ClInclude Include="..\..\El\Interfaces\iClassDb.hpp" />
+    <ClInclude Include="..\..\El\Interfaces\iEval.hpp" />
+    <ClInclude Include="..\..\El\Interfaces\iLocalize.hpp" />
+    <ClInclude Include="..\..\El\Interfaces\iPreproc.hpp" />
+    <ClInclude Include="..\..\El\Interfaces\iSumCalc.hpp" />
+    <ClInclude Include="..\..\El\LZO\acc_fccm.h" />
+    <ClInclude Include="..\..\El\LZO\config1x.h" />
+    <ClInclude Include="..\..\El\LZO\lzo_conf.h" />
+    <ClInclude Include="..\..\El\LZO\lzo_dict.h" />
+    <ClInclude Include="..\..\El\LZO\lzo_ptr.h" />
+    <ClInclude Include="..\..\El\LZO\miniacc.h" />
+    <ClInclude Include="..\..\El\LZO\plzo1_c_dict.h" />
+    <ClInclude Include="..\..\El\LZO\plzo1_d_fc.h" />
+    <ClInclude Include="..\..\El\Math\math3d.hpp" />
+    <ClInclude Include="..\..\El\Math\math3dP.hpp" />
+    <ClInclude Include="..\..\El\Math\mathDefs.hpp" />
+    <ClInclude Include="..\..\El\Math\mathOpt.hpp" />
+    <ClInclude Include="..\..\El\ParamArchive\paramArchive.hpp" />
+    <ClInclude Include="..\..\El\ParamArchive\paramArchiveDb.hpp" />
+    <ClInclude Include="..\..\El\ParamArchive\serializeClass.hpp" />
+    <ClInclude Include="..\..\El\ParamFile\classDbParamFile.hpp" />
+    <ClInclude Include="..\..\El\ParamFile\paramFile.hpp" />
+    <ClInclude Include="..\..\El\ParamFile\paramFileCtx.hpp" />
+    <ClInclude Include="..\..\El\ParamFile\paramFileDecl.hpp" />
+    <ClInclude Include="..\..\El\Pathname\Pathname.h" />
+    <ClInclude Include="..\..\El\Pch\ext_options.hpp" />
+    <ClInclude Include="..\..\El\Pch\libIncludes.hpp" />
+    <ClInclude Include="..\..\El\Pch\normalConfig.h" />
+    <ClInclude Include="..\..\El\Pch\stdIncludes.h" />
+    <ClInclude Include="..\..\El\PreprocC\Preproc.h" />
+    <ClInclude Include="..\..\El\PreprocC\preprocC.hpp" />
+    <ClInclude Include="..\..\El\QStream\fileCompress.hpp" />
+    <ClInclude Include="..\..\El\QStream\fileinfo.h" />
+    <ClInclude Include="..\..\El\QStream\iQFBank.hpp" />
+    <ClInclude Include="..\..\El\QStream\QBStream.hpp" />
+    <ClInclude Include="..\..\El\QStream\QStdStream.hpp" />
+    <ClInclude Include="..\..\El\QStream\QStream.hpp" />
+    <ClInclude Include="..\..\El\QStream\serializeBin.hpp" />
+    <ClInclude Include="..\..\El\Stringtable\localizeStringtable.hpp" />
+    <ClInclude Include="..\..\El\Stringtable\stringtable.hpp" />
+    <ClInclude Include="..\..\Es\Algorithms\qsort.hpp" />
+    <ClInclude Include="..\..\Es\Common\fltopts.hpp" />
+    <ClInclude Include="..\..\Es\Common\langExt.hpp" />
+    <ClInclude Include="..\..\Es\Common\win.h" />
+    <ClInclude Include="..\..\Es\Containers\array.hpp" />
+    <ClInclude Include="..\..\Es\Containers\bankArray.hpp" />
+    <ClInclude Include="..\..\Es\Containers\compactBuf.hpp" />
+    <ClInclude Include="..\..\Es\Containers\hashMap.hpp" />
+    <ClInclude Include="..\..\Es\Containers\list.hpp" />
+    <ClInclude Include="..\..\Es\Containers\listBidir.hpp" />
+    <ClInclude Include="..\..\Es\Containers\rStringArray.hpp" />
+    <ClInclude Include="..\..\Es\Containers\staticArray.hpp" />
+    <ClInclude Include="..\..\Es\Containers\typeDefines.hpp" />
+    <ClInclude Include="..\..\Es\Containers\typeOpts.hpp" />
+    <ClInclude Include="..\..\Es\essencepch.hpp" />
+    <ClInclude Include="..\..\Es\Files\filenames.hpp" />
+    <ClInclude Include="..\..\Es\Framework\appFrame.hpp" />
+    <ClInclude Include="..\..\Es\Framework\debugLog.hpp" />
+    <ClInclude Include="..\..\Es\Memory\checkMem.hpp" />
+    <ClInclude Include="..\..\Es\Memory\debugAlloc.hpp" />
+    <ClInclude Include="..\..\Es\Memory\debugNew.hpp" />
+    <ClInclude Include="..\..\Es\Memory\fastAlloc.hpp" />
+    <ClInclude Include="..\..\Es\Memory\memAlloc.hpp" />
+    <ClInclude Include="..\..\Es\Memory\normalNew.hpp" />
+    <ClInclude Include="..\..\Es\platform.hpp" />
+    <ClInclude Include="..\..\Es\Strings\bstring.hpp" />
+    <ClInclude Include="..\..\Es\Strings\rString.hpp" />
+    <ClInclude Include="..\..\Es\Types\enum_decl.hpp" />
+    <ClInclude Include="..\..\Es\Types\lLinks.hpp" />
+    <ClInclude Include="..\..\Es\Types\memtype.h" />
+    <ClInclude Include="..\..\Es\Types\pointers.hpp" />
+    <ClInclude Include="..\..\Es\Types\removeLinks.hpp" />
+    <ClInclude Include="..\..\Es\Types\softLinks.hpp" />
+    <ClInclude Include="pipeManager.h" />
+    <ClInclude Include="svnAutoUpdateClient.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\El\ActiveObject\activeObject.cpp" />
+    <ClCompile Include="..\..\El\AppInfo\useAppInfoDefault.cpp" />
+    <ClCompile Include="..\..\El\Common\perfLog.cpp" />
+    <ClCompile Include="..\..\El\Credits\credits.cpp" />
+    <ClCompile Include="..\..\El\FreeOnDemand\memFreeReq.cpp" />
+    <ClCompile Include="..\..\El\FreeOnDemand\memFreeReqUseDefault.cpp" />
+    <ClCompile Include="..\..\El\LZO\lzo1x_d1.c" />
+    <ClCompile Include="..\..\El\LZO\lzo1x_d4.c" />
+    <ClCompile Include="..\..\El\LZO\lzo1x_dStream.cpp" />
+    <ClCompile Include="..\..\El\LZO\lzo_init.c" />
+    <ClCompile Include="..\..\El\LZO\pinit.c" />
+    <ClCompile Include="..\..\El\LZO\plzo1x_1f.c" />
+    <ClCompile Include="..\..\El\Math\math3dP.cpp" />
+    <ClCompile Include="..\..\El\Math\mathOpt.cpp" />
+    <ClCompile Include="..\..\El\ParamArchive\paramArchive.cpp" />
+    <ClCompile Include="..\..\El\ParamArchive\paramArchiveDb.cpp" />
+    <ClCompile Include="..\..\El\ParamArchive\paramArchiveUseDbParamFile.cpp" />
+    <ClCompile Include="..\..\El\ParamFile\classDbParamFile.cpp" />
+    <ClCompile Include="..\..\El\ParamFile\paramFile.cpp" />
+    <ClCompile Include="..\..\El\ParamFile\paramFileCtx.cpp" />
+    <ClCompile Include="..\..\El\ParamFile\paramFileUseEvalDefault.cpp" />
+    <ClCompile Include="..\..\El\ParamFile\paramFileUseLocalizeStringtable.cpp" />
+    <ClCompile Include="..\..\El\ParamFile\paramFileUsePreprocC.cpp" />
+    <ClCompile Include="..\..\El\ParamFile\paramFileUseSumCalcDefault.cpp" />
+    <ClCompile Include="..\..\El\Pathname\Pathname.cpp" />
+    <ClCompile Include="..\..\El\PreprocC\Preproc.cpp" />
+    <ClCompile Include="..\..\El\PreprocC\preprocC.cpp" />
+    <ClCompile Include="..\..\El\QStream\fileCompress.cpp" />
+    <ClCompile Include="..\..\El\QStream\qbstream.cpp" />
+    <ClCompile Include="..\..\El\QStream\QStdStream.cpp" />
+    <ClCompile Include="..\..\El\QStream\qstream.cpp" />
+    <ClCompile Include="..\..\El\QStream\qstreamUseBankDefault.cpp" />
+    <ClCompile Include="..\..\El\QStream\qstreamUseFServerDefault.cpp" />
+    <ClCompile Include="..\..\El\QStream\serializeBin.cpp" />
+    <ClCompile Include="..\..\El\QStream\ssCompress.cpp" />
+    <ClCompile Include="..\..\El\Stringtable\localizeStringtable.cpp" />
+    <ClCompile Include="..\..\El\Stringtable\stringtable.cpp" />
+    <ClCompile Include="..\..\El\Stringtable\stringtableUseExtParserNone.cpp" />
+    <ClCompile Include="..\..\El\Stringtable\stringtableUsePreprocC.cpp" />
+    <ClCompile Include="..\..\Es\Framework\appFrame.cpp" />
+    <ClCompile Include="..\..\Es\Framework\useAppFrameDefault.cpp" />
+    <ClCompile Include="..\..\Es\Memory\debugAlloc.cpp" />
+    <ClCompile Include="..\..\Es\Memory\fastAlloc.cpp" />
+    <ClCompile Include="..\..\Es\Memory\useMallocMemFunctions.cpp" />
+    <ClCompile Include="..\..\Es\Strings\rString.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="pipeManager.cpp" />
+    <ClCompile Include="svnAutoUpdateClient.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\El\LZO\lzo1x_d.ch" />
+    <None Include="..\..\El\LZO\lzo1_d.ch" />
+    <None Include="..\..\El\LZO\lzo_dll.ch" />
+    <None Include="..\..\El\LZO\lzo_func.ch" />
+    <None Include="..\..\El\LZO\plzo1x_c.ch" />
+    <None Include="..\..\El\LZO\plzo1x_d.ch" />
+    <None Include="..\..\El\LZO\plzo1_c.ch" />
+    <None Include="..\..\El\LZO\plzo1_c_copy_lit.ch" />
+    <None Include="..\..\El\LZO\plzo1_c_copy_lit_impl.ch" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

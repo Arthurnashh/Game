@@ -1,0 +1,43 @@
+#include "psDecl.h"
+
+xps.1.1
+
+/*
+// specular with alpha, no detail texture
+
+tex t0
+//texcoord t2 // env. reflection half-vector
+//texcoord t3 // normal
+
+mul r0, v0, t0 // apply diffuse
+
+mad_x2 r0.rgb, r0, c[T0_MAXCOLOR], v1 // decompress and add specular
+
+//dp3 r1, t2_bx2, t3_bx2 // calculate env. reflection ammount
+//
+//// cos 2x = 2 cos^2(x) - 1
+//mad_x4 r1, r1_sat, r1_sat, zero_bias // zero_bias = -0.5
+//
+//// multiply cos by 2 to get sharp edge
+//lrp r1, r1_sat.a, c[PS_SKY_REFL_COLOR], c[PS_GROUND_REFL_COLOR]
+//
+//// add reflection
+//mad r0.rgb, r1.a, r1.rgb, r0.rgb
+//+add r0.a, r1.a, r0.a // reflection is "opaque"
+
+dp3_x2 r1, v1,v1 // calculate specular intensity
+mad r0.a, r0.a, c[T0_MAXCOLOR].a, r1.a // specular is opaque
+
+*/
+
+// specular with alpha, no detail texture
+
+tex t0
+
+mul r0, v0, t0 // apply diffuse
+
+dp3_x2 r1, v1,v1 // calculate specular intensity
+
+mad r0.rgb, r0, c[T0_MAXCOLOR], v1
++mad r0.a, r0, c[T0_MAXCOLOR], r1
+#include "finalCombiner.psi"

@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+
+<module name="Vector and Matrix types and calculations">
+
+	<description>
+		Defines types Vector3, Matrix3 and Matrix4 and implements basic arithmetic operations on them.
+	</description>
+
+	<files>
+		<ref_file name="El/Math/math3d.hpp">Basic include file</ref_file>
+		<ref_file name="El/Math/mathDefs.hpp"/>
+		<ref_file name="El/Math/mathOpt.hpp"/>
+		<ref_file name="El/Math/mathOpt.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+	</dependencies>
+
+	<structure>
+		<submodule name="Math3DP">
+			<description>
+				Basic implementation.
+			</description>
+			<files>
+				<ref_file name="El/Math/math3dP.hpp"/>
+				<ref_file name="El/Math/math3dP.cpp"/>
+				<ref_file name="El/Math/math3dPK.cpp"/>
+				<ref_file name="El/Math/matrixP3.cpp"/>
+				<ref_file name="El/Math/matrix.asm"/>
+			</files>
+		</submodule>
+		<submodule name="Math3DK">
+			<description>
+				Implementation using KNI (Pentium 4) instructions.
+			</description>
+			<files>
+				<ref_file name="El/Math/math3dK.hpp"/>
+				<ref_file name="El/Math/math3dK.cpp"/>
+			</files>
+		</submodule>
+		<submodule name="Math3DT">
+			<description>
+				Implementation using C++ templates.
+			</description>
+			<files>
+				<ref_file name="El/Math/math3dT.hpp"/>
+				<ref_file name="El/Math/math3dT.cpp"/>
+				<ref_file name="El/Math/vecTempl.hpp"/>
+			</files>
+		</submodule>
+	</structure>
+
+</module>

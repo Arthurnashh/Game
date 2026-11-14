@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="FX Compiler"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="FXC"
+			DisplayName="FXC"
+			CommandLine="&quot;$(DXSDK_DIR)\Utilities\Bin\x86\fxc.exe&quot; /T fx_2_0 /Fo[inputs]o [inputs]"
+			Outputs="$(SafeInputName).fxo"
+			AdditionalDependencies="$(TargetPath)"
+			FileExtensions="*.fx"
+			ExecutionDescription="FX Compiler..."
+			>
+			<Properties>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

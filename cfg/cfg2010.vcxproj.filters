@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Bin">
+      <UniqueIdentifier>{64e41544-e6fb-456e-aef9-94a45c1391ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Bin\3D Editor">
+      <UniqueIdentifier>{586a9324-3677-4e7f-aba4-80ab53df7ef6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Bin\cfgCoreData.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgFont.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgFormations.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgInventory.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgKB.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgLight.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgMaterials.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgMoves.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgSkill.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgUI.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgVehicles.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgVoice.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgWeapons.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgWorlds.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\cfgXbox.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\civiliannames.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\commonDefs.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\config.cpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\czechnames.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\englishnames.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\resource.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\rscCommon.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\rscDialog.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\rscIGUI.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\rscMenu.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\rscMP.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\rscScreen.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\rscWizard.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\rscXbox.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\russiannames.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\sp_sentences.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\userActionGroups.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\wounds.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\woundsFace.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\lib\dikCodes.h" />
+    <CustomBuild Include="..\lib\languages.hpp" />
+    <CustomBuild Include="manActions.hpp" />
+    <CustomBuild Include="..\lib\UI\resincl.hpp" />
+    <CustomBuild Include="Bin\cfgVideoOptions.hpp">
+      <Filter>Bin</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\marker.cpp">
+      <Filter>Bin\3D Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\postfix.cpp">
+      <Filter>Bin\3D Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\prefix.cpp">
+      <Filter>Bin\3D Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\intel.cpp">
+      <Filter>Bin\3D Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\unit.cpp">
+      <Filter>Bin\3D Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\vehicle.cpp">
+      <Filter>Bin\3D Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\script.cpp">
+      <Filter>Bin\3D Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Bin\item.cpp">
+      <Filter>Bin\3D Editor</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

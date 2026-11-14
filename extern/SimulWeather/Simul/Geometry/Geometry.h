@@ -1,0 +1,17 @@
+namespace simul
+{
+//! The namespace corresponding to the Geometry module.
+
+//! Geometry is a small library that contains orientation and reference frame classes.
+//!
+//! The main classes are simul::geometry::SimulOrientation and simul::geometry::SimulReferenceFrame.
+//!
+//! Static library: (SIMUL)/lib/(PLATFORM)/(COMPILER)/(ConfigurationName)/Geometry_(RUNTIME).lib
+//!
+//! Dynamic library: (SIMUL)/exe/(PLATFORM)/(COMPILER)/(ConfigurationName)/Geometry_(RUNTIME).dll
+//!
+//! The Geometry library depends on the Simul/Math and Simul/Base libraries.
+	namespace geometry
+	{
+	}
+}

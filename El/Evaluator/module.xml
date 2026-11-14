@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+
+<module name="Expression Evaluator">
+
+	<description>
+		Introduces evaluator of expressions. Can be used for implementation of extendible scripting language.
+	</description>
+
+	<files>
+		<ref_file name="El/Evaluator/express.hpp"/>
+		<ref_file name="El/Evaluator/express.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+		<ref_file name="El/Common/isaac.hpp"/>
+		<ref_file name="El/Common/randomGen.hpp"/>
+		<ref_file name="El/Common/randomGen.cpp"/>
+		<ref_file name="El/Common/perfLog.hpp"/>
+		<ref_file name="El/Enum/enumNames.hpp"/>
+		<ref_module name="El/ParamArchive"/>
+	</dependencies>
+
+	<interfaces>
+		<interface file="El/Interfaces/iEval.hpp" class="EvaluatorFunctions">
+			<implementation class="GameStateEvaluatorFunctions"/>
+			<description>
+				Implements common evaluator as Expression Evaluator.
+			</description>
+			<files>
+				<ref_file name="El/Evaluator/evaluatorExpress.hpp"/>
+				<ref_file name="El/Evaluator/evaluatorExpress.cpp"/>
+			</files>
+			<dependencies>
+				<ref_module name="El/QStream"/>
+			</dependencies>
+		</interface>
+	</interfaces>
+
+	<extensions>
+		<use_interface file="El/Interfaces/iLocalize.hpp" class="LocalizeStringFunctions">
+			<description>
+				Localization of some evaluator outputs (error messages, type names etc.).
+			</description>
+			<use_implementation name="Default" selector="El/Evaluator/evalUseLocalizeDefault.cpp">
+				<description>
+					Default implementation - no localization.
+				</description>
+			</use_implementation>
+			<use_implementation name="Stringtable" selector="El/Evaluator/evalUseLocalizeStringtable.cpp">
+				<description>
+					Localization using stringtable (csv file).
+				</description>
+				<dependencies>
+					<ref_module name="El/Stringtable"/>
+					<ref_module name="El/QStream"/>
+				</dependencies>
+			</use_implementation>
+		</use_interface>
+	</extensions>
+
+</module>

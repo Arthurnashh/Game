@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)PhysicalLibs\RigidBody\ODE;$(SolutionDir)extern;%(AdditionalIncludeDirectories);$(SolutionDir)extern\libcurl\include;$(SolutionDir)extern\openssl-1\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>CURL_DISABLE_LDAP=1;CURL_STATICLIB=1;USE_WINDOWS_SSPI=1;USE_SCHANNEL=1;NOMINMAX=1;_HAS_ITERATOR_DEBUGGING=0;BOOST_ALL_NO_LIB;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;BUILD_SYSTEM_USER=$(USERNAME);USER_$(USERNAME);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>

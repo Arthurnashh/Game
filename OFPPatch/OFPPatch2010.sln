@@ -1,0 +1,38 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OFPPatch", "OFPPatch.vcxproj", "{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}"
+EndProject
+Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Gold Upgrade|Win32 = Gold Upgrade|Win32
+		Release|Win32 = Release|Win32
+		Resistance|Win32 = Resistance|Win32
+		SuperRelease Debug|Win32 = SuperRelease Debug|Win32
+		SuperRelease Release|Win32 = SuperRelease Release|Win32
+		VBS1|Win32 = VBS1|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.Debug|Win32.Build.0 = Debug|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.Gold Upgrade|Win32.ActiveCfg = Gold Upgrade|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.Gold Upgrade|Win32.Build.0 = Gold Upgrade|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.Release|Win32.ActiveCfg = Release|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.Release|Win32.Build.0 = Release|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.Resistance|Win32.ActiveCfg = Resistance|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.Resistance|Win32.Build.0 = Resistance|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.SuperRelease Debug|Win32.ActiveCfg = SuperRelease Debug|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.SuperRelease Debug|Win32.Build.0 = SuperRelease Debug|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.SuperRelease Release|Win32.ActiveCfg = SuperRelease Release|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.SuperRelease Release|Win32.Build.0 = SuperRelease Release|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.VBS1|Win32.ActiveCfg = VBS1|Win32
+		{3AC9C8A3-6B1E-4A40-B63F-33C6CC1494A3}.VBS1|Win32.Build.0 = VBS1|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

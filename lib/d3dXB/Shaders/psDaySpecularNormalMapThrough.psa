@@ -1,0 +1,52 @@
+#include "psDecl.h"
+
+xps.1.1
+
+def c7, 0.0625,0.0625,0.0625,0.0625 // shadow mul - 16/256
+
+//def c4, 1,0,0, 0.0625 // debugging - red
+//def c5, 0,1,0, 0.0625 // debugging - green
+
+tex t0 // Diffuse map
+tex t1 // Normal map
+tex t2 // tree lighting - diffuse
+tex t3 // tree lighting - ambient
+
+/*
+// renormalize normal (NR approximation)
+dp3 r1, t1_bx2, t1_bx2  // r0 = N . N
+mad r1, t1_bias, 1-r1, t1_bx2 // N * 2 * (1 - N.N)) + N
+xdd r0.rgb, r1.rgb, r1, v1_bx2, -r1, v1_bx2
+*/
+
+xdd r0, r1, t1_bx2, v1_bx2, -t1_bx2, v1_bx2
+
+; Multiply diffuse coeficient by the dot result
+
+xmma discard.rgb, discard.rgb, r0.rgb, r0_sat, c[PS_DIFFUSE], r1_sat, c[PS_DIFFUSE_BACK]
++mad r1.a, r1_sat.a, c[PS_DIFFUSE_BACK].a, r0_sat.a // calculate total ammount of diffuse
+
+mul r1.a, r1.a, t2.a // diffuse attenuation
+
+xmma discard.rgb, discard.rgb, r0.rgb, t2.a, r0.rgb, v0, t3.a // diffuse + ambient attenuation
++mul r0.a, c[T0_MAXCOLOR], t0.a
+
+// DXT1 artifact compensation
+mad t0.rgb, 1-t0.a, c[T0_AVGCOLOR], t0
+// make sure alfa is discrete - we use alpha testing and need alpha for shadows
++cnd r0.a, r0.a, 1-zero, zero
+
+// Multiply it by t0 (combine it with value from color map)
+mul r0.rgb, r0.rgb, t0.rgb
+// Set the visibility (from diffuse result)
+//+mul r0.a, v0.a, r0.a // v0.a contains shadow factor from VS
++mad r1.a, r1.a, -c7.a, 1-zero // shadow factor computation
+
+// Decompress the result
+mul r0.rgb, c[T0_MAXCOLOR], r0
++mul r0.a, r0.a, r1.a // we computed shadow factor on our own
+
+//lrp r0.rgb, t2.a, c5, c4 // diffuse attenuation visualization
+
+//#define SPECULAR_RESULT zero.a // no specular to final combiner
+#include "finalCombiner.psi"

@@ -1,0 +1,16 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Fill out the fog
+dp3 r1.w, TRANSFORMED_POSITION, TRANSFORMED_POSITION
+rsq r0.w, r1.w
+mul r0.w, r0.w, r1.w
+add r0.w, -r0.w, c[FOGEND__RCP_FOGEND_MINUS_FOGSTART__SHADOWVOLUME_OFFSET__SHADOWVOLUME_SIZE].x  // Fog::d<0>
+mul r0.w, r0.w, c[FOGEND__RCP_FOGEND_MINUS_FOGSTART__SHADOWVOLUME_OFFSET__SHADOWVOLUME_SIZE].y
+
+// Alpha is affected by fog
+mul ACCUMULATOR_DIFFUSE.w, ACCUMULATOR_DIFFUSE.w, r0.w
+//max ACCUMULATOR_DIFFUSE.w, ACCUMULATOR_DIFFUSE.w, c[CONSTANTS_0_1_765_0d5].x
+//add ACCUMULATOR_DIFFUSE.w, c[CONSTANTS_0_1_765_0d5].y, -ACCUMULATOR_DIFFUSE.w
+
+// Fog itself is none
+mov oFog, c[CONSTANTS_0_1_765_0d5].y

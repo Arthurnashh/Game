@@ -1,0 +1,263 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="El">
+      <UniqueIdentifier>{956ab370-0121-46ff-8b30-bc43f6f6d2dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\DataSignatures">
+      <UniqueIdentifier>{b843f353-a5ad-4336-a512-18b11a833da9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\QStream">
+      <UniqueIdentifier>{4440f9c4-63ac-4a22-9e21-9d0f745c368a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Common">
+      <UniqueIdentifier>{1fc99d8e-dac2-40a8-9715-932ffe3f07e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\CDKeys">
+      <UniqueIdentifier>{a3679dd5-a41d-41c5-963a-0da7feeeb935}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\LZO">
+      <UniqueIdentifier>{b898771b-c7a2-4d88-8f22-299d7e23f43e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\ActiveObject">
+      <UniqueIdentifier>{30efa9cb-5b80-410e-9001-b7a2788d0b49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Encryption">
+      <UniqueIdentifier>{26eecc2a-c87e-4f41-ae7f-b797718c7764}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es">
+      <UniqueIdentifier>{87f1fe0b-78c3-46f8-ba8b-ce022a768e3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Framework">
+      <UniqueIdentifier>{3b317e75-6851-4994-9e28-c8cd6a7ec109}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Memory">
+      <UniqueIdentifier>{76a04b57-9984-4ff4-b92f-400a4418147f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Strings">
+      <UniqueIdentifier>{0eea1b35-b576-4d1c-8bbc-f4580d93b756}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Files">
+      <UniqueIdentifier>{44b7f316-5927-4ec9-8c5d-40afed4da5e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Deploy">
+      <UniqueIdentifier>{0821d16a-a53d-4547-bf9b-f29b6087437d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Credits">
+      <UniqueIdentifier>{cd8ffce4-2c51-40c2-9d02-19dc46788e1e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DSCheckSignatures.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\DataSignatures\dataSignatures.cpp">
+      <Filter>El\DataSignatures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\DataSignatures\sha1.cpp">
+      <Filter>El\DataSignatures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\DataSignatures\sha1wrapper.cpp">
+      <Filter>El\DataSignatures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\QStream\qbstream.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\QStream\qstream.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\QStream\qstreamUseBankQFBank.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\QStream\qstreamUseFServerDefault.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\QStream\serializeBin.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\QStream\ssCompress.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\Common\perfLog.cpp">
+      <Filter>El\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\CDKey\serial.cpp">
+      <Filter>El\CDKeys</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\ActiveObject\activeObject.cpp">
+      <Filter>El\ActiveObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\Encryption\AESEncryption.cpp">
+      <Filter>El\Encryption</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\Encryption\pboheaderprotection.cpp">
+      <Filter>El\Encryption</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Framework\appFrame.cpp">
+      <Filter>Es\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Framework\useAppFrameDefault.cpp">
+      <Filter>Es\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Memory\debugAlloc.cpp">
+      <Filter>Es\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Memory\useMallocMemFunctions.cpp">
+      <Filter>Es\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Strings\rString.cpp">
+      <Filter>Es\Strings</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Es\Files\filenames.cpp">
+      <Filter>Es\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\LZO\lzo1x_d1.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\LZO\lzo1x_d4.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\LZO\lzo1x_dStream.cpp">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\LZO\lzo_init.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\LZO\pinit.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\LZO\plzo1x_1f.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\El\Credits\credits.cpp">
+      <Filter>El\Credits</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\El\DataSignatures\dataSignatures.hpp">
+      <Filter>El\DataSignatures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\DataSignatures\hashwrapper.h">
+      <Filter>El\DataSignatures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\DataSignatures\sha1.h">
+      <Filter>El\DataSignatures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\DataSignatures\sha1wrapper.h">
+      <Filter>El\DataSignatures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\QStream\QBStream.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\QStream\QStream.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\QStream\serializeBin.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\Common\perfLog.hpp">
+      <Filter>El\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\CDKey\serial.hpp">
+      <Filter>El\CDKeys</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\ActiveObject\activeObject.hpp">
+      <Filter>El\ActiveObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\Encryption\aes.h">
+      <Filter>El\Encryption</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\Encryption\AESEncryption.h">
+      <Filter>El\Encryption</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\Encryption\pboheaderprotection.h">
+      <Filter>El\Encryption</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Framework\appFrame.hpp">
+      <Filter>Es\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Memory\debugAlloc.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Strings\rString.hpp">
+      <Filter>Es\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Files\fileContainer.hpp">
+      <Filter>Es\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Es\Files\filenames.hpp">
+      <Filter>Es\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\LZO\acc_fccm.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\LZO\config1x.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\LZO\lzo_conf.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\LZO\lzo_dict.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\LZO\lzo_ptr.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\LZO\miniacc.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\LZO\plzo1_c_dict.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\LZO\plzo1_d_fc.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\El\Credits\credits.hpp">
+      <Filter>El\Credits</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="deploy.bat">
+      <Filter>Deploy</Filter>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1x_d.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\..\El\LZO\lzo1_d.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\..\El\LZO\lzo1x_d.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\..\El\LZO\lzo_dll.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\..\El\LZO\lzo_func.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1_c.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1_c_copy_lit.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1_c_copy_lit_impl.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\..\El\LZO\plzo1x_c.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,15 @@
+<?xml version="1.0" ?> 
+ <module name="TCPIPBasics">
+  <description>Helper classes to basic manipulation with network (TCP/IP).</description> 
+ <dependencies>
+ </dependencies>
+ <structure>
+ <submodule name="IPA">
+  <description>Simple helper class to store and manipulate with IP address and port (needed whith connecting or listenning sockets)</description> 
+ <files>
+  <ref_file name="El/TCPIPBasics/IPA.h" /> 
+  <ref_file name="El/TCPIPBasics/IPA.cpp" /> 
+  </files>
+  </submodule>
+  </structure>
+  </module>

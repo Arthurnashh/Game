@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="NSIS Installer"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="NSIS Installer"
+			DisplayName="NSIS Installer"
+			CommandLine="&quot;$(PROGRAM_FILES32)\NSIS\MakeNSIS.exe&quot; [inputs]"
+			Outputs="$(SafeInputName)Setup.exe"
+			AdditionalDependencies="$(TargetPath)"
+			FileExtensions="*.nsi"
+			ExecutionDescription="Compiling Installer..."
+			>
+			<Properties>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

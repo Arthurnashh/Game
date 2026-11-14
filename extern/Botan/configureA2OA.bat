@@ -1,0 +1,1 @@
+configure.py --os=windows --cc=msvc --with-tr1=system --cpu=pentium4 --gen-amalgamation --disable-shared --no-autoload --enable-modules=rsa,x509cert,x509store,sha1,pkcs10,emsa4,emsa3,emsa1,eme_pkcs,auto_rng,win32_stats,pbes1,pbes2

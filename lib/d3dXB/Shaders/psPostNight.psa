@@ -1,0 +1,16 @@
+#include "psDecl.h"
+
+// night black and white vision postprocess effect
+
+xps.1.1
+
+tex t0 // t0 - framebuffer
+
+// determine brightness
+dp3 r1,t0,c[POST_FX_PARAM]
+
+add r1.a,r1.a,c[POST_FX_PARAM].a
+// interpolate using brigthness between day and night version
+lrp r0.rgb, r1.a, t0, r1_sat
+
+#include "finalCombiner.psi"

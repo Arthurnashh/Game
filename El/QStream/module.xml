@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+
+<module name="QStream">
+
+	<description>
+		Input / output streams (common, file, bank).
+	</description>
+
+	<files>
+		<ref_file name="El/QStream/qStream.hpp"/>
+		<ref_file name="El/QStream/qStream.cpp"/>
+		<ref_file name="El/QStream/fileInfo.h"/>
+		<ref_file name="El/QStream/fileMapping.hpp"/>
+		<ref_file name="El/QStream/fileMapping.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+		<ref_file name="El/Common/perfLog.hpp"/>
+	</dependencies>
+
+	<extensions>
+		<use_interface file="El/QStream/iQFBank.hpp" class="QFBankFunctions">
+			<description>
+				Link file bank support with FileBuffers.
+			</description>
+			<use_implementation name="Banks" selector="El/QStream/qstreamUseBankQFBank.cpp">
+				<description>
+					Use file banks.
+				</description>
+				<dependencies>
+					<ref_file name="El/QStream/qBStream.hpp"/>
+					<ref_file name="El/QStream/qBStream.cpp"/>
+					<ref_file name="El/QStream/fileCompress.hpp"/>
+					<ref_file name="El/QStream/fileCompress.cpp"/>
+					<ref_file name="El/QStream/ssCompress.cpp"/>
+				</dependencies>
+			</use_implementation>
+			<use_implementation name="Default" selector="El/QStream/qstreamUseBankDefault.cpp">
+				<description>
+					Do not use file banks.
+				</description>
+			</use_implementation>
+		</use_interface>
+		<use_interface file="El/QStream/qStream.hpp" class="QIFileServerFunctions">
+			<description>
+				Handle manager support.
+			</description>
+			<use_implementation name="Default" selector="El/QStream/qstreamUseFServerDefault.cpp">
+				<description>
+					No file handle caching.
+				</description>
+			</use_implementation>
+		</use_interface>
+	</extensions>
+
+	<structure>
+		<submodule name="Compression">
+			<description>
+				File compression (optional).
+			</description>
+			<files>
+				<ref_file name="El/QStream/fileCompress.hpp"/>
+				<ref_file name="El/QStream/fileCompress.cpp"/>
+				<ref_file name="El/QStream/ssCompress.cpp"/>
+			</files>
+		</submodule>
+		<submodule name="SerializeBin">
+			<description>
+				Fast "binary" serialization (optional).
+			</description>
+			<files>
+				<ref_file name="El/QStream/serializeBin.hpp"/>
+				<ref_file name="El/QStream/serializeBin.cpp"/>
+			</files>
+		</submodule>
+
+		<submodule name="QStreamB">
+			<description>
+				Streams in bank (pbo file) (optional).
+			</description>
+			<files>
+				<ref_file name="El/QStream/qbStream.cpp"/>
+				<ref_file name="El/QStream/qbStream.hpp"/>
+			</files>
+		</submodule>
+		<submodule name="QStdStream">
+			<description>
+				stdin, stdout, stderr and debug Streams (optional).
+			</description>
+			<files>
+				<ref_file name="El/QStream/QStdStream.cpp"/>
+				<ref_file name="El/QStream/QStdStream.hpp"/>
+			</files>
+		</submodule>
+	</structure>
+
+</module>

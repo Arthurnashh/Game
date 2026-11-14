@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<module name="Time">
+
+	<description>
+		Introduces types for time representation.
+	</description>
+
+	<files>
+		<ref_file name="El/Time/time.hpp"/>
+		<ref_file name="El/Time/time.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+	</dependencies>
+
+</module>

@@ -1,0 +1,882 @@
+Test input file.
+// Quick file stream implementation
+
+#include <El/elementpch.hpp>
+//#include "winpch.hpp"
+
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#ifdef _WIN32
+	#include <io.h>
+	#include <stdio.h>
+	#ifndef ACCESS_ONLY 
+//		#include "win.h"
+    #include <El/Common/perfLog.hpp>
+	#endif
+	#ifdef _XBOX
+	#define USE_MAPPING 0
+	#else
+	#define USE_MAPPING 1
+	#endif
+#else
+	#include <stdio.h> 
+	#include <unistd.h> 
+	#define POSIX_FILES 1
+	#ifdef NO_MMAP
+	  #define USE_MAPPING 0
+	#else
+	  #define USE_MAPPING 1
+	#endif
+#endif
+
+#include "QStream.hpp"
+
+#ifdef POSIX_FILES
+	#define NO_FILE(file) ( file<0 )
+	#define NO_FILE_SET -1
+#else
+	#define NO_FILE(file) ( file==NULL )
+	#define NO_FILE_SET NULL
+#endif
+
+#if USE_MAPPING
+// by default file mapping is enabled, when supported on given platform
+bool GUseFileMapping = true;
+#else
+bool GUseFileMapping = false;
+#endif
+
+const char *GetErrorName(LSError err)
+{
+	switch (err)
+	{
+	case LSOK:
+		return "No error";
+	case LSFileNotFound:
+		return "No such file";
+	case LSBadFile:
+		return "Bad file (CRC, ...)";
+	case LSStructure:
+		return "Bad file structure";
+	case LSUnsupportedFormat:
+		return "Unsupported format";
+	case LSVersionTooNew:
+		return "Version is too new";
+	case LSVersionTooOld:
+		return "Version is too old";
+	case LSDiskFull:
+		return "No such file";
+	case LSAccessDenied:
+		return "Access denied";
+	case LSDiskError:
+		return "Disk error";
+	case LSNoEntry:
+		return "No entry";
+	default:
+		Fail("LSError");
+	case LSUnknownError:
+		return "Unknown error";
+	}
+}
+
+void QIStream::Close()
+{
+	_buf=NULL;
+	_len=0;
+	_readFrom=0;
+	_fail=true,_eof=false;
+}
+
+void QIStream::Assign( const QIStream &src )
+{
+	// this points to same data as from
+	_buf=src._buf;
+	_len=src._len;
+	_readFrom=src._readFrom;
+	_fail=src._fail,_eof=src._eof;
+}
+
+bool QIStream::nextLine ()
+{
+    int c1;
+    while ( !eof() )
+        if ( (c1 = get()) == 0x0D || c1 == 0x0A ) {
+            if ( !eof() && c1 == 0x0D ) {
+                int c2 = get();
+                if ( c2 != 0x0A ) unget();
+                }
+            return true;
+            }
+    return false;
+}
+
+bool QIStream::readLine ( char *buf, int bufLen )
+{
+    Assert( buf );
+    int left = bufLen - 1;                  // regular chars to read
+    int c1;
+    while ( !eof() ) {
+        if ( (c1 = get()) == 0x0D || c1 == 0x0A ) {
+                // EOLN:
+            if ( !eof() && c1 == 0x0D ) {
+                int c2 = get();
+                if ( c2 != 0x0A ) unget();
+                }
+            *buf = (char)0;
+            return true;
+            }
+            // regular char:
+        if ( bufLen > 0 && left == 0 ) {    // buffer overflow
+            *buf = (char)0;
+            return nextLine();
+            }
+        *buf++ = c1;
+        left--;
+        }
+    *buf = (char)0;
+    return false;                           // EOF reached before EOLN
+}
+
+void QIFStream::DoConstruct( const QIFStream &from )
+{
+	_sharedData=from._sharedData;
+	// make this to contains same data as from
+	QIStream::Assign(from);
+}
+
+#ifndef _WIN32
+
+int FileSize ( int handle )
+{
+	struct stat buf;
+	fstat(handle,&buf);
+	return buf.st_size;
+}
+
+#endif
+
+#include "fileMapping.hpp"
+
+#ifndef POSIX_FILES
+  #include "fileCompress.hpp"
+#endif
+
+#if defined _XBOX
+// opening file can be very slow on XBox
+// it is therefore a good idea to keep cache of recently opened files in case they are used again
+struct ReadHandleInfo: public TLinkBidirRef, public RefCount
+{
+	HANDLE _handle;
+	RStringI _name;
+};
+
+class ReadHandleCache
+{
+	int _count;
+	TListBidirRef<ReadHandleInfo> _cache;
+
+	public:
+	ReadHandleCache();
+	HANDLE Open(const char *name);
+	void Close(const char *name, HANDLE handle);
+	void Flush(const char *name);
+};
+
+static ReadHandleCache GReadHandleCache;
+
+#include <El/Statistics/statistics.hpp>
+
+ReadHandleCache::ReadHandleCache()
+{
+	_count = 0;
+}
+
+HANDLE ReadHandleCache::Open(const char *name)
+{
+	static StatEventRatio stats("handle opened");
+	// check if given name can be found
+	for (ReadHandleInfo *info=_cache.Start(); _cache.NotEnd(info); info = _cache.Advance(info))
+	{
+		if (!strcmpi(info->_name,name))
+		{
+			stats.Count(false);
+			// handle that is used cannot be cached
+			HANDLE handle = info->_handle;
+			_cache.Delete(info);
+			_count--;
+			::SetFilePointer(handle,0,NULL,FILE_BEGIN);
+			return handle;
+		}
+	}
+	stats.Count(true);
+	return ::CreateFile
+	(
+		name,GENERIC_READ,FILE_SHARE_READ,
+		NULL, // security
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL // template
+	);
+}
+
+void ReadHandleCache::Close(const char *name, HANDLE handle)
+{
+	int maxItems = 64;
+	if (_count>=maxItems)
+	{
+		ReadHandleInfo *last = _cache.Last();
+		DoAssert(last);
+		if (last)
+		{
+			::CloseHandle(last->_handle);
+			_cache.Delete(last);
+		}
+		_count--;
+	}
+	ReadHandleInfo *info = new ReadHandleInfo;
+	info->_handle = handle;
+	info->_name = name;
+	_cache.Insert(info);
+	_count++;
+}
+
+void ReadHandleCache::Flush(const char *name)
+{
+	// check if given name can be found
+	for (ReadHandleInfo *info=_cache.Start(); _cache.NotEnd(info); info = _cache.Advance(info))
+	{
+		if (!strcmpi(info->_name, name))
+		{
+			::CloseHandle(info->_handle);
+			_cache.Delete(info);
+			_count--;
+			return;
+		}
+	}
+}
+
+HANDLE OpenReadHandle(const char *name)
+{
+	return GReadHandleCache.Open(name);
+}
+
+void CloseReadHandle(const char *name, HANDLE handle)
+{
+	GReadHandleCache.Close(name,handle);
+	// we need to duplicate the handle so that it can be stored in the cache
+}
+
+void FlushReadHandle(const char *name)
+{
+	GReadHandleCache.Flush(name);
+}
+
+#elif defined _WIN32
+HANDLE OpenReadHandle(const char *name)
+{
+	return ::CreateFile
+	(
+		name,GENERIC_READ,FILE_SHARE_READ,
+    NULL, // security
+    OPEN_EXISTING,
+    FILE_ATTRIBUTE_NORMAL,
+    NULL // template
+  );
+}
+
+void CloseReadHandle(const char *name, HANDLE handle)
+{
+	::CloseHandle(handle);
+}
+
+#endif
+
+/*!
+Default implementation - assume you can access whole file.
+In older implementations of IFileBuffer GetData() and GetSize() were the only way to get data
+This is 
+*/
+QFileSize IFileBuffer::Read(void *buf, QFileSize pos, QFileSize size)
+{
+  const char *wholeData = GetData();
+  QFileSize wholeSize = GetSize();
+  if (pos>=wholeSize) return 0;
+
+  QFileSize maxSize = wholeSize-pos;
+  if (size>maxSize) size=maxSize;
+  memcpy(buf,wholeData+pos,size);
+  return size;
+}
+
+FileBufferLoaded::FileBufferLoaded( const char *name, QFileSize offset, QFileSize size)
+{
+	#ifdef POSIX_FILES
+	#ifndef _WIN32
+	LocalPath(fn,name);
+	int file=::open(fn,O_RDONLY);
+	#else
+	int file=::open(name,O_RDONLY|O_BINARY);
+	#endif
+	if( file>=0 )
+	{
+		int sizeMax=FileSize(file);
+		if( sizeMax!=-1 )
+		{
+			if (size>sizeMax-offset) size = sizeMax-offset;
+			_data.Init(size);
+			::lseek(file,offset,SEEK_CUR);
+			int sizeRead=::read(file,_data.Data(),size);
+			if( sizeRead!=size )
+			{
+				_data.Delete();
+				::WarningMessage("File '%s' read error",name);
+			}
+		}
+		else
+		{
+			//::WarningMessage("File '%s' not found.",name);
+		}
+		::close(file);
+	}
+	#else
+	HANDLE file=::OpenReadHandle(name);
+	if( file!=INVALID_HANDLE_VALUE )
+	{
+		DWORD sizeMax=::GetFileSize(file,NULL);
+		if( sizeMax>0 && sizeMax!=0xffffffff )
+		{
+			if (size>sizeMax-offset) size = sizeMax-offset;
+			_data.Init(size);
+			DWORD sizeRead;
+			::SetFilePointer(file,offset,NULL,FILE_CURRENT);
+			::ReadFile(file,_data.Data(),size,&sizeRead,NULL);
+			if( sizeRead!=size )
+			{
+				_data.Delete();
+				::WarningMessage("File '%s' read error",name);
+			}
+		}
+		::CloseReadHandle(name,file);
+	}	
+	#endif
+}
+
+FileBufferLoaded::~FileBufferLoaded()
+{
+	_data.Delete();
+}
+
+FileBufferSub::FileBufferSub( IFileBuffer *buf, int start, int size )
+:_whole(buf)
+{
+	int bufSize = buf->GetSize();
+	saturate(start,0,bufSize);
+	saturate(size,0,bufSize-start);
+	_start = start;
+	_size = size;
+}
+
+FileBufferLoading::FileBufferLoading( const char *name, QFileSize offset, QFileSize size)
+{
+  _name = name;
+  _offset = offset;
+  _size = size;
+
+	HANDLE file=::OpenReadHandle(name);
+	if( file==INVALID_HANDLE_VALUE || file==NULL)
+  {
+    _size = 0; // error - no file
+  }
+  else
+  {
+		DWORD fileSize = ::GetFileSize(file,NULL);
+    ::CloseReadHandle(name,file);
+
+    // adjust offset and size based on actual file size
+    if (_offset>fileSize) _offset = fileSize;
+    QFileSize maxSize = fileSize-_offset;
+    if (_size>maxSize) _size = maxSize;
+  }
+}
+FileBufferLoading::~FileBufferLoading()
+{
+}
+
+const char *FileBufferLoading::GetData() const
+{
+  Fail("Cannot return data");
+  return NULL;
+}
+int FileBufferLoading::GetSize() const
+{
+  return _size;
+}
+
+
+QFileSize FileBufferLoading::Read(void *buf, QFileSize pos, QFileSize size)
+{
+	HANDLE file=::OpenReadHandle(_name);
+  // TODO: implement cache
+	if( file==INVALID_HANDLE_VALUE || file==NULL)
+  {
+    return 0;
+  }
+  pos += _offset;
+  if (pos>_size) pos = _size;
+  QFileSize maxSize = _size - pos;
+  if (size>maxSize) size = maxSize;
+  DWORD rd = 0;
+  OVERLAPPED ovl;
+  ovl.Offset = pos;
+  ovl.OffsetHigh = 0;
+  ::ReadFile(file,buf,size,&rd,&ovl);
+  ::CloseReadHandle(_name,file);
+  return rd;
+}
+
+#if _XBOX
+const char *FullXBoxName(const char *name, char *temp)
+{
+	if (!name[0] || name[1]!=':')
+	{
+		strcpy(temp,"d:\\");
+		strcat(temp,name);
+		return temp;
+	}
+	else
+	{
+		return name;
+	}
+}
+#endif
+
+#if USE_MAPPING
+Ref<IFileBuffer> GetFileBufferMappedPart(const char *fullName, QFileSize offset, QFileSize size)
+{
+	// round offset, cr
+	if (offset==0)
+	{
+		return new FileBufferMapped(fullName,0,size);
+	}
+	SYSTEM_INFO info;
+	GetSystemInfo(&info);
+	int page = info.dwAllocationGranularity;
+	int align = offset % page;
+	Ref<IFileBuffer> aligned = new FileBufferMapped(fullName,offset-align,size+align);
+	return new FileBufferSub(aligned,align,size);
+}
+#endif
+
+
+void QIFStream::open( const char *name, QFileSize offset, QFileSize size )
+{
+	//ScopeLock lock(_serialize);
+	_fail=true;
+	_error=LSUnknownError;
+	// open and preload file
+	#if USE_MAPPING
+  if (GUseFileMapping)
+  {
+		_sharedData = GetFileBufferMappedPart(name,offset,size);
+  }
+  else
+	#endif
+  {
+		#if _XBOX
+			char temp[1024];
+			name = FullXBoxName(name,temp);
+		#endif
+		_sharedData = new FileBufferLoaded(name,offset,size);
+  }
+	if (!_sharedData->GetError())
+	{
+		QIStream::init(_sharedData->GetData(),_sharedData->GetSize());
+	}
+}
+
+void QIFStream::OpenBuffer( Ref<IFileBuffer> buffer )
+{
+	_error=LSUnknownError;
+	// attach stream to some memory data
+	_sharedData=buffer;
+	QIStream::init(_sharedData->GetData(),_sharedData->GetSize());
+}
+
+void QIFStream::DoDestruct()
+{
+	// destroy buffer
+	_sharedData.Free();
+	_len=_readFrom=0;
+}
+
+QIFStream::~QIFStream()
+{
+	DoDestruct();
+} // close file and destroy buffer
+
+int CmpStartStr( const char *str, const char *start )
+{
+	while( *start )
+	{
+		if( myLower(*str++)!=myLower(*start++) ) return 1;
+	}
+	return 0;
+}
+
+bool QIFStream::FileReadOnly( const char *name )
+{
+	// file exists and is read only
+	#ifdef POSIX_FILES
+	LocalPath(fn,name);
+	struct stat st;
+	if ( stat(fn,&st) ) return false;
+	return( (st.st_mode & S_IWUSR) == 0 );
+	#else
+	DWORD attrib=::GetFileAttributes(name);
+	// check for cases where write would fail
+	if( attrib&FILE_ATTRIBUTE_READONLY ) return true;
+	if( attrib&FILE_ATTRIBUTE_DIRECTORY ) return true;
+	if( attrib&FILE_ATTRIBUTE_SYSTEM ) return true;
+	return false; // no file
+	#endif
+}
+
+long QIFStream::TimeStamp( const char *name)
+{
+	#ifdef POSIX_FILES
+		LocalPath(fn,name);
+		int file=::open(fn,O_RDONLY);
+		if( NO_FILE(file) ) return 0;
+		::close(file);
+		stat st;
+		fstat(file,&st)
+		return st.st_mtime;
+		return false;
+	#elif _XBOX
+		return 0;
+	#else
+		HANDLE check=::OpenReadHandle(name);
+		if( check==INVALID_HANDLE_VALUE ) return false;
+		FILETIME filetime;
+		::GetFileTime(check,NULL,NULL,&filetime);
+		WORD date,time;
+		FileTimeToDosDateTime(&filetime,&date,&time);
+		::CloseReadHandle(name,check);
+		return (date<<16)|time;
+	#endif
+}
+
+bool QIFStream::FileExists( const char *name )
+{
+	// check normal file existence
+	#ifdef POSIX_FILES
+	LocalPath(fn,name);
+	int file=::open(fn,O_RDONLY);
+	if( NO_FILE(file) ) return false;
+	::close(file);
+	#else
+	#if _XBOX
+		char temp[1024];
+		name = FullXBoxName(name,temp);
+	#endif
+	HANDLE check=::OpenReadHandle(name);
+	if( check==INVALID_HANDLE_VALUE ) return false;
+	::CloseReadHandle(name,check);
+	#endif
+	return true;
+}
+
+#define WIN_DIR '\\'
+#define UNIX_DIR '/'
+
+#if __GNUC__
+	#define INVAL_DIR WIN_DIR
+	#define VAL_DIR UNIX_DIR
+#else
+	#define INVAL_DIR UNIX_DIR
+	#define VAL_DIR WIN_DIR
+#endif
+
+// helper: open in file or in file bank
+static RString ConvertFileName( const char *name, int inval, int valid )
+{
+	if( !strchr(name,inval) ) return name; // no conversion required
+	// convert directory characters depending on platform
+	char cname[512];
+	strcpy(cname,name);
+	for( char *cc=cname; *cc; cc++ )
+	{
+		if( *cc==inval ) *cc=valid;
+	}
+	return cname;
+}
+
+inline RString PlatformFileName( const char *name )
+{
+	return ConvertFileName(name,INVAL_DIR,VAL_DIR);
+}
+
+inline RString UniversalFileName( const char *name )
+{ // filenames are normally stored with backslash '\\'
+	return ConvertFileName(name,UNIX_DIR,WIN_DIR);
+}
+
+void QOFStream::open( const char *file )
+{
+	_file=PlatformFileName(file);
+	_fail=false;
+	_error=LSUnknownError;
+	rewind();
+}
+
+#ifndef POSIX_FILES
+static LSError LSErrorCode( DWORD eCode )
+{
+	switch( eCode )
+	{
+		case ERROR_HANDLE_DISK_FULL: return LSDiskFull;
+		case ERROR_NETWORK_ACCESS_DENIED:
+		case ERROR_LOCK_VIOLATION:
+		case ERROR_SHARING_VIOLATION:
+		case ERROR_WRITE_PROTECT:
+		case ERROR_ACCESS_DENIED: return LSAccessDenied;
+		case ERROR_FILE_NOT_FOUND: return LSFileNotFound;
+		case ERROR_READ_FAULT:
+		case ERROR_WRITE_FAULT:
+		case ERROR_CRC: return LSDiskError;
+		default:
+		{
+			#ifndef _XBOX
+			char buffer[256];
+			FormatMessage
+			(
+				FORMAT_MESSAGE_FROM_SYSTEM,
+				NULL, // source
+				eCode, // requested message identifier 
+				0, // languague
+				buffer,sizeof(buffer),
+				NULL
+			);
+			Log("Unknown error %d %s",eCode,buffer);
+			#else
+			Log("Unknown error %d",eCode);
+			#endif
+			
+		}
+		return LSUnknownError;
+	}
+}
+
+#endif
+
+void QIFStream::import( const char *name )
+{
+	// import from file or clipboard
+	// easy way: file import
+	open(name);
+	// TODO: hard way: windows clipboard
+}
+
+/*!
+\patch 1.85 Date 9/9/2002 by Jirka
+- Fixed: Writing into big file sometimes failed with error #1450:
+  "Insufficient system resources exist to complete the requested service."
+*/
+void QOFStream::close( const void *header, int headerSize )
+{
+	if( !_file ) return; // no file
+	// open and preload file
+	_error=LSOK;
+	#ifdef POSIX_FILES
+	#ifndef _WIN32
+	LocalPath(fn,(const char*)_file);
+	int file=::open(fn,O_CREAT|O_WRONLY|O_TRUNC,S_IREAD|S_IWRITE);
+	#else
+	int file=::open(_file,O_CREAT|O_BINARY|O_WRONLY|O_TRUNC,S_IREAD|S_IWRITE);
+	#endif
+	if( file )
+	{
+		int sizeWritten=::write(file,header,headerSize);
+		if( sizeWritten!=headerSize )
+		{
+			_fail=true;
+			goto Error;
+		}
+		sizeWritten=::write(file,_buffer.Data(),_buffer.Size());
+		if( sizeWritten!=_buffer.Size() )
+		{
+			_fail=true;
+			goto Error;
+		}
+		Error:
+		int eCode=0;
+		int success=::close(file);
+		if( success<0 ) _fail=true;
+		if( _fail )
+		{
+			_error=LSUnknownError;
+		}
+	}
+	#else
+	// check if file is not open for reading
+#ifdef _XBOX
+	FlushReadHandle(_file);
+#endif
+
+	DWORD eCode=0;
+	HANDLE file=::CreateFile
+	(
+		_file,GENERIC_WRITE,0,
+    NULL, // security
+    CREATE_ALWAYS,
+    FILE_ATTRIBUTE_NORMAL,
+    NULL // template
+    );
+	if( file!=INVALID_HANDLE_VALUE )
+	{
+		DWORD sizeWritten;
+		::WriteFile(file,header,headerSize,&sizeWritten,NULL);
+		if( (int)sizeWritten!=headerSize )
+		{
+			_fail=true;
+			goto Error;
+		}
+		// FIX: write only 1MB at once
+		{
+			const char *data = _buffer.Data();
+			int size = _buffer.Size();
+			// write 1 MB at once
+			static const int writeAtOnce = 1024 * 1024;
+			while (size > writeAtOnce)
+			{
+				::WriteFile(file,data,writeAtOnce,&sizeWritten,NULL);
+				if ((int)sizeWritten != writeAtOnce)
+				{
+					_fail=true;
+					goto Error;
+				}
+				data += writeAtOnce;
+				size -= writeAtOnce;
+			}
+			::WriteFile(file,data,size,&sizeWritten,NULL);
+			if ((int)sizeWritten != size)
+			{
+				_fail=true;
+				goto Error;
+			}
+		}
+		/*
+		::WriteFile(file,_buffer.Data(),_buffer.Size(),&sizeWritten,NULL);
+		if( (int)sizeWritten!=_buffer.Size() )
+		{
+			_fail=true;
+			goto Error;
+		}
+		*/
+		Error:
+		DWORD eCode=0;
+		if( _fail ) eCode=::GetLastError();
+		BOOL success=::CloseHandle(file);
+		if( !success )
+		{
+			if( eCode==0 ) eCode=::GetLastError();
+			_fail=true;
+		}
+	}
+	else
+	{
+		eCode=::GetLastError();
+		_fail=true;
+	}
+	if( eCode )
+	{
+		_error=LSErrorCode(eCode);
+	}
+	#endif
+	// forget any data
+	rewind();
+	_file=NULL;
+}
+
+void QOFStream::close()
+{
+	close(NULL,0);
+}
+
+QOFStream::~QOFStream()
+{
+	//close();
+}
+
+QIStreamBuf::QIStreamBuf()
+{
+	_bufStart = 0;
+	_bufLen = 0;
+	_readFromBuf = 0;
+
+	_fail = false;
+  _eof = false;
+	_error = LSOK;
+
+  _buffer.Realloc(4*1024);
+}
+
+bool QIStreamBuf::nextLine ()
+{
+  for(;;)
+  {
+    int c1 = get();
+    if (c1==EOF) return false;
+    if ( c1== 0x0D || c1 == 0x0A )
+    {
+      if (c1 == 0x0D )
+      {
+        int c2 = get();
+        if ( c2 != 0x0A && c2!=EOF ) unget();
+      }
+      return true;
+    }
+  }
+}
+
+bool QIStreamBuf::readLine ( char *buf, int bufLen )
+{
+  Assert( buf );
+  int left = bufLen - 1;                  // regular chars to read
+  for(;;)
+  {
+    int c1 = get();
+    if (c1==EOF)
+    {
+      *buf = (char)0;
+      return false;                           // EOF reached before EOLN
+    }
+    if ( c1== 0x0D || c1 == 0x0A )
+    {
+      // EOLN:
+      if ( c1 == 0x0D )
+      {
+        int c2 = get();
+        if ( c2 != 0x0A && c2!=EOF ) unget();
+      }
+      *buf = (char)0;
+      return true;
+    }
+    // regular char:
+    if ( bufLen > 0 && left == 0 )
+    {    // buffer overflow
+      *buf = (char)0;
+      return nextLine();
+    }
+    *buf++ = c1;
+    left--;
+  }
+}
+
+void QIFStreamDataSource::open(const char *dta)
+{
+  IFileBuffer *file = new FileBufferLoading(dta);
+  AttachSource(file);
+}

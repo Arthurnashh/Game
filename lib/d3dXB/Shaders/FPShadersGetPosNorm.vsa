@@ -1,0 +1,8 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// get and decompress position and normal from the vertex buffer
+
+// Skinned position and normal
+mul r0, INPUT_POSITION, c[POS_MUL]
+add SKINNED_POSITION, r0, c[POS_ADD]
+mov SKINNED_NORMAL, INPUT_NORMAL

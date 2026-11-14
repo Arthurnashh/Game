@@ -1,0 +1,28 @@
+#include "psDecl.h"
+
+xps.1.1
+
+// specular with alpha, no detail texture
+
+tex t0 // Diffuse map
+tex t1 // Normal map
+texm3x2pad  t2, t1_bx2		//  u = ( t1=N ) dot ( t2=L )
+texm3x2tex  t3, t1_bx2		//  v = ( t1=N ) dot ( t3=H )
+
+// Multiply diffuse coeficient by the dot result
+// Add per-vertex lights including ambient from v0 accumulator
+mad r0.rgb, t3, c[PS_DIFFUSE], v0
+
+// Multiply it by t0 (combine it with value from color map)
+mul r0.rgb, r0.rgb, t0.rgb
+// Set the visibility (based on diffuse result and texture)
++mul r0.a, v0.a, t0.a
+
+// Decompress the result
+mul r0.rgb, c[T0_MAXCOLOR], r0
++mul r0.a, c[T0_MAXCOLOR], r0.a
+
+// Add the per pixel specular color - could be done in final combiner on Xbox
+mad r0.rgb, t3.a, c[PS_SPECULAR].rgb, r0.rgb
+
+#include "finalCombiner.psi"

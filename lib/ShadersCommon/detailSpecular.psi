@@ -1,0 +1,9 @@
+// detail texturing and specular highligh applied
+
+tex t0
+tex t1
+
+mul r0, v0, t0
+mul_x2 r0.rgb, r0, t1
+mad_x2 r0.rgb, r0, c[T0_MAXCOLOR], v1
++mul r0.a, r0, c[T0_MAXCOLOR]

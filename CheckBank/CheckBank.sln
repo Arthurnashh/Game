@@ -1,0 +1,37 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CheckBank", "CheckBank.vcproj", "{BBDAA415-AAEE-462C-AF66-3DA8789405F0}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 2
+		SccProjectName0 = \u0022$/Poseidon/CheckBank\u0022,\u0020WKUAAAAA
+		SccLocalPath0 = .
+		SccProvider0 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = true
+		SolutionUniqueID = {6A9CC3DF-B5BF-4113-BF3C-3D79F3B9FB01}
+		SccProjectUniqueName1 = CheckBank.vcproj
+		SccProjectName1 = \u0022$/\u0022,\u0020AAAAAAAA
+		SccLocalPath1 = ..\\..
+		CanCheckoutShared = true
+		SccProjectFilePathRelativizedFromConnection1 = Poseidon\\CheckBank\\
+	EndGlobalSection
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release Win32 = Release Win32
+		Release Xbox = Release Xbox
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{BBDAA415-AAEE-462C-AF66-3DA8789405F0}.Debug.ActiveCfg = Debug|Win32
+		{BBDAA415-AAEE-462C-AF66-3DA8789405F0}.Debug.Build.0 = Debug|Win32
+		{BBDAA415-AAEE-462C-AF66-3DA8789405F0}.Release Win32.ActiveCfg = Release|Win32
+		{BBDAA415-AAEE-462C-AF66-3DA8789405F0}.Release Win32.Build.0 = Release|Win32
+		{BBDAA415-AAEE-462C-AF66-3DA8789405F0}.Release Xbox.ActiveCfg = Release|Xbox
+		{BBDAA415-AAEE-462C-AF66-3DA8789405F0}.Release Xbox.Build.0 = Release|Xbox
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

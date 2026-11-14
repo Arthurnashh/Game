@@ -1,0 +1,11 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// color given for instance is used to modulate instance color
+// alpha is used to modulate ammount of diffuse lighting
+
+// Init lights
+mov ACCUMULATOR_DIFFUSE.xyz, c[MAT_E]
+mov ACCUMULATOR_DIFFUSE.w, INPUT_MAT_A.w
+
+mul ACCUMULATOR_DIFFUSE.xyz, ACCUMULATOR_DIFFUSE, c[ACCOMODATE_EYE]
+mul ACCUMULATOR_DIFFUSE.xyz, c[BONES_START + a0.x + 3], ACCUMULATOR_DIFFUSE.xyz

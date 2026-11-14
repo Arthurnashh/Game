@@ -1,0 +1,308 @@
+/*
+(c) Copyright 2011, RTDynamics
+All Rights Reserved.
+
+Product:		RTDynamics
+
+
+The content of this work is proprietary and confidential.Permission to use,copy,
+publish and modify this software and its documentation for any commercial and
+non-commercial purpose is not granted without written permission of RTDynamics
+*/
+
+#pragma once
+
+#include "RTD/EngineModelBase.h"
+
+
+namespace RTD
+{
+	/**
+        This class implements a generic, reconfigurable turbine engine model. This model uses thermodynamics principles,
+        engine configuration data and engine performance data to compute the torque that is applied to the drive train. 
+        Drive train distributes this torque among the loads (rotors, propellers, wheels etc. ).
+
+        Several other engine variables are computed besides the torque. For example: power, fuel flow and pressure,
+        oil temperature and pressure.
+
+        GenericTurbineEngine has an integrated PID controller which is used to control the fuel flow to acquire and
+        hold a design RPM. This feature is used to model aircrafts with constant RPM propeller or rotors.
+
+        Please refer to "Generic Turbine Engine" section of the programmer's Guide for more information.
+    */
+	class RTDYNAMICS_EXPORT GenericTurbineEngine :	public EngineModelBase
+	{
+	public:
+
+		/**
+			Configuration parameters of the engine. Details of these parameters can be found in
+            the "Generic Turbine Engine" section of the programmer's Guide.
+		*/
+		class RTDYNAMICS_EXPORT ConfigParams : public EngineModelBase::ConfigParams
+		{
+		public:
+			ConfigParams();
+
+			smReal	    m_rotationResistance;
+
+			smDouble	m_P;
+
+			smDouble	m_I;
+
+			smDouble	m_integralLimitLow;
+
+			smDouble	m_integralLimitHigh;
+
+			smDouble	m_D;
+
+			smDouble	m_offset;
+
+			smDouble    m_targetRPM;
+
+			smReal	    m_inertia;
+
+			smReal	    m_autoStartPauseEGTCelsius;
+
+			smReal	    m_autoStartThrottleIncreaseRate;
+
+			smReal	    m_autoStartThrottleApplicationRPM;
+
+			smDouble    m_starterTorque;
+
+			smDouble    m_gasGenResistance;
+
+			smDouble    m_gasGenInertia;
+			
+			smDouble    m_T10_mcp_sealevel;
+
+			smDouble	m_mdot_mcp_sealevel;
+
+			smDouble    m_T40_mcp_sealevel;
+
+			smDouble    m_T40_emergency_sealevel;
+
+			smDouble	m_LHV;
+
+			smDouble	m_Khpt;
+
+			smDouble	m_Ngidle;
+
+			smDouble	m_Ng100;
+			
+			smDouble	m_Ngemergency;
+
+			smDouble	m_Ngmaxcontinuous;
+
+			smGraph2D	m_maximumContinuousPower;
+
+			smGraph2D	m_takeOffPower;
+
+			smGraph2D	m_emergencyPower;
+
+			smReal		m_nominalOilPressureBar;
+
+			smReal		m_NgAtNominalOilPressure;
+
+			smReal		m_nominalOilTemperatureCelsius;
+
+			smReal		m_oilTemperatureDropPerKnot;
+
+			smReal		m_nominalFuelPressureBar;
+
+			smReal		m_minimumFuelPressureBar;
+
+			smReal		m_gearBoxMaximumContinuousTorque;
+
+			smReal		m_gearBoxTakeoffTorque;
+
+			smReal		m_gearBoxEmergencyTorque;
+
+			smReal		m_gearBox100PercentTorque;
+
+			bool	    m_printDebugInfo;
+
+			/**
+				A utility method that parses a character stream which contains initialization
+				parameters. The \e parameterString is in XML. If there is an error false is returned
+				and \e error will contain the reason.
+			*/
+			virtual bool			readParamStr( const std::string& parameterString , std::string& error );
+		};
+
+		/**
+			Creates an instance of GenericTurbineEngine.
+			\param vehicle		:	The vehicle to which the engine is attached.
+			\param name			:   Name of the engine instance.
+			\param params		:	Configuration parameters of the engine.
+		*/
+		static	EngineModelBase*					createClass( RTD::VehicleBase* vehicle, const std::string& name , const ConfigParams* params  );
+
+		/**
+			Creates a ConfigParams structure which can be used to initialize an GenericTurbineEngine instance.
+		*/
+		static	EngineModelBase::ConfigParams*	createParameters();
+
+		/**
+			Constructor of the class.
+			\param parentVh		:	The vehicle to which the engine is attached.
+			\param name			:   Name of the engine instance.
+			\param params		:	Configuration parameters of the engine.
+		*/
+		GenericTurbineEngine( RTD::VehicleBase* parentVh, const std::string& name , const ConfigParams* params );
+
+		/**
+			Destructor of the class.
+		*/
+		virtual ~GenericTurbineEngine();
+
+
+		/** Returns the type of the engine. For this engine it returns "GenericTurbineEngine". */
+		virtual std::string		getType() const;
+
+		/** Sets the P,I,D and offset of the engine RPM controller. */
+		virtual void	setPID( smDouble P, smDouble I, smDouble D, smDouble offset);
+
+		/** Returns the P,I,D and offset values of the engine RPM controller. */
+		void			getPID( smDouble& P, smDouble& I, smDouble& D, smDouble& offset) const;
+
+		/** Sets the target RPM that the engine tries to attain. */
+		virtual void	setTargetRPM( smDouble target );
+
+		/** Returns the target RPM that the engine tries to attain. */
+		smDouble		getTargetRPM() const;
+
+		/** Updates the GenericTurbineEngine by advancing the simulation \e stepTime seconds. */
+		virtual void	update( smTime stepTime );
+
+		/** Returns the power generated by the engine. */
+		smReal			getPowerWatt() const;
+
+		/** Returns the rotational inertia of the power turbine section in kg*m^2. Power turbine section is the part
+            of the turbine that is connected to the drive train. */
+		virtual smDouble		getRotationalInertia() const;
+
+		/** Resets the engine. */
+		virtual void			reset();
+
+		/**
+			Returns the configuration parameters of the engine. 
+		*/
+		virtual ConfigParams*		getConfigParams()		{	return &m_configParams;	}
+
+		/**
+			Returns the configuration parameters of the engine. 
+		*/
+		virtual const ConfigParams*	getConfigParams() const {	return &m_configParams;	}
+
+		/** Returns the gas generator (a.k.a. high pressure turbine) RPM. Also known as N1. */
+		smReal						getNg( bool asPercent = false  ) const;
+
+
+		/** Returns the power turbine (a.k.a. free turbine) RPM. Also known as N2 or Nf. */
+		smReal						getNp( bool asPercent = false ) const;
+
+
+		/**
+            Returns the actual exhaust gas temperature in degrees Celsius.
+        */
+		smReal						getEGTCelsius() const;
+
+		/**
+            Returns the actual engine oil pressure in Bar.
+        */
+		smReal						getOilPressureBar() const;
+
+		/**
+            Returns the actual engine oil temperature in degrees Celsius.
+        */
+		smReal						getOilTemperatureCelsius() const;
+
+		/**
+            Returns the actual fuel flow in kg/sec when \a asPercentage is false. When \a asPercentage is true,
+            the ratio of actual fuel flow to the maximum fuel flow is returned.
+        */
+		smReal						getFuelFlow( bool asPercentage) const;
+
+		/**
+            Returns the actual engine fuel pressure in Bar.
+        */
+		smReal						getFuelPressureBar() const;
+
+		/**
+            When \a asPercentage is false, the torque that is generated by the engine and applied to the
+            drive train shaft is returned. This value is in N*m.
+
+            When \a asPercentage is true, the ratio of current torque output to the 100% torque (ConfigParams::m_gearBox100PercentTorque) 
+            is returned.
+        */
+		smReal						getTorque( bool asPercentage ) const;
+
+		/**
+            Returns the maximum allowed torque for emergency rating (ConfigParams::m_gearBoxEmergencyTorque)
+        */
+		virtual smReal				getEmergencyTorque() const ;
+
+		/**
+            Returns the maximum allowed torque for take off rating (ConfigParams::m_gearBoxTakeoffTorque).
+        */
+		virtual smReal				getTakeoffTorque() const;
+
+		/**
+            Returns the maximum allowed torque for maximum continous rating (ConfigParams::m_gearBoxMaximumContinuousTorque).
+        */
+		virtual smReal				getMaximumContinuousTorque() const;
+
+		/** Start the engine with the automatic start-up procedure. Once start() is called, manual control is not possible anymore. */
+		virtual void				start();
+
+		/** */
+		virtual void				stop();
+	protected:
+		enum TurbineState
+		{
+			MANUAL_CONTROL = 0,
+				STARTER,
+				INCREASE_THROTTLE,
+				RUNNING,
+				STOP
+		};
+
+		StateVariableUInt	s_turbineState;
+		StateVariableBool	s_autoStartFuelPump;
+		StateVariableReal	s_autoStartThrottle;
+		StateVariableReal	s_autoStartStarter;
+		OutputVariableReal	o_oilPressureBar;
+		StateVariableReal	s_oilTemperature;
+		StateVariableReal	s_fuelPressureBar;
+		StateVariableReal	s_Ng;
+		OutputVariableReal	o_EGT;
+		OutputVariableReal	o_fuelFlow;
+
+		RTD::PIDControllerD*	m_fuelFlowController;
+
+		ConfigParams	m_configParams;
+
+		smDouble compute_mdot( smDouble Ng_rad , smDouble Ngmaxcontinuous_rad , smDouble Pmc , smDouble Pmc_sealevel )const;
+		smDouble compute_T10( smDouble Ng, smDouble Ngmaxcontinuous_rad )const;
+
+		smDouble computePowerTurbineFrictionTorque(smDouble Np_rad )const;
+		smDouble computePowerTurbinePower(smDouble Ng_rad , smDouble Npdesign_rad , smDouble Ngmaxcontinuous_rad , smDouble Ngemergency_rad , smDouble Pmc , smDouble Pem )const;
+		smDouble computePcompressor(smDouble Ng_rad , smDouble Ngmaxcontinuous_rad , smDouble Pmc , smDouble Pmc_sealevel ) const;
+		smDouble computePcombustor( smDouble fuelFlow )const;
+		smDouble computePgasgenfriction(smDouble Ng_rad ) const;
+		smDouble computePptfriction(smDouble Np_rad ) const;
+		smDouble computePhpt( smDouble Pcompressor , smDouble Pcombustor )const;
+		smDouble computeMaxFuelFlow() const;
+		smDouble computeMCPFuelFlow() const;
+		smDouble computeIdleFuelFlow() const;
+
+		smDouble computeBraytonT40( smDouble T10  , smDouble Pcombustor , smDouble Phpt , smDouble Ppt , smDouble mdot );
+		
+		const smDouble	c_ca;
+		const smDouble	c_cp;
+
+		
+
+	};
+
+}

@@ -1,0 +1,74 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Skinned normal points from the point position to (0, 0, 0)
+mov SKINNED_NORMAL.xyz, -INPUT_POSITION
+dp3 SKINNED_NORMAL.w, SKINNED_NORMAL, SKINNED_NORMAL
+rsq SKINNED_NORMAL.w, SKINNED_NORMAL.w
+mul SKINNED_NORMAL.xyz, SKINNED_NORMAL, SKINNED_NORMAL.w
+
+// Skinned position
+mov SKINNED_POSITION, INPUT_POSITION
+
+// Transform position (only 3x3)
+m3x3 TRANSFORMED_POSITION.xyz, SKINNED_POSITION, c[WORLD_VIEW_MATRIX_0]
+mov TRANSFORMED_POSITION.w, c[CONSTANTS_0_1_765_0d5].y
+
+// Project position
+m4x4 r0, TRANSFORMED_POSITION, c[PROJ_MATRIX_0]
+
+// Convert to screenspace
+mul r0.xyz, r0, c[SCREENSPACE_SCALE]
++ rcc r1.x, r0.w
+mad r0.xyz, r0, r1.x, c[SCREENSPACE_OFFSET]
+frc r2.xy, r0.xy // Remember fractional part in r2
+add r0.xy, r0.xy, -r2.xy // Substract fractional part from coordinates
+
+// Get small number (0.0625)
+mul r1.y, c[CONSTANTS_0_1_765_0d5].w, c[CONSTANTS_0_1_765_0d5].w
+mul r1.y, r1.y, r1.y
+
+// Substract small number from the result
+add r0.xy, r0.xy, -r1.yy
+
+// Add half to the result
+add r0.xy, r0.xy, c[CONSTANTS_0_1_765_0d5].w
+
+// Get the number 1 + 0.0625*2
+add r1.x, r1.y, r1.y
+add r1.x, r1.x, c[CONSTANTS_0_1_765_0d5].y
+
+// Create the output position
+mad oPos.xy, r1.x, INPUT_TEXCOORD0.xy, r0.xy
+mov oPos.zw, r0.zw
+
+// Fill out texture coordinates
+mov oT0.xy, INPUT_TEXCOORD0.xy
+mov oT1.xy, INPUT_TEXCOORD0.xy
+
+// Init diffuse with edge coeficients
+
+// Calculate inverse rcp into r2.zw
+add r2.zw, c[CONSTANTS_0_1_765_0d5].y, -r2.xyxy
+
+// Move value (x, y, ix, iy) of texture coordinates into r3
+mov r3.xy, INPUT_TEXCOORD0.xy
+add r3.zw, c[CONSTANTS_0_1_765_0d5].y, -r3.xyxy
+
+// Calculate the alpha coeficients
+mul r0.xyzw, r3.xyzw, r2.zwxy
+
+// Inverse the result
+add r0, c[CONSTANTS_0_1_765_0d5].yyyy, -r0
+
+// Multiply all the coeficients and move them to alpha
+mul ACCUMULATOR_DIFFUSE.w, r0.x, r0.y
+mul ACCUMULATOR_DIFFUSE.w, ACCUMULATOR_DIFFUSE.w, r0.z
+mul ACCUMULATOR_DIFFUSE.w, ACCUMULATOR_DIFFUSE.w, r0.w
+mov ACCUMULATOR_DIFFUSE.xyz, c[CONSTANTS_0_1_765_0d5].xxx
+
+// Init specular with zeroes
+mov ACCUMULATOR_SPECULAR.xyzw, c[CONSTANTS_0_1_765_0d5].x
+
+// Set the point color
+mov oD0, c[CONSTANTS_0_1_765_0d5].yxxy
+mov oD1, c[CONSTANTS_0_1_765_0d5].xxxx

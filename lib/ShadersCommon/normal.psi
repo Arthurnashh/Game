@@ -1,0 +1,8 @@
+// normal diffuse shader
+
+tex t0
+
+mul r0, v0, t0
+
+mul_x2 r0.rgb, c[T0_MAXCOLOR], r0
++mul r0.a, c[T0_MAXCOLOR], r0.a

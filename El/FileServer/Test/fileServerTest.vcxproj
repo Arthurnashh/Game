@@ -1,0 +1,270 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B7BACDE2-F969-4625-AC57-F4DE7AE3C079}</ProjectGuid>
+    <RootNamespace>fileServerTest</RootNamespace>
+    <SccProjectName>"$/", AAAAAAAA</SccProjectName>
+    <SccLocalPath>..\..\..</SccLocalPath>
+    <SccProvider>MSSCCI:Microsoft Visual SourceSafe</SccProvider>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\..;$(SolutionDir)..\..\..\extern;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\..\..\Extern\Intel\lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <LargeAddressAware>true</LargeAddressAware>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/Oy- %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <OmitFramePointers>false</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\..;$(SolutionDir)..\..\..\extern;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\..\..\Extern\Intel\lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <LargeAddressAware>true</LargeAddressAware>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Common\globalAlive.cpp" />
+    <ClCompile Include="..\..\Common\perfLog.cpp" />
+    <ClCompile Include="..\..\Common\randomGen.cpp" />
+    <ClCompile Include="..\..\FreeOnDemand\memFreeReq.cpp" />
+    <ClCompile Include="..\..\FreeOnDemand\memFreeReqUseDefault.cpp" />
+    <ClCompile Include="..\..\QStream\qbStream.cpp" />
+    <ClCompile Include="..\..\QStream\qStream.cpp" />
+    <ClCompile Include="..\..\QStream\qStreamUseBankQFBank.cpp" />
+    <ClCompile Include="..\..\QStream\serializeBin.cpp" />
+    <ClCompile Include="..\..\QStream\ssCompress.cpp" />
+    <ClCompile Include="..\..\Stringtable\localizeStringtable.cpp" />
+    <ClCompile Include="..\..\Stringtable\stringtable.cpp" />
+    <ClCompile Include="..\..\Stringtable\stringtableUseExtParserNone.cpp" />
+    <ClCompile Include="..\..\Stringtable\stringtableUsePreprocDefault.cpp" />
+    <ClCompile Include="..\fileServer.cpp" />
+    <ClCompile Include="..\fileServerAsync.cpp" />
+    <ClCompile Include="..\fileServerUseDefaultSettings.cpp" />
+    <ClCompile Include="..\..\MultiThread2\common\src-windows\AssertBis.cpp" />
+    <ClCompile Include="..\..\MultiThread2\multithread\src-windows\BlockerSimpleBase.cpp" />
+    <ClCompile Include="..\..\MultiThread2\multithread\src-windows\CriticalSection.cpp" />
+    <ClCompile Include="..\..\MultiThread2\common\LateConstructed.cpp" />
+    <ClCompile Include="..\multithread.cpp" />
+    <ClCompile Include="..\..\MultiThread2\multithread\src-portable\Synchronized.cpp" />
+    <ClCompile Include="..\..\MultiThread2\multithread\src-windows\ThreadBase.cpp" />
+    <ClCompile Include="..\..\MultiThread2\multithread\src-portable\ThreadHook.cpp" />
+    <ClCompile Include="..\..\MultiThread2\multithread\src-windows\Tls.cpp" />
+    <ClCompile Include="..\..\MultiThread2\multithread\src-windows\waitFunctions.cpp" />
+    <ClCompile Include="..\..\MemoryStore\memStore.cpp" />
+    <ClCompile Include="..\..\Multicore\multicore.cpp" />
+    <ClCompile Include="..\..\ActiveObject\activeObject.cpp" />
+    <ClCompile Include="..\..\Debugging\debugTrapMinimal.cpp" />
+    <ClCompile Include="..\..\Debugging\debugUseAppInfoDefault.cpp" />
+    <ClCompile Include="..\..\Debugging\imexhnd.cpp" />
+    <ClCompile Include="..\..\Debugging\mapFile.cpp" />
+    <ClCompile Include="..\..\CRC\crc.cpp" />
+    <ClCompile Include="..\..\Sleepy\sleepyAPI.cpp" />
+    <ClCompile Include="..\..\HiResTime\hiResTime.cpp" />
+    <ClCompile Include="..\..\LZO\lzo1x_9x.c" />
+    <ClCompile Include="..\..\LZO\lzo1x_d1.c" />
+    <ClCompile Include="..\..\LZO\lzo1x_dStream.cpp" />
+    <ClCompile Include="..\..\LZO\lzo_init.c" />
+    <ClCompile Include="..\..\..\Es\Strings\rString.cpp" />
+    <ClCompile Include="..\..\..\Es\Memory\debugAlloc.cpp" />
+    <ClCompile Include="..\..\..\Es\Memory\fastAlloc.cpp" />
+    <ClCompile Include="..\..\..\Es\Memory\useMallocMemFunctions.cpp" />
+    <ClCompile Include="..\..\..\Es\Framework\appFrame.cpp" />
+    <ClCompile Include="..\..\..\Es\Framework\useAppFrameDefault.cpp" />
+    <ClCompile Include="..\..\..\Es\Common\platform.cpp" />
+    <ClCompile Include="..\..\..\Es\Containers\containersTemplSpec.cpp" />
+    <ClCompile Include="..\..\..\Es\Types\lLinks.cpp" />
+    <ClCompile Include="..\..\..\Es\Files\filenames.cpp" />
+    <ClCompile Include="..\..\..\Es\ErrorProp\errorProp.cpp" />
+    <ClCompile Include="..\..\..\Es\Threads\pocritical.cpp" />
+    <ClCompile Include="..\..\..\Es\Threads\threadSync.cpp" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Common\perfLog.hpp" />
+    <ClInclude Include="..\..\Common\randomGen.hpp" />
+    <ClInclude Include="..\..\FreeOnDemand\memFreeReq.hpp" />
+    <ClInclude Include="..\..\QStream\fileinfo.h" />
+    <ClInclude Include="..\..\QStream\iQFBank.hpp" />
+    <ClInclude Include="..\..\QStream\qbStream.hpp" />
+    <ClInclude Include="..\..\QStream\qStream.hpp" />
+    <ClInclude Include="..\..\QStream\serializeBin.hpp" />
+    <ClInclude Include="..\..\Stringtable\localizeStringtable.hpp" />
+    <ClInclude Include="..\..\Stringtable\stringtable.hpp" />
+    <ClInclude Include="..\fileServer.hpp" />
+    <ClInclude Include="..\fileServerAsync.hpp" />
+    <ClInclude Include="..\fileServerMT.hpp" />
+    <ClInclude Include="..\..\MultiThread2\common\Array.h" />
+    <ClInclude Include="..\..\MultiThread2\common\Assert.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\BlockerSimpleBase.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\src-windows\common_Win.h" />
+    <ClInclude Include="..\..\MultiThread2\common\CommonDefs.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\CriticalSection.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\CriticalSectionBlocker.h" />
+    <ClInclude Include="..\..\elementpch.hpp" />
+    <ClInclude Include="..\..\MultiThread2\multithread\IBlocker.h" />
+    <ClInclude Include="..\..\MultiThread2\common\IMultiInterface.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\Interlocked.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\src-windows\interlocked.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\IRunnable.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\IThreadMessage.h" />
+    <ClInclude Include="..\..\MultiThread2\common\LateConstructed.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\MessageThread.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\MTCommon.h" />
+    <ClInclude Include="..\multithread.hpp" />
+    <ClInclude Include="..\..\MultiThread2\common\Ref.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\SleepBlocker.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\SmartRefCount.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\Synchronized.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\SyncRefCount.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\SyncTypes.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\Thread.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\ThreadBase.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\ThreadHook.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\Tls.h" />
+    <ClInclude Include="..\..\MultiThread2\common\VarArg++.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\waitFunctions.h" />
+    <ClInclude Include="..\..\MultiThread2\multithread\src-windows\waitFunctions_win.h" />
+    <ClInclude Include="..\..\MemoryStore\memStore.hpp" />
+    <ClInclude Include="..\..\Multicore\multicore.hpp" />
+    <ClInclude Include="..\..\ActiveObject\activeObject.hpp" />
+    <ClInclude Include="..\..\Debugging\imexhnd.h" />
+    <ClInclude Include="..\..\Debugging\mapFile.hpp" />
+    <ClInclude Include="..\..\CRC\crc.hpp" />
+    <ClInclude Include="..\..\CRC\sumCalcCrc.hpp" />
+    <ClInclude Include="..\..\Sleepy\sleepyAPI.hpp" />
+    <ClInclude Include="..\..\HiResTime\hiResTime.hpp" />
+    <ClInclude Include="..\..\LZO\config1x.h" />
+    <ClInclude Include="..\..\LZO\lzo_conf.h" />
+    <ClInclude Include="..\..\LZO\lzo_ptr.h" />
+    <ClInclude Include="..\..\LZO\miniacc.h" />
+    <ClInclude Include="..\..\LZO\lzo\lzo1x.h" />
+    <ClInclude Include="..\..\LZO\lzo\lzoconf.h" />
+    <ClInclude Include="..\..\LZO\lzo\lzodefs.h" />
+    <ClInclude Include="..\..\..\Es\essencepch.hpp" />
+    <ClInclude Include="..\..\..\Es\platform.hpp" />
+    <ClInclude Include="..\..\..\Es\Strings\bstring.hpp" />
+    <ClInclude Include="..\..\..\Es\Strings\rString.hpp" />
+    <ClInclude Include="..\..\..\Es\Memory\checkMem.hpp" />
+    <ClInclude Include="..\..\..\Es\Memory\debugAlloc.hpp" />
+    <ClInclude Include="..\..\..\Es\Memory\debugNew.hpp" />
+    <ClInclude Include="..\..\..\Es\Memory\fastAlloc.hpp" />
+    <ClInclude Include="..\..\..\Es\Memory\memAlloc.hpp" />
+    <ClInclude Include="..\..\..\Es\Memory\normalNew.hpp" />
+    <ClInclude Include="..\..\..\Es\Framework\appFrame.hpp" />
+    <ClInclude Include="..\..\..\Es\Framework\debugLog.hpp" />
+    <ClInclude Include="..\..\..\Es\Common\fltopts.hpp" />
+    <ClInclude Include="..\..\..\Es\Common\langExt.hpp" />
+    <ClInclude Include="..\..\..\Es\Common\win.h" />
+    <ClInclude Include="..\..\..\Es\Containers\array.hpp" />
+    <ClInclude Include="..\..\..\Es\Containers\bankArray.hpp" />
+    <ClInclude Include="..\..\..\Es\Containers\compactBuf.hpp" />
+    <ClInclude Include="..\..\..\Es\Containers\hashMap.hpp" />
+    <ClInclude Include="..\..\..\Es\Containers\list.hpp" />
+    <ClInclude Include="..\..\..\Es\Containers\listBidir.hpp" />
+    <ClInclude Include="..\..\..\Es\Containers\offTree.hpp" />
+    <ClInclude Include="..\..\..\Es\Containers\rStringArray.hpp" />
+    <ClInclude Include="..\..\..\Es\Containers\staticArray.hpp" />
+    <ClInclude Include="..\..\..\Es\Containers\typeDefines.hpp" />
+    <ClInclude Include="..\..\..\Es\Containers\typeOpts.hpp" />
+    <ClInclude Include="..\..\..\Es\Types\lLinks.hpp" />
+    <ClInclude Include="..\..\..\Es\Types\memtype.h" />
+    <ClInclude Include="..\..\..\Es\Types\pointers.hpp" />
+    <ClInclude Include="..\..\..\Es\Types\removeLinks.hpp" />
+    <ClInclude Include="..\..\..\Es\Types\softLinks.hpp" />
+    <ClInclude Include="..\..\..\Es\Files\commandLine.hpp" />
+    <ClInclude Include="..\..\..\Es\Files\fileContainer.hpp" />
+    <ClInclude Include="..\..\..\Es\Files\filenames.hpp" />
+    <ClInclude Include="..\..\..\Es\ErrorProp\errorProp.hpp" />
+    <ClInclude Include="..\..\..\Es\Threads\multisync.hpp" />
+    <ClInclude Include="..\..\..\Es\Threads\pocritical.hpp" />
+    <ClInclude Include="..\..\..\Es\Threads\threadSync.hpp" />
+    <ClInclude Include="..\..\..\es\HeapManager\heap.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\LZO\lzo1_d.ch" />
+    <None Include="..\..\LZO\lzo1x_d.ch" />
+    <None Include="..\..\LZO\lzo_dll.ch" />
+    <None Include="..\..\LZO\lzo_mchw.ch" />
+    <None Include="..\..\LZO\lzo_swd.ch" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

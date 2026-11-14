@@ -1,0 +1,509 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="El">
+      <UniqueIdentifier>{110b24a0-4c01-4c38-b106-4988e9046eba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\ParamFile">
+      <UniqueIdentifier>{fc7b711f-7369-491d-9e66-11818b2ea257}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\FreeOnDemand">
+      <UniqueIdentifier>{1a807067-ccec-4727-a7a2-91d843caa7e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\QStream">
+      <UniqueIdentifier>{e7d57a7e-6d0e-474c-94eb-ea0cfdcc2594}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\AppInfo">
+      <UniqueIdentifier>{c355ed4f-9aee-49d0-833d-a623db4974c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Common">
+      <UniqueIdentifier>{7395fba8-11ac-4288-bc42-d7c5e44e3944}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\CorelAnalys">
+      <UniqueIdentifier>{6007341b-85ff-444d-bd38-cbeacf06e6bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\PCH">
+      <UniqueIdentifier>{d84a7517-d458-4911-bba7-3c96acd71b0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Interfaces">
+      <UniqueIdentifier>{dc481a22-8be1-403c-9883-9aa9dced8331}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Math">
+      <UniqueIdentifier>{bae84dfd-44ef-4f2b-adc2-344634b04614}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\PreprocC">
+      <UniqueIdentifier>{5a3cb241-8422-4d80-9e87-753717143ec0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\ParamArchive">
+      <UniqueIdentifier>{e4081b13-9191-4cbe-88c8-75946d505914}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Stringtable">
+      <UniqueIdentifier>{40518c34-e87a-4e2a-a128-2aa9e5083743}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Pathname">
+      <UniqueIdentifier>{ce786074-7c21-47cb-b374-c4e9fedc01bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es">
+      <UniqueIdentifier>{cbddbdf6-e3e6-4c11-b4f2-703ee762fbc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Strings">
+      <UniqueIdentifier>{b39ccbc9-507b-41e6-98a0-5dce28164de4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Memory">
+      <UniqueIdentifier>{dd774531-a1fc-4902-ac0d-4f96bab4adf1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Framework">
+      <UniqueIdentifier>{4b40dd33-171d-484f-bec2-17df0f22123e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Common">
+      <UniqueIdentifier>{2d2531d5-1d42-4a71-8f74-41d8971e62d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Containers">
+      <UniqueIdentifier>{d18721cf-b5c5-4744-8a2a-869451980834}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Types">
+      <UniqueIdentifier>{ea60115a-3c30-48de-a5c7-e1a381a5e414}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Algorithms">
+      <UniqueIdentifier>{61d0a0ad-242c-4b83-a36e-b3b4aa8fb03d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Es\Files">
+      <UniqueIdentifier>{7f466fd0-a83b-4b8a-b87e-454c69ec4cda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\LZO">
+      <UniqueIdentifier>{f9ce0ca7-948d-43d3-8784-1b15e5caef9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\Credits">
+      <UniqueIdentifier>{b10f3795-3776-4203-8d7e-fcec2c311e6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="El\ActiveObject">
+      <UniqueIdentifier>{3c952c91-45e7-4a81-bf7d-62d299bd2513}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="consoleSvnTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\ParamFile\paramFile.cpp">
+      <Filter>El\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\ParamFile\paramFileCtx.cpp">
+      <Filter>El\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\ParamFile\paramFileUseEvalDefault.cpp">
+      <Filter>El\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\ParamFile\paramFileUseLocalizeStringtable.cpp">
+      <Filter>El\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\ParamFile\paramFileUsePreprocC.cpp">
+      <Filter>El\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\ParamFile\paramFileUseSumCalcDefault.cpp">
+      <Filter>El\ParamFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\FreeOnDemand\memFreeReq.cpp">
+      <Filter>El\FreeOnDemand</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\FreeOnDemand\memFreeReqUseDefault.cpp">
+      <Filter>El\FreeOnDemand</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\QStream\fileCompress.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\QStream\qbstream.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\QStream\QStdStream.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\QStream\qstream.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\QStream\qstreamUseBankDefault.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\QStream\qstreamUseFServerDefault.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\QStream\serializeBin.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\QStream\ssCompress.cpp">
+      <Filter>El\QStream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\AppInfo\useAppInfoDefault.cpp">
+      <Filter>El\AppInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\Common\perfLog.cpp">
+      <Filter>El\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\Math\math3dP.cpp">
+      <Filter>El\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\Math\mathOpt.cpp">
+      <Filter>El\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\PreprocC\Preproc.cpp">
+      <Filter>El\PreprocC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\PreprocC\preprocC.cpp">
+      <Filter>El\PreprocC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\ParamFile\classDbParamFile.cpp">
+      <Filter>El\ParamArchive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\ParamArchive\paramArchive.cpp">
+      <Filter>El\ParamArchive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\ParamArchive\paramArchiveDb.cpp">
+      <Filter>El\ParamArchive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\ParamArchive\paramArchiveUseDbParamFile.cpp">
+      <Filter>El\ParamArchive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\Stringtable\localizeStringtable.cpp">
+      <Filter>El\Stringtable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\Stringtable\stringtable.cpp">
+      <Filter>El\Stringtable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\Stringtable\stringtableUseExtParserNone.cpp">
+      <Filter>El\Stringtable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\Stringtable\stringtableUsePreprocC.cpp">
+      <Filter>El\Stringtable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\Pathname\Pathname.cpp">
+      <Filter>El\Pathname</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Es\Strings\rString.cpp">
+      <Filter>Es\Strings</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Es\Memory\debugAlloc.cpp">
+      <Filter>Es\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Es\Memory\fastAlloc.cpp">
+      <Filter>Es\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Es\Memory\useMallocMemFunctions.cpp">
+      <Filter>Es\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Es\Framework\appFrame.cpp">
+      <Filter>Es\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Es\Framework\useAppFrameDefault.cpp">
+      <Filter>Es\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\LZO\lzo_init.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\LZO\lzo1x_d1.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\LZO\lzo1x_d4.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\LZO\lzo1x_dStream.cpp">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\LZO\pinit.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\LZO\plzo1x_1f.c">
+      <Filter>El\LZO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\Credits\credits.cpp">
+      <Filter>El\Credits</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\El\ActiveObject\activeObject.cpp">
+      <Filter>El\ActiveObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SvnAutoUpdater\svnAccess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+    <None Include="..\..\El\LZO\lzo_dll.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\El\LZO\lzo_func.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\El\LZO\lzo1_d.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\El\LZO\lzo1x_d.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\El\LZO\plzo1_c.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\El\LZO\plzo1_c_copy_lit.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\El\LZO\plzo1_c_copy_lit_impl.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\El\LZO\plzo1x_c.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+    <None Include="..\..\El\LZO\plzo1x_d.ch">
+      <Filter>El\LZO</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\El\elementpch.hpp">
+      <Filter>El</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\ParamFile\paramFile.hpp">
+      <Filter>El\ParamFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\ParamFile\paramFileCtx.hpp">
+      <Filter>El\ParamFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\ParamFile\paramFileDecl.hpp">
+      <Filter>El\ParamFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\FreeOnDemand\memFreeReq.hpp">
+      <Filter>El\FreeOnDemand</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\QStream\fileCompress.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\QStream\fileinfo.h">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\QStream\iQFBank.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\QStream\QBStream.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\QStream\QStdStream.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\QStream\QStream.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\QStream\serializeBin.hpp">
+      <Filter>El\QStream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Common\perfLog.hpp">
+      <Filter>El\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\CorelAnalys\corelAnalys.hpp">
+      <Filter>El\CorelAnalys</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Pch\ext_options.hpp">
+      <Filter>El\PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Pch\libIncludes.hpp">
+      <Filter>El\PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Pch\normalConfig.h">
+      <Filter>El\PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Pch\stdIncludes.h">
+      <Filter>El\PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Interfaces\iAppInfo.hpp">
+      <Filter>El\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Interfaces\iClassDb.hpp">
+      <Filter>El\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Interfaces\iEval.hpp">
+      <Filter>El\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Interfaces\iLocalize.hpp">
+      <Filter>El\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Interfaces\iPreproc.hpp">
+      <Filter>El\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Interfaces\iSumCalc.hpp">
+      <Filter>El\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Math\math3d.hpp">
+      <Filter>El\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Math\math3dP.hpp">
+      <Filter>El\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Math\mathDefs.hpp">
+      <Filter>El\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Math\mathOpt.hpp">
+      <Filter>El\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\PreprocC\Preproc.h">
+      <Filter>El\PreprocC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\PreprocC\preprocC.hpp">
+      <Filter>El\PreprocC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\ParamFile\classDbParamFile.hpp">
+      <Filter>El\ParamArchive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\ParamArchive\paramArchive.hpp">
+      <Filter>El\ParamArchive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\ParamArchive\paramArchiveDb.hpp">
+      <Filter>El\ParamArchive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\ParamArchive\serializeClass.hpp">
+      <Filter>El\ParamArchive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Stringtable\localizeStringtable.hpp">
+      <Filter>El\Stringtable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Stringtable\stringtable.hpp">
+      <Filter>El\Stringtable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Pathname\Pathname.h">
+      <Filter>El\Pathname</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\essencepch.hpp">
+      <Filter>Es</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\platform.hpp">
+      <Filter>Es</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Strings\bstring.hpp">
+      <Filter>Es\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Strings\rString.hpp">
+      <Filter>Es\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Memory\checkMem.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Memory\debugAlloc.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Memory\debugNew.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Memory\fastAlloc.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Memory\memAlloc.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Memory\normalNew.hpp">
+      <Filter>Es\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Framework\appFrame.hpp">
+      <Filter>Es\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Framework\debugLog.hpp">
+      <Filter>Es\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Common\fltopts.hpp">
+      <Filter>Es\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Common\langExt.hpp">
+      <Filter>Es\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Common\win.h">
+      <Filter>Es\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Containers\array.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Containers\bankArray.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Containers\compactBuf.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Containers\hashMap.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Containers\list.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Containers\listBidir.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Containers\rStringArray.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Containers\staticArray.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Containers\typeDefines.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Containers\typeOpts.hpp">
+      <Filter>Es\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Types\enum_decl.hpp">
+      <Filter>Es\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Types\lLinks.hpp">
+      <Filter>Es\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Types\memtype.h">
+      <Filter>Es\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Types\pointers.hpp">
+      <Filter>Es\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Types\removeLinks.hpp">
+      <Filter>Es\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Types\softLinks.hpp">
+      <Filter>Es\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Algorithms\qsort.hpp">
+      <Filter>Es\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Es\Files\filenames.hpp">
+      <Filter>Es\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\LZO\acc_fccm.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\LZO\config1x.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\LZO\lzo_conf.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\LZO\lzo_dict.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\LZO\lzo_ptr.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\LZO\miniacc.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\LZO\plzo1_c_dict.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\LZO\plzo1_d_fc.h">
+      <Filter>El\LZO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\Credits\credits.hpp">
+      <Filter>El\Credits</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\El\ActiveObject\activeObject.hpp">
+      <Filter>El\ActiveObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SvnAutoUpdater\svnAccess.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

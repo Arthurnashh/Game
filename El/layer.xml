@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<layer name="Element">
+
+	<description>
+		Layer Element collect modules, which can be used for common utilities (without needs of 3D rendering).
+	</description>
+
+	<modules>
+		<ref_module name="El/Calendar"/>
+		<ref_module name="El/Clipboard"/>
+		<ref_module name="El/Color"/>
+		<ref_module name="El/CRC"/>
+		<ref_module name="El/Debugging"/>
+		<ref_module name="El/DebugWindow"/>
+		<ref_module name="El/Enum"/>
+		<ref_module name="El/Evaluator"/>
+		<ref_module name="El/FileServer"/>
+		<ref_module name="El/FreeOnDemand"/>
+		<ref_module name="El/HierWalker"/>
+		<ref_module name="El/Math"/>
+		<ref_module name="El/Modules"/>
+		<ref_module name="El/Network"/>
+		<ref_module name="El/ParamArchive"/>
+		<ref_module name="El/ParamFile"/>
+		<ref_module name="El/PreprocC"/>
+		<ref_module name="El/QStream"/>
+		<ref_module name="El/Speech"/>
+		<ref_module name="El/Stringtable"/>
+		<ref_module name="El/Time"/>
+		<ref_module name="El/XML"/>
+	</modules>
+
+	<other_files>
+		<ref_file name="El/elementpch.hpp">Precompiled header file</ref_file>
+		<ref_directory name="El/PCH">Files included by elementpch.hpp</ref_directory>
+		<ref_directory name="El/Interfaces">Definitions of module interfaces</ref_directory>
+		<ref_directory name="El/Common">Common and unassigned files</ref_directory>
+		<ref_directory name="El/lib">Linux makefile</ref_directory>
+	</other_files>
+
+</layer>

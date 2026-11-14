@@ -1,0 +1,14 @@
+#include "psDecl.h"
+
+xps.1.1
+
+// shadow alpha (2nd pass for glass rendering)
+
+tex t0
+
+// only alpha is actually written
+// we read t0 ro make sure alpha kill works
+mov r0.rgb, t0.rgb
++mov r0.a, v0
+
+#include "finalCombiner.psi"

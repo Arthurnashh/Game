@@ -1,0 +1,58 @@
+// specular with alpha, no detail texture
+
+tex t0 // Diffuse map
+tex t1 // Normal map
+texm3x2pad  t2, t1_bx2		//  u = ( t1=N ) dot ( t2=L )
+texm3x2tex  t3, t1_bx2		//  v = ( t1=N ) dot ( t3=H )
+
+#define SPECULAR_RESULT t3.a // pass t3.a to final combiner as a specular
+
+; Do dot product and save it to r0
+dp3_sat r1.rgb, -t1_bx2, v1_bx2
+
+// Multiply diffuse coeficient by the dot result
+// Add per-vertex lights (including ambient) from v0 accumulator
+mad r0.rgb, t3, c[PS_DIFFUSE], v0
+mad r0.rgb, r1, c[PS_DIFFUSE_BACK], r0
+
+// Multiply it by t0 (combine it with value from color map)
+mul r0.rgb, r0, t0
+// Set the visibility (from diffuse result)
++mul r0.a, v0.a, t0.a
+
+// Decompress the result
+mul_x2 r0.rgb, c[T0_MAXCOLOR], r0
++mul r0.a, c[T0_MAXCOLOR], r0.a
+
+// Add the per pixel specular color
+//mad_x2 r0.rgb, t3.a, c[PS_SPECULAR].rgb, r0.rgb // FLY - specular shouldn't be _x2 anymore
+
+
+/*
+// specular with alpha, no detail texture
+
+tex t0
+tex t1
+texcoord t3
+
+; Do dot product and save it to r0
+dp3_sat r0.rgb, t1_bx2, t3_bx2
+dp3_sat r1.rgb, -t1_bx2, t3_bx2
+
+; Multiply diffuse coeficient by the dot result and add A*ForcedDiffuse*Emission
+mad r0.rgb, r0, c[PS_DIFFUSE], c[PS_ADFORCEDE]
+mad r0.rgb, r1, c[PS_DIFFUSE_BACK], r0
+
+; Set the visibility (to t0.a for instance)
++ mov r0.a, v0.a
+
+; Add diffuse lights from v0 accumulator
+add r0.rgb, r0, v0
+
+; Multiply it by t0 (combine it with value from color map)
+mul r0, r0, t0
+
+; Decompress the result
+mad_x2 r0.rgb, c[T0_MAXCOLOR], r0, v1
++mul r0.a, c[T0_MAXCOLOR], r0.a
+*/

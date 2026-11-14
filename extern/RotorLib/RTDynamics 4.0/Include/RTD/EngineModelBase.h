@@ -1,0 +1,217 @@
+/*
+(c) Copyright 2006, RTDynamics
+All Rights Reserved.
+
+Product:		RTDynamics
+
+
+The content of this work is proprietary and confidential.Permission to use,copy,
+publish and modify this software and its documentation for any commercial and
+non-commercial purpose is not granted without written permission of RTDynamics
+*/
+
+#pragma once
+
+#include "RTD/ForceGenerator.h"
+#include <Physics/smGraph2D.h>
+#include "RTD/ModelComponentBase.h"
+#include "RTD/TraitDriveTrainConnection.h"
+
+namespace RTD
+{
+	class VehicleBase;
+	/**
+		EngineModelBase class provides a base class for engine model implementations. It provides the basic interface.
+
+		To create a new engine model developers have to:
+		- Derive their own class from EngineModelBase.
+		- Override getType() method to return the name of the new class (without namespace, just the class name).
+		- Derive their own class from EngineModelBase::ConfigParams within the new engine class.
+		- Write creator methods for the engine and engine parameters class( see registerClass() ).
+		- Register the engine class using registerClass().
+		- Override the update() method to implement the engine model.
+		- Override getPowerWatt() method to implement engine's power computation.
+
+		The output of the engine can be retrieved using getTorque() and getForce() methods. What the returned
+		value means depends on the engine implementation and on the vehicle to which the engine is attached.
+
+		E.g. a piston engine model for an helicopter would compute and output torque and omit force. Produced
+		torque would be applied to drive train which in turn rotates the rotors. Drive train model is responsible
+		for computing new RPM's for engine and rotors (i.e. it will call setRPM() of the engine also).
+
+		Force output can be used when engine itself creates a thrust, for example for jet engines.
+
+		@see GenericPistonEngine
+		@see GenericTurbineEngine
+		@see ConstantRPMEngine
+		@see SimpleThrustEngine
+	*/
+	class RTDYNAMICS_EXPORT EngineModelBase : public ModelComponentBase , public TraitDriveTrainConnection
+	{
+	public:
+
+		/**
+			Base class for defining parameters of engine model implementations. A new engine implementation
+			should define its own ConfigParams derived from this one.
+		*/
+		class RTDYNAMICS_EXPORT ConfigParams : public ModelComponentBase::ConfigParams
+		{
+		public:
+			/**
+				A utility method that parses a character stream which contains initialization
+				parameters. The \e parameterString is in XML. If there is an error false is returned
+				and \e error will contain the reason.
+
+				Derived classes should override this method to read parameters from a stream. Usually
+				the vehicle which creates the engine will read the stream from a file and hand to this
+				method.
+			*/
+			virtual bool			readParamStr( const std::string& parameterString , std::string& error );
+		};
+
+
+
+		/**
+			Constructor of the class.
+			\param vehicle		The vehicle to which the engine will be attached.
+			\param name			The name of the engine instance.
+			\param parameters	Configuration parameters of the engine model.
+		*/
+		EngineModelBase( RTD::VehicleBase* vehicle, const std::string& name, const ConfigParams* parameters  );
+
+		/**
+			Destructor of the class.
+		*/
+		virtual ~EngineModelBase();		
+
+		/**
+			Initiate start sequence of the engine. Default implementation simply sets the state to RUNNING.
+		*/
+		virtual void	start();
+
+		/**
+			Stop the engine.  Default implementation simply sets the state to OFF.
+		*/
+		virtual void	stop();
+
+		/** Sets the throttle. Valid range is [0,1].
+
+			Throttle value will be interpreted by the derived engine classes.*/
+		virtual void			setThrottle( smReal throttle );
+
+		/** Returns current throttle setting. */
+		virtual smReal			getThrottle() const;
+
+		/** This method is used to control the starter motor. \e starterState is a value 
+            between 0 and 1, where 0 means that the starter is completely off and 1 
+            means that it is fully powered. 
+        */
+		virtual void			setStarter( smReal starterState );
+
+		/**
+            Returns the current state of the starter motor. 0 means that the starter
+            motor is off where as 1 means that it is fully powered.
+        */
+		virtual smReal			getStarter() const;
+
+		/**
+            This method is used to control the fuel pump state. If the \e fuelPumpState 
+            is 0, the fuel pump is off. If it is 1, it works at full power.
+        */
+		virtual void			setFuelPumpState( bool fuelPumpState );
+
+		/**
+            Returns current fuel pump state. If the \e fuelPumpState 
+            is 0, the fuel pump is off. If it is 1, it works at full power.
+        */
+		virtual bool			getFuelPumpState() const;
+
+
+		/** Sets the engine RPM. If for the engine model RPM concept is not applicable or not necessary
+			it can be ignored.*/
+		virtual void			setRPM( smDouble rpm );
+
+		/** Returns the engine RPM. */
+		virtual	smDouble		getRPM() const;
+
+
+		/**
+			Returns the power generated by the engine in Watts. This method returns 0 by default. Engine
+			implementations should override this method and compute their own power output.
+		*/
+		virtual	smReal			getPowerWatt() const;
+
+		/**
+			Returns the power generated by the engine in HP's. This method uses getPowerWatt() hence it doesn't need
+			to be overriden by derived engine classes.
+		*/
+		virtual	smReal			getPowerHP() const;
+
+		/** Returns torque in N*m. Interpretation of the value depends on the derived engine class. */
+		virtual	smReal			getTorque()	const;
+
+		/** Returns force in Newtons. Interpretation of the value depends on the derived engine class. */
+		virtual	smReal			getForce() const;
+
+		/** Updates the engine by advancing the simulation \e stepTime seconds.*/
+		virtual void			update( smTime stepTime )	=	0;
+
+		/** Resets the engine model. All member variables are reset to 0.0 .*/
+		virtual void			reset();
+
+		/** Returns the rotational inertia of the engine. DriveTrain models require this value
+			to simulate the inertia of the engines. 
+
+			Models that do not require rotational inertia do not need to override the method. Others 
+			has to override it and return the inertia in kg*m^2.
+
+			Default implementation returns zero. 				
+		*/
+		virtual smDouble		getRotationalInertia() const;
+
+		/** Returns the force generator which is controlled by this engine.	If
+			a force generator does not exist then NULL is returned.
+
+			Engine implementations should override this method to return the force
+			generator (if any) they use.*/
+		virtual ForceGenerator*	getForceGenerator();
+
+
+		/** Returns the available power when the engine is running at emergency rating. */
+		smReal					getAvailableEmergencyPowerHP() const;
+
+		/** Returns the available power when the engine is running at take off rating. */
+		smReal					getAvailableTakeoffPowerHP() const;
+
+		/** Returns the available power when the engine is running at maximum continuous operation rating. */
+		smReal					getAvailableMaximumContinuousPowerHP() const;
+
+		/** Returns the maximum torque that can be generated when the engine is running at emergency rating. */
+		virtual smReal			getEmergencyTorque() const ;
+
+		/** Returns the maximum torque that can be generated when the engine is running at take off rating. */
+		virtual smReal			getTakeoffTorque() const;
+
+		/** Returns the maximum torque that can be generated when the engine is running at maximum continuous operation rating. */
+		virtual smReal			getMaximumContinuousTorque() const;
+
+	protected:
+		std::vector<std::string>	m_supportedOperationModes;
+
+		InputVariableReal	i_starter;
+		InputVariableBool	i_fuelPumpState;
+		InputVariableReal	i_throttle;
+		StateVariableReal	s_rpm;
+		OutputVariableReal	o_torque;
+		OutputVariableReal	o_force;
+		OutputVariableReal	o_power;
+		OutputVariableReal	o_availableEmergencyPowerHP;
+		OutputVariableReal	o_availableTakeoffPowerHP;
+		OutputVariableReal	o_availableMaximumContinuousPowerHP;
+		
+		smDouble	getExternalTorque() const { return 0.0f; }
+		
+	};
+
+
+}

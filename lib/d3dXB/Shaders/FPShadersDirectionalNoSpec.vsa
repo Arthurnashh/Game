@@ -1,0 +1,16 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// full directional light, no specular (used when specular is calculated per-pixel)
+
+// A_DFORCED_E
+mad ACCUMULATOR_DIFFUSE.xyz, INPUT_MAT_A, c[LDIRECTION_A], ACCUMULATOR_DIFFUSE
+mad ACCUMULATOR_DIFFUSE.xyz, INPUT_MAT_D_FORCED, c[LDIRECTION_D], ACCUMULATOR_DIFFUSE
+
+// Direction light
+
+dp3 r0.x, SKINNED_NORMAL, -c[LDIRECTION_TRANSFORMED_DIR]
+max r0.x, r0.x, c[CONSTANTS_0_1_765_0d5].x
+
+// Diffuse color
+mul r1.xyz, INPUT_MAT_D.xyz, c[LDIRECTION_D].xyz
+mad ACCUMULATOR_DIFFUSE.xyz, r0.x, r1.xyz, ACCUMULATOR_DIFFUSE.xyz

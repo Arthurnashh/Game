@@ -1,0 +1,15 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// calculate how much shadow should be casted on given surface
+
+// Affect alpha by light intensity on the vertex
+dp3 r0.x, SKINNED_NORMAL, -c[LDIRECTION_TRANSFORMED_DIR] // Do the dot product with light
+// consider light intensity as given by "global" shadows (clouds etc.)
+mul r0.x, MODULATE_COLOR.w, r0.x
+max r0.x, r0.x, c[CONSTANTS_0_1_765_0d5].x
+
+// Invert and transform into interval (1-16/256, 1)
+mad ACCUMULATOR_DIFFUSE.w, r0.x, c[SHADOW_MUL__ADD__INTENSITY].z, c[SHADOW_MUL__ADD__INTENSITY].w
+
+// Multiply it with accumulator value
+//mul ACCUMULATOR_DIFFUSE.w, ACCUMULATOR_DIFFUSE.w, r0.x

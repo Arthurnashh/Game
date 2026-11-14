@@ -1,0 +1,13 @@
+// Nighe eye effects - convert to black and white
+
+// 3 instruction slots required
+// needs RGB_EYE_COEF constant
+
+// assume r0 is final rgba color
+
+// determine brightness
+dp3_sat r1,r0,c[RGB_EYE_COEF]
+
+add_sat r1.a,r1.a,c[RGB_EYE_COEF].a
+// interpolate using brigthness between day and night version
+lrp r0.rgb, r1.a, r0, r1

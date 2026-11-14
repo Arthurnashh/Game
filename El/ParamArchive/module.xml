@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+
+<module name="ParamArchive">
+
+	<description>
+		Introduced support for serialization. Attention: in basic implementation
+		(without ParamFile) does nothing (no file transfer is done).
+	</description>
+
+	<files>
+		<ref_file name="El/ParamArchive/paramArchive.hpp"/>
+		<ref_file name="El/ParamArchive/paramArchive.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+		<ref_file name="El/Enum/enumNames.hpp"/>
+	</dependencies>
+
+	<extensions>
+		<use_interface file="El/Interfaces/iClassDb.hpp" class="ClassDbFunctions">
+			<description>
+				Structured database for store and query values.
+			</description>
+			<use_implementation name="Default" selector="El/ParamArchive/paramArchiveUseDbDefault.cpp">
+				<description>
+					Default (dummy) implementation.
+				</description>
+			</use_implementation>
+			<use_implementation name="ParamFile" selector="El/ParamArchive/paramArchiveUseDbParamFile.cpp">
+				<description>
+					Implementation using ParamEntry and asociated classes.
+				</description>
+				<dependencies>
+					<ref_module name="El/ParamFile"/>
+					<ref_module name="El/QStream"/>
+					<ref_file name="El/Common/perfLog.hpp"/>
+				</dependencies>
+			</use_implementation>
+		</use_interface>
+	</extensions>
+</module>

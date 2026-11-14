@@ -1,0 +1,7 @@
+
+Callx64 PROTO func:PTR DWORD
+
+; arg1:PTR DWORD, arg2:PTR DWORD, arg3:PTR DWORD, f1: REAL4, f2: REAL4, f3: REAL4
+
+
+ReturnFloatx64 PROTO addrs:PTR DWORD

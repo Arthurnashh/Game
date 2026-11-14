@@ -1,0 +1,41 @@
+#include "psDecl.h"
+
+// depth of field blur postprocess effect
+// blur only what is far from the camera
+
+xps.1.1
+
+// c0 rgb  - blur intensity
+// c0 a - blur focus
+
+def c5, 0,0,0,0.667
+def c4, 0,0,0,0.5
+
+def c7, 0.0625,0,0,1.0 // r selector,0, depth offset, a offset
+
+tex t0 // framebuffer, a = depth
+tex t1 // depth buffer b = stencil, arg = depth (a=MSB, g=LSB)
+tex t2 // framebuffer + offset
+tex t3 // framebuffer + offset
+
+dp3 r0.rgb, t1, c7 // select r component and scale it down
++add_x4 r1.a, -c7.a, t1.a // scale a component up
+
+add r0.rgb, r0, c0.a // user control may change focus
++mov_x4 r1.a, r1.a
+
+// calculatee signed distance from focal plane
+add r0.a, r0.b, r1.a // add a (MS) and r (LS) components
+
+// calculate average of all three pixels
+lrp r0.rgb, c4.a, t0,t2
+lrp r0.rgb, c5.a, r0,t3
+
+// r0.a contains signed biased distance from a focal plane
++mul r0.a, r0_sat.a, c0.b // user blur control
+
+// blur factor is in r0.a
+lrp r0.rgb, r0.a, r0, t0
+//mov r0,t0.a
+
+#include "finalCombiner.psi"

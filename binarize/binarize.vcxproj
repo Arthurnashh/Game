@@ -1,0 +1,1016 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{27218B59-4219-4242-9C34-18CA2B2352E9}</ProjectGuid>
+    <RootNamespace>binarize</RootNamespace>
+    <SccProjectName>Svn</SccProjectName>
+    <SccAuxPath>Svn</SccAuxPath>
+    <SccLocalPath>Svn</SccLocalPath>
+    <SccProvider>SubversionScc</SccProvider>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+    <Import Project="binarizeGlobal.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+    <Import Project="binarizeGlobal.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <TypeLibraryName>.\Debug/binarize.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)..;$(SolutionDir)..\extern;$(SolutionDir)..\extern\dxsdk\include;$(SolutionDir)..\extern\bullet2.76\src;$(SolutionDir)..\Enforce\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>__MSC__=1100;WIN32;_DEBUG;_CONSOLE;_WINDOWS;MFC_NEW;NO_NET_LOG;_HELISIM_MAPS;_BINARIZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\Debug/binarize.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
+      <ObjectFileName>.\Debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>rsaMTd.lib;odbc32.lib;odbccp32.lib;vorbisfileMTd.lib;dsound.lib;libspeexMtd.lib;libbulletcollision_d.lib;libbulletdynamics_d.lib;libbulletmath_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Debug/binarize.exe</OutputFile>
+      <Version>4.00</Version>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\extern;$(SolutionDir)..\extern\DXSDK\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib;libcid.lib;libcd.lib;msvcrtd.lib;msvcrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Debug/binarize.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <TypeLibraryName>.\Release/binarize.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <AdditionalIncludeDirectories>$(SolutionDir)..;$(SolutionDir)..\extern;$(SolutionDir)..\extern\dxsdk\include;$(SolutionDir)..\extern\bullet2.76\src;$(SolutionDir)..\Enforce\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;MFC_NEW;_RELEASE;NO_NET_LOG;_HELISIM_MAPS;_BINARIZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\Release/binarize.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>rsaMT.lib;odbc32.lib;odbccp32.lib;vorbisfileMT.lib;dsound.lib;libspeexMt.lib;Ws2_32.lib;libbulletcollision.lib;libbulletdynamics.lib;libbulletmath.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\extern;$(SolutionDir)..\extern\DXSDK\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc.lib;libcd.lib;msvcrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\El\Credits\credits.hpp" />
+    <ClInclude Include="..\El\Evaluator\jvmImpl.hpp" />
+    <ClInclude Include="..\El\LZO\acc_fccm.h" />
+    <ClInclude Include="..\El\LZO\config1x.h" />
+    <ClInclude Include="..\El\LZO\lzo_conf.h" />
+    <ClInclude Include="..\El\LZO\lzo_dict.h" />
+    <ClInclude Include="..\El\LZO\lzo_ptr.h" />
+    <ClInclude Include="..\El\LZO\miniacc.h" />
+    <ClInclude Include="..\El\LZO\plzo1_c_dict.h" />
+    <ClInclude Include="..\El\LZO\plzo1_d_fc.h" />
+    <ClInclude Include="..\Enforce\include\Common\enf_array.h" />
+    <ClInclude Include="..\Enforce\include\Common\enf_hashmap.h" />
+    <ClInclude Include="..\Enforce\include\Common\enf_mathlib.h" />
+    <ClInclude Include="..\Enforce\include\Common\enf_mathlib2d.h" />
+    <ClInclude Include="..\Enforce\include\Common\enf_quicksort.h" />
+    <ClInclude Include="..\Enforce\include\Common\enf_set.h" />
+    <ClInclude Include="..\Enforce\include\Common\enf_staticbuffer.h" />
+    <ClInclude Include="..\Enforce\include\Common\enf_strings.h" />
+    <ClInclude Include="..\Enforce\include\Common\enf_winding.h" />
+    <ClInclude Include="..\Enforce\include\enf_item.h" />
+    <ClInclude Include="..\Enforce\include\enf_shapes.h" />
+    <ClInclude Include="..\Enforce\include\Physics\enf_btHeightfieldTerrainShape.h" />
+    <ClInclude Include="..\Enforce\include\Physics\enf_physicsbullet.h" />
+    <ClInclude Include="..\Enforce\include\Physics\enf_physicsbulletinternal.h" />
+    <ClInclude Include="..\Enforce\include\Physics\enf_physicsragdoll.h" />
+    <ClInclude Include="..\Enforce\include\Physics\enf_worldphysics.h" />
+    <ClInclude Include="..\Enforce\include\Physics\ragdolls.h" />
+    <ClInclude Include="..\extern\Java\jni.h" />
+    <ClInclude Include="..\extern\Java\jni_md.h" />
+    <ClInclude Include="..\Lib\appFrameExt.hpp" />
+    <ClInclude Include="..\lib\camShake.hpp" />
+    <ClInclude Include="..\Lib\drawText.hpp" />
+    <ClInclude Include="..\Lib\fileLocator.hpp" />
+    <ClInclude Include="..\lib\freeTrack.hpp" />
+    <ClInclude Include="..\lib\freeTrackClient.hpp" />
+    <ClInclude Include="..\lib\Inventory\inventory.hpp" />
+    <ClInclude Include="..\lib\Inventory\magazine.hpp" />
+    <ClInclude Include="..\lib\Inventory\weapon.hpp" />
+    <ClInclude Include="..\lib\json.hpp" />
+    <ClInclude Include="..\lib\jvmInit.hpp" />
+    <ClInclude Include="..\lib\jvmUI.hpp" />
+    <ClInclude Include="..\Lib\mapObject.hpp" />
+    <ClInclude Include="..\lib\Network\geoLoc.hpp" />
+    <ClInclude Include="..\lib\Network\httpRequest.h" />
+    <ClInclude Include="..\lib\Network\pingLoc.hpp" />
+    <ClInclude Include="..\Lib\objectId.hpp" />
+    <ClInclude Include="..\Lib\objLink.hpp" />
+    <ClInclude Include="..\lib\scenery.hpp" />
+    <ClInclude Include="..\Lib\serializeBinExt.hpp" />
+    <ClInclude Include="..\Lib\animation.hpp" />
+    <ClInclude Include="..\Lib\camEffects.hpp" />
+    <ClInclude Include="..\Lib\camera.hpp" />
+    <ClInclude Include="..\lib\cast.hpp" />
+    <ClInclude Include="..\Lib\clip2d.hpp" />
+    <ClInclude Include="..\Lib\clipShape.hpp" />
+    <ClInclude Include="..\Lib\detector.hpp" />
+    <ClInclude Include="..\Lib\dikCodes.h" />
+    <ClInclude Include="..\Lib\dynSound.hpp" />
+    <ClInclude Include="..\Lib\Eax.h" />
+    <ClInclude Include="..\Lib\engine.hpp" />
+    <ClInclude Include="..\Lib\engineDll.hpp" />
+    <ClInclude Include="..\Lib\font.hpp" />
+    <ClInclude Include="..\Lib\fsm.hpp" />
+    <ClInclude Include="..\Lib\global.hpp" />
+    <ClInclude Include="..\Lib\handledList.hpp" />
+    <ClInclude Include="..\lib\heads.hpp" />
+    <ClInclude Include="..\Lib\heap.hpp" />
+    <ClInclude Include="..\Lib\interpol.hpp" />
+    <ClInclude Include="..\Lib\Joystick.hpp" />
+    <ClInclude Include="..\Lib\keyInput.hpp" />
+    <ClInclude Include="..\Lib\landFile.hpp" />
+    <ClInclude Include="..\Lib\landscape.hpp" />
+    <ClInclude Include="..\Lib\languages.hpp" />
+    <ClInclude Include="..\Lib\lights.hpp" />
+    <ClInclude Include="..\Lib\lockCache.hpp" />
+    <ClInclude Include="..\Lib\memcheck.hpp" />
+    <ClInclude Include="..\Lib\MemGrow.hpp" />
+    <ClInclude Include="..\Lib\object.hpp" />
+    <ClInclude Include="..\Lib\objectClasses.hpp" />
+    <ClInclude Include="..\lib\objectHierarchy.hpp" />
+    <ClInclude Include="..\lib\oggtext.h" />
+    <ClInclude Include="..\Lib\pactext.hpp" />
+    <ClInclude Include="..\Lib\pathSteer.hpp" />
+    <ClInclude Include="..\Lib\roads.hpp" />
+    <ClInclude Include="..\Lib\rtAnimation.hpp" />
+    <ClInclude Include="..\Lib\saveVersion.hpp" />
+    <ClInclude Include="..\Lib\scene.hpp" />
+    <ClInclude Include="..\Lib\scripts.hpp" />
+    <ClInclude Include="..\Lib\sentences.hpp" />
+    <ClInclude Include="..\Lib\speaker.hpp" />
+    <ClInclude Include="..\Lib\textbank.hpp" />
+    <ClInclude Include="..\Lib\titEffects.hpp" />
+    <ClInclude Include="..\Lib\tlVertex.hpp" />
+    <ClInclude Include="..\Lib\types.hpp" />
+    <ClInclude Include="..\Lib\visibility.hpp" />
+    <ClInclude Include="..\Lib\visual.hpp" />
+    <ClInclude Include="..\Lib\weapons.hpp" />
+    <ClInclude Include="..\Lib\winpch.hpp" />
+    <ClInclude Include="..\Lib\world.hpp" />
+    <ClInclude Include="..\Lib\Network\match.h" />
+    <ClInclude Include="..\Lib\Network\messageFactory.hpp" />
+    <ClInclude Include="..\Lib\Network\netTransport.hpp" />
+    <ClInclude Include="..\Lib\Network\netTransportCommon.hpp" />
+    <ClInclude Include="..\Lib\Network\network.hpp" />
+    <ClInclude Include="..\Lib\Network\networkImpl.hpp" />
+    <ClInclude Include="..\Lib\Network\networkObject.hpp" />
+    <ClInclude Include="..\Lib\Network\voiceXbox.hpp" />
+    <ClInclude Include="..\Lib\arcadeTemplate.hpp" />
+    <ClInclude Include="..\Lib\ArcadeWaypoint.hpp" />
+    <ClInclude Include="..\lib\location.hpp" />
+    <ClInclude Include="..\Lib\riffFile.hpp" />
+    <ClInclude Include="..\Lib\soundScene.hpp" />
+    <ClInclude Include="..\Lib\soundsys.hpp" />
+    <ClInclude Include="..\Lib\autoComplete.hpp" />
+    <ClInclude Include="..\Lib\Ui\chat.hpp" />
+    <ClInclude Include="..\Lib\Ui\contextMenu.hpp" />
+    <ClInclude Include="..\Lib\Ui\displayUI.hpp" />
+    <ClInclude Include="..\lib\ui\dispMissionEditor.hpp" />
+    <ClInclude Include="..\Lib\Ui\menu.hpp" />
+    <ClInclude Include="..\lib\ui\missionDirs.hpp" />
+    <ClInclude Include="..\lib\ui\missionEditor.hpp" />
+    <ClInclude Include="..\Lib\Ui\optionsUI.hpp" />
+    <ClInclude Include="..\lib\Ui\progressDisplay.hpp" />
+    <ClInclude Include="..\Lib\Ui\resincl.hpp" />
+    <ClInclude Include="..\Lib\Ui\uiActions.hpp" />
+    <ClInclude Include="..\Lib\Ui\uiControls.hpp" />
+    <ClInclude Include="..\Lib\Ui\uiMap.hpp" />
+    <ClInclude Include="..\lib\ui\uiViewport.hpp" />
+    <ClInclude Include="..\Lib\Cloth\ClothObject.h" />
+    <ClInclude Include="..\Lib\airplane.hpp" />
+    <ClInclude Include="..\Lib\allAIVehicles.hpp" />
+    <ClInclude Include="..\Lib\allVehicles.hpp" />
+    <ClInclude Include="..\lib\animSource.hpp" />
+    <ClInclude Include="..\Lib\cameraHold.hpp" />
+    <ClInclude Include="..\Lib\car.hpp" />
+    <ClInclude Include="..\lib\Curve3D.hpp" />
+    <ClInclude Include="..\lib\door.hpp" />
+    <ClInclude Include="..\Lib\envTracker.hpp" />
+    <ClInclude Include="..\Lib\fireplace.hpp" />
+    <ClInclude Include="..\lib\fsmEntity.hpp" />
+    <ClInclude Include="..\Lib\gearBox.hpp" />
+    <ClInclude Include="..\Lib\head.hpp" />
+    <ClInclude Include="..\Lib\helicopter.hpp" />
+    <ClInclude Include="..\Lib\house.hpp" />
+    <ClInclude Include="..\lib\hudDesc.hpp" />
+    <ClInclude Include="..\lib\identity.hpp" />
+    <ClInclude Include="..\Lib\laserTarget.hpp" />
+    <ClInclude Include="..\Lib\memberCalls.hpp" />
+    <ClInclude Include="..\lib\motion.hpp" />
+    <ClInclude Include="..\Lib\motorcycle.hpp" />
+    <ClInclude Include="..\Lib\parachute.hpp" />
+    <ClInclude Include="..\Lib\person.hpp" />
+    <ClInclude Include="..\Lib\pilotHead.hpp" />
+    <ClInclude Include="..\lib\planeOrHeli.hpp" />
+    <ClInclude Include="..\Lib\proxyWeapon.hpp" />
+    <ClInclude Include="..\Lib\randomShape.hpp" />
+    <ClInclude Include="..\Lib\recoil.hpp" />
+    <ClInclude Include="..\Lib\seaGull.hpp" />
+    <ClInclude Include="..\Lib\ship.hpp" />
+    <ClInclude Include="..\Lib\shots.hpp" />
+    <ClInclude Include="..\Lib\smokes.hpp" />
+    <ClInclude Include="..\Lib\soldierOld.hpp" />
+    <ClInclude Include="..\Lib\tank.hpp" />
+    <ClInclude Include="..\Lib\tankOrCar.hpp" />
+    <ClInclude Include="..\Lib\thing.hpp" />
+    <ClInclude Include="..\Lib\tracks.hpp" />
+    <ClInclude Include="..\Lib\transport.hpp" />
+    <ClInclude Include="..\lib\turret.hpp" />
+    <ClInclude Include="..\Lib\vehicle.hpp" />
+    <ClInclude Include="..\Lib\vehicleAI.hpp" />
+    <ClInclude Include="..\Lib\vehSupply.hpp" />
+    <ClInclude Include="..\lib\WorldRes\WorldLoot.h" />
+    <ClInclude Include="..\lib\WorldRes\WorldRes.h" />
+    <ClInclude Include="..\Lib\wounds.hpp" />
+    <ClInclude Include="..\Lib\fixed.hpp" />
+    <ClInclude Include="..\Lib\invisibleVeh.hpp" />
+    <ClInclude Include="..\cfg\manActions.hpp" />
+    <ClInclude Include="..\Lib\manActs.hpp" />
+    <ClInclude Include="..\Lib\move_actions.hpp" />
+    <ClInclude Include="..\lib\NPClientWraps.h" />
+    <ClInclude Include="..\Lib\objLine.hpp" />
+    <ClInclude Include="..\Lib\progress.hpp" />
+    <ClInclude Include="..\lib\trackIR.hpp" />
+    <ClInclude Include="..\Lib\txtPreload.hpp" />
+    <ClInclude Include="..\Lib\afxConfig.h" />
+    <ClInclude Include="..\lib\consoleConfig.h" />
+    <ClInclude Include="..\Lib\dedServerConfig.h" />
+    <ClInclude Include="..\Lib\demoConfig.h" />
+    <ClInclude Include="..\Lib\desReleaseConfig.h" />
+    <ClInclude Include="..\Lib\mpDemoConfig.h" />
+    <ClInclude Include="..\Lib\mpTestConfig.h" />
+    <ClInclude Include="..\Lib\mpTestServerConfig.h" />
+    <ClInclude Include="..\Lib\normalConfig.h" />
+    <ClInclude Include="..\Lib\resistanceConfig.h" />
+    <ClInclude Include="..\Lib\resistanceServerConfig.h" />
+    <ClInclude Include="..\Lib\sReleaseConfig.h" />
+    <ClInclude Include="..\Lib\VBS1Config.h" />
+    <ClInclude Include="..\Lib\VBS1DemoConfig.h" />
+    <ClInclude Include="..\Lib\wpch.hpp" />
+    <ClInclude Include="..\Lib\xboxConfig.h" />
+    <ClInclude Include="..\Lib\Ui\inGameUI.hpp" />
+    <ClInclude Include="..\Lib\Ui\InGameUIImpl.hpp" />
+    <ClInclude Include="..\Lib\vkCodes.h" />
+    <ClInclude Include="..\Lib\integrity.hpp" />
+    <ClInclude Include="..\Lib\jpgImport.hpp" />
+    <ClInclude Include="..\Lib\mbcs.hpp" />
+    <ClInclude Include="..\Lib\paramFileExt.hpp" />
+    <ClInclude Include="..\Lib\gameStateExt.hpp" />
+    <ClInclude Include="..\Lib\stringids.hpp" />
+    <ClInclude Include="..\Lib\stringtableExt.hpp" />
+    <ClInclude Include="..\Lib\paramArchiveExt.hpp" />
+    <ClInclude Include="..\Lib\Ai\ai.hpp" />
+    <ClInclude Include="..\Lib\Ai\aiDefs.hpp" />
+    <ClInclude Include="..\Lib\Ai\aiRadio.hpp" />
+    <ClInclude Include="..\Lib\Ai\aiTypes.hpp" />
+    <ClInclude Include="..\lib\Ai\fsmScripted.hpp" />
+    <ClInclude Include="..\Lib\Ai\operMap.hpp" />
+    <ClInclude Include="..\Lib\Ai\pathPlanner.hpp" />
+    <ClInclude Include="..\Lib\Marina\CarCollisions.hpp" />
+    <ClInclude Include="..\Lib\Marina\DampedSpring.hpp" />
+    <ClInclude Include="..\lib\Marina\Dampers.hpp" />
+    <ClInclude Include="..\Lib\Marina\Dantzig_old.hpp" />
+    <ClInclude Include="..\Lib\Marina\marina_old.hpp" />
+    <ClInclude Include="..\Lib\Marina\MarinaArray_old.hpp" />
+    <ClInclude Include="..\Lib\Marina\MatrixA_old.hpp" />
+    <ClInclude Include="..\lib\MSStrip\xbstrip.h" />
+    <ClInclude Include="..\Lib\timeManager.hpp" />
+    <ClInclude Include="..\lib\depMake.hpp" />
+    <ClInclude Include="..\lib\gameDirs.hpp" />
+    <ClInclude Include="..\lib\saveGame.hpp" />
+    <ClInclude Include="..\lib\Shape\data3d.h" />
+    <ClInclude Include="..\lib\Shape\edges.hpp" />
+    <ClInclude Include="..\lib\Shape\faceArray.hpp" />
+    <ClInclude Include="..\lib\Shape\mapTypes.hpp" />
+    <ClInclude Include="..\lib\Shape\material.hpp" />
+    <ClInclude Include="..\lib\Shape\modelConfig.hpp" />
+    <ClInclude Include="..\lib\Shape\plane.hpp" />
+    <ClInclude Include="..\lib\Shape\poly.hpp" />
+    <ClInclude Include="..\lib\Shape\Shape.hpp" />
+    <ClInclude Include="..\lib\Shape\SpecLods.hpp" />
+    <ClInclude Include="..\lib\Shape\vertex.hpp" />
+    <ClInclude Include="..\lib\TerSynth\terrain.h" />
+    <ClInclude Include="..\lib\TerSynth\tersynth.h" />
+    <ClInclude Include="..\lib\TerSynth\tersynth_helpers.h" />
+    <ClInclude Include="..\Lib\MemHeap.hpp" />
+    <ClInclude Include="..\El\elementpch.hpp" />
+    <ClInclude Include="..\El\Pch\afxConfig.h" />
+    <ClInclude Include="..\El\Pch\ext_options.hpp" />
+    <ClInclude Include="..\El\Pch\libIncludes.hpp" />
+    <ClInclude Include="..\El\Pch\normalConfig.h" />
+    <ClInclude Include="..\El\Pch\sReleaseConfig.h" />
+    <ClInclude Include="..\El\Pch\stdIncludes.h" />
+    <ClInclude Include="..\El\ParamFile\classDbParamFile.hpp" />
+    <ClInclude Include="..\El\ParamFile\paramFile.hpp" />
+    <ClInclude Include="..\El\ParamFile\paramFileCtx.hpp" />
+    <ClInclude Include="..\El\Evaluator\evaluatorExpress.hpp" />
+    <ClInclude Include="..\El\Evaluator\express.hpp" />
+    <ClInclude Include="..\El\Evaluator\scriptVM.hpp" />
+    <ClInclude Include="..\El\Common\isaac.hpp" />
+    <ClInclude Include="..\El\Common\perfLog.hpp" />
+    <ClInclude Include="..\El\Common\perfProf.hpp" />
+    <ClInclude Include="..\El\Common\randomGen.hpp" />
+    <ClInclude Include="..\El\Common\randomJames.h" />
+    <ClInclude Include="..\El\QStream\fileCompress.hpp" />
+    <ClInclude Include="..\El\QStream\fileinfo.h" />
+    <ClInclude Include="..\El\QStream\iQFBank.hpp" />
+    <ClInclude Include="..\El\QStream\packFiles.hpp" />
+    <ClInclude Include="..\El\QStream\QBStream.hpp" />
+    <ClInclude Include="..\El\QStream\QStream.hpp" />
+    <ClInclude Include="..\El\QStream\serializeBin.hpp" />
+    <ClInclude Include="..\El\PreprocC\Preproc.h" />
+    <ClInclude Include="..\El\PreprocC\preprocC.hpp" />
+    <ClInclude Include="..\El\stringtable\iExtParser.hpp" />
+    <ClInclude Include="..\El\Stringtable\localizeStringtable.hpp" />
+    <ClInclude Include="..\El\Stringtable\stringtable.hpp" />
+    <ClInclude Include="..\El\stringtable\stringtableImpl.hpp" />
+    <ClInclude Include="..\El\Stringtable\stringtableParserXML.hpp" />
+    <ClInclude Include="..\El\Xml\inet.hpp" />
+    <ClInclude Include="..\El\Xml\xml.hpp" />
+    <ClInclude Include="..\El\Network\directchannel.hpp" />
+    <ClInclude Include="..\El\Network\netapi.hpp" />
+    <ClInclude Include="..\El\Network\netchannel.hpp" />
+    <ClInclude Include="..\El\Network\netglobal.hpp" />
+    <ClInclude Include="..\El\Network\netmessage.hpp" />
+    <ClInclude Include="..\El\Network\netpch.hpp" />
+    <ClInclude Include="..\El\Network\netpeer.hpp" />
+    <ClInclude Include="..\El\Network\netpeerxbox.hpp" />
+    <ClInclude Include="..\El\Network\netXboxConfig.hpp" />
+    <ClInclude Include="..\El\Network\peerfactory.hpp" />
+    <ClInclude Include="..\El\Network\peerfactoryxbox.hpp" />
+    <ClInclude Include="..\El\Calendar\eventToCallback.hpp" />
+    <ClInclude Include="..\El\Calendar\pocalendar.hpp" />
+    <ClInclude Include="..\El\Modules\modules.hpp" />
+    <ClInclude Include="..\El\Math\math3d.hpp" />
+    <ClInclude Include="..\El\Math\math3dK.hpp" />
+    <ClInclude Include="..\El\Math\math3dP.hpp" />
+    <ClInclude Include="..\El\Math\math3dT.hpp" />
+    <ClInclude Include="..\El\Math\mathDefs.hpp" />
+    <ClInclude Include="..\El\Math\mathOpt.hpp" />
+    <ClInclude Include="..\El\Math\vecTempl.hpp" />
+    <ClInclude Include="..\El\FreeOnDemand\memFreeReq.hpp" />
+    <ClInclude Include="..\El\Interfaces\iAppInfo.hpp" />
+    <ClInclude Include="..\El\Interfaces\iClassDb.hpp" />
+    <ClInclude Include="..\El\Interfaces\iEval.hpp" />
+    <ClInclude Include="..\El\Interfaces\iFileMake.hpp" />
+    <ClInclude Include="..\El\Interfaces\iLocalize.hpp" />
+    <ClInclude Include="..\El\Interfaces\iPreproc.hpp" />
+    <ClInclude Include="..\El\Interfaces\iSumCalc.hpp" />
+    <ClInclude Include="..\El\Crc\crc.hpp" />
+    <ClInclude Include="..\El\Crc\sumCalcCrc.hpp" />
+    <ClInclude Include="..\El\ParamArchive\paramArchive.hpp" />
+    <ClInclude Include="..\El\ParamArchive\paramArchiveDb.hpp" />
+    <ClInclude Include="..\El\ParamFile\paramFileDecl.hpp" />
+    <ClInclude Include="..\El\ParamArchive\serializeClass.hpp" />
+    <ClInclude Include="..\El\Clipboard\clipboard.hpp" />
+    <ClInclude Include="..\El\Debugging\debugTrap.hpp" />
+    <ClInclude Include="..\El\Debugging\imexhnd.h" />
+    <ClInclude Include="..\El\Debugging\mapFile.hpp" />
+    <ClInclude Include="..\El\Debugging\xboxFileFormats.h" />
+    <ClInclude Include="..\El\Color\colors.hpp" />
+    <ClInclude Include="..\El\Color\colorsFloat.hpp" />
+    <ClInclude Include="..\El\Color\colorsK.hpp" />
+    <ClInclude Include="..\El\Time\time.hpp" />
+    <ClInclude Include="..\El\DebugWindow\debugWin.hpp" />
+    <ClInclude Include="..\El\DebugWindow\debugWinImpl.hpp" />
+    <ClInclude Include="..\El\Enum\dynEnum.hpp" />
+    <ClInclude Include="..\El\Enum\enumNames.hpp" />
+    <ClInclude Include="..\El\Enum\idString.hpp" />
+    <ClInclude Include="..\El\Statistics\statistics.hpp" />
+    <ClInclude Include="..\El\HierWalker\hierWalker.hpp" />
+    <ClInclude Include="..\El\Breakpoint\breakpoint.h" />
+    <ClInclude Include="..\El\Speech\dpcm\dpcm.hpp" />
+    <ClInclude Include="..\El\Speech\microsoft\mscelp.hpp" />
+    <ClInclude Include="..\El\Speech\lpc\openlpc.hpp" />
+    <ClInclude Include="..\El\Speech\Pcm\pcm.hpp" />
+    <ClInclude Include="..\El\Speech\speex\speex.hpp" />
+    <ClInclude Include="..\El\Speech\vonApp.hpp" />
+    <ClInclude Include="..\El\Speech\vonCodec.hpp" />
+    <ClInclude Include="..\El\Speech\vonNet.hpp" />
+    <ClInclude Include="..\El\Speech\vonPch.hpp" />
+    <ClInclude Include="..\El\hirestime\hiResTime.hpp" />
+    <ClInclude Include="..\El\activity\activity.hpp" />
+    <ClInclude Include="..\El\bidebugengine\biDebugEngine.hpp" />
+    <ClInclude Include="..\El\bidebugengine\debugEngineInterface.hpp" />
+    <ClInclude Include="..\El\FileBinMake\fileBinMake.hpp" />
+    <ClInclude Include="..\El\SimpleExpression\simpleExpression.hpp" />
+    <ClInclude Include="..\El\graph\clique.hpp" />
+    <ClInclude Include="..\El\datasignatures\dataSignatures.hpp" />
+    <ClInclude Include="..\El\PerlinNoise\perlinNoise.hpp" />
+    <ClInclude Include="..\El\FileServer\fileServer.hpp" />
+    <ClInclude Include="..\El\FileServer\fileServerAsync.hpp" />
+    <ClInclude Include="..\El\FileServer\fileServerMT.hpp" />
+    <ClInclude Include="..\El\FileServer\multithread.hpp" />
+    <ClInclude Include="..\El\SoundFile\soundFile.hpp" />
+    <ClInclude Include="..\El\MultiThread2\common\Array.h" />
+    <ClInclude Include="..\El\MultiThread2\common\Assert.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\BlockerSimpleBase.h" />
+    <ClInclude Include="..\El\MultiThread2\common\CommonDefs.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\CriticalSection.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\CriticalSectionBlocker.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\IBlocker.h" />
+    <ClInclude Include="..\El\MultiThread2\common\IMultiInterface.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\Interlocked.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\IRunnable.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\IThreadMessage.h" />
+    <ClInclude Include="..\El\MultiThread2\common\LateConstructed.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\MessageThread.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\MTCommon.h" />
+    <ClInclude Include="..\El\MultiThread2\common\Ref.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\SleepBlocker.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\SmartRefCount.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\Synchronized.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\SyncRefCount.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\SyncTypes.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\Thread.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\ThreadBase.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\ThreadHook.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\Tls.h" />
+    <ClInclude Include="..\El\MultiThread2\common\VarArg++.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\waitFunctions.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\src-windows\common_Win.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\src-windows\interlocked.h" />
+    <ClInclude Include="..\El\MultiThread2\multithread\src-windows\waitFunctions_win.h" />
+    <ClInclude Include="..\El\multicore\jobs.hpp" />
+    <ClInclude Include="..\El\multicore\multicore.hpp" />
+    <ClInclude Include="..\El\MemoryStore\memStore.hpp" />
+    <ClInclude Include="..\El\ActiveObject\activeObject.hpp" />
+    <ClInclude Include="..\Es\essencepch.hpp" />
+    <ClInclude Include="..\Es\platform.hpp" />
+    <ClInclude Include="..\Es\Algorithms\aStar.hpp" />
+    <ClInclude Include="..\Es\Algorithms\bSearch.hpp" />
+    <ClInclude Include="..\Es\Algorithms\crc32.h" />
+    <ClInclude Include="..\Es\Algorithms\qsort.hpp" />
+    <ClInclude Include="..\Es\Algorithms\splineEqD.hpp" />
+    <ClInclude Include="..\Es\Common\fltopts.hpp" />
+    <ClInclude Include="..\Es\Common\global.hpp" />
+    <ClInclude Include="..\Es\Common\mathND.hpp" />
+    <ClInclude Include="..\Es\Common\win.h" />
+    <ClInclude Include="..\Es\Containers\array.hpp" />
+    <ClInclude Include="..\Es\Containers\array2D.hpp" />
+    <ClInclude Include="..\Es\Containers\bankArray.hpp" />
+    <ClInclude Include="..\Es\Containers\bankInitArray.hpp" />
+    <ClInclude Include="..\Es\Containers\bigArray.hpp" />
+    <ClInclude Include="..\Es\Containers\bitmask.hpp" />
+    <ClInclude Include="..\Es\Containers\boolArray.hpp" />
+    <ClInclude Include="..\Es\Containers\cachelist.hpp" />
+    <ClInclude Include="..\Es\Containers\compactBuf.hpp" />
+    <ClInclude Include="..\Es\Containers\forEach.hpp" />
+    <ClInclude Include="..\Es\Containers\hashMap.hpp" />
+    <ClInclude Include="..\Es\Containers\list.hpp" />
+    <ClInclude Include="..\Es\Containers\listBidir.hpp" />
+    <ClInclude Include="..\Es\Containers\maps.hpp" />
+    <ClInclude Include="..\Es\Containers\quadtree.hpp" />
+    <ClInclude Include="..\Es\Containers\quadtreeCont.hpp" />
+    <ClInclude Include="..\Es\Containers\quadtreeEx.hpp" />
+    <ClInclude Include="..\Es\Containers\rStringArray.hpp" />
+    <ClInclude Include="..\Es\Containers\smallArray.hpp" />
+    <ClInclude Include="..\Es\Containers\sortedArray.hpp" />
+    <ClInclude Include="..\Es\Containers\staticArray.hpp" />
+    <ClInclude Include="..\Es\Containers\streamArray.hpp" />
+    <ClInclude Include="..\Es\Containers\typeDefines.hpp" />
+    <ClInclude Include="..\Es\Containers\typeGenTemplates.hpp" />
+    <ClInclude Include="..\Es\Containers\typeOpts.hpp" />
+    <ClInclude Include="..\Es\Containers\typeTemplates.hpp" />
+    <ClInclude Include="..\Es\Framework\appFrame.hpp" />
+    <ClInclude Include="..\Es\Framework\debugLog.hpp" />
+    <ClInclude Include="..\Es\Framework\logflags.hpp" />
+    <ClInclude Include="..\Es\Framework\netlog.hpp" />
+    <ClInclude Include="..\Es\Framework\optDefault.hpp" />
+    <ClInclude Include="..\Es\Framework\optEnable.hpp" />
+    <ClInclude Include="..\Es\Framework\potime.hpp" />
+    <ClInclude Include="..\Es\Memory\checkMem.hpp" />
+    <ClInclude Include="..\Es\Memory\debugAlloc.hpp" />
+    <ClInclude Include="..\Es\Memory\debugNew.hpp" />
+    <ClInclude Include="..\Es\Memory\defNew.hpp" />
+    <ClInclude Include="..\Es\Memory\defNormNew.hpp" />
+    <ClInclude Include="..\Es\Memory\fastAlloc.hpp" />
+    <ClInclude Include="..\Es\Memory\memAlloc.hpp" />
+    <ClInclude Include="..\Es\Memory\normalNew.hpp" />
+    <ClInclude Include="..\Es\Strings\bstring.hpp" />
+    <ClInclude Include="..\Es\Strings\rString.hpp" />
+    <ClInclude Include="..\Es\Types\enum_decl.hpp" />
+    <ClInclude Include="..\Es\Types\lLinks.hpp" />
+    <ClInclude Include="..\Es\Types\memtype.h" />
+    <ClInclude Include="..\Es\Types\pointers.hpp" />
+    <ClInclude Include="..\Es\Types\removeLinks.hpp" />
+    <ClInclude Include="..\Es\Types\scopeLock.hpp" />
+    <ClInclude Include="..\Es\Types\softLinks.hpp" />
+    <ClInclude Include="..\Es\Threads\multisync.hpp" />
+    <ClInclude Include="..\Es\Threads\pocritical.hpp" />
+    <ClInclude Include="..\Es\Threads\posemaphore.hpp" />
+    <ClInclude Include="..\Es\Threads\pothread.hpp" />
+    <ClInclude Include="..\Es\Threads\threadSync.hpp" />
+    <ClInclude Include="..\Es\Files\commandLine.hpp" />
+    <ClInclude Include="..\Es\Files\fileContainer.hpp" />
+    <ClInclude Include="..\Es\Files\filenames.hpp" />
+    <ClInclude Include="..\Es\ErrorProp\errorProp.hpp" />
+    <ClInclude Include="..\Es\reportStack\reportStack.hpp" />
+    <ClInclude Include="..\lib\zombie.hpp" />
+    <ClInclude Include="..\RV\speechrecognition\fonix.hpp" />
+    <ClInclude Include="..\RV\speechrecognition\voiceCapture.hpp" />
+    <ClInclude Include="..\lib\engDummy.hpp" />
+    <ClInclude Include="..\posAccess\posAccess.hpp" />
+    <ClInclude Include="..\posAccess\posAccessDummy.hpp" />
+    <ClInclude Include="StdAfx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\El\Credits\credits.cpp" />
+    <ClCompile Include="..\El\Evaluator\jvmImpl.cpp" />
+    <ClCompile Include="..\El\LZO\lzo1x_d4.c" />
+    <ClCompile Include="..\El\LZO\lzo1x_dStream.cpp" />
+    <ClCompile Include="..\El\LZO\lzo_init.c" />
+    <ClCompile Include="..\El\LZO\pinit.c" />
+    <ClCompile Include="..\El\LZO\plzo1x_1f.c" />
+    <ClCompile Include="..\Enforce\src\common\enf_mathlib.cpp" />
+    <ClCompile Include="..\Enforce\src\common\enf_staticbuffer.cpp" />
+    <ClCompile Include="..\Enforce\src\common\enf_strings.cpp" />
+    <ClCompile Include="..\Enforce\src\enf_intersection.cpp" />
+    <ClCompile Include="..\Enforce\src\enf_item.cpp" />
+    <ClCompile Include="..\Enforce\src\enf_shapes.cpp" />
+    <ClCompile Include="..\Enforce\src\Physics\enf_btHeightfieldTerrainShape.cpp" />
+    <ClCompile Include="..\Enforce\src\Physics\enf_physicsbulletmanager.cpp" />
+    <ClCompile Include="..\Enforce\src\Physics\enf_physicsbulletworld.cpp" />
+    <ClCompile Include="..\Enforce\src\Physics\enf_physicscontrollers.cpp" />
+    <ClCompile Include="..\Enforce\src\Physics\enf_physicsragdoll.cpp" />
+    <ClCompile Include="..\Enforce\src\Physics\enf_worldphysics.cpp" />
+    <ClCompile Include="..\lib\camShake.cpp" />
+    <ClCompile Include="..\Lib\drawText.cpp" />
+    <ClCompile Include="..\Lib\fileLocator.cpp" />
+    <ClCompile Include="..\lib\freeTrack.cpp" />
+    <ClCompile Include="..\lib\freeTrackClient.cpp" />
+    <ClCompile Include="..\lib\Inventory\inventory.cpp" />
+    <ClCompile Include="..\lib\Inventory\magazine.cpp" />
+    <ClCompile Include="..\lib\Inventory\weapon.cpp" />
+    <ClCompile Include="..\lib\json.cpp" />
+    <ClCompile Include="..\lib\jvmInit.cpp" />
+    <ClCompile Include="..\lib\jvmInitHelper.cpp" />
+    <ClCompile Include="..\lib\jvmUI.cpp" />
+    <ClCompile Include="..\lib\landWeather.cpp" />
+    <ClCompile Include="..\Lib\mapObject.cpp" />
+    <ClCompile Include="..\lib\Network\geoLoc.cpp" />
+    <ClCompile Include="..\lib\Network\httpRequest.cpp" />
+    <ClCompile Include="..\lib\Network\pingLoc.cpp" />
+    <ClCompile Include="..\Lib\objectId.cpp" />
+    <ClCompile Include="..\lib\progressScr.cpp" />
+    <ClCompile Include="..\lib\scenery.cpp" />
+    <ClCompile Include="..\Lib\serializeBinExt.cpp" />
+    <ClCompile Include="..\Lib\Network\match.cpp" />
+    <ClCompile Include="..\Lib\Network\netTransportNet.cpp" />
+    <ClCompile Include="..\Lib\Network\netTransportXbox.cpp" />
+    <ClCompile Include="..\Lib\Network\network.cpp" />
+    <ClCompile Include="..\Lib\Network\networkClient.cpp" />
+    <ClCompile Include="..\Lib\Network\networkMsg.cpp" />
+    <ClCompile Include="..\Lib\Network\networkServer.cpp" />
+    <ClCompile Include="..\Lib\Network\voiceXbox.cpp" />
+    <ClCompile Include="..\Lib\arcadeTemplate.cpp" />
+    <ClCompile Include="..\lib\location.cpp" />
+    <ClCompile Include="..\Lib\soundScene.cpp" />
+    <ClCompile Include="..\Lib\soundSys.cpp" />
+    <ClCompile Include="..\Lib\autoComplete.cpp" />
+    <ClCompile Include="..\Lib\Ui\chat.cpp" />
+    <ClCompile Include="..\Lib\Ui\contextMenu.cpp" />
+    <ClCompile Include="..\Lib\Ui\displayUI.cpp" />
+    <ClCompile Include="..\lib\ui\dispMissionEditor.cpp" />
+    <ClCompile Include="..\lib\UI\HUDInfo.cpp" />
+    <ClCompile Include="..\Lib\Ui\menu.cpp" />
+    <ClCompile Include="..\lib\ui\missionDirs.cpp" />
+    <ClCompile Include="..\lib\ui\missionEditor.cpp" />
+    <ClCompile Include="..\lib\ui\missionEditorExport.cpp" />
+    <ClCompile Include="..\Lib\Ui\optionsUI.cpp" />
+    <ClCompile Include="..\lib\Ui\progressDisplay.cpp" />
+    <ClCompile Include="..\Lib\Ui\uiArcade.cpp" />
+    <ClCompile Include="..\Lib\Ui\uiContainers.cpp" />
+    <ClCompile Include="..\Lib\Ui\uiControls.cpp" />
+    <ClCompile Include="..\Lib\Ui\uiControlsExt.cpp" />
+    <ClCompile Include="..\Lib\Ui\uiMap.cpp" />
+    <ClCompile Include="..\Lib\Ui\uiMapExport.cpp" />
+    <ClCompile Include="..\Lib\Ui\uiMapExt.cpp" />
+    <ClCompile Include="..\lib\ui\uiViewport.cpp" />
+    <ClCompile Include="..\Lib\Cloth\ClothObject.cpp" />
+    <ClCompile Include="..\Lib\airplane.cpp" />
+    <ClCompile Include="..\lib\animSource.cpp" />
+    <ClCompile Include="..\Lib\camera.cpp" />
+    <ClCompile Include="..\Lib\cameraHold.cpp" />
+    <ClCompile Include="..\Lib\car.cpp" />
+    <ClCompile Include="..\lib\Curve3D.cpp" />
+    <ClCompile Include="..\Lib\detector.cpp" />
+    <ClCompile Include="..\lib\door.cpp" />
+    <ClCompile Include="..\Lib\dynSound.cpp" />
+    <ClCompile Include="..\Lib\envTracker.cpp" />
+    <ClCompile Include="..\lib\fsmEntity.cpp" />
+    <ClCompile Include="..\Lib\gearBox.cpp" />
+    <ClCompile Include="..\Lib\head.cpp" />
+    <ClCompile Include="..\Lib\helicopter.cpp" />
+    <ClCompile Include="..\Lib\house.cpp" />
+    <ClCompile Include="..\lib\hudDesc.cpp" />
+    <ClCompile Include="..\lib\identity.cpp" />
+    <ClCompile Include="..\Lib\laserTarget.cpp" />
+    <ClCompile Include="..\lib\motion.cpp" />
+    <ClCompile Include="..\Lib\motorcycle.cpp" />
+    <ClCompile Include="..\Lib\parachute.cpp" />
+    <ClCompile Include="..\Lib\person.cpp" />
+    <ClCompile Include="..\lib\planeOrHeli.cpp" />
+    <ClCompile Include="..\Lib\proxyWeapon.cpp" />
+    <ClCompile Include="..\Lib\randomShape.cpp" />
+    <ClCompile Include="..\Lib\recoil.cpp" />
+    <ClCompile Include="..\Lib\seaGull.cpp" />
+    <ClCompile Include="..\Lib\ship.cpp" />
+    <ClCompile Include="..\Lib\shots.cpp" />
+    <ClCompile Include="..\Lib\simul.cpp" />
+    <ClCompile Include="..\Lib\smokes.cpp" />
+    <ClCompile Include="..\Lib\soldierOld.cpp">
+      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
+    </ClCompile>
+    <ClCompile Include="..\Lib\tank.cpp" />
+    <ClCompile Include="..\Lib\tankOrCar.cpp" />
+    <ClCompile Include="..\Lib\target.cpp" />
+    <ClCompile Include="..\Lib\thing.cpp" />
+    <ClCompile Include="..\Lib\tracks.cpp" />
+    <ClCompile Include="..\Lib\transport.cpp" />
+    <ClCompile Include="..\lib\turret.cpp" />
+    <ClCompile Include="..\Lib\vehicleAI.cpp" />
+    <ClCompile Include="..\Lib\vehicleTypes.cpp" />
+    <ClCompile Include="..\Lib\vehSupply.cpp" />
+    <ClCompile Include="..\lib\videoOptionsConfig.cpp" />
+    <ClCompile Include="..\lib\WorldRes\WorldLoot.cpp" />
+    <ClCompile Include="..\lib\WorldRes\WorldRes.cpp" />
+    <ClCompile Include="..\Lib\wounds.cpp" />
+    <ClCompile Include="..\Lib\camEffects.cpp" />
+    <ClCompile Include="..\Lib\dammage.cpp" />
+    <ClCompile Include="..\Lib\engine.cpp" />
+    <ClCompile Include="..\Lib\engineDraw.cpp" />
+    <ClCompile Include="..\lib\fileServerUseGameSettings.cpp" />
+    <ClCompile Include="..\Lib\fireplace.cpp" />
+    <ClCompile Include="..\Lib\font.cpp" />
+    <ClCompile Include="..\Lib\fontDraw.cpp" />
+    <ClCompile Include="..\Lib\frame.cpp" />
+    <ClCompile Include="..\Lib\fsm.cpp" />
+    <ClCompile Include="..\Lib\geography.cpp" />
+    <ClCompile Include="..\lib\heads.cpp" />
+    <ClCompile Include="..\Lib\interpol.cpp" />
+    <ClCompile Include="..\Lib\invisibleVeh.cpp" />
+    <ClCompile Include="..\Lib\Joystick.cpp" />
+    <ClCompile Include="..\Lib\landSave.cpp" />
+    <ClCompile Include="..\Lib\lights.cpp" />
+    <ClCompile Include="..\Lib\mainCommon.cpp" />
+    <ClCompile Include="..\lib\mainInput.cpp" />
+    <ClCompile Include="..\lib\NPClientWraps.cpp" />
+    <ClCompile Include="..\Lib\objectClasses.cpp" />
+    <ClCompile Include="..\Lib\objLine.cpp" />
+    <ClCompile Include="..\lib\oggtext.cpp" />
+    <ClCompile Include="..\Lib\onExit.cpp" />
+    <ClCompile Include="..\Lib\onExitLib.cpp" />
+    <ClCompile Include="..\Lib\pactext.cpp" />
+    <ClCompile Include="..\Lib\pathSteer.cpp" />
+    <ClCompile Include="..\Lib\roads.cpp" />
+    <ClCompile Include="..\Lib\scripts.cpp" />
+    <ClCompile Include="..\Lib\shapeLand.cpp" />
+    <ClCompile Include="..\Lib\speaker.cpp" />
+    <ClCompile Include="..\Lib\titEffects.cpp" />
+    <ClCompile Include="..\lib\trackIR.cpp" />
+    <ClCompile Include="..\Lib\txtBank.cpp" />
+    <ClCompile Include="..\Lib\txtPreload.cpp" />
+    <ClCompile Include="..\Lib\viewer.cpp" />
+    <ClCompile Include="..\Lib\visibility.cpp" />
+    <ClCompile Include="..\Lib\weapons.cpp" />
+    <ClCompile Include="..\Lib\world.cpp" />
+    <ClCompile Include="..\Lib\wpch.cpp" />
+    <ClCompile Include="..\Lib\Ui\inGameUI.cpp" />
+    <ClCompile Include="..\Lib\Ui\inGameUIDraw.cpp" />
+    <ClCompile Include="..\Lib\jpgImport.cpp" />
+    <ClCompile Include="..\Lib\mbcs.cpp" />
+    <ClCompile Include="..\Lib\paramFileExt.cpp" />
+    <ClCompile Include="..\Lib\Encryption\VBS1.cpp" />
+    <ClCompile Include="..\Lib\Encryption\XOR1024.cpp" />
+    <ClCompile Include="..\Lib\gameStateExt.cpp" />
+    <ClCompile Include="..\Lib\stringtableExt.cpp" />
+    <ClCompile Include="..\Lib\animation.cpp" />
+    <ClCompile Include="..\Lib\clipdraw.cpp" />
+    <ClCompile Include="..\Lib\clipShape.cpp" />
+    <ClCompile Include="..\Lib\collisions.cpp" />
+    <ClCompile Include="..\Lib\drawpoly.cpp" />
+    <ClCompile Include="..\lib\landClutter.cpp" />
+    <ClCompile Include="..\Lib\landscape.cpp" />
+    <ClCompile Include="..\Lib\lockCache.cpp" />
+    <ClCompile Include="..\Lib\object.cpp" />
+    <ClCompile Include="..\Lib\rtAnimation.cpp" />
+    <ClCompile Include="..\Lib\scene.cpp" />
+    <ClCompile Include="..\Lib\shadow.cpp" />
+    <ClCompile Include="..\Lib\ShapeDraw.cpp" />
+    <ClCompile Include="..\Lib\StdLib.cpp" />
+    <ClCompile Include="..\Lib\transLight.cpp" />
+    <ClCompile Include="..\Lib\paramArchiveExt.cpp" />
+    <ClCompile Include="..\Lib\Ai\aiCenter.cpp" />
+    <ClCompile Include="..\Lib\Ai\aiRadio.cpp" />
+    <ClCompile Include="..\Lib\Ai\aiUnit.cpp" />
+    <ClCompile Include="..\lib\Ai\fsmScripted.cpp" />
+    <ClCompile Include="..\Lib\Ai\operMap.cpp" />
+    <ClCompile Include="..\Lib\Ai\pathPlanner.cpp" />
+    <ClCompile Include="..\lib\AI\suppressMap.cpp" />
+    <ClCompile Include="..\Lib\Marina\CarCollisions.cpp" />
+    <ClCompile Include="..\lib\Marina\dampers.cpp" />
+    <ClCompile Include="..\Lib\Marina\Dantzig_old.cpp" />
+    <ClCompile Include="..\Lib\Marina\mtl_lu_solve.cpp" />
+    <ClCompile Include="..\lib\MSStrip\xbstrip.cpp" />
+    <ClCompile Include="..\Lib\timeManager.cpp" />
+    <ClCompile Include="..\lib\depMakeUseBinMake.cpp" />
+    <ClCompile Include="..\lib\gameDirs.cpp" />
+    <ClCompile Include="..\lib\saveGame.cpp" />
+    <ClCompile Include="..\lib\Shape\edges.cpp" />
+    <ClCompile Include="..\lib\Shape\faceArray.cpp" />
+    <ClCompile Include="..\lib\Shape\material.cpp" />
+    <ClCompile Include="..\lib\Shape\modelConfig.cpp" />
+    <ClCompile Include="..\lib\Shape\plane.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\lib\Shape\poly.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\lib\Shape\Shape.cpp" />
+    <ClCompile Include="..\lib\Shape\shapeFile.cpp" />
+    <ClCompile Include="..\lib\Shape\vertex.cpp" />
+    <ClCompile Include="..\lib\TerSynth\terrain.cpp" />
+    <ClCompile Include="..\lib\TerSynth\tersynth.cpp" />
+    <ClCompile Include="..\lib\TerSynth\tersynth_helpers.cpp" />
+    <ClCompile Include="..\Lib\MemGrow.cpp" />
+    <ClCompile Include="..\Lib\memTable.cpp" />
+    <ClCompile Include="..\El\ParamFile\classDbParamFile.cpp" />
+    <ClCompile Include="..\El\ParamFile\paramFile.cpp" />
+    <ClCompile Include="..\El\ParamFile\paramFileCtx.cpp" />
+    <ClCompile Include="..\El\ParamFile\paramFileUseEvalExpress.cpp" />
+    <ClCompile Include="..\El\ParamFile\paramFileUseLocalizeStringtable.cpp" />
+    <ClCompile Include="..\El\ParamFile\paramFileUsePreprocC.cpp" />
+    <ClCompile Include="..\El\ParamFile\paramFileUseSumCalcCrc.cpp" />
+    <ClCompile Include="..\El\Evaluator\evaluatorExpress.cpp" />
+    <ClCompile Include="..\El\Evaluator\evalUseBIDebugEngine.cpp" />
+    <ClCompile Include="..\El\Evaluator\evalUseLocalizeStringtable.cpp" />
+    <ClCompile Include="..\El\Evaluator\express.cpp" />
+    <ClCompile Include="..\El\Evaluator\expressCompiler.cpp" />
+    <ClCompile Include="..\El\Evaluator\expressInterpreter.cpp" />
+    <ClCompile Include="..\El\Evaluator\scriptVM.cpp" />
+    <ClCompile Include="..\El\Evaluator\scriptVMUsePreprocC.cpp" />
+    <ClCompile Include="..\El\Common\globalAlive.cpp" />
+    <ClCompile Include="..\El\Common\perfLog.cpp" />
+    <ClCompile Include="..\El\Common\randomGen.cpp" />
+    <ClCompile Include="..\El\Common\randomJames.cpp" />
+    <ClCompile Include="..\El\QStream\fileCompress.cpp" />
+    <ClCompile Include="..\El\QStream\packFiles.cpp" />
+    <ClCompile Include="..\El\QStream\qbstream.cpp" />
+    <ClCompile Include="..\El\QStream\qstream.cpp" />
+    <ClCompile Include="..\El\QStream\qstreamUseBankQFBank.cpp" />
+    <ClCompile Include="..\El\QStream\serializeBin.cpp" />
+    <ClCompile Include="..\El\QStream\ssCompress.cpp" />
+    <ClCompile Include="..\El\PreprocC\Preproc.cpp" />
+    <ClCompile Include="..\El\PreprocC\preprocC.cpp" />
+    <ClCompile Include="..\El\Stringtable\localizeStringtable.cpp" />
+    <ClCompile Include="..\El\Stringtable\stringtable.cpp" />
+    <ClCompile Include="..\El\Stringtable\stringtableParserXML.cpp" />
+    <ClCompile Include="..\El\stringtable\stringtableUseExtParserXML.cpp" />
+    <ClCompile Include="..\El\Stringtable\stringtableUsePreprocC.cpp" />
+    <ClCompile Include="..\El\Xml\inet.cpp" />
+    <ClCompile Include="..\El\Xml\xml.cpp" />
+    <ClCompile Include="..\El\Network\directchannel.cpp" />
+    <ClCompile Include="..\El\Network\netapi.cpp" />
+    <ClCompile Include="..\El\Network\netchannel.cpp" />
+    <ClCompile Include="..\El\Network\netmessage.cpp" />
+    <ClCompile Include="..\El\Network\netpeer.cpp" />
+    <ClCompile Include="..\El\Network\netpeerxbox.cpp" />
+    <ClCompile Include="..\El\Network\netpool.cpp" />
+    <ClCompile Include="..\El\Network\peerfactory.cpp" />
+    <ClCompile Include="..\El\Network\peerfactoryxbox.cpp" />
+    <ClCompile Include="..\El\Calendar\eventToCallback.cpp" />
+    <ClCompile Include="..\El\Calendar\pocalendar.cpp" />
+    <ClCompile Include="..\El\Modules\modules.cpp" />
+    <ClCompile Include="..\El\Math\math3dK.cpp" />
+    <ClCompile Include="..\El\Math\math3dP.cpp" />
+    <ClCompile Include="..\El\Math\math3DPK.cpp" />
+    <ClCompile Include="..\El\Math\math3dT.cpp" />
+    <ClCompile Include="..\El\Math\mathOpt.cpp" />
+    <ClCompile Include="..\El\Math\matrixP3.cpp" />
+    <ClCompile Include="..\El\FreeOnDemand\memFreeReq.cpp" />
+    <ClCompile Include="..\El\Crc\crc.cpp" />
+    <ClCompile Include="..\El\ParamArchive\paramArchive.cpp" />
+    <ClCompile Include="..\El\ParamArchive\paramArchiveDb.cpp" />
+    <ClCompile Include="..\El\ParamArchive\paramArchiveUseDbParamFile.cpp" />
+    <ClCompile Include="..\El\Clipboard\clipboard.cpp" />
+    <ClCompile Include="..\El\Debugging\debugTrap.cpp" />
+    <ClCompile Include="..\El\Debugging\imexhnd.cpp" />
+    <ClCompile Include="..\El\Debugging\mapFile.cpp" />
+    <ClCompile Include="..\El\Color\colorsK.cpp" />
+    <ClCompile Include="..\El\Color\colorsP.cpp" />
+    <ClCompile Include="..\El\Time\time.cpp" />
+    <ClCompile Include="..\El\DebugWindow\debugWin.cpp" />
+    <ClCompile Include="..\El\Enum\dynEnum.cpp" />
+    <ClCompile Include="..\El\Enum\enumNames.cpp" />
+    <ClCompile Include="..\El\Enum\idString.cpp" />
+    <ClCompile Include="..\El\Statistics\statistics.cpp" />
+    <ClCompile Include="..\El\HierWalker\hierWalker.cpp" />
+    <ClCompile Include="..\El\Breakpoint\breakpoint.cpp" />
+    <ClCompile Include="..\El\Speech\dpcm\dpcm.cpp" />
+    <ClCompile Include="..\El\Speech\microsoft\mscelp.cpp" />
+    <ClCompile Include="..\El\Speech\lpc\openlpc.cpp" />
+    <ClCompile Include="..\El\Speech\Pcm\pcm.cpp" />
+    <ClCompile Include="..\El\Speech\speex\speex.cpp" />
+    <ClCompile Include="..\El\Speech\vonApp.cpp" />
+    <ClCompile Include="..\El\Speech\vonCodec.cpp" />
+    <ClCompile Include="..\El\hirestime\hiResTime.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\El\activity\activity.cpp" />
+    <ClCompile Include="..\El\bidebugengine\biDebugEngine.cpp" />
+    <ClCompile Include="..\El\FileBinMake\fileBinMake.cpp" />
+    <ClCompile Include="..\El\SimpleExpression\simpleExpression.cpp" />
+    <ClCompile Include="..\El\graph\clique.cpp" />
+    <ClCompile Include="..\El\datasignatures\dataSignatures.cpp" />
+    <ClCompile Include="..\El\PerlinNoise\perlinNoise.cpp" />
+    <ClCompile Include="..\El\FileServer\fileServer.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Disabled</Optimization>
+    </ClCompile>
+    <ClCompile Include="..\El\FileServer\fileServerAsync.cpp" />
+    <ClCompile Include="..\El\FileServer\multithread.cpp" />
+    <ClCompile Include="..\El\SoundFile\soundFile.cpp" />
+    <ClCompile Include="..\El\MultiThread2\common\LateConstructed.cpp" />
+    <ClCompile Include="..\El\MultiThread2\common\src-windows\AssertBis.cpp" />
+    <ClCompile Include="..\El\MultiThread2\multithread\src-windows\BlockerSimpleBase.cpp" />
+    <ClCompile Include="..\El\MultiThread2\multithread\src-windows\CriticalSection.cpp" />
+    <ClCompile Include="..\El\MultiThread2\multithread\src-portable\Synchronized.cpp" />
+    <ClCompile Include="..\El\MultiThread2\multithread\src-windows\ThreadBase.cpp" />
+    <ClCompile Include="..\El\MultiThread2\multithread\src-portable\ThreadHook.cpp" />
+    <ClCompile Include="..\El\MultiThread2\multithread\src-windows\Tls.cpp" />
+    <ClCompile Include="..\El\MultiThread2\multithread\src-windows\waitFunctions.cpp" />
+    <ClCompile Include="..\El\multicore\jobs.cpp" />
+    <ClCompile Include="..\El\multicore\multicore.cpp" />
+    <ClCompile Include="..\El\MemoryStore\memStore.cpp" />
+    <ClCompile Include="..\El\ActiveObject\activeObject.cpp" />
+    <ClCompile Include="..\Es\Algorithms\crc32.cpp" />
+    <ClCompile Include="..\Es\Containers\bitmask.cpp" />
+    <ClCompile Include="..\Es\Containers\maps.cpp" />
+    <ClCompile Include="..\Es\Framework\appFrame.cpp" />
+    <ClCompile Include="..\Es\Framework\netlog.cpp" />
+    <ClCompile Include="..\Es\Framework\potime.cpp" />
+    <ClCompile Include="..\Es\Memory\debugAlloc.cpp" />
+    <ClCompile Include="..\Es\Memory\fastAlloc.cpp" />
+    <ClCompile Include="..\Es\Strings\rString.cpp" />
+    <ClCompile Include="..\Es\Types\lLinks.cpp" />
+    <ClCompile Include="..\Es\Types\softLinks.cpp" />
+    <ClCompile Include="..\Es\Threads\pocritical.cpp" />
+    <ClCompile Include="..\Es\Threads\posemaphore.cpp" />
+    <ClCompile Include="..\Es\Threads\pothread.cpp" />
+    <ClCompile Include="..\Es\Threads\threadSync.cpp" />
+    <ClCompile Include="..\Es\Files\filenames.cpp" />
+    <ClCompile Include="..\Es\ErrorProp\errorProp.cpp" />
+    <ClCompile Include="..\Es\reportStack\reportStack.cpp" />
+    <ClCompile Include="..\lib\zombie.cpp" />
+    <ClCompile Include="..\RV\speechrecognition\fonix.cpp" />
+    <ClCompile Include="..\RV\speechrecognition\voiceCapture.cpp" />
+    <ClCompile Include="binarize.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="..\LIB\engDummy.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="..\posAccess\posAccess.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="StdAfx.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\El\LZO\lzo1x_d.ch" />
+    <None Include="..\El\LZO\lzo1_d.ch" />
+    <None Include="..\El\LZO\lzo_dll.ch" />
+    <None Include="..\El\LZO\lzo_func.ch" />
+    <None Include="..\El\LZO\plzo1x_c.ch" />
+    <None Include="..\El\LZO\plzo1x_d.ch" />
+    <None Include="..\El\LZO\plzo1_c.ch" />
+    <None Include="..\El\LZO\plzo1_c_copy_lit.ch" />
+    <None Include="..\El\LZO\plzo1_c_copy_lit_impl.ch" />
+    <None Include="..\lib\TerSynth\readme.txt" />
+    <None Include="..\El\Math\matrix.asm" />
+    <None Include="B:\build\BuildBinarize.bat" />
+    <None Include="deploy.bat" />
+    <None Include="X:\update\getCfg.bat" />
+    <None Include="putBin.bat" />
+    <None Include="putFP2Bin.bat" />
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

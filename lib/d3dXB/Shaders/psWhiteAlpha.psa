@@ -1,0 +1,6 @@
+#include "psDecl.h"
+
+xps.1.1
+
+#include "../../ShadersCommon/whiteAlpha.psi"
+#include "finalCombiner.psi"

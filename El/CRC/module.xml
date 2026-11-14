@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<module name="CRC calculations">
+
+	<description>
+		Implements algorithm for calculation of CRC.
+	</description>
+
+	<files>
+		<ref_file name="El/CRC/crc.hpp"/>
+		<ref_file name="El/CRC/crc.cpp"/>
+	</files>
+
+	<dependencies>
+		<ref_layer name="Es">Essence</ref_layer>
+		<ref_file name="El/elementpch.hpp"/>
+		<ref_directory name="El/PCH"/>
+	</dependencies>
+
+	<interfaces>
+		<interface file="El/Interfaces/iSumCalc.hpp" class="SumCalculatorFunctions">
+			<implementation class="CRCSumCalculatorFunctions"/>
+			<description>
+				Implements common sum calculation as CRC calculation.
+			</description>
+			<files>
+				<ref_file name="El/CRC/sumCalcCRC.hpp"/>
+			</files>
+		</interface>
+	</interfaces>
+
+</module>

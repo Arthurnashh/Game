@@ -1,0 +1,33 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// calculate how much shadow should be casted on given surface
+// clouds shadow casted on the surface as well
+// this affect both diffuse component and shadow
+
+// sample landscape shadow map
+
+// source data are stored LAND_SHADOW
+// assume water grid 50m, 9x9 samples (covering 8x8 rectangles)
+// data are sampled in model space
+
+mad r2.xy, SKINNED_POSITION.xz, c[LAND_SHADOWGRID_GRID__1__GRIDd2].xx, c[LAND_SHADOWGRID_GRID__1__GRIDd2].ww
+// r2.xy contains coordinate from 0...8 (8 included)
+// but it should not matter,  as we will always multiply them by 0
+frc r0.xy, r2.xy // store fractional parts
+// remove the fractional part from y - this needs to be done for y, as it is multiplied
+add r2.y, r2.y, -r0.y
+mad r3.x, r2.y, c[LAND_SHADOWGRID_GRID__1__GRIDd2].y, r2.x
+mov a0.x, r3.x
+
+// r0.xy contains: xFrac, zFrac
+add r0.zw, c[CONSTANTS_0_1_765_0d5].yyyy, -r0.xyxy
+// r0 contains: xFrac, zFrac, 1-xFrac, 1-zFrac
+
+// (1-xFrac)*(1-zFrac), xFrac*(1-zFrac), (1-xFrac)*zFrac, xFrac*zFrac
+mul r2, r0.zxzx, r0.wwyy
+
+// sample four values of the depth grid
+// c[LAND_SHADOW+a0.x] contains y00,y10,y01,y11 (yXZ)
+
+// bilinear interpolation between the four corners
+dp4 MODULATE_COLOR.w, c[LAND_SHADOW+a0.x], r2

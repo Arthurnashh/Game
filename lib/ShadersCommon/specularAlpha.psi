@@ -1,0 +1,10 @@
+// specular with alpha, no detail texture
+
+tex t0
+
+mul r0, v0, t0 // apply diffuse
+
+dp3_x2 r1, v1,v1 // calculate specular intensity
+
+mad_x2 r0.rgb, r0, c[T0_MAXCOLOR], v1
++mad r0.a, r0, c[T0_MAXCOLOR], r1

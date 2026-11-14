@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="DocUtils"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="DocUtils Rst to Html"
+			DisplayName="DocUtils Rst to Html"
+			CommandLine="&quot;$(PROGRAM_FILES32)\docutils\tools\rst2html.py&quot; [Stylesheets]  [inputs] .\doc\$(InputName).htm"
+			Outputs="$(InputName).html"
+			FileExtensions="*.rst"
+			ExecutionDescription="&quot;$(PROGRAM_FILES32)\docutils\tools\rst2html.py&quot; [Stylesheets]  [inputs] .\doc\$(InputName).htm"
+			>
+			<Properties>
+				<StringProperty
+					Name="Stylesheets"
+					DisplayName="CSS Stylesheets"
+					Category="Misc"
+					Description="Which css stylesheet/s to use"
+					Switch="--stylesheet=[value]"
+					DefaultValue="html4css1.css"
+					Delimited="true"
+					Delimiters=","
+					Inheritable="true"
+				/>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

@@ -1,0 +1,5 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// shadow/diffuse component modulated by constant (per-model)
+
+mov MODULATE_COLOR.w, c[SHADOW_MODULATE_DIFFUSE].w

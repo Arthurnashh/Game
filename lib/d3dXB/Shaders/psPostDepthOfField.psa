@@ -1,0 +1,38 @@
+#include "psDecl.h"
+
+// depth of field blur postprocess effect
+
+xps.1.1
+
+// c0 rgb  - blur intensity
+// c0 a - blur focus
+
+def c5, 0,0,0,0.667
+def c4, 0,0,0,0.5
+
+tex t0 // framebuffer, a = depth
+//tex t1 // depth buffer b = stencil, arg = depth (a=MSB, g=LSB)
+tex t2 // framebuffer + offset
+tex t3 // framebuffer + offset
+
+
+// use minimum of t0.a, t2.a, t3.a
+
+lrp r0.rgb, c4.a, t0,t2
++sub r0.a, t0.a, t2_bias.a
+cnd r1.a, r0.a, t2.a, t0.a
+
+lrp r0.rgb, c5.a, r0,t3
++sub r0.a, r1.a, t3_bias.a
+cnd r1.a, r0.a, t3.a, r1.a
+
+
+// r1.a contains signed biased distance from a focal plane
+mul r1.a, r1_bx2.a, r1_bx2.a // r1.a^2 - much easier to calculate than abs(r1)
+mul r0.a, r1.a, c0.b // user blur control
+
+// blur factor is in r0.a
+lrp r0.rgb, r0.a, r0, t0
+//mov r0,t0.a
+
+#include "finalCombiner.psi"

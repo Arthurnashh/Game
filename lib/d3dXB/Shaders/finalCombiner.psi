@@ -1,0 +1,8 @@
+// final color = s0*s1 + (1-s0)*s2 + s3
+// final alpha = s6.b
+// special registers:
+//   prod = s4*s5.
+//   sum  = r0+v1
+//   zero = 0
+//  s0,        s1,         s2,          s3,           s4,           s5,           s6
+xfc fog_sat.a, r0_sat.rgb, fog_sat.rgb, zero_sat.rgb, zero_sat.rgb, zero_sat.rgb, r0_sat.a

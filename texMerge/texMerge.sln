@@ -1,0 +1,54 @@
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "texMerge", "texMerge.vcproj", "{D0350366-ED46-42CE-9CE4-1F83B5EA0BF5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8A448D86-DE56-4447-997A-47C05C5A0E08} = {8A448D86-DE56-4447-997A-47C05C5A0E08}
+		{B997C6BD-3664-4C7E-9280-D7B633C5D995} = {B997C6BD-3664-4C7E-9280-D7B633C5D995}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Picture", "..\..\img\Picture\Picture.vcproj", "{8A448D86-DE56-4447-997A-47C05C5A0E08}"
+	ProjectSection(ProjectDependencies) = postProject
+		{123F42B4-444B-4540-AAD0-B956DB6C2781} = {123F42B4-444B-4540-AAD0-B956DB6C2781}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pics", "..\..\img\Pics\Pics.vcproj", "{123F42B4-444B-4540-AAD0-B956DB6C2781}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Gif", "..\..\img\Gif\Gif.vcproj", "{B997C6BD-3664-4C7E-9280-D7B633C5D995}"
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 2
+		SccProjectName0 = \u0022$/\u0022,\u0020AAAAAAAA
+		SccLocalPath0 = ..\\..
+		SccProvider0 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = true
+		SccProjectFilePathRelativizedFromConnection0 = Poseidon\\texMerge\\
+		SccProjectUniqueName1 = texMerge.vcproj
+		SccLocalPath1 = ..\\..
+		CanCheckoutShared = true
+		SccProjectFilePathRelativizedFromConnection1 = Poseidon\\texMerge\\
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D0350366-ED46-42CE-9CE4-1F83B5EA0BF5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D0350366-ED46-42CE-9CE4-1F83B5EA0BF5}.Debug|Win32.Build.0 = Debug|Win32
+		{D0350366-ED46-42CE-9CE4-1F83B5EA0BF5}.Release|Win32.ActiveCfg = Release|Win32
+		{D0350366-ED46-42CE-9CE4-1F83B5EA0BF5}.Release|Win32.Build.0 = Release|Win32
+		{8A448D86-DE56-4447-997A-47C05C5A0E08}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8A448D86-DE56-4447-997A-47C05C5A0E08}.Debug|Win32.Build.0 = Debug|Win32
+		{8A448D86-DE56-4447-997A-47C05C5A0E08}.Release|Win32.ActiveCfg = Release|Win32
+		{8A448D86-DE56-4447-997A-47C05C5A0E08}.Release|Win32.Build.0 = Release|Win32
+		{123F42B4-444B-4540-AAD0-B956DB6C2781}.Debug|Win32.ActiveCfg = Debug|Win32
+		{123F42B4-444B-4540-AAD0-B956DB6C2781}.Release|Win32.ActiveCfg = Release|Win32
+		{B997C6BD-3664-4C7E-9280-D7B633C5D995}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B997C6BD-3664-4C7E-9280-D7B633C5D995}.Debug|Win32.Build.0 = Debug|Win32
+		{B997C6BD-3664-4C7E-9280-D7B633C5D995}.Release|Win32.ActiveCfg = Release|Win32
+		{B997C6BD-3664-4C7E-9280-D7B633C5D995}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

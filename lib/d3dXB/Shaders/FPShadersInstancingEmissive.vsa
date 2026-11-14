@@ -1,0 +1,11 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// color use to control emissive, alpha used to control alpha
+
+// Init lights
+mov ACCUMULATOR_DIFFUSE.xyz, c[MAT_E]
+add ACCUMULATOR_DIFFUSE.xyz, c[BONES_START + a0.x + 3], ACCUMULATOR_DIFFUSE
+mov ACCUMULATOR_DIFFUSE.w, INPUT_MAT_A.w
+mul ACCUMULATOR_DIFFUSE.w, c[BONES_START + a0.x + 3].w, ACCUMULATOR_DIFFUSE.w
+
+mul ACCUMULATOR_DIFFUSE.xyz, ACCUMULATOR_DIFFUSE, c[ACCOMODATE_EYE]

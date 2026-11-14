@@ -1,0 +1,8 @@
+#include "d3dXB/shaders/FPShadersFragmentHeader.h"
+
+// Fill out the fog
+dp3 r1.w, TRANSFORMED_POSITION, TRANSFORMED_POSITION
+rsq r0.w, r1.w
+mul r0.w, r0.w, r1.w
+add r0.w, -r0.w, c[FOGEND__RCP_FOGEND_MINUS_FOGSTART__SHADOWVOLUME_OFFSET__SHADOWVOLUME_SIZE].x  // Fog::d<0>
+mul oFog, r0.w, c[FOGEND__RCP_FOGEND_MINUS_FOGSTART__SHADOWVOLUME_OFFSET__SHADOWVOLUME_SIZE].y
