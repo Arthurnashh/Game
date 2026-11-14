@@ -1,0 +1,262 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          lfs: false
+
+      - name: Install MSVC v141 and Windows SDK 10.0.19041
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          $vs = & $vswhere -latest -products '*' -property installationPath
+          if (-not $vs) { throw 'Visual Studio installation was not found.' }
+
+          $installer = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vs_installer.exe'
+          & $installer modify --installPath $vs --add Microsoft.VisualStudio.Component.VC.v141.x86.x64 --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --quiet --norestart --wait
+          if ($LASTEXITCODE -ne 0) { throw "Visual Studio component installation failed: $LASTEXITCODE" }
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Verify private build settings
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content 'lib/lib2010.vcxproj' -Raw
+          foreach ($target in @('Retail|x64', 'Retail Server|Win32')) {
+            $group = $project.Project.ItemDefinitionGroup | Where-Object {
+              $_.Condition -eq "'`$(Configuration)|`$(Platform)'=='$target'"
+            }
+            if (-not $group -or $group.ClCompile.PreprocessorDefinitions -notmatch '(^|;)DAYZ_PRIVATE_SERVER=1(;|$)') {
+              throw "$target must define DAYZ_PRIVATE_SERVER=1."
+            }
+          }
+
+      - name: Build x64 client
+        shell: pwsh
+        run: |
+          msbuild DayZ2010.sln -m -t:Build -p:Configuration=Retail -p:Platform=x64 -p:PlatformToolset=v141 -p:WindowsTargetPlatformVersion=10.0.19041.0
+          if ($LASTEXITCODE -ne 0) { throw "Client build failed: $LASTEXITCODE" }
+
+      - name: Build Win32 dedicated server
+        shell: pwsh
+        run: |
+          msbuild DayZ2010.sln -m -t:Build '-p:Configuration=Retail Server' -p:Platform=Win32 -p:PlatformToolset=v141 -p:WindowsTargetPlatformVersion=10.0.19041.0
+          if ($LASTEXITCODE -ne 0) { throw "Server build failed: $LASTEXITCODE" }
+
+      - name: Collect release executables and runtime DLLs
+        shell: pwsh
+        run: |
+          $targets = @(
+            @{ Name = 'client'; Directory = 'build/port-x64/dist'; Executable = 'DayZ.exe' },
+            @{ Name = 'server'; Directory = 'dist'; Executable = 'DayZServer.exe' }
+          )
+
+          foreach ($target in $targets) {
+            $source = Join-Path $PWD $target.Directory
+            $destination = Join-Path $PWD "out/$($target.Name)"
+            $executable = Join-Path $source $target.Executable
+            if (-not (Test-Path $executable)) { throw "Build output missing: $executable" }
+
+            New-Item -ItemType Directory -Path $destination -Force | Out-Null
+            Copy-Item -LiteralPath $executable -Destination $destination
+            Get-ChildItem -LiteralPath $source -File -Filter '*.dll' | Copy-Item -Destination $destination
+          }
+
+      - name: Upload build outputs for tagged releases
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v7
+        with:
+          name: dayz-binaries-${{ github.sha }}
+          path: out/
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: windows-2022
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          lfs: false
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: dayz-binaries-${{ github.sha }}
+          path: binaries
+
+      - name: Check release prerequisites before downloading LFS
+        shell: pwsh
+        run: |
+          $clientAssets = Join-Path $PWD 'release-assets/client'
+          $serverAssets = Join-Path $PWD 'release-assets/server'
+          $testReport = Join-Path $PWD 'release-assets/COMPATIBILITY-TESTED.md'
+
+          foreach ($path in @($clientAssets, (Join-Path $clientAssets 'Keys'))) {
+            if (-not (Test-Path $path -PathType Container) -or -not (Get-ChildItem $path -Recurse -File | Select-Object -First 1)) {
+              throw "Missing client runtime data: $path"
+            }
+          }
+
+          foreach ($directory in @('BattlEye', 'config', 'Keys', 'MPMissions')) {
+            $path = Join-Path $serverAssets $directory
+            if (-not (Test-Path $path -PathType Container) -or -not (Get-ChildItem $path -Recurse -File | Select-Object -First 1)) {
+              throw "Missing server runtime data: $path"
+            }
+          }
+
+          if (-not (Select-String -LiteralPath $testReport -Pattern '^Result:\s*PASS\s*$' -Quiet)) {
+            throw 'A successful client-to-server smoke test must be recorded in release-assets/COMPATIBILITY-TESTED.md before publishing.'
+          }
+
+      - name: Download release payloads from Git LFS
+        shell: pwsh
+        run: |
+          git lfs pull --include='release-assets/**'
+          if ($LASTEXITCODE -ne 0) { throw "Git LFS download failed: $LASTEXITCODE" }
+
+      - name: Create split ZIPs and publish release
+        shell: pwsh
+        run: |
+          $common = Join-Path $PWD 'release-assets/common'
+          $clientAssets = Join-Path $PWD 'release-assets/client'
+          $serverAssets = Join-Path $PWD 'release-assets/server'
+          $binaries = Join-Path $PWD 'binaries'
+
+          foreach ($directory in @('Addons', 'dll', 'dta')) {
+            $path = Join-Path $common $directory
+            if (-not (Test-Path $path -PathType Container) -or -not (Get-ChildItem $path -Recurse -File | Select-Object -First 1)) {
+              throw "Missing common runtime data: $path"
+            }
+          }
+
+          $pbos = Get-ChildItem $common -Recurse -File -Filter '*.pbo'
+          if (-not $pbos -or ($pbos | Where-Object Length -lt 200)) {
+            throw 'PBO assets are missing or still contain Git LFS pointer files.'
+          }
+
+          $sevenZip = Get-Command '7z.exe' -ErrorAction SilentlyContinue
+          if (-not $sevenZip) {
+            choco install 7zip.install --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'Could not install 7-Zip.' }
+            $sevenZip = Get-Command '7z.exe' -ErrorAction Stop
+          }
+
+          if (-not (Get-Command 'gh.exe' -ErrorAction SilentlyContinue)) {
+            choco install gh --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'Could not install GitHub CLI.' }
+          }
+          gh version
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub CLI is unavailable.' }
+
+          $tag = $env:GITHUB_REF_NAME
+          $archiveRoot = Join-Path $env:RUNNER_TEMP 'release'
+          New-Item -ItemType Directory -Path $archiveRoot -Force | Out-Null
+          $stageRoot = Join-Path $env:GITHUB_WORKSPACE '.release-stage'
+          $notesPath = Join-Path $archiveRoot 'release-notes.md'
+          $notes = @"
+          Build: $tag
+
+          Each package is a multi-volume ZIP. Download every numbered part into
+          one folder and extract from the `.zip.001` file with 7-Zip. To rebuild
+          a single ZIP instead, concatenate all numbered parts in order.
+
+          Client: x64. Server: Win32. These are private-network builds; Steam
+          and BattlEye identity services are disabled.
+          "@
+          Set-Content -LiteralPath $notesPath -Value $notes -Encoding utf8
+
+          $createArgs = @('release', 'create', $tag, '--draft', '--verify-tag', '--title', "DayZ $tag", '--notes-file', $notesPath)
+          gh @createArgs
+          if ($LASTEXITCODE -ne 0) { throw "Could not create draft release: $LASTEXITCODE" }
+          $releaseCreated = $true
+
+          function Add-HardLinkTree($source, $destination) {
+            $root = (Resolve-Path -LiteralPath $source).Path.TrimEnd('\')
+            New-Item -ItemType Directory -Path $destination -Force | Out-Null
+            foreach ($item in Get-ChildItem -LiteralPath $source -Force -Recurse) {
+              $relative = $item.FullName.Substring($root.Length + 1)
+              $target = Join-Path $destination $relative
+              if ($item.PSIsContainer) {
+                New-Item -ItemType Directory -Path $target -Force | Out-Null
+                continue
+              }
+
+              New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force | Out-Null
+              if (Test-Path -LiteralPath $target) {
+                if ((Get-Item -LiteralPath $target).PSIsContainer) { throw "File/directory collision: $target" }
+                Remove-Item -LiteralPath $target -Force
+              }
+              New-Item -ItemType HardLink -Path $target -Target $item.FullName | Out-Null
+            }
+          }
+
+          try {
+            foreach ($package in @(
+              @{ Name = 'Client'; Assets = $clientAssets; Binaries = (Join-Path $binaries 'client'); Executable = 'DayZ.exe' },
+              @{ Name = 'Server'; Assets = $serverAssets; Binaries = (Join-Path $binaries 'server'); Executable = 'DayZServer.exe' }
+            )) {
+              $stage = Join-Path $stageRoot $package.Name
+              if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
+              New-Item -ItemType Directory -Path $stage -Force | Out-Null
+              Add-HardLinkTree $common $stage
+              Add-HardLinkTree $package.Assets $stage
+              Add-HardLinkTree $package.Binaries $stage
+              if (-not (Test-Path (Join-Path $stage $package.Executable))) {
+                throw "Package is missing $($package.Executable)."
+              }
+
+              $archive = Join-Path $archiveRoot "DayZ-$($package.Name)-$tag.zip"
+              Push-Location $stage
+              & $sevenZip.Source a -tzip -mx=1 -mmt=on -v1900m $archive '.\*'
+              $zipExitCode = $LASTEXITCODE
+              Pop-Location
+              if ($zipExitCode -ne 0) { throw "Could not create split ZIP for $($package.Name): $zipExitCode" }
+
+              & $sevenZip.Source t "$archive.001"
+              if ($LASTEXITCODE -ne 0) { throw "ZIP integrity check failed for $($package.Name)." }
+
+              $parts = Get-ChildItem -LiteralPath $archiveRoot -File -Filter "DayZ-$($package.Name)-$tag.zip.*" | Sort-Object Name
+              if (-not $parts -or ($parts | Where-Object Length -ge 2GB)) {
+                throw "Split ZIP verification failed for $($package.Name)."
+              }
+
+              $uploadArgs = @('release', 'upload', $tag) + @($parts.FullName)
+              gh @uploadArgs
+              if ($LASTEXITCODE -ne 0) { throw "Could not upload $($package.Name) ZIP parts: $LASTEXITCODE" }
+
+              Remove-Item -LiteralPath $stage -Recurse -Force
+              $parts | Remove-Item -Force
+            }
+
+            gh release edit $tag --draft=false
+            if ($LASTEXITCODE -ne 0) { throw "Could not publish release: $LASTEXITCODE" }
+            $releaseCreated = $false
+          }
+          catch {
+            if ($releaseCreated) {
+              $isDraft = gh release view $tag --json isDraft --jq '.isDraft' 2>$null
+              if ($LASTEXITCODE -eq 0 -and $isDraft -eq 'true') {
+                gh release delete $tag --yes
+              }
+            }
+            throw
+          }
+        env:
+          GH_TOKEN: ${{ github.token }}

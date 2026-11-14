@@ -5,6 +5,11 @@
 - `Retail|x64` defines `DAYZ_PRIVATE_SERVER=1` in `lib/lib2010.vcxproj`.
 - `lib/retailConfig.h` uses that define to set `_ENABLE_STEAM`,
   `_ENABLE_STEAM_MATCHMAKING`, and `_ENABLE_STEAM_OWNERSHIP` to `0`.
+- `Retail Server|Win32` now defines the same macro. Its `serverConfig.h` branch
+  disables those Steam features and both BattlEye integrations; compile-time
+  checks reject either private target if those flags are accidentally enabled.
+- The client and server now use matching no-Steam network structures. The
+  server build and a live client-to-server connection have not yet been tested.
 - The x64 client now compiles without Steam-specific BattlEye GUID callback
   signatures. The callback declarations and forwarding methods are conditional
   on Steam ownership.

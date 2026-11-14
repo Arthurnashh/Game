@@ -79,8 +79,9 @@ or locally stored ID can be copied or spoofed. The protocol currently carries
 ## Current status
 
 This is an impact analysis and implementation design, not an implemented auth
-system. No Steam startup, ownership, RSA, anti-cheat, or network-authentication
-code has been changed. The handshake crosses the client, server, identity
-serialization, persistence, and BattlEye paths, so removing only
-`SteamAPI_Init()` or generating a new GUID would leave an inconsistent and
-insecure protocol.
+system. The private client/server build settings now disable Steam and
+BattlEye integrations on both targets so their network structures match. This
+does not implement account authentication, replace anti-cheat, or change the
+general Steam implementation. The handshake still crosses identity
+serialization and persistence, so a successful runtime connection test is
+required before publishing packages.
