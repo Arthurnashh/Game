@@ -2504,6 +2504,8 @@ void *MemTableFunctions::New(size_t size, const char *file, int line)
 
 static void ReportSuspiciousDelete(void *mem)
 {
+  // Low addresses are only suspicious in a 64-bit process.
+#if defined(_WIN64)
   if ((size_t)mem >= 0x100000000ULL) return;
   RptF("Suspicious allocator delete: pointer=%p caller=%p",mem,_ReturnAddress());
 
@@ -2517,6 +2519,9 @@ static void ReportSuspiciousDelete(void *mem)
   USHORT frameCount = capture(0,lenof(frames),frames,NULL);
   for (USHORT i=0; i<frameCount; ++i)
     RptF("  suspicious delete frame %u: %p",(unsigned)i,frames[i]);
+#else
+  (void)mem;
+#endif
 }
 
 void MemTableFunctions::Delete(void *mem)
