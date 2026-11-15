@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   build:
+    if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v6
@@ -127,7 +128,7 @@ jobs:
           msbuild DayZ2010.sln -m -t:Build '-p:Configuration=Retail Server' -p:Platform=Win32 -p:PlatformToolset=v141 -p:WindowsTargetPlatformVersion=10.0.19041.0
           if ($LASTEXITCODE -ne 0) { throw "Server build failed: $LASTEXITCODE" }
 
-      - name: Collect release executables and runtime DLLs
+      - name: Collect candidate binaries
         shell: pwsh
         run: |
           $targets = @(
@@ -140,94 +141,123 @@ jobs:
             $destination = Join-Path $PWD "out/$($target.Name)"
             $executable = Join-Path $source $target.Executable
             if (-not (Test-Path $executable)) { throw "Build output missing: $executable" }
-
             New-Item -ItemType Directory -Path $destination -Force | Out-Null
             Copy-Item -LiteralPath $executable -Destination $destination
             Get-ChildItem -LiteralPath $source -File -Filter '*.dll' | Copy-Item -Destination $destination
           }
 
-      - name: Upload build outputs for tagged releases
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Check package script with small fixtures
+        shell: pwsh
+        run: pwsh -File .github/scripts/test-package-release.ps1
+
+      - name: Write candidate metadata
+        if: github.event_name == 'workflow_dispatch'
+        shell: pwsh
+        run: |
+          $files = @()
+          foreach ($role in @('client', 'server')) {
+            foreach ($file in Get-ChildItem -LiteralPath "out/$role" -File -Force) {
+              $relative = "$role/$($file.Name)"
+              $files += [pscustomobject]@{
+                path = $relative
+                size = [long]$file.Length
+                sha256 = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+              }
+            }
+          }
+          if (-not ($files | Where-Object { $_.path -ceq 'client/DayZ.exe' }) -or
+              -not ($files | Where-Object { $_.path -ceq 'server/DayZServer.exe' })) {
+            throw 'Candidate executable files are missing.'
+          }
+          $metadata = [ordered]@{
+            candidateRevision = (git rev-parse HEAD).Trim()
+            candidateRunId = [string]$env:GITHUB_RUN_ID
+            artifactName = "dayz-candidate-$env:GITHUB_RUN_ID"
+            files = @($files | Sort-Object path -CaseSensitive)
+          }
+          $json = ConvertTo-Json -InputObject $metadata -Depth 5
+          [System.IO.File]::WriteAllText((Join-Path $PWD 'out/candidate-metadata.json'), $json, [System.Text.UTF8Encoding]::new($false))
+
+      - name: Upload untagged test candidate
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
         with:
-          name: dayz-binaries-${{ github.sha }}
+          name: dayz-candidate-${{ github.run_id }}
           path: out/
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 30
 
   release:
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     runs-on: windows-2022
     permissions:
       contents: write
+      actions: read
     steps:
       - uses: actions/checkout@v6
         with:
           lfs: false
+          fetch-depth: 0
 
-      - uses: actions/download-artifact@v8
-        with:
-          name: dayz-binaries-${{ github.sha }}
-          path: binaries
-
-      - name: Check release prerequisites before downloading LFS
+      - name: Require tested compatibility record
+        id: tested
         shell: pwsh
         run: |
-          $clientAssets = Join-Path $PWD 'release-assets/client'
-          $serverAssets = Join-Path $PWD 'release-assets/server'
-          $testReport = Join-Path $PWD 'release-assets/COMPATIBILITY-TESTED.md'
-
-          foreach ($path in @($clientAssets, (Join-Path $clientAssets 'Keys'))) {
-            if (-not (Test-Path $path -PathType Container) -or -not (Get-ChildItem $path -Recurse -File | Select-Object -First 1)) {
-              throw "Missing client runtime data: $path"
+          $report = Get-Content -LiteralPath 'release-assets/COMPATIBILITY-TESTED.md' -Raw
+          $resultLines = @([regex]::Matches($report, '(?m)^Result:[^\r\n]*\r?$'))
+          if ($resultLines.Count -ne 1 -or $resultLines[0].Value.TrimEnd("`r") -cne 'Result: PASS') {
+            throw 'The compatibility report must contain exactly one result field with the exact value: Result: PASS'
+          }
+          $labels = @(
+            'Candidate run ID',
+            'Candidate revision',
+            'Candidate artifact name',
+            'Client executable SHA-256',
+            'Server executable SHA-256',
+            'Client package manifest SHA-256',
+            'Server package manifest SHA-256',
+            'Server OS / architecture',
+            'Client OS / architecture',
+            'Clean-extract location (server)',
+            'Clean-extract location (client)',
+            'Exact server command',
+            'Exact client command',
+            'Server config / mission',
+            'LAN join outcome',
+            'Playable-world entry outcome',
+            'Disconnect outcome',
+            'Reconnect outcome',
+            'Server cleanup evidence (process stopped, data/config preserved)',
+            'Client log path and relevant excerpts',
+            'Server log path and relevant excerpts'
+          )
+          $values = @{}
+          foreach ($label in $labels) {
+            $matches = [regex]::Matches($report, "(?m)^- $([regex]::Escape($label)):[ \t]*(.*?)[ \t]*$")
+            if ($matches.Count -ne 1 -or [string]::IsNullOrWhiteSpace($matches[0].Groups[1].Value)) {
+              throw "Compatibility report must contain one non-empty '$label' field."
             }
+            $values[$label] = $matches[0].Groups[1].Value.Trim()
           }
-
-          foreach ($directory in @('BattlEye', 'config', 'Keys', 'MPMissions')) {
-            $path = Join-Path $serverAssets $directory
-            if (-not (Test-Path $path -PathType Container) -or -not (Get-ChildItem $path -Recurse -File | Select-Object -First 1)) {
-              throw "Missing server runtime data: $path"
-            }
+          if ($values['Candidate run ID'] -notmatch '^\d+$') { throw 'Candidate run ID must be numeric.' }
+          if ($values['Candidate revision'] -notmatch '(?i)^[0-9a-f]{40,64}$') { throw 'Candidate revision must be a full Git commit ID.' }
+          foreach ($label in @('Client executable SHA-256', 'Server executable SHA-256', 'Client package manifest SHA-256', 'Server package manifest SHA-256')) {
+            if ($values[$label] -notmatch '(?i)^[0-9a-f]{64}$') { throw "'$label' must be a SHA-256 value." }
           }
-
-          if (-not (Select-String -LiteralPath $testReport -Pattern '^Result:\s*PASS\s*$' -Quiet)) {
-            throw 'A successful client-to-server smoke test must be recorded in release-assets/COMPATIBILITY-TESTED.md before publishing.'
+          if ($values['Candidate artifact name'] -cne "dayz-candidate-$($values['Candidate run ID'])") {
+            throw 'Candidate artifact name must match its run ID.'
           }
+          "candidate_run_id=$($values['Candidate run ID'])" >> $env:GITHUB_OUTPUT
+          "candidate_revision=$($values['Candidate revision'])" >> $env:GITHUB_OUTPUT
+          "candidate_artifact_name=$($values['Candidate artifact name'])" >> $env:GITHUB_OUTPUT
+          "client_executable_sha256=$($values['Client executable SHA-256'])" >> $env:GITHUB_OUTPUT
+          "server_executable_sha256=$($values['Server executable SHA-256'])" >> $env:GITHUB_OUTPUT
+          "client_manifest_sha256=$($values['Client package manifest SHA-256'])" >> $env:GITHUB_OUTPUT
+          "server_manifest_sha256=$($values['Server package manifest SHA-256'])" >> $env:GITHUB_OUTPUT
 
-      - name: Download release payloads from Git LFS
+      - name: Install GitHub CLI
         shell: pwsh
         run: |
-          git lfs pull --include='release-assets/**'
-          if ($LASTEXITCODE -ne 0) { throw "Git LFS download failed: $LASTEXITCODE" }
-
-      - name: Create split ZIPs and publish release
-        shell: pwsh
-        run: |
-          $common = Join-Path $PWD 'release-assets/common'
-          $clientAssets = Join-Path $PWD 'release-assets/client'
-          $serverAssets = Join-Path $PWD 'release-assets/server'
-          $binaries = Join-Path $PWD 'binaries'
-
-          foreach ($directory in @('Addons', 'dll', 'dta')) {
-            $path = Join-Path $common $directory
-            if (-not (Test-Path $path -PathType Container) -or -not (Get-ChildItem $path -Recurse -File | Select-Object -First 1)) {
-              throw "Missing common runtime data: $path"
-            }
-          }
-
-          $pbos = Get-ChildItem $common -Recurse -File -Filter '*.pbo'
-          if (-not $pbos -or ($pbos | Where-Object Length -lt 200)) {
-            throw 'PBO assets are missing or still contain Git LFS pointer files.'
-          }
-
-          $sevenZip = Get-Command '7z.exe' -ErrorAction SilentlyContinue
-          if (-not $sevenZip) {
-            choco install 7zip.install --yes --no-progress
-            if ($LASTEXITCODE -ne 0) { throw 'Could not install 7-Zip.' }
-            $sevenZip = Get-Command '7z.exe' -ErrorAction Stop
-          }
-
           if (-not (Get-Command 'gh.exe' -ErrorAction SilentlyContinue)) {
             choco install gh --yes --no-progress
             if ($LASTEXITCODE -ne 0) { throw 'Could not install GitHub CLI.' }
@@ -235,84 +265,222 @@ jobs:
           gh version
           if ($LASTEXITCODE -ne 0) { throw 'GitHub CLI is unavailable.' }
 
+      - uses: actions/download-artifact@v8
+        with:
+          name: ${{ steps.tested.outputs.candidate_artifact_name }}
+          path: candidate
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.tested.outputs.candidate_run_id }}
+
+      - name: Verify exact candidate and allowed evidence-only change
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_RUN_ID: ${{ steps.tested.outputs.candidate_run_id }}
+          CANDIDATE_REVISION: ${{ steps.tested.outputs.candidate_revision }}
+          CANDIDATE_ARTIFACT_NAME: ${{ steps.tested.outputs.candidate_artifact_name }}
+          CLIENT_EXECUTABLE_SHA256: ${{ steps.tested.outputs.client_executable_sha256 }}
+          SERVER_EXECUTABLE_SHA256: ${{ steps.tested.outputs.server_executable_sha256 }}
+        run: |
+          $runJson = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$env:CANDIDATE_RUN_ID"
+          if ($LASTEXITCODE -ne 0) { throw 'Could not retrieve the candidate workflow run.' }
+          $candidateRun = $runJson | ConvertFrom-Json
+          if ([string]$candidateRun.status -cne 'completed' -or [string]$candidateRun.conclusion -cne 'success') {
+            throw 'The candidate workflow run did not complete successfully.'
+          }
+          if ([string]$candidateRun.event -cne 'workflow_dispatch') {
+            throw 'The candidate workflow run was not created by workflow_dispatch.'
+          }
+          if ([string]$candidateRun.path -cne '.github/workflows/build-release.yml' -or
+              [string]$candidateRun.name -cne 'Build and Release') {
+            throw 'The candidate run used a different workflow.'
+          }
+          if ([string]$candidateRun.head_sha -ine $env:CANDIDATE_REVISION) {
+            throw 'The candidate run revision does not match the compatibility report.'
+          }
+
+          $metadataPath = Join-Path $PWD 'candidate/candidate-metadata.json'
+          if (-not (Test-Path -LiteralPath $metadataPath -PathType Leaf)) { throw 'Candidate metadata is missing.' }
+          $metadata = Get-Content -LiteralPath $metadataPath -Raw | ConvertFrom-Json
+          if ([string]$metadata.candidateRunId -cne $env:CANDIDATE_RUN_ID -or
+              [string]$metadata.candidateRevision -ine $env:CANDIDATE_REVISION -or
+              [string]$metadata.artifactName -cne $env:CANDIDATE_ARTIFACT_NAME) {
+            throw 'Candidate metadata does not match the compatibility report.'
+          }
+
+          $actualFiles = @(Get-ChildItem -LiteralPath (Join-Path $PWD 'candidate') -File -Recurse |
+            Where-Object { $_.FullName -ne $metadataPath } |
+            ForEach-Object { $_.FullName.Substring((Join-Path $PWD 'candidate').TrimEnd('\').Length + 1).Replace('\', '/') })
+          $metadataFiles = @($metadata.files)
+          if (-not $metadataFiles -or $metadataFiles.Count -ne $actualFiles.Count) { throw 'Candidate artifact file list does not match its metadata.' }
+          $declaredPaths = @($metadataFiles | ForEach-Object { [string]$_.path })
+          if (@($declaredPaths | Where-Object { $_ -notmatch '^(client|server)/[^/]+$' -or $_ -match '[\\:]' -or $_ -notmatch '(?i)\.(exe|dll)$' }).Count -gt 0) {
+            throw 'Candidate metadata contains a path outside the executable/runtime-DLL layout.'
+          }
+          if (@($declaredPaths | Select-Object -Unique).Count -ne $declaredPaths.Count) { throw 'Candidate metadata has duplicate paths.' }
+          $actualSorted = [string[]]$actualFiles
+          $declaredSorted = [string[]]$declaredPaths
+          [Array]::Sort($actualSorted, [System.StringComparer]::Ordinal)
+          [Array]::Sort($declaredSorted, [System.StringComparer]::Ordinal)
+          if ([string]::Join("`n", $actualSorted) -cne [string]::Join("`n", $declaredSorted)) {
+            throw 'Candidate artifact files do not match the metadata path list.'
+          }
+
+          $fileHashes = @{}
+          foreach ($entry in $metadataFiles) {
+            $path = [string]$entry.path
+            $filePath = Join-Path (Join-Path $PWD 'candidate') ($path.Replace('/', '\'))
+            $file = Get-Item -LiteralPath $filePath
+            $hash = (Get-FileHash -LiteralPath $filePath -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ([long]$entry.size -ne $file.Length -or [string]$entry.sha256 -ine $hash) {
+              throw "Candidate file hash/size mismatch: $path"
+            }
+            $fileHashes[$path] = $hash
+          }
+          if ($fileHashes['client/DayZ.exe'] -ine $env:CLIENT_EXECUTABLE_SHA256 -or
+              $fileHashes['server/DayZServer.exe'] -ine $env:SERVER_EXECUTABLE_SHA256) {
+            throw 'Candidate executable hashes do not match the compatibility report.'
+          }
+
+          git merge-base --is-ancestor $env:CANDIDATE_REVISION $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { throw 'Tested candidate revision is not an ancestor of this tag.' }
+          $evidencePath = 'release-assets/COMPATIBILITY-TESTED.md'
+          $changed = @(git diff --name-only $env:CANDIDATE_REVISION $env:GITHUB_SHA)
+          if ($LASTEXITCODE -ne 0) { throw 'Could not compare candidate and tagged revisions.' }
+          $unexpected = @($changed | Where-Object { $_ -cne $evidencePath })
+          if ($unexpected.Count -gt 0) { throw "Files other than the compatibility evidence changed: $($unexpected -join ', ')" }
+          if (-not ($changed -ccontains $evidencePath)) { throw 'The compatibility evidence report must change between the tested candidate and the tag.' }
+
+      - name: Fetch LFS objects into cache without checkout
+        shell: pwsh
+        run: |
+          git lfs version
+          if ($LASTEXITCODE -ne 0) { throw 'Git LFS is unavailable.' }
+          git lfs fetch --include='release-assets/client/**,release-assets/server/**' origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { throw "Git LFS fetch failed: $LASTEXITCODE" }
+
+      - name: Package, upload, verify, and publish draft release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CLIENT_MANIFEST_SHA256: ${{ steps.tested.outputs.client_manifest_sha256 }}
+          SERVER_MANIFEST_SHA256: ${{ steps.tested.outputs.server_manifest_sha256 }}
+        run: |
+          $sevenZip = Get-Command '7z.exe' -ErrorAction SilentlyContinue
+          if (-not $sevenZip) {
+            choco install 7zip.install --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'Could not install 7-Zip.' }
+            $sevenZip = Get-Command '7z.exe' -ErrorAction Stop
+          }
           $tag = $env:GITHUB_REF_NAME
-          $archiveRoot = Join-Path $env:RUNNER_TEMP 'release'
-          New-Item -ItemType Directory -Path $archiveRoot -Force | Out-Null
-          $stageRoot = Join-Path $env:GITHUB_WORKSPACE '.release-stage'
-          $notesPath = Join-Path $archiveRoot 'release-notes.md'
+          $outputRoot = Join-Path $env:RUNNER_TEMP 'dayz-release'
+          $stageRoot = Join-Path $PWD '.release-stage'
+          New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+          New-Item -ItemType Directory -Path $stageRoot -Force | Out-Null
+          $notesPath = Join-Path $outputRoot 'release-notes.md'
           $notes = @"
           Build: $tag
 
-          Each package is a multi-volume ZIP. Download every numbered part into
-          one folder and extract from the `.zip.001` file with 7-Zip. To rebuild
-          a single ZIP instead, concatenate all numbered parts in order.
+          Client: Retail x64. Dedicated server: Retail Server Win32. These
+          packages are for private/LAN use only. Steam and BattlEye are
+          disabled; there is no account authentication or anti-cheat protection.
 
-          Client: x64. Server: Win32. These are private-network builds; Steam
-          and BattlEye identity services are disabled.
+          Each package is split into numbered ZIP parts. Download every part
+          into one folder and extract from the `.zip.001` file with 7-Zip.
           "@
-          Set-Content -LiteralPath $notesPath -Value $notes -Encoding utf8
-
-          $createArgs = @('release', 'create', $tag, '--draft', '--verify-tag', '--title', "DayZ $tag", '--notes-file', $notesPath)
-          gh @createArgs
-          if ($LASTEXITCODE -ne 0) { throw "Could not create draft release: $LASTEXITCODE" }
-          $releaseCreated = $true
-
-          function Add-HardLinkTree($source, $destination) {
-            $root = (Resolve-Path -LiteralPath $source).Path.TrimEnd('\')
-            New-Item -ItemType Directory -Path $destination -Force | Out-Null
-            foreach ($item in Get-ChildItem -LiteralPath $source -Force -Recurse) {
-              $relative = $item.FullName.Substring($root.Length + 1)
-              $target = Join-Path $destination $relative
-              if ($item.PSIsContainer) {
-                New-Item -ItemType Directory -Path $target -Force | Out-Null
-                continue
-              }
-
-              New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force | Out-Null
-              if (Test-Path -LiteralPath $target) {
-                if ((Get-Item -LiteralPath $target).PSIsContainer) { throw "File/directory collision: $target" }
-                Remove-Item -LiteralPath $target -Force
-              }
-              New-Item -ItemType HardLink -Path $target -Target $item.FullName | Out-Null
-            }
-          }
+          [System.IO.File]::WriteAllText($notesPath, $notes, [System.Text.UTF8Encoding]::new($false))
+          $releaseCreated = $false
+          $expectedAssets = @()
 
           try {
+            gh release create $tag --draft --verify-tag --title "DayZ $tag" --notes-file $notesPath
+            if ($LASTEXITCODE -ne 0) { throw "Could not create draft release: $LASTEXITCODE" }
+            $releaseCreated = $true
+
             foreach ($package in @(
-              @{ Name = 'Client'; Assets = $clientAssets; Binaries = (Join-Path $binaries 'client'); Executable = 'DayZ.exe' },
-              @{ Name = 'Server'; Assets = $serverAssets; Binaries = (Join-Path $binaries 'server'); Executable = 'DayZServer.exe' }
+              @{ Role = 'client'; Name = 'Client'; Executable = 'DayZ.exe'; ExpectedManifest = $env:CLIENT_MANIFEST_SHA256 },
+              @{ Role = 'server'; Name = 'Server'; Executable = 'DayZServer.exe'; ExpectedManifest = $env:SERVER_MANIFEST_SHA256 }
             )) {
+              $prefix = "DayZ-$($package.Name)-$tag"
               $stage = Join-Path $stageRoot $package.Name
-              if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
-              New-Item -ItemType Directory -Path $stage -Force | Out-Null
-              Add-HardLinkTree $common $stage
-              Add-HardLinkTree $package.Assets $stage
-              Add-HardLinkTree $package.Binaries $stage
-              if (-not (Test-Path (Join-Path $stage $package.Executable))) {
-                throw "Package is missing $($package.Executable)."
+              $manifest = Join-Path $outputRoot "$prefix.content-manifest.txt"
+              $archive = Join-Path $outputRoot "$prefix.zip"
+              $checksums = Join-Path $outputRoot "$prefix.parts.sha256"
+              $binaryDirectory = Join-Path $PWD "candidate\$($package.Role)"
+              $computedHash = & .github/scripts/package-release.ps1 `
+                -Role $package.Role `
+                -BinaryDirectory $binaryDirectory `
+                -StageDirectory $stage `
+                -ManifestPath $manifest `
+                -RepositoryRoot $PWD `
+                -ArchivePath $archive `
+                -ChecksumPath $checksums `
+                -SevenZipPath $sevenZip.Source
+              if ($computedHash -notmatch '(?i)^[0-9a-f]{64}$') { throw "Packaging did not return a manifest hash for $($package.Name)." }
+              if ($computedHash -ine $package.ExpectedManifest) {
+                throw "$($package.Name) content manifest does not match the tested compatibility report."
               }
 
-              $archive = Join-Path $archiveRoot "DayZ-$($package.Name)-$tag.zip"
-              Push-Location $stage
-              & $sevenZip.Source a -tzip -mx=1 -mmt=on -v1900m $archive '.\*'
-              $zipExitCode = $LASTEXITCODE
-              Pop-Location
-              if ($zipExitCode -ne 0) { throw "Could not create split ZIP for $($package.Name): $zipExitCode" }
+              $parts = @(Get-ChildItem -LiteralPath $outputRoot -File -Filter "$prefix.zip.*" |
+                Where-Object { $_.Name -match '\.\d{3}$' } | Sort-Object Name)
+              if (-not $parts) { throw "No split ZIP parts were created for $($package.Name)." }
+              $uploadFiles = @($parts.FullName) + @($manifest, $checksums)
+              gh release upload $tag @uploadFiles
+              if ($LASTEXITCODE -ne 0) { throw "Could not upload $($package.Name) package assets: $LASTEXITCODE" }
 
-              & $sevenZip.Source t "$archive.001"
-              if ($LASTEXITCODE -ne 0) { throw "ZIP integrity check failed for $($package.Name)." }
-
-              $parts = Get-ChildItem -LiteralPath $archiveRoot -File -Filter "DayZ-$($package.Name)-$tag.zip.*" | Sort-Object Name
-              if (-not $parts -or ($parts | Where-Object Length -ge 2GB)) {
-                throw "Split ZIP verification failed for $($package.Name)."
+              $partHashes = @{}
+              foreach ($line in [System.IO.File]::ReadAllLines($checksums)) {
+                $match = [regex]::Match($line, '^([0-9a-f]{64})  (.+)$')
+                if (-not $match.Success) { throw "Malformed checksum file: $checksums" }
+                $partHashes[$match.Groups[2].Value] = $match.Groups[1].Value
               }
-
-              $uploadArgs = @('release', 'upload', $tag) + @($parts.FullName)
-              gh @uploadArgs
-              if ($LASTEXITCODE -ne 0) { throw "Could not upload $($package.Name) ZIP parts: $LASTEXITCODE" }
+              foreach ($part in $parts) {
+                if (-not $partHashes.ContainsKey($part.Name)) { throw "Missing checksum for ZIP part: $($part.Name)" }
+                $expectedAssets += [pscustomobject]@{
+                  name = $part.Name
+                  size = [long]$part.Length
+                  sha256 = $partHashes[$part.Name]
+                }
+              }
+              $expectedAssets += [pscustomobject]@{
+                name = [System.IO.Path]::GetFileName($manifest)
+                size = [long](Get-Item -LiteralPath $manifest).Length
+                sha256 = $computedHash
+              }
+              $expectedAssets += [pscustomobject]@{
+                name = [System.IO.Path]::GetFileName($checksums)
+                size = [long](Get-Item -LiteralPath $checksums).Length
+                sha256 = (Get-FileHash -LiteralPath $checksums -Algorithm SHA256).Hash.ToLowerInvariant()
+              }
 
               Remove-Item -LiteralPath $stage -Recurse -Force
-              $parts | Remove-Item -Force
+              Remove-Item -LiteralPath $parts.FullName -Force
+              Remove-Item -LiteralPath $manifest, $checksums -Force
+            }
+
+            $releaseJson = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$tag"
+            if ($LASTEXITCODE -ne 0) { throw 'Could not verify uploaded release assets.' }
+            $release = $releaseJson | ConvertFrom-Json
+            $actualAssets = @($release.assets | ForEach-Object {
+              [pscustomobject]@{
+                name = [string]$_.name
+                size = [long]$_.size
+                digest = [string]$_.digest
+                state = [string]$_.state
+              }
+            })
+            if ($actualAssets.Count -ne $expectedAssets.Count) {
+              throw "Release asset count mismatch: expected $($expectedAssets.Count), found $($actualAssets.Count)."
+            }
+            foreach ($expected in $expectedAssets) {
+              $actual = @($actualAssets | Where-Object { $_.name -ceq $expected.name })
+              if ($actual.Count -ne 1 -or $actual[0].size -ne $expected.size) {
+                throw "Uploaded release asset is missing or has the wrong size: $($expected.name)"
+              }
+              if ($actual[0].state -cne 'uploaded' -or $actual[0].digest -cne "sha256:$($expected.sha256)") {
+                throw "Uploaded release asset digest does not match: $($expected.name)"
+              }
             }
 
             gh release edit $tag --draft=false
@@ -328,5 +496,3 @@ jobs:
             }
             throw
           }
-        env:
-          GH_TOKEN: ${{ github.token }}
