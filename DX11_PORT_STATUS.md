@@ -1,22 +1,46 @@
 # DayZ 0.45 x64 / Direct3D 11 port status
 
-This file records the current renderer migration state from source and binary
-inspection. It is a work checklist, not a claim that the game is already using
-Direct3D 11.
+This file records renderer migration evidence and remaining parity work. The
+latest Retail x64 source and artifact select the D3D11 path, but this does not
+claim visual parity or complete removal of legacy D3D9 code.
 
-## Current verified state
+## Latest x64 artifact audit (2026-11-15)
+
+- In `lib/main.cpp`, `_WIN64` selects `CreateEngineD3D11` directly. The project
+  excludes `d3d9/engdd9.cpp` from `Retail|x64`.
+- The Retail x64 build at commit `dbcc7cb` completed with 0 errors and 9,674
+  warnings. Its `DayZ.exe` hash matched the build metadata; see the
+  [build run](https://github.com/Personed/Game/actions/runs/43719741522).
+- The PE has 18 direct imports and no delay imports. Its imports include
+  `d3d11.dll`, `dxgi.dll`, `D3DCOMPILER_47.dll`, `d3dx10_41.dll`,
+  `d3dx11_41.dll`, and `X3DAudio1_6.dll`; it does not import `d3d9.dll` or
+  `d3dx9_*.dll`.
+- The candidate release artifact contains the executable and validates the two
+  D3DX DLLs, but does not include `X3DAudio1_6.dll`. Check that dependency on a
+  clean Windows target before distribution. Static imports do not prove whether
+  conditional `LoadLibrary` paths run or whether system DLLs resolve at runtime.
+- These checks confirm the current x64 startup/import path, not full DX11
+  parity. Terrain/material rendering and runtime behavior still need separate
+  validation; the wider source tree also retains legacy D3D9 code.
+
+## Earlier implementation history (before 2026-11-15)
+
+The entries in this section describe earlier source snapshots and build
+artifacts. In particular, earlier statements that the x64 executable imported
+DX9 or lacked D3D11 imports are superseded by the latest audit above.
 
 - `lib/d3d11/` contains standalone D3D11 device, shader, mesh, texture, state,
   constant-buffer, alpha-test, and frame-rendering helpers.
 - `lib/lib2010.vcxproj` compiles those helpers for `Retail|x64` and links the
   Windows SDK D3D11, DXGI, and shader compiler libraries.
-- The x64 `lib2010.vcxproj` build completed and produced
+- An earlier x64 `lib2010.vcxproj` build completed and produced
   `build/port-x64/dist/DayZ.exe` (verified in
   `build/port-x64/x64-dx11-alpha-test-build.log`).
-- The produced executable still imports `d3d9.dll` and `d3dx9_41.dll`.
-- `dumpbin` confirms the produced executable is PE x64 (`8664`), but its
-  import table contains `d3d9.dll` and `d3dx9_41.dll` and no D3D11/DXGI imports.
-- `lib/main.cpp` still selects `CreateEngineD3D9()` when `_ENABLE_DX10` is 0.
+- That earlier executable imported `d3d9.dll` and `d3dx9_41.dll` and lacked
+  D3D11/DXGI imports. This result is superseded by the 2026-11-15 audit above.
+- At that earlier source snapshot, `lib/main.cpp` selected
+  `CreateEngineD3D9()` when `_ENABLE_DX10` was 0. The current `_WIN64` path is
+  documented above; the non-x64 path still selects D3D9 when the flag is 0.
 - An incomplete, dormant D3D10 renderer is present as `EngineDDT` in
   `lib/d3dT/engddT.hpp` and `lib/d3dT/engddT.cpp`. It derives from `Engine`,
   but it is not D3D11; it is not included in `lib/lib2010.vcxproj`,
@@ -148,8 +172,9 @@ Direct3D 11.
 3. Port scene submissions and the game's shader/material paths, including
    skinned and instanced meshes, shadow maps, post-processing, weather, and
    2D UI. The standalone `Dx11Renderer` is not a substitute for these paths.
-4. Add `CreateEngineD3D11` and make it the only Windows x64 client factory in
-   `lib/main.cpp`; remove the x64 call path to `CreateEngineD3D9`.
+4. Source selection completed on 2026-11-15: `lib/main.cpp` selects
+   `CreateEngineD3D11` for `_WIN64`. Runtime initialization and rendering still
+   require smoke testing.
 5. Port texture and simulation/weather consumers that currently include
    `lib/d3d9/engdd9.hpp`, then remove D3D9/D3DX9 headers, source files, libraries,
    and runtime dependencies from the x64 client target.
@@ -159,16 +184,26 @@ Direct3D 11.
 
 ## Completion checks
 
-- The x64 client selects `CreateEngineD3D11` unconditionally and initializes a
-  D3D11 feature level supported by the target machine.
+- Source selection: `CreateEngineD3D11` is selected for `_WIN64` in
+  `lib/main.cpp` (verified 2026-11-15). Runtime initialization at a supported
+  D3D11 feature level remains unverified.
 - A loaded world renders terrain, objects, characters, vegetation, UI, shadows,
   and post-processing with their game materials.
-- The final executable import table has no `d3d9.dll`, `d3dx9_*.dll`, or other
-  Direct3D 9 runtime dependency.
+- Direct PE imports: the 2026-11-15 Retail x64 artifact has no `d3d9.dll` or
+  `d3dx9_*.dll` imports. Transitive dependencies and conditional runtime DLL
+  loading remain separate checks.
 - The x64 target's source and linker inputs contain no D3D9/D3DX9 runtime code
   or libraries.
 - A clean x64 build and runtime smoke test pass after the old renderer is
   excluded.
+
+### Earlier build records
+
+The observations below came from work before the 2026-11-15 audit. Treat
+statements about startup selection and direct PE imports as historical; the
+latest source and artifact evidence is at the top of this file. Other remaining
+functional gaps still need confirmation against the current source/runtime.
+
 - Texture-path audit: `TextureD3D9` owns the actual `ITextureSource` and mip metadata privately. `TextBankD3D9::UseMipmap` selects/streams levels, while `LoadLevelsJob` asks the source to decode each mip into a D3D9-selected destination format and pitch. The DX11 helper currently knows PAC/DXT-to-DXGI mappings, but it has no safe access to that private source, mip residency policy, palette expansion for P8, or engine texture/material lifetime. Calling `GetMipmapData` from an isolated helper would bypass the existing streaming and format negotiation, so no such speculative bridge was added. Correct integration belongs in a D3D11 texture-bank implementation of `AbstractTextBank`/`Texture`, with a shared or extracted source/mip-loading layer; doing only GPU upload is insufficient.
 - Fresh-build renderer audit (2026-11-13): compiled Retail|x64 from a new, empty intermediate directory `build/port-x64/obj-lib-cleanrenderer/` into `build/port-x64/dist-cleanrenderer/`. Build passed, PE is x64/ASLR, but the clean link still contains `d3d9.dll` and `d3dx9_41.dll`; the map attributes engine symbols to `engdd9.obj`. This proves the DX9 dependency is present in the current Retail x64 source target, not merely a stale object from the prior shared intermediate directory. `lib2010.vcxproj` compiles `d3d9/engdd9.cpp` for Retail|x64; excluding it safely requires first routing the client factory and all dependent texture, video, weather, and post-process paths through a complete DX11 engine. The fresh executable therefore remains a DX9 runtime and must not be described or shipped as DX11.
 - Backend-selection audit: `lib/d3dT/engddT.cpp` is an abandoned Direct3D 10 backend, not a ready DX11 renderer. It is guarded by `_ENABLE_DX10`, which the x64 Retail configuration inherits as `0` from `lib/retailConfig.h`; `lib/lib2010.vcxproj` does not list the `d3dT` implementation sources, and startup still routes to `CreateEngineD3D9` when the flag is off. The dormant source has 55 `Fail("DX10 TODO")` sites and hundreds of ID3D10/device-call references. Therefore enabling its old switch would neither select DX11 nor provide a complete runtime. Current path remains the D3D9 `EngineDD9` implementation. The correct next architecture step is a deliberate D3D11 engine implementing the shared `Engine` contract and shared resource/material loading; neither a macro flip nor the standalone helpers can replace that contract.
