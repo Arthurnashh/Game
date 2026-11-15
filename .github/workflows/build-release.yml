@@ -30,7 +30,7 @@ jobs:
           Invoke-WebRequest -Uri 'https://aka.ms/vs/17/release/vs_enterprise.exe' -OutFile $bootstrapper
           $installerArgs = @(
             'modify',
-            '--installPath', $vs,
+            '--installPath', "`"$vs`"",
             '--channelId', 'VisualStudio.17.Release',
             '--add', 'Microsoft.VisualStudio.Component.VC.v141.x86.x64',
             '--add', 'Microsoft.VisualStudio.Component.Windows10SDK.19041',
@@ -38,8 +38,8 @@ jobs:
             '--norestart',
             '--wait'
           )
-          & $bootstrapper @installerArgs
-          if ($LASTEXITCODE -ne 0) { throw "Visual Studio component installation failed: $LASTEXITCODE" }
+          $installerProcess = Start-Process -FilePath $bootstrapper -ArgumentList $installerArgs -Wait -PassThru
+          if ($installerProcess.ExitCode -ne 0) { throw "Visual Studio component installation failed: $($installerProcess.ExitCode)" }
 
           $vsWithV141 = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.v141.x86.x64 -property installationPath
           $v141Compiler = Get-ChildItem (Join-Path $vs 'VC\Tools\MSVC') -Directory -Filter '14.16*' | Select-Object -First 1
