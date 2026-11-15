@@ -584,7 +584,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(SolutionDir)extern;$(SolutionDir)extern\dxsdk\lib\x86;%(AdditionalLibraryDirectories);$(SolutionDir)extern\SimulWeather\Simul\lib\Win32\VC10\Static Release</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;wsock32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <DelayLoadDLLs>mpiwin32.dll;openal32.dll;steam_api.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>mpiwin32.dll;openal32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>$(TargetDir)$(TargetName).map</MapFileName>
@@ -934,7 +934,7 @@ editbin  /SUBSYSTEM:CONSOLE $(OutDir)binarize.exe
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(SolutionDir)extern;$(SolutionDir)extern\dxsdk\lib\x86;$(SolutionDir)extern\SimulWeather\Simul\lib\Win32\VC10\Static Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;wsock32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <DelayLoadDLLs>mpiwin32.dll;openal32.dll;steam_api.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>mpiwin32.dll;openal32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>$(TargetDir)$(TargetName).map</MapFileName>
@@ -1980,6 +1980,7 @@ IF NOT EXIST $(TargetDir)$(TargetName).prf (copy $(SolutionDir)..\Arrowhead\Prot
     <None Include="..\extern\libcurl\lib\CMakeLists.txt" />
     <CustomBuild Include="..\extern\Steamworks\bin\steam_api.dll">
       <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">true</ExcludedFromBuild>
       <Command Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Retail|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseNoOpt|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
@@ -1988,7 +1989,6 @@ IF NOT EXIST $(TargetDir)$(TargetName).prf (copy $(SolutionDir)..\Arrowhead\Prot
       <Command Condition="'$(Configuration)|$(Platform)'=='Buldozer|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Retail Steam|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Testing|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
@@ -2000,7 +2000,6 @@ IF NOT EXIST $(TargetDir)$(TargetName).prf (copy $(SolutionDir)..\Arrowhead\Prot
       <Message Condition="'$(Configuration)|$(Platform)'=='Buldozer|Win32'">Copying %(FullPath)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(FullPath)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(FullPath)</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">Copying %(FullPath)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Copying %(FullPath)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Retail Steam|Win32'">Copying %(FullPath)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Testing|Win32'">Copying %(FullPath)</Message>
@@ -2012,28 +2011,9 @@ IF NOT EXIST $(TargetDir)$(TargetName).prf (copy $(SolutionDir)..\Arrowhead\Prot
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Retail Demo|Win32'">$(OutDir)%(Filename)%(Extension);%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Buldozer|Win32'">$(OutDir)%(Filename)%(Extension);%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)%(Filename)%(Extension);%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">$(OutDir)%(Filename)%(Extension);%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(OutDir)%(Filename)%(Extension);%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Retail Steam|Win32'">$(OutDir)%(Filename)%(Extension);%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Testing|Win32'">$(OutDir)%(Filename)%(Extension);%(Outputs)</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="..\extern\Steamworks\bin\steamclient.dll">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">$(OutDir)%(Filename)%(Extension);%(Outputs)</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">Copying %(FullPath)</Message>
-    </CustomBuild>
-    <CustomBuild Include="..\extern\Steamworks\bin\tier0_s.dll">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">$(OutDir)%(Filename)%(Extension);%(Outputs)</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">Copying %(FullPath)</Message>
-    </CustomBuild>
-    <CustomBuild Include="..\extern\Steamworks\bin\vstdlib_s.dll">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">Copy "%(FullPath)"  "$(OutDir)%(Filename)%(Extension)"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">$(OutDir)%(Filename)%(Extension);%(Outputs)</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Retail Server|Win32'">Copying %(FullPath)</Message>
     </CustomBuild>
     <None Include="Buldozer.ico" />
     <None Include="dayz.ico" />

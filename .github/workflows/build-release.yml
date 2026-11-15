@@ -67,6 +67,20 @@ jobs:
             if (-not $group -or $group.ClCompile.PreprocessorDefinitions -notmatch '(^|;)DAYZ_PRIVATE_SERVER=1(;|$)') {
               throw "$target must define DAYZ_PRIVATE_SERVER=1."
             }
+            if ($group.Link.DelayLoadDLLs -match '(^|;)steam_api\.dll(;|$)') {
+              throw "$target must not delay-load Steam."
+            }
+          }
+
+          $steamDlls = @($project.Project.ItemGroup.CustomBuild | Where-Object {
+            $_.Include -like '..\extern\Steamworks\bin\*.dll'
+          })
+          if ($steamDlls.Count -ne 1 -or $steamDlls[0].Include -notlike '*\steam_api.dll') {
+            throw 'Only the legacy steam_api.dll entry may remain in the project.'
+          }
+          $steamApi = $steamDlls[0]
+          if ($steamApi.ExcludedFromBuild.Condition -ne "'`$(Configuration)|`$(Platform)'=='Retail Server|Win32'" -or $steamApi.ExcludedFromBuild.InnerText -ne 'true' -or $steamApi.Command.Condition -contains "'`$(Configuration)|`$(Platform)'=='Retail Server|Win32'") {
+            throw 'The private server must not build or copy Steam runtime files.'
           }
 
       - name: Build x64 RSA dependency
