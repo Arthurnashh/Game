@@ -35,6 +35,11 @@ static const char *DX11ErrorString(HRESULT hr)
   return text;
 }
 
+static bool DX11UseWarpRasterizer()
+{
+  return strstr(GetCommandLineA(), "-dx11warp") != NULL;
+}
+
 #include "../textbank.hpp"
 
 #if _ENABLE_COMPILED_SHADER_CACHE
@@ -6052,6 +6057,13 @@ bool EngineDD11::InitD3D()
   if (_d3dDebugMode)
     flags |= D3D11_CREATE_DEVICE_DEBUG;
 
+  const bool useWarp = DX11UseWarpRasterizer();
+  if (useWarp)
+  {
+    _devType = D3D_DRIVER_TYPE_WARP;
+    RptF("DX11 diagnostic: using WARP software rasterizer");
+  }
+
   if (_devType == D3D_DRIVER_TYPE_HARDWARE && _dxgiAdapter.NotNull())
   {
     // This has to be done, because when adapter is not NULL, _devType must be D3D_DRIVER_TYPE_UNKNOWN,
@@ -6060,7 +6072,7 @@ bool EngineDD11::InitD3D()
   }
 
   IDXGIAdapter* usedAdapter = 0;
-  if (_devType != D3D_DRIVER_TYPE_REFERENCE)
+  if (_devType != D3D_DRIVER_TYPE_REFERENCE && _devType != D3D_DRIVER_TYPE_WARP)
   {
     usedAdapter = _dxgiAdapter;
   }
@@ -6085,6 +6097,25 @@ bool EngineDD11::InitD3D()
     &_featureLevel,        
     d3dImmediateDeviceContext.Init()
     );
+
+  if (useWarp && SUCCEEDED(hr))
+  {
+    ComRef<IDXGIDevice> dxgiDevice;
+    ComRef<IDXGIAdapter> actualAdapter;
+    HRESULT queryHr = d3dDevice->QueryInterface(__uuidof(IDXGIDevice), dxgiDevice.InitVoid());
+    if (SUCCEEDED(queryHr))
+      queryHr = dxgiDevice->GetAdapter(actualAdapter.Init());
+    DXGI_ADAPTER_DESC actualAdapterDesc;
+    ZeroMemory(&actualAdapterDesc, sizeof(actualAdapterDesc));
+    if (SUCCEEDED(queryHr) && actualAdapter.NotNull())
+    {
+      queryHr = actualAdapter->GetDesc(&actualAdapterDesc);
+      if (SUCCEEDED(queryHr))
+        RptF("DX11 diagnostic: WARP device adapter: %S", actualAdapterDesc.Description);
+    }
+    if (FAILED(queryHr))
+      RptF("DX11 diagnostic: could not identify WARP device adapter (0x%08x)", (unsigned)queryHr);
+  }
 
   // Possibly not needed in DX11 - it is slower with this
   #if RESTORE_AFFINITY
@@ -7183,6 +7214,7 @@ bool EngineDD11::InitDXGIAdapter()
   if (_dxgiFactory.IsNull())
     return false;
 
+  const bool useWarp = DX11UseWarpRasterizer();
   int adapterIndex = D3D11Adapter;
 
   // NVPerfHUD not active by default
@@ -7228,7 +7260,7 @@ bool EngineDD11::InitDXGIAdapter()
       {
         if (curAdapter)
         {
-          int level = GetAdapterLevel(curAdapter);
+          int level = useWarp ? 0 : GetAdapterLevel(curAdapter);
           if (level>maxLevel)
           {
             maxLevel = level;
@@ -7250,7 +7282,8 @@ bool EngineDD11::InitDXGIAdapter()
     hr; 
     Assert(SUCCEEDED(hr) && _dxgiAdapter.NotNull());
 
-    _deviceLevel = GetAdapterLevel(_dxgiAdapter);
+    if (!useWarp)
+      _deviceLevel = GetAdapterLevel(_dxgiAdapter);
   }
 
   D3D11Adapter = adapterIndex;
