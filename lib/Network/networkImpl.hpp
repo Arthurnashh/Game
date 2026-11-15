@@ -5047,9 +5047,17 @@ public:
   void SpawnForPlayer(int dpnid, GameDataCode *code, const GameValue &args);
 
 #if _ENABLE_STEAM_OWNERSHIP
-  void PlayerGUIDIsValid(int player, const CSteamID &ownerId) { _beIntegration.PlayerGUIDIsValid(player, ownerId); };
+  void PlayerGUIDIsValid(int player, const CSteamID &ownerId) {
+#if _USE_BATTL_EYE_SERVER
+    _beIntegration.PlayerGUIDIsValid(player, ownerId);
+#endif
+  };
 #else
-  void PlayerGUIDIsValid(int player) { _beIntegration.PlayerGUIDIsValid(player); };
+  void PlayerGUIDIsValid(int player) {
+#if _USE_BATTL_EYE_SERVER
+    _beIntegration.PlayerGUIDIsValid(player);
+#endif
+  };
 #endif
 
   //! The output format is "creator:id friendlyName"
