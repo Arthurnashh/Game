@@ -181,6 +181,18 @@ function Assert-Package([string]$Stage) {
         throw "Missing client runtime DLL: $runtimeDll"
       }
     }
+
+    $shaderCacheRoot = Join-Path $Stage 'bin'
+    $shaderCacheFiles = @(Get-ChildItem -LiteralPath $shaderCacheRoot -File -ErrorAction SilentlyContinue)
+    $actualShaderCacheNames = [string[]]@($shaderCacheFiles | ForEach-Object { $_.Name })
+    $expectedShaderCacheNames = [string[]]@('Shaders_PP_DX11.shdc', 'Shaders_PS_DX11.shdc', 'Shaders_VS_DX11.shdc')
+    [Array]::Sort($actualShaderCacheNames, [System.StringComparer]::Ordinal)
+    [Array]::Sort($expectedShaderCacheNames, [System.StringComparer]::Ordinal)
+    if ($shaderCacheFiles.Count -ne 3 -or
+        @($shaderCacheFiles | Where-Object { $_.Length -le 0 }).Count -gt 0 -or
+        @(Compare-Object -ReferenceObject $expectedShaderCacheNames -DifferenceObject $actualShaderCacheNames -CaseSensitive).Count -gt 0) {
+      throw 'Client bin/ must contain exactly the three non-empty DX11 shader caches.'
+    }
   }
   if ($Role -eq 'server') {
     $mission = Join-Path $Stage 'MPMissions\dayz_Auto.ChernarusPlus'
@@ -286,6 +298,10 @@ try {
     if (-not (Test-Path -LiteralPath (Join-Path $roleAssets $directory) -PathType Container)) {
       throw "Missing role-specific runtime directory: $Role/$directory"
     }
+  }
+  if ($Role -eq 'client' -and
+      -not (Test-Path -LiteralPath (Join-Path $roleAssets 'bin') -PathType Container)) {
+    throw 'Client assets must include bin/ with the three DX11 shader caches.'
   }
   if ($Role -eq 'server' -and
       (-not (Test-Path -LiteralPath (Join-Path $roleAssets 'dll') -PathType Container) -or

@@ -8,7 +8,8 @@ matching role directory.
 
 - Client: `Addons/`, `dta/`, `Keys/dayz.bikey`, candidate `DayZ.exe`, and the
   Microsoft-signed x64 `d3dx10_41.dll` / `d3dx11_41.dll` runtime files at the
-  package root. There is no client `dll/` directory.
+  package root. `bin/` contains the three generated DX11 shader caches. There
+  is no client `dll/` directory.
 - Server: `Addons/`, `dta/`, `dll/` containing the four x86 allocator DLLs,
   `Keys/dayz.bikey`, `MPMissions/dayz_Auto.ChernarusPlus/`, and root
   `serverDZ.cfg`, plus candidate `DayZServer.exe` and its runtime DLLs at the

@@ -7,6 +7,7 @@ extern/RotorLib/RTDynamics[[:space:]]4.0/Lib/VC10-32/Debug/RTDynamics-vc10-stati
 *.bisign binary
 *.bikey binary
 release-assets/client/*.dll filter=lfs diff=lfs merge=lfs -text
+release-assets/client/bin/*.shdc filter=lfs diff=lfs merge=lfs -text
 release-assets/*.md text eol=lf
 release-assets/**/*.cfg text eol=lf
 release-assets/**/*.ext text eol=lf

@@ -51,6 +51,11 @@ function Write-PackageFixture([string]$Role) {
     foreach ($runtimeDll in @('d3dx10_41.dll', 'd3dx11_41.dll')) {
       Write-FakePe (Join-Path $assetRoot $runtimeDll) 0x8664
     }
+    $shaderCacheRoot = Join-Path $assetRoot 'bin'
+    New-Item -ItemType Directory -Path $shaderCacheRoot -Force | Out-Null
+    foreach ($shaderCache in @('Shaders_PP_DX11.shdc', 'Shaders_PS_DX11.shdc', 'Shaders_VS_DX11.shdc')) {
+      [System.IO.File]::WriteAllText((Join-Path $shaderCacheRoot $shaderCache), 'fixture')
+    }
   }
   else {
     Write-FakePe (Join-Path $binaryRoot 'DayZServer.exe') 0x014c
@@ -164,6 +169,31 @@ try {
   }
   Move-Item -LiteralPath $savedRuntime -Destination $missingRuntime
   if (-not $missingRejected) { throw 'The packager accepted a client package without d3dx11_41.dll.' }
+
+  $emptyCache = Join-Path $fixture 'release-assets\client\bin\Shaders_PS_DX11.shdc'
+  $savedCache = [System.IO.File]::ReadAllBytes($emptyCache)
+  [System.IO.File]::WriteAllBytes($emptyCache, (New-Object byte[] 0))
+  $emptyCacheRejected = $false
+  $emptyCacheArguments = @{
+    Role = 'client'
+    BinaryDirectory = (Join-Path $fixture 'binaries\client')
+    StageDirectory = '.\stage\empty-shader-cache'
+    ManifestPath = '.\manifests\empty-shader-cache.txt'
+    RepositoryRoot = $fixture
+  }
+  Push-Location $fixture
+  try {
+    & $packager @emptyCacheArguments | Out-Null
+  }
+  catch {
+    if ($_.Exception.Message -notmatch 'Client bin/ must contain exactly the three non-empty DX11 shader caches') { throw }
+    $emptyCacheRejected = $true
+  }
+  finally {
+    Pop-Location
+  }
+  [System.IO.File]::WriteAllBytes($emptyCache, $savedCache)
+  if (-not $emptyCacheRejected) { throw 'The packager accepted an empty client shader cache.' }
 
   if ($sevenZip) {
     $badArchive = Join-Path $fixture 'archives\checksum-collision.zip'
