@@ -92,15 +92,17 @@ jobs:
           $library = 'build/port-x64/RSA/rsa_x64.lib'
           if (-not (Test-Path $library)) { throw "RSA output missing: $library" }
 
-      - name: Build x64 Speex dependencies
+      - name: Build Win32 and x64 Speex dependencies
         shell: pwsh
         run: |
-          foreach ($project in @('.github/build-deps/speex-x64.vcxproj', '.github/build-deps/speexdsp-x64.vcxproj')) {
-            msbuild $project -m -t:Build -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v141 -p:WindowsTargetPlatformVersion=10.0.19041.0
-            if ($LASTEXITCODE -ne 0) { throw "Audio dependency build failed: $project ($LASTEXITCODE)" }
+          foreach ($platform in @('Win32', 'x64')) {
+            foreach ($project in @('.github/build-deps/speex-x64.vcxproj', '.github/build-deps/speexdsp-x64.vcxproj')) {
+              msbuild $project -m -t:Build -p:Configuration=Release -p:Platform=$platform -p:PlatformToolset=v141 -p:WindowsTargetPlatformVersion=10.0.19041.0
+              if ($LASTEXITCODE -ne 0) { throw "Audio dependency build failed: $project ($platform, $LASTEXITCODE)" }
+            }
           }
 
-          foreach ($library in @('build/port-x64/audio/libspeexMt.lib', 'build/port-x64/audio/libspeexdspMt.lib')) {
+          foreach ($library in @('build/port-x86/audio/libspeexMt.lib', 'build/port-x86/audio/libspeexdspMt.lib', 'build/port-x64/audio/libspeexMt.lib', 'build/port-x64/audio/libspeexdspMt.lib')) {
             if (-not (Test-Path $library)) { throw "Audio dependency output missing: $library" }
           }
 

@@ -582,7 +582,7 @@
       <AdditionalDependencies>Delayimp.lib;ddraw.lib;Iphlpapi.lib;vorbisfileMT.lib;winmm.lib;dxguid.lib;version.lib;rsaMT.lib;libspeexMt.lib;libspeexdspMt.lib;libbulletcollision.lib;libbulletdynamics.lib;libbulletmath.lib;$(VCToolsInstallDir)lib\x86\legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(SolutionDir)extern;$(SolutionDir)extern\dxsdk\lib\x86;%(AdditionalLibraryDirectories);$(SolutionDir)extern\SimulWeather\Simul\lib\Win32\VC10\Static Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)build\port-x86\audio;$(SolutionDir)extern;$(SolutionDir)extern\dxsdk\lib\x86;%(AdditionalLibraryDirectories);$(SolutionDir)extern\SimulWeather\Simul\lib\Win32\VC10\Static Release</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;wsock32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <DelayLoadDLLs>mpiwin32.dll;openal32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
