@@ -48,6 +48,9 @@ function Write-PackageFixture([string]$Role) {
   New-Item -ItemType Directory -Path $binaryRoot -Force | Out-Null
   if ($Role -eq 'client') {
     Write-FakePe (Join-Path $binaryRoot 'DayZ.exe') 0x8664
+    foreach ($runtimeDll in @('d3dx10_41.dll', 'd3dx11_41.dll')) {
+      Write-FakePe (Join-Path $assetRoot $runtimeDll) 0x8664
+    }
   }
   else {
     Write-FakePe (Join-Path $binaryRoot 'DayZServer.exe') 0x014c
@@ -136,6 +139,31 @@ try {
       }
     }
   }
+
+  $missingRuntime = Join-Path $fixture 'release-assets\client\d3dx11_41.dll'
+  $savedRuntime = Join-Path $fixture 'd3dx11_41.dll.saved'
+  Move-Item -LiteralPath $missingRuntime -Destination $savedRuntime
+  $missingRejected = $false
+  $missingArguments = @{
+    Role = 'client'
+    BinaryDirectory = (Join-Path $fixture 'binaries\client')
+    StageDirectory = '.\stage\missing-runtime'
+    ManifestPath = '.\manifests\missing-runtime.txt'
+    RepositoryRoot = $fixture
+  }
+  Push-Location $fixture
+  try {
+    & $packager @missingArguments | Out-Null
+  }
+  catch {
+    if ($_.Exception.Message -notmatch 'Missing client runtime DLL: d3dx11_41.dll') { throw }
+    $missingRejected = $true
+  }
+  finally {
+    Pop-Location
+  }
+  Move-Item -LiteralPath $savedRuntime -Destination $missingRuntime
+  if (-not $missingRejected) { throw 'The packager accepted a client package without d3dx11_41.dll.' }
 
   if ($sevenZip) {
     $badArchive = Join-Path $fixture 'archives\checksum-collision.zip'

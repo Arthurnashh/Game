@@ -172,8 +172,15 @@ function Assert-Package([string]$Stage) {
 
   $executable = Join-Path $Stage $expectedExecutable
   if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) { throw "Missing $expectedExecutable." }
-  if ($Role -eq 'client' -and (Test-Path -LiteralPath (Join-Path $Stage 'dll'))) {
-    throw 'The client package must not contain a dll directory.'
+  if ($Role -eq 'client') {
+    if (Test-Path -LiteralPath (Join-Path $Stage 'dll')) {
+      throw 'The client package must not contain a dll directory.'
+    }
+    foreach ($runtimeDll in @('d3dx10_41.dll', 'd3dx11_41.dll')) {
+      if (-not (Test-Path -LiteralPath (Join-Path $Stage $runtimeDll) -PathType Leaf)) {
+        throw "Missing client runtime DLL: $runtimeDll"
+      }
+    }
   }
   if ($Role -eq 'server') {
     $mission = Join-Path $Stage 'MPMissions\dayz_Auto.ChernarusPlus'
