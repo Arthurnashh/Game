@@ -51,6 +51,8 @@ jobs:
           if (-not (Test-Path $sdkLib)) { throw 'Windows SDK 10.0.19041.0 was not installed.' }
           $d3dCompilerLib = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\Lib\10.0.19041.0\um\x64\d3dcompiler.lib'
           if (-not (Test-Path $d3dCompilerLib)) { throw 'Windows SDK D3DCompiler library was not installed.' }
+          $shcoreLib = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\Lib\10.0.19041.0\um\x64\shcore.lib'
+          if (-not (Test-Path $shcoreLib)) { throw 'Windows SDK Shcore library was not installed.' }
 
       - uses: microsoft/setup-msbuild@v2
 
