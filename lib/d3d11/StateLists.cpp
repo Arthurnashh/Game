@@ -12,6 +12,82 @@ namespace DX11
 // maximum count of states that can be loaded to GPU
 static const int MaxStateCount = 4096;
 
+// Alpha-only color write mask mapping helpers
+static constexpr bool IsLegacyColorWriteMaskSupported(DWORD writeMask)
+{
+  return writeMask == 0 ||
+    writeMask == (D3DCOLORWRITEENABLE_RED_OLD |
+      D3DCOLORWRITEENABLE_GREEN_OLD |
+      D3DCOLORWRITEENABLE_BLUE_OLD) ||
+    writeMask == D3DCOLORWRITEENABLE_ALPHA_OLD ||
+    writeMask == (D3DCOLORWRITEENABLE_RED_OLD |
+      D3DCOLORWRITEENABLE_GREEN_OLD |
+      D3DCOLORWRITEENABLE_BLUE_OLD |
+      D3DCOLORWRITEENABLE_ALPHA_OLD);
+}
+
+static constexpr BlendStateList::RenderTargetWriteMask ToRenderTargetWriteMask(DWORD writeMask)
+{
+  switch (writeMask)
+  {
+  case 0:
+    return BlendStateList::RTWMNone;
+  case (D3DCOLORWRITEENABLE_RED_OLD |
+      D3DCOLORWRITEENABLE_GREEN_OLD |
+      D3DCOLORWRITEENABLE_BLUE_OLD):
+    return BlendStateList::RTWMFullNoAlpha;
+  case D3DCOLORWRITEENABLE_ALPHA_OLD:
+    return BlendStateList::RTWMAlphaOnly;
+  case (D3DCOLORWRITEENABLE_RED_OLD |
+      D3DCOLORWRITEENABLE_GREEN_OLD |
+      D3DCOLORWRITEENABLE_BLUE_OLD |
+      D3DCOLORWRITEENABLE_ALPHA_OLD):
+    return BlendStateList::RTWMFull;
+  default:
+    return BlendStateList::RTWMFull;
+  }
+}
+
+static constexpr UINT8 ToD3D11ColorWriteMask(BlendStateList::RenderTargetWriteMask writeMask)
+{
+  switch (writeMask)
+  {
+  case BlendStateList::RTWMNone:
+    return 0;
+  case BlendStateList::RTWMFullNoAlpha:
+    return static_cast<UINT8>(D3D11_COLOR_WRITE_ENABLE_RED |
+      D3D11_COLOR_WRITE_ENABLE_GREEN |
+      D3D11_COLOR_WRITE_ENABLE_BLUE);
+  case BlendStateList::RTWMAlphaOnly:
+    return static_cast<UINT8>(D3D11_COLOR_WRITE_ENABLE_ALPHA);
+  case BlendStateList::RTWMFull:
+    return static_cast<UINT8>(D3D11_COLOR_WRITE_ENABLE_ALL);
+  default:
+    return static_cast<UINT8>(D3D11_COLOR_WRITE_ENABLE_ALL);
+  }
+}
+
+static_assert(ToRenderTargetWriteMask(8) == BlendStateList::RTWMAlphaOnly,
+  "Legacy alpha-only write mask must map to RTWMAlphaOnly");
+static_assert(ToD3D11ColorWriteMask(BlendStateList::RTWMAlphaOnly) == D3D11_COLOR_WRITE_ENABLE_ALPHA,
+  "RTWMAlphaOnly must enable only D3D11 alpha writes");
+static_assert(ToRenderTargetWriteMask(0) == BlendStateList::RTWMNone &&
+  ToD3D11ColorWriteMask(ToRenderTargetWriteMask(0)) == 0,
+  "Legacy zero write mask mapping must remain unchanged");
+static_assert(ToRenderTargetWriteMask(7) == BlendStateList::RTWMFullNoAlpha &&
+  ToD3D11ColorWriteMask(ToRenderTargetWriteMask(7)) ==
+    (D3D11_COLOR_WRITE_ENABLE_RED | D3D11_COLOR_WRITE_ENABLE_GREEN | D3D11_COLOR_WRITE_ENABLE_BLUE),
+  "Legacy RGB write mask mapping must remain unchanged");
+static_assert(ToRenderTargetWriteMask(15) == BlendStateList::RTWMFull &&
+  ToD3D11ColorWriteMask(ToRenderTargetWriteMask(15)) == D3D11_COLOR_WRITE_ENABLE_ALL,
+  "Legacy full write mask mapping must remain unchanged");
+static_assert(IsLegacyColorWriteMaskSupported(0) && IsLegacyColorWriteMaskSupported(7) &&
+  IsLegacyColorWriteMaskSupported(8) && IsLegacyColorWriteMaskSupported(15),
+  "All four supported legacy write masks must be accepted");
+static_assert(IsLegacyColorWriteMaskSupported(1) == false,
+  "Unsupported legacy write masks must remain unsupported");
+// End alpha-only color write mask mapping helpers
+
 ///=========================================================
 // Implementation of DepthStencilStateList
 ///=========================================================
@@ -788,21 +864,14 @@ const ID3D11BlendState* BlendStateList::GetState(const AutoArray<DWORD>& info) c
 
   // write mask
   DWORD writeMask = GetRSValue(info,  D3DRS_COLORWRITEENABLE_OLD);
-  switch (writeMask)
+  if (!IsLegacyColorWriteMaskSupported(writeMask))
   {
-    case 0:
-      desc._renderTargetWriteMask = RTWMNone;
-      break;
-    case (D3DCOLORWRITEENABLE_RED_OLD | D3DCOLORWRITEENABLE_GREEN_OLD | D3DCOLORWRITEENABLE_BLUE_OLD):
-      desc._renderTargetWriteMask = RTWMFullNoAlpha;
-      break;
-    case (D3DCOLORWRITEENABLE_RED_OLD | D3DCOLORWRITEENABLE_GREEN_OLD | D3DCOLORWRITEENABLE_BLUE_OLD | D3DCOLORWRITEENABLE_ALPHA_OLD):
-      desc._renderTargetWriteMask = RTWMFull;
-      break;
-    default:
-      Fail("DX11 Error: Not handled");
-      desc._renderTargetWriteMask = RTWMFull;
-      break;
+    Fail("DX11 Error: Not handled");
+    desc._renderTargetWriteMask = RTWMFull;
+  }
+  else
+  {
+    desc._renderTargetWriteMask = ToRenderTargetWriteMask(writeMask);
   }
 
   const ID3D11BlendState* state = GetState(desc);
@@ -992,20 +1061,14 @@ bool BlendStateList::CreateState(const BlendStateList::StateDesc &desc)
   switch (desc._renderTargetWriteMask)
   {
   case RTWMNone:
-    rtDesc.RenderTargetWriteMask = 0;
-    break;
   case RTWMFullNoAlpha:
-    rtDesc.RenderTargetWriteMask = 
-      D3D11_COLOR_WRITE_ENABLE_RED |
-      D3D11_COLOR_WRITE_ENABLE_GREEN |
-      D3D11_COLOR_WRITE_ENABLE_BLUE;
-    break;
+  case RTWMAlphaOnly:
   case RTWMFull:
-    rtDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    rtDesc.RenderTargetWriteMask = ToD3D11ColorWriteMask(desc._renderTargetWriteMask);
     break;
   default:
     Fail("Invalid render target write mask");
-    rtDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    rtDesc.RenderTargetWriteMask = ToD3D11ColorWriteMask(RTWMFull);
     break;
   }
 

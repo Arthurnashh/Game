@@ -195,6 +195,7 @@ public:
     RTWMNone,
     RTWMFullNoAlpha,
     RTWMFull,
+    RTWMAlphaOnly,
     RTWMCount
   };
 
