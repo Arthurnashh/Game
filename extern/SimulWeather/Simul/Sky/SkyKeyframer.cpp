@@ -1,4 +1,3 @@
-#include <algorithm>
 #include "precomp.h"
 
 #include "Simul/Sky/SkyKeyframer.h"

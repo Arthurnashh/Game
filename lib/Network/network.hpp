@@ -1,4 +1,4 @@
-#ifdef _MSC_VER
+﻿#ifdef _MSC_VER
 #pragma once
 #endif
 
@@ -24,9 +24,6 @@
 #include <El/Stringtable/stringtable.hpp>
 #include "../vehicleAI.hpp"
 #include "../global.hpp"
-#if !_ENABLE_STEAM_MATCHMAKING
-class CSteamID;
-#endif
 #if _ENABLE_STEAM_MATCHMAKING
 # include <steamworks/steam_api.h>
 # include <steamworks/steam_gameserver.h>
@@ -462,9 +459,7 @@ public:
   //! Server time of estimated End of MP game
   virtual DWORD GetEstimatedEndServerTime() = 0;
   //! get battleye to know about Steam GUID validation
-#if _ENABLE_STEAM_OWNERSHIP
   virtual void PlayerGUIDIsValid(int player, const CSteamID &ownerId) = 0;
-#endif
 
 #if _ENABLE_CHEATS
   virtual void VoNSay(int dpnid, int channel, int frequency, int seconds) = 0;
@@ -1093,8 +1088,7 @@ public:
   virtual void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type) = 0;
   virtual void AskForThrowItem(Man *person, InventoryItem *item, Vector3 pos, Vector3 dir) = 0;
 	virtual void AskForDropItem(Person *person, InventoryItem *item) = 0;
-  virtual void AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated) = 0;
-  virtual void AskForRotateInventoryItem(Person *person, InventoryItem *item) = 0;
+  virtual void AskForMoveItem(EntityAI *target, int index, InventoryItem *item) = 0;
   virtual void AskForTakeItemToHands(Person *person, InventoryItem *item) = 0;
   virtual void AskForSwapItems(InventoryItem *item1, InventoryItem *item2, Person *owner) = 0;
 
@@ -1201,7 +1195,6 @@ public:
 #if _ENABLE_DEDICATED_SERVER
   virtual void ProfileAnswer(const RString &output) = 0;
 #endif
-  virtual void DBLoad(RString baseURL, int playerId, RString playerUID, GameDataCode *code) = 0;
 };
 
 //! Return networn manager class
@@ -1413,7 +1406,6 @@ DEFINE_ENUM_END(TMError)
   XX(FORMAT_UPDATE, ItemShortcut, UpdateItemShortcut, "<embedded/> Item shortcut in ClientOutput", Update) \
   XX(FORMAT_UPDATE, InventoryItem, UpdateInventoryItem, "Generic update of InventoryItem (: EntityAI).", Update) \
   XX(FORMAT_SIMPLE, Dummy, AskForMoveItem, "Ask owner for Inventory UI action.", Ask) \
-  XX(FORMAT_SIMPLE, Dummy, AskForRotateInventoryItem, "Ask server to rotate inventory item.", Ask) \
   XX(FORMAT_SIMPLE, Dummy, AskForThrowItem, "Ask owner for throwing UI action.", Ask) \
   XX(FORMAT_SIMPLE, Dummy, AskForDropItem, "Ask owner for Inventory UI action.", Ask) \
   XX(FORMAT_SIMPLE, Dummy, AskForSetItemShortcut, "Ask owner for Inventory UI action.", Ask) \

@@ -33,7 +33,6 @@ Implements general and  drawing functions
 #include "objDestroy.hpp"
 #include "rtAnimation.hpp"
 #include "objectClasses.hpp"
-#include "vehicleAI.hpp"
 
 #include "Shape/specLods.hpp"
 #include "Network/network.hpp"
@@ -443,7 +442,7 @@ static void ReportObjDiagMode(int mode)
 
 static GameValue SetObjDiagEnable(const GameState *state, GameValuePar oper1, GameValuePar oper2)
 {
-  const char *modeStr = oper1.GetData()->GetString();
+  const char *modeStr = (RString)oper1;
   bool onOff = oper2;
   int modeMask = ~0;
   int mode = GetEnumValue<ObjDiagEnable>(modeStr);
@@ -458,7 +457,7 @@ static GameValue SetObjDiagEnable(const GameState *state, GameValuePar oper1, Ga
 
 static GameValue SetObjDiagScale(const GameState *state, GameValuePar oper1, GameValuePar oper2)
 {
-  const char *modeStr = oper1.GetData()->GetString();
+  const char *modeStr = (RString)oper1;
   float scale = oper2;
   int mode = GetEnumValue<ObjDiagEnable>(modeStr);
   if (mode<0) return NOTHING;
@@ -469,7 +468,7 @@ static GameValue SetObjDiagScale(const GameState *state, GameValuePar oper1, Gam
 
 static GameValue SetObjDiagToggle(const GameState *state, GameValuePar oper1)
 {
-  const char *modeStr = oper1.GetData()->GetString();
+  const char *modeStr = (RString)oper1;
   int mode = GetEnumValue<ObjDiagEnable>(modeStr);
   if (mode==-1) return NOTHING;
   int modeMask = 1<<mode;
@@ -1838,10 +1837,7 @@ void Object::DrawSimpleInstanced(
   // make sure texture loading does not evict our vertex buffer (if it exists)
   VertexBufferLock vbLock(sShape);
   
-  {
-    PROFILE_SCOPE_DETAIL_EX(inTex,oSort);
-    sShape->PrepareTextures(dist2, NULL, special, dp._sbIsBeingRendered);
-  }
+  sShape->PrepareTextures(dist2, NULL, special, dp._sbIsBeingRendered);
 
   // If some hints then draw non-instanced version
   if ((sShape->GetOrHints()&ClipLandOn)!=0)
@@ -1938,13 +1934,10 @@ void Object::DrawSimpleInstanced(
       bias = ((special&ZBiasMask)/ZBiasStep) * 5;
     }
     
-    {
-      PROFILE_SCOPE_DETAIL_EX(inDrw,oSort);
-      GEngine->DrawMeshTLInstanced(
-        cb,*sShape, *_shape, special, lights, bias,
-        instances, instanceCount, dist2, dpTI
-      );
-    }
+    GEngine->DrawMeshTLInstanced(
+      cb,*sShape, *_shape, special, lights, bias,
+      instances, instanceCount, dist2, dpTI
+    );
     // Set skinning to default value (FLY Better than this clean-up would be better to set it before each drawing)
     GEngine->SetSkinningType(cb,STNone);
   }
@@ -2049,12 +2042,9 @@ void Object::Draw(int cb, int forceLOD, ClipFlags clipFlags, const DrawParameter
   // get object position in clipping coordinates
   AnimationContextStorageRender storage;
   AnimationContext animContext(RenderVisualState(),storage);
-  sShape->InitAnimationContext(animContext, usingGeometry ? _shape->GetConvexComponents(forceLOD) : NULL, usingGeometry);
+  sShape->InitAnimationContext(animContext, _shape->GetConvexComponents(forceLOD), usingGeometry);
 
-  {
-    PROFILE_SCOPE_DETAIL_EX(obAni,oSort);
-    Animate(animContext, forceLOD, setEngineStuff, parentObject, dist2);
-  }
+  Animate(animContext, forceLOD, setEngineStuff, parentObject, dist2);
 
   // pos may be in camera space
   // dist2 is used for mipmap+proxy lod selection
@@ -2099,19 +2089,7 @@ void Object::Draw(int cb, int forceLOD, ClipFlags clipFlags, const DrawParameter
     }
 
     LightList work;
-    const LightList *lights;
-    const bool skipColorPrep = dp._sbIsBeingRendered || (dp._zprimeIsBeingRendered && !Glob.config._predication);
-    if (skipColorPrep)
-    {
-      // Shadow buffer (and non-predicated depth priming) does not consume object lighting.
-      // When predication is active, zprime records the CB replayed in the color pass, so keep lighting.
-      lights = &work;
-    }
-    else
-    {
-      PROFILE_SCOPE_DETAIL_EX(obLit,oSort);
-      lights = &GScene->SelectAggLights(worldPosition, this, forceLOD, work);
-    }
+    const LightList &lights=GScene->SelectAggLights(worldPosition, this, forceLOD, work);
     
     OBJECT_LEVEL_DPRIM_STAT_SCOPE(cb,_shape,forceLOD);
     ADD_COUNTER(obj,1);
@@ -2142,10 +2120,7 @@ void Object::Draw(int cb, int forceLOD, ClipFlags clipFlags, const DrawParameter
       // make sure texture loading does not evict our vertex buffer (if it exists)
       VertexBufferLock vbLock(sShape);
       
-      {
-        PROFILE_SCOPE_DETAIL_EX(obTex,oSort);
-        PrepareTextures(&animContext, _shape, dist2/scale2, forceLOD, skipColorPrep);
-      }
+      PrepareTextures(&animContext, _shape, dist2/scale2, forceLOD, dp._sbIsBeingRendered);
       
       _shape->OptimizeLevelRendering(forceLOD,false);
       // Preparing of drawing of the shape
@@ -2155,10 +2130,7 @@ void Object::Draw(int cb, int forceLOD, ClipFlags clipFlags, const DrawParameter
       UseDrawMatrices(cb, isSkinned, _shape, forceLOD, oi);
 #endif
 
-      {
-        PROFILE_SCOPE_DETAIL_EX(obShp,oSort);
-        sShape->Draw(cb,&animContext, GetConstantColor(), *_shape, *lights, clipFlags, special, pos, dist2, dpTI);
-      }
+      sShape->Draw(cb,&animContext, GetConstantColor(), *_shape, lights, clipFlags, special, pos, dist2, dpTI);
 
       // Draw craters (omit DB and z-prime passes), when predicating, predication will take care of omitting it
       if (!dp._zprimeIsBeingRendered || Glob.config._predication)
@@ -2178,10 +2150,7 @@ void Object::Draw(int cb, int forceLOD, ClipFlags clipFlags, const DrawParameter
           // Draw it
           DrawParameters dpc = dp;
           dpc._cratersCount = std::min(craters.Size(), maxCraters);
-          {
-            PROFILE_SCOPE_DETAIL_EX(obShp,oSort);
-            sShape->Draw(cb, &animContext, GetConstantColor(), *_shape, *lights, clipFlags, special, pos, dist2, dpc);
-          }
+          sShape->Draw(cb, &animContext, GetConstantColor(), *_shape, lights, clipFlags, special, pos, dist2, dpc);
 #endif
         }
       }
@@ -2191,10 +2160,7 @@ void Object::Draw(int cb, int forceLOD, ClipFlags clipFlags, const DrawParameter
       // when rendering shadow buffer, rendering what is on surface has no sense
       if (!dp._sbIsBeingRendered)
       {
-        {
-          PROFILE_SCOPE_DETAIL_EX(obTex,oSort);
-          PrepareTextures(&animContext, _shape, dist2/scale2, forceLOD, skipColorPrep);
-        }
+        PrepareTextures(&animContext, _shape, dist2/scale2, forceLOD, dp._sbIsBeingRendered);
 
 #if _HELISIM_RENDER_TO_TEXTURE
         UseDrawMatrices(cb, false, _shape, forceLOD, oi, drawListId);
@@ -2205,10 +2171,7 @@ void Object::Draw(int cb, int forceLOD, ClipFlags clipFlags, const DrawParameter
         // if all point are LandOn, we can split cache
         Ref<Shape> split = GScene->GetShadowCache().Split(this,VUp,forceLOD,special);
         int specAdj = (special&~OnSurface)|IsOnSurface;
-        {
-          PROFILE_SCOPE_DETAIL_EX(obShp,oSort);
-          split->Draw(cb, &animContext, GetConstantColor(), *_shape, *lights, clipFlags, specAdj, pos, dist2, dpTI);
-        }
+        split->Draw(cb, &animContext, GetConstantColor(), *_shape, lights, clipFlags, specAdj, pos, dist2, dpTI);
       }
     }
 
@@ -3047,27 +3010,34 @@ bool Object::StoreDrawMatricesNeeded(bool setEngineStuff, int level, SortObject 
     return false;
   }
   
-  if (this!=soRoot->GetObject())
+  SortObject::MatrixCacheItem *mc;
+  if (this==soRoot->GetObject())
   {
-    return false;
-  }
-
-  if (soRoot->_matrixCache.Size() < lShape->NLevels())
-  {
+    // note: SortObjects persists between frames, the memory here persists as well
+    soRoot->_matrixCache.Realloc(lShape->NLevels());
     soRoot->_matrixCache.Resize(lShape->NLevels());
+    mc = &soRoot->_matrixCache[level];
   }
-  SortObject::MatrixCacheItem *mc = &soRoot->_matrixCache[level];
+  else 
+  {
+    if (so->_rootIndex<0)
+    {
+      so->_rootIndex = soRoot->_nItems++;
+      soRoot->_matrixCacheProxy.Access(so->_rootIndex);
+    }
+    // note: SortObjects persists between frames, the memory here persists as well
+    soRoot->_matrixCacheProxy[so->_rootIndex].Realloc(lShape->NLevels());
+    soRoot->_matrixCacheProxy[so->_rootIndex].Resize(lShape->NLevels());
+    mc = &soRoot->_matrixCacheProxy[so->_rootIndex][level];
+  }
+  
   if (nMatrices!=mc->Size() && nMatrices>0)
   {
+    // TODO: optimize memory allocations here
     mc->Resize(nMatrices);
-  }
-  int frameId = FreeOnDemandFrameID();
-  if (mc->_frameId!=frameId)
-  {
-    mc->_frameId = frameId;
     return true;
   }
-  return false;
+  return mc->_frameId!=FreeOnDemandFrameID();
 }
 
 void Object::StoreDrawMatrices(LODShape *shape, int level, Object *parentObject, const SortObject *soRoot, int rootIndex)
@@ -3075,17 +3045,22 @@ void Object::StoreDrawMatrices(LODShape *shape, int level, Object *parentObject,
   // calculate the matrices
   MATRIX_4_ARRAY(matrix, 128);
   const VisualState &vs = parentObject->RenderVisualState();
-  SortObject::MatrixCacheItem *mc = &soRoot->_matrixCache[level];
-  if (parentObject->PrepareShapeDrawMatrices(matrix, vs, shape, level) && mc->Size()==matrix.Size())
+  if (parentObject->PrepareShapeDrawMatrices(matrix, vs, shape, level))
   {
     VerifyMatrixArrayWasSet(matrix, shape, level);
+    SortObject::MatrixCacheItem *mc;
+    if (this==soRoot->GetObject())
+    {
+      mc = &soRoot->_matrixCache[level];
+    }
+    else
+    {
+      mc = &soRoot->_matrixCacheProxy[rootIndex][level];
+    }
     // copy matrices to the cache
+    Assert(mc->Size()==matrix.Size());
     memcpy(mc->Data(),matrix.Data(),matrix.Size() * sizeof(Matrix4));
     mc->_frameId = FreeOnDemandFrameID();
-  }
-  else
-  {
-    mc->_frameId = -1;
   }
 }
 
@@ -3757,31 +3732,6 @@ bool Object::GetActionParams(UIActionParams &params, const Action *action, AIBra
 
 void Object::PerformAction(const Action *action, AIBrain *unit)
 {
-  if (action->GetType() == ATUserType)
-  {
-    if (!unit) return;
-    const EntityAIType *type = dynamic_cast<const EntityAIType *>(GetEntityType());
-    const ActionIndex *actionTyped = static_cast<const ActionIndex *>(action);
-    int index = actionTyped->GetIndex();
-    if (!type || index < 0 || index >= type->_userTypeActions.Size())
-    {
-      RptF("Cannot execute UserType action %d on static object %s (type %s)", index,
-        cc_cast(GetDebugName()), type ? cc_cast(type->GetName()) : "<no EntityAIType>");
-      return;
-    }
-
-    const UserTypeAction &act = type->_userTypeActions[index];
-    GameState *state = GWorld->GetGameState();
-    GameVarSpace local(state->GetContext(), false);
-    int gshandle = state->BeginContext(&local);
-    state->VarSetLocal("this", GameValueExt(this), true, true);
-    state->VarSetLocal("_name", act.name, true, true);
-    state->VarSetLocal("_person", GameValueExt(unit->GetPerson()), true, true);
-    state->Execute(act.statement, GameState::EvalContext::_default, GWorld->GetMissionNamespace());
-    state->EndContext(gshandle);
-    return;
-  }
-
   if (action->GetType() == ATObjectAction)
   {
     if (!unit) return;

@@ -622,17 +622,6 @@ enum
 #define IDC_MAIN_PLAY               142
 
 #define IDC_MAIN_CHARACTER			143
-#define IDC_MAIN_MENU_HELP      12020
-#define IDC_MAIN_MENU_CHARACTER 12021
-#define IDC_MAIN_MENU_SETTINGS  12022
-#define IDC_MAIN_MENU_EXIT      12023
-#define IDC_MAIN_MENU_PLAY      12024
-#define IDC_MAIN_MENU_SLOT_PREV 12025
-#define IDC_MAIN_MENU_SLOT_NEXT 12026
-#define IDC_MAIN_MENU_SLOT_NAME 12027
-#define IDC_MAIN_MENU_PANEL     12030
-#define IDC_MAIN_CHARACTER_ZONE 1100
-
 
 //Character screen defaults
 #define IDC_CHAR_CONFIRM_DEFAULT	8001
@@ -1784,13 +1773,6 @@ enum
 #define  IDC_IGUI_DAMAGE_MAINROTOR                  668
 #define  IDC_IGUI_DAMAGE_TAILROTOR                  669
 #define  IDC_IGUI_DAMAGE_AUTOHOVER                  670
-
-// DayZ status icons
-#define  IDC_IGUI_STATUS_THIRST                     681
-#define  IDC_IGUI_STATUS_HUNGER                     682
-#define  IDC_IGUI_STATUS_TEMPERATURE                683
-#define  IDC_IGUI_STATUS_BLOOD                      684
-#define  IDC_IGUI_STATUS_HEALTH                     685
 
 // - hint
 #define IDC_IGHINT_BG                 101

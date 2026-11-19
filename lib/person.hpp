@@ -114,8 +114,6 @@ class Person: public EntityAIFull, public IWeaponsHolder, public CountInstances<
 
 public:
   static const int NItemShortcuts = 10; // mapped to keys 1 .. 10 by default  
-  // quickbar slots actually available are limited by the clothing worn (like DayZ 1.30)
-  static const int NMaxVisibleShortcuts = 5;
 
 protected:
 	Ref<AIBrain> _brain;
@@ -150,16 +148,6 @@ protected:
   // shortcuts to inventory items
   Ref<InventoryItem> _itemShortcuts[NItemShortcuts];
 
-  // remembered origin of items pulled to hands through a shortcut key
-  struct ShortcutOrigin
-  {
-    OLinkPermO(InventoryItem) item;
-    OLinkPermO(EntityAI) parent;
-    int index;
-    ShortcutOrigin() : index(-1) {}
-  };
-  ShortcutOrigin _shortcutOrigins[NItemShortcuts];
-
   /// currently using item
   OLinkPermO(InventoryItem) _itemInHands;
   /// helper to Animation Subclass simulation
@@ -173,12 +161,6 @@ protected:
 
   /// the item wanted by the user/AI
   OLinkPermO(InventoryItem) _itemInHandsWanted;
-  // Prevent RemoveItemInHands from re-adding an item while it is being moved
-  // to another inventory owner.
-  bool _handsTransferInProgress;
-  // TakeItemToHands(NULL) asked to empty the hands; distinguishes this request
-  // from a NULL _itemInHandsWanted with no pending request (restored state).
-  bool _emptyHandsWanted;
 
   #if _VBS2 // fatigue model
 protected:
@@ -578,19 +560,10 @@ public:
 
   /// Shortcuts to inventory items
   const InventoryItemType *GetItemShortcut(int index) const;
-  //! number of quickbar slots currently available (depends on worn clothing)
-  int GetAvailableItemShortcuts() const;
   void SetItemShortcut(int index, const InventoryItemType *itemType);
   int FindItemShortcutIndex(const InventoryItemType *itemType);
   InventoryItem *GetItemShortcutObject(int index) const;
   void RemoveItemShortcut(InventoryItem *item);
-
-  //! handle a shortcut key press (take the item to hands / put it back)
-  void UseItemShortcut(int index);
-  //! return an item pulled to hands by a shortcut to its original place
-  bool StowShortcutItem(InventoryItem *item);
-  //! MoveItem index describing where the item currently is
-  static int GetItemOriginIndex(EntityAI *parent, InventoryItem *item);
 
   void OnItemAdded(InventoryItem *item);
 

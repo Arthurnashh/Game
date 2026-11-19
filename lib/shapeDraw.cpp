@@ -87,14 +87,12 @@ void Shape::DrawSections(int cb, const AnimationContext *animContext, ColorVal a
     end = NSections();
   }
 
-  PROFILE_SCOPE_DETAIL_EX(dSec,cuDrw);
-  int sectionsMerged = 0;
-  int sectionDraws = 0;
-
-  // Go through the sections and draw them. Adjacent sections can share one draw
-  // setup when their effective properties and bone ranges match.
-  for (int i = beg; i < end; )
+  // Go through the sections and draw them
+  // there was section merging working here - it cannot work
+  // as we cannot access FaceArray _face here (it can be discarded)
+  for (int i = beg; i < end; i++)
   {
+    // const ShapeSection &sec = GetSection(i);
     const PolyProperties &pp = animContext ? animContext->GetSection(this, i) : GetSection(i);
 
     // If we render craters and the pixel shader is not designed for drawing craters (f.i. tree crowns), then go to the next section
@@ -120,7 +118,6 @@ void Shape::DrawSections(int cb, const AnimationContext *animContext, ColorVal a
           case PSTreeAdvSimple:
           case PSTreeAdvTrunk:
           case PSTreeAdvTrunkSimple:
-            i++;
             continue;
           }
         }
@@ -128,45 +125,19 @@ void Shape::DrawSections(int cb, const AnimationContext *animContext, ColorVal a
     }
 
     // Proxy or hidden - don't draw
-    if (pp.Special() & (IsHidden | IsHiddenProxy))
-    {
-      i++;
-      continue;
-    }
+    if (pp.Special() & (IsHidden | IsHiddenProxy)) continue;
 
     // Calculate the bias for section
     int secBias = ((pp.Special() & ZBiasMask) / ZBiasStep) * 5;
     int maxBias = intMax(bias, secBias);
 
-    bool uvchanged = false;
-    if (animContext) uvchanged = animContext->GetUVchanged(this, i);
-
-    int drawEnd = i+1;
-    if (dp._cratersCount==0 && !uvchanged)
-    {
-      const ShapeSection &firstSection = GetSection(i);
-      for (int next=i+1; next<end; next++)
-      {
-        const PolyProperties &nextPP = animContext ? animContext->GetSection(this, next) : GetSection(next);
-        if (nextPP.Special() & (IsHidden | IsHiddenProxy)) break;
-        if (nextPP!=pp) break;
-
-        const ShapeSection &nextSection = GetSection(next);
-        if (
-          nextSection._minBoneIndex!=firstSection._minBoneIndex ||
-          nextSection._bonesCount!=firstSection._bonesCount
-        ) break;
-        if (animContext && animContext->GetUVchanged(this, next)) break;
-
-        drawEnd = next+1;
-      }
-    }
-
     // Get the material
     TLMaterial mat;
     CreateMaterial(mat,animColor);
 
-    // Prepare and draw section range
+    // Prepare and draw section
+    bool uvchanged = false;
+    if (animContext) uvchanged = animContext->GetUVchanged(this, i); 
     if (uvchanged)
     {
       // get information about UV offset if any and pass them to EngineDD9::PrepareDetailTex(...)
@@ -177,13 +148,10 @@ void Shape::DrawSections(int cb, const AnimationContext *animContext, ColorVal a
     else
       pp.PrepareTL(cb, mat, spec, prop, dp);
 
-    GEngine->DrawSectionTL(cb,*this, i, drawEnd, maxBias, 0, 0, dp);
-    sectionDraws++;
-    sectionsMerged += drawEnd-i-1;
-    i = drawEnd;
+    GEngine->DrawSectionTL(cb,*this, i, i+1, maxBias, 0, 0, dp);
   }
-
 }
+
 void Shape::Draw(
   int cb, AnimationContext *animContext,
   ColorVal animColor,
@@ -1594,79 +1562,6 @@ static inline void RepairAreaOfTexture(float &areaOfTexture)
 #endif
 }
 
-/**
-Build the draw-time texture index for ordinary object shapes.
-
-This mirrors the section scan in Shape::PrepareTextures, including the
-minimum AreaOverTexture hotfix and the UV scale used for each material stage.
-It is kept separate from _texArea because the landscape loader uses that index
-with different (historical) mipmap semantics.
-*/
-void Shape::BuildTexAreaDrawIndex()
-{
-  // attribute the one-time cost to vertex buffer creation; this runs right
-  // after the buffer is created (see Shape::CheckPushbufferCanBeUsed)
-  TimeManagerScope scope(TCCreateVertexBuffer);
-
-  _texAreaDraw.Clear();
-
-  // Stages using the landscape environment texture are replaced at draw time
-  // by GLandscape->GetEnvTexture(). A Ref pointer would not follow that swap,
-  // so such shapes must keep using the section scan.
-  for (int s=0; s<NSections(); s++)
-  {
-    const ShapeSection &sec = GetSection(s);
-    TexMaterial *mat = sec.GetMaterialExt();
-    if (!mat) continue;
-    mat->Load();
-    #if _ARMA3_ENV_MAPS
-      for (int i=0; i<mat->_stageCount+1; i++)
-      {
-        if (mat->_stage[i]._useWorldEnvMap) return;
-      }
-    #endif
-  }
-
-  for (int s=0; s<NSections(); s++)
-  {
-    const ShapeSection &sec = GetSection(s);
-
-    if (sec.GetTexture())
-    {
-      _texAreaDraw.AddItem(sec.GetTextureBackPointer(),sec.GetAreaOverTex(0),false);
-    }
-
-    TexMaterial *mat = sec.GetMaterialExt();
-    if (!mat) continue;
-    mat->Load();
-
-    for (int i=0; i<mat->_stageCount+1; i++)
-    {
-      const TexStageInfo &stage = mat->_stage[i];
-      if (!stage._tex) continue;
-      bool someDataWanted = stage._tex->Type()==TT_Diffuse && i!=0;
-
-      float uvScale = mat->GetUVScale(i);
-      if (uvScale>=0.0f)
-      {
-        int uvStage = mat->GetUVStage(i);
-        float areaOTex = sec.GetAreaOverTex(uvStage);
-        RepairAreaOfTexture(areaOTex);
-        // z2 is scaled by uvScale at draw time, exactly like the scan path
-        _texAreaDraw.AddItem(&stage._tex,areaOTex,someDataWanted,uvScale,false);
-      }
-      else
-      {
-        // No relation to UV mapping - the scan path only forces mipmap 0
-        _texAreaDraw.AddItem(&stage._tex,1.0f,someDataWanted,1.0f,true);
-      }
-    }
-  }
-
-  _texAreaDraw._items.Compact();
-  _texAreaDraw._valid = true;
-}
-
 void Shape::PrepareTextures(float z2, AnimationContext *animContext, int special, bool prepareBaseTextureOnly) const
 {
   PROFILE_SCOPE_GRF(prpTx,0);
@@ -1678,47 +1573,20 @@ void Shape::PrepareTextures(float z2, AnimationContext *animContext, int special
   }
 
   float aotFactor = GScene->GetCamera()->GetAOTFactor();
-  if (!prepareBaseTextureOnly)
+  if (!prepareBaseTextureOnly && _texArea._valid)
   {
-    // the landscape index keeps its historical behaviour
-    const TexAreaIndex *areaIndex = _texArea._valid ? &_texArea : NULL;
-
-    // _texAreaDraw is built from base sections, so it cannot be used when the
-    // animation context replaced sections or when TI textures must be prepared
-    // from the material stages.
-    if (!areaIndex && _texAreaDraw._valid)
+    for (int i=0; i<_texArea._items.Size(); i++)
     {
-      if ((!animContext || !animContext->SectionsChanged()) && !GEngine->GetThermalVision())
-      {
-        areaIndex = &_texAreaDraw;
-      }
+      const TexAreaIndex::Item &item = _texArea._items[i];
+      Texture *txt = *item._tex;
+      // txt is usually not NULL, but some animation might have set it to NULL
+      if (!txt) continue;
+      float areaOTex = item._aot;
+      Assert(areaOTex>=0);
+      txt->PrepareTextureScr(z2,special,areaOTex*aotFactor);
     }
-
-    if (areaIndex)
-    {
-      PROFILE_SCOPE_DETAIL_EX(prpIX,prpTx);
-      for (int i=0; i<areaIndex->_items.Size(); i++)
-      {
-        const TexAreaIndex::Item &item = areaIndex->_items[i];
-        Texture *txt = *item._tex;
-        // txt is usually not NULL, but some animation might have set it to NULL
-        if (!txt) continue;
-
-        if (item._forceMipmap0)
-        {
-          txt->LoadHeaders();
-          txt->PrepareMipmap0(true);
-          continue;
-        }
-
-        float areaOTex = item._aot;
-        Assert(areaOTex>=0);
-        txt->PrepareTextureScr(z2*item._z2Scale,special,areaOTex*aotFactor);
-      }
-      return;
-    }
+    return;
   }
-  PROFILE_SCOPE_DETAIL_EX(prpSc,prpTx);
   // hint mipmap for all textures used on this shape
   for (int s=0; s<NSections(); s++)
   {

@@ -190,7 +190,6 @@ void WoundTextureSelections::InitLevelBasic(
   LODShape *shape, int level, const WoundTextureSelectionsBasicDef &def
 )
 {
-  if (!def.info) return;
 	#if CHECK_INIT_SHAPE_WOUND
 	  DoAssert(_initCount[level]>=0);
 	  _initCount[level]++;
@@ -255,7 +254,6 @@ void WoundTextureSelections::InitLevelName(
   LODShape *shape, int level, const WoundTextureSelectionsNameDef &def
 )
 {
-  if (!def.info) return;
   #if CHECK_INIT_SHAPE_WOUND
 	  Assert(_initCount[level]>=0);
 	  _initCount[level]++;

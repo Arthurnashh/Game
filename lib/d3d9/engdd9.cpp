@@ -407,7 +407,7 @@ static void ReportEngDiagMode(int mode)
 
 static GameValue SetEngDiagEnable(const GameState *state, GameValuePar oper1, GameValuePar oper2)
 {
-  const char *modeStr = oper1.GetData()->GetString();
+  const char *modeStr = (RString)oper1;
   bool onOff = oper2;
   int modeMask = ~0;
   int mode = -1;
@@ -429,7 +429,7 @@ static GameValue SetEngDiagEnable(const GameState *state, GameValuePar oper1, Ga
 
 static GameValue SetEngDiagToggle(const GameState *state, GameValuePar oper1)
 {
-  const char *modeStr = oper1.GetData()->GetString();
+  const char *modeStr = (RString)oper1;
   int mode = GetEnumValue<EngDiagEnable>(modeStr);
   if (mode==-1) return NOTHING;
   int modeMask = 1<<mode;
@@ -521,7 +521,7 @@ static GameValue UseStaticVB(const GameState *state, GameValuePar oper1)
 
 static GameValue ReloadVS(const GameState *state, GameValuePar oper1)
 {
-  const char *shader = oper1.GetData()->GetString();
+  const char *shader = (RString)oper1;
   VertexShaderID vs = GetEnumValue<VertexShaderID>(shader);
   if (vs==-1) return NOTHING;
   GEngineDD->ReloadVertexShader(vs);
@@ -530,7 +530,7 @@ static GameValue ReloadVS(const GameState *state, GameValuePar oper1)
 
 static GameValue ReloadPS(const GameState *state, GameValuePar oper1)
 {
-  const char *shader = oper1.GetData()->GetString();
+  const char *shader = (RString)oper1;
   // check all pixel shader which match the mask given in oper1
   for(int ps=0; ps<NPixelShaderID; ps++)
   {
@@ -3432,15 +3432,6 @@ void EngineDD9::InitDraw( bool clear, Color color )
   rect.x1=0,rect.y1=0;
   rect.x2=_w,rect.y2=_h;
   int flags=0;
-
-  // When the z-only priming pass is skipped (FSAA with RMZPrime removed), the
-  // main depth buffer was not cleared by any priming pass. Clear it here so the
-  // scene pass tests against fresh depth instead of last frame's values.
-  if (!_mainDepthPrimed)
-  {
-    flags |= D3DCLEAR_ZBUFFER;
-    if (_caps._hasStencilBuffer) flags|=D3DCLEAR_STENCIL;
-  }
 
   // TODO: unify for FSAA as well
 //   if (GetFSAA()>0)
@@ -8779,86 +8770,30 @@ void EngineDD9::DrawMeshTLInstanced(
   if (nInstancesInOneStep > 1)
 #endif
   {
-    PROFILE_SCOPE_DETAIL_EX(d9HW,d3d);
     bool ok = BeginMeshTLInstanced(cb,sMesh, prop, spec, lights, bias, minDist2, dp);
     if (ok)
     {
-#if _ENABLE_PERFLOG
-      DEF_COUNTER_P_EX(d9HWc,d3d,PROF_COUNT_SCALE);
-      COUNTER_P_NAME(d9HWc)+=1;
-      DEF_COUNTER_P_EX(d9HWi,d3d,PROF_COUNT_SCALE);
-      COUNTER_P_NAME(d9HWi)+=nInstances;
-#endif
-      // Find visible sections once before chunk loop
-      int singleVisibleSec = -1;
-      int visibleSecCount = 0;
-      for (int i = 0; i < sMesh.NSections(); i++)
+      // Either use a program to draw or draw it the usual way
+      int drawnInstances = 0;
+      while (drawnInstances < nInstances)
       {
-        if (!(sMesh.GetSection(i).Special() & (IsHidden | IsHiddenProxy)))
+        // Get number of instances
+        int newInstances = min(nInstancesInOneStep, nInstances - drawnInstances);
+
+        // Set instances parameters
+        if (instances[drawnInstances]._object)
         {
-          singleVisibleSec = i;
-          visibleSecCount++;
+          instances[drawnInstances]._object->SetupInstances(cb,sMesh, &instances[drawnInstances], newInstances);
         }
-      }
-
-      if (visibleSecCount == 1)
-      {
-        const ShapeSection &sec = sMesh.GetSection(singleVisibleSec);
-        int secBias = ((sec.Special() & ZBiasMask) / ZBiasStep) * 5;
-        int maxBias = max(bias, secBias);
-        TLMaterial mat;
-        CreateMaterial(mat, HWhite);
-        sec.PrepareTL(cb, mat, spec, prop, dp);
-
-        int drawnInstances = 0;
-        while (drawnInstances < nInstances)
+        else
         {
-          int newInstances = min(nInstancesInOneStep, nInstances - drawnInstances);
-          if (instances[drawnInstances]._object)
-          {
-            instances[drawnInstances]._object->SetupInstances(cb, sMesh, &instances[drawnInstances], newInstances);
-          }
-          else
-          {
-            SetupInstances(cb, &instances[drawnInstances], newInstances);
-          }
-          DrawSectionTL(cb, sMesh, singleVisibleSec, singleVisibleSec + 1, maxBias, drawnInstances, newInstances, dp);
-          drawnInstances += newInstances;
+          SetupInstances(cb,&instances[drawnInstances], newInstances);
         }
-      }
-      else if (visibleSecCount > 1)
-      {
-        int drawnInstances = 0;
-        while (drawnInstances < nInstances)
-        {
-          // Get number of instances
-          int newInstances = min(nInstancesInOneStep, nInstances - drawnInstances);
 
-          // Set instances parameters
-          if (instances[drawnInstances]._object)
-          {
-            instances[drawnInstances]._object->SetupInstances(cb,sMesh, &instances[drawnInstances], newInstances);
-          }
-          else
-          {
-            SetupInstances(cb,&instances[drawnInstances], newInstances);
-          }
+        DrawMeshTLSectionsInstanced(cb,sMesh, prop, spec, bias, drawnInstances, newInstances);
 
-          for (int i = 0; i < sMesh.NSections(); i++)
-          {
-            const ShapeSection &sec = sMesh.GetSection(i);
-            if (sec.Special() & (IsHidden | IsHiddenProxy)) continue;
-            int secBias = ((sec.Special() & ZBiasMask) / ZBiasStep) * 5;
-            int maxBias = max(bias, secBias);
-            TLMaterial mat;
-            CreateMaterial(mat, HWhite);
-            sec.PrepareTL(cb, mat, spec, prop, dp);
-            DrawSectionTL(cb, sMesh, i, i + 1, maxBias, drawnInstances, newInstances, dp);
-          }
-
-          // Update the number of drawn instances
-          drawnInstances += newInstances;
-        }
+        // Update the number of drawn instances
+        drawnInstances += newInstances;
       }
 
       // Finish mesh
@@ -8867,14 +8802,7 @@ void EngineDD9::DrawMeshTLInstanced(
   }
   else
   {
-    PROFILE_SCOPE_DETAIL_EX(d9FB,d3d);
     DoAssert(instances);
-#if _ENABLE_PERFLOG
-    DEF_COUNTER_P_EX(d9FBc,d3d,PROF_COUNT_SCALE);
-    COUNTER_P_NAME(d9FBc)+=1;
-    DEF_COUNTER_P_EX(d9FBi,d3d,PROF_COUNT_SCALE);
-    COUNTER_P_NAME(d9FBi)+=nInstances;
-#endif
     Engine::DrawMeshTLInstanced(cb,sMesh, prop, spec, lights, bias, instances, nInstances, minDist2, dp);
     return;
   }
@@ -12460,7 +12388,7 @@ void EngineDD9::DrawIndexedPrimitive(int cb, int beg, int end, const Shape &sMes
         }
         else
         {
-          YieldProcessor();
+          __asm nop;
         }
       }
       //LogF("TLEnd");
@@ -15726,11 +15654,6 @@ void EngineDD9::PrepareTriangleTL(
     DoPrepareTriangle(cb, tex,mat,level,specFlags,prop);
   }
 
-  // Shadow buffer and non-predicated depth priming never write color.
-  // When _bgRecPredication is active in RMDPrime, the recorded command buffer is
-  // replayed in the color pass via CopyCBPredicatedScope, so DoSetMaterial must run.
-  if (_renderingMode==RMShadowBuffer || ((_renderingMode==RMDPrime || _renderingMode==RMZPrime) && !_bgRecPredication)) return;
-
   // make color information from the texture
   // to be a part of the material
   TLMaterial matMod = tlMat;
@@ -15741,27 +15664,6 @@ void EngineDD9::PrepareTriangleTL(
   matMod.specular = matMod.specular*_modColor;
 
   // Set the material and combine material and main light color
-  DoSetMaterial(cb, matMod);
-}
-
-void EngineDD9::ApplyMaterialTL(int cb, const TLMaterial &tlMat)
-{
-  // Skip material/light setup in shadow buffer and non-predicated depth passes.
-  // Keep material setup when recording a predicated CB in RMDPrime (replayed in color pass).
-  if (_renderingMode==RMShadowBuffer || ((_renderingMode==RMDPrime || _renderingMode==RMZPrime) && !_bgRecPredication)) return;
-
-  // make color information from the texture
-  // to be a part of the material
-  TLMaterial matMod = tlMat;
-  matMod.ambient = matMod.ambient*_modColor;
-  matMod.diffuse = matMod.diffuse*_modColor;
-  matMod.forcedDiffuse = matMod.forcedDiffuse*_modColor;
-  matMod.emmisive = matMod.emmisive*_modColor;
-  matMod.specular = matMod.specular*_modColor;
-
-  // Set the material and combine material and main light color.
-  // This is the only instance-dependent part of PrepareTriangleTL: the light
-  // direction is transformed to object space using the current world matrix.
   DoSetMaterial(cb, matMod);
 }
 
@@ -22332,8 +22234,8 @@ void EngineDD9::Init3D()
   #if !XBOX_D3D
     #define RESTORE_AFFINITY 1
     // remember current affinity so that we can restore it later
-    DWORD_PTR oldAffinity = ~DWORD_PTR(0);
-    DWORD_PTR sysAffinity = ~DWORD_PTR(0);
+    DWORD oldAffinity = ~0;
+    DWORD sysAffinity = ~0;
     GetProcessAffinityMask(GetCurrentProcess(),&oldAffinity,&sysAffinity);
     #if 1
       // limit us to 2 CPU to fool driver detection and prevent driver using threaded optimizations
@@ -27433,7 +27335,6 @@ BIND_SHADER(POOL,[VSPNormalMap][0][1][RMCommon][SIInst],[VD_Position_Normal_Tex0
   // Instancing parameters
   cbState._zPrimingDone = false;
   cbState._lastZPrimingDone = false;
-  _mainDepthPrimed = false;
 
   // Shadow buffer parameters
   _renderingMode = RMCommon;

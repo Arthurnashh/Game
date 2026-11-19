@@ -35,21 +35,6 @@ Implementation file for Zombie classes
 #include "zombie.hpp"
 #include "Common/enf_mathlib2d.h"
 #include "Common/enf_intersection.h"
-#include <stdio.h>
-#include <stdarg.h>
-
-static void ZombieProbeLog(const char *format, ...)
-{
-  FILE *file = fopen("!ConfigServer\\Logs\\zombie_collision_cpp.log", "a");
-  if (!file)
-    return;
-  va_list args;
-  va_start(args, format);
-  vfprintf(file, format, args);
-  va_end(args);
-  fputc('\n', file);
-  fclose(file);
-}
 
 #if _PROFILE
 # pragma optimize( "", off )
@@ -235,9 +220,7 @@ void Dummy(LightAI* context)
 LightAI::LightAI(const EntityAIType *name, bool fullCreate): Man(name, fullCreate), _nearestPlayer(0),
   _checkAttack(0), _attackAction(0),
   _tiredFactor(0),
-  _tiredFactorHysteresis(0),
-  _nextPathOptimization(TIME_MIN), _nextObstacleCheckTime(TIME_MIN),
-  _lastAttackTime(TIME_MIN)
+  _tiredFactorHysteresis(0)
 {
 }
 
@@ -479,33 +462,8 @@ void LightAI::Sound( bool inside, float deltaT )
 
 void LightAI::Simulate( float deltaT, SimulationImportance prec )
 {  
-    static Time nextZombieSimEntryProbe = TIME_MIN;
-  if (dynamic_cast<Zombie *>(this) && Glob.time >= nextZombieSimEntryProbe)
-  {
-    ZombieProbeLog("[ZombieSimEntry] %s disabled=%d local=%d server=%d prec=%d dt=%.3f", cc_cast(Type()->GetName()), IsSimulationDisabled() ? 1 : 0, IsLocal() ? 1 : 0, GetNetworkManager().IsServer() ? 1 : 0, (int)prec, deltaT);
-    nextZombieSimEntryProbe = Glob.time + 1.0f;
-  }
   if (IsSimulationDisabled())
     return;
-
-  const bool isZombie = dynamic_cast<Zombie *>(this) != NULL;
-  if (isZombie && _ignoreCollisionIfStuck)
-  {
-    // Man disables Geometry while it is recovering from a prolonged stuck
-    // state. That recovery is unsafe for zombies: it makes HasGeometry()
-    // false, so they can pass through the very wall they are stuck against.
-    // Restore collision before building this simulation step.
-    static Time nextZombieStuckDiagnostic = TIME_MIN;
-    if (GetNetworkManager().IsServer() && Glob.time >= nextZombieStuckDiagnostic)
-    {
-      ZombieProbeLog("[ZombieCollisionDiag] cleared stuck-ignore on %s at %.2f %.2f %.2f",
-        cc_cast(Type()->GetName()), FutureVisualState().Position().X(),
-        FutureVisualState().Position().Y(), FutureVisualState().Position().Z());
-      nextZombieStuckDiagnostic = Glob.time + 1.0f;
-    }
-    _ignoreCollisionIfStuck = false;
-    _stuckStarted = TIME_MAX;
-  }
 
   _toSafeSpot.AddWaypoint(FutureVisualState().Position());
 
@@ -609,7 +567,6 @@ void LightAI::Simulate( float deltaT, SimulationImportance prec )
   bool bChange = false;
 
   ManVisualState moveTrans = FutureVisualState(); // store old position
-  Vector3 prevPos = moveTrans.Position();
 
   if(Brain()->GetLifeState() == LifeStateUnconscious)
   {
@@ -684,9 +641,7 @@ void LightAI::Simulate( float deltaT, SimulationImportance prec )
     }
     else
     {
-      if (isZombie)
-        _staticCollision = true; // zombies need a physical fallback when their route misses an obstacle
-      else if(_attackAction && Type()->GetAttackAction(_attackAction - 1)._canWalk)
+      if(_attackAction && Type()->GetAttackAction(_attackAction - 1)._canWalk)
         _staticCollision = true; //avoid jumping into wall
       else
       {
@@ -713,57 +668,6 @@ void LightAI::Simulate( float deltaT, SimulationImportance prec )
       }
 
       _objectContactNonStatic = false;
-
-      // LightAI::Simulate is a separate copy of Man::Simulate. The human
-      // simulation subdivides long moves and validates the full animated body
-      // at each intermediate position; without that step a fast AI update can
-      // tunnel through thin Geometry LODs even when both endpoints are clear.
-      if (isZombie && prec <= SimulateVisibleFar && !_useAudioTimeForMoves)
-      {
-        static const float zombieCollisionSubdiv = 0.2f;
-        const float moveDist = prevPos.Distance(moveTrans.Position());
-        if (moveDist > zombieCollisionSubdiv + 0.01f)
-        {
-          const Time backupVegCollisionTime = _vegCollisionTime;
-          const bool backupHighPriorityContact = _highPriorityContact;
-          const bool backupPurePersonContact = _purePersonContact;
-          const bool backupObjectContact = _objectContact;
-
-          ManVisualState collisionTest(moveTrans);
-          int lastClearStep = 0;
-          const int stepCount = intMax((int)ceilf(moveDist / zombieCollisionSubdiv), 2);
-          const Vector3 endPos = moveTrans.Position();
-          for (int step = 0; step < stepCount; step++)
-          {
-            collisionTest.SetPosition(prevPos.Lerp(endPos, (float)step / (stepCount - 1)));
-            const float collisionVolume = ValidatePotentialState(collisionTest);
-
-            // ValidatePotentialState updates contact bookkeeping. Keep the
-            // real simulation's state intact while probing intermediate poses.
-            _vegCollisionTime = backupVegCollisionTime;
-            _highPriorityContact = backupHighPriorityContact;
-            _purePersonContact = backupPurePersonContact;
-            _objectContact = backupObjectContact;
-
-            if (collisionVolume > 0.0f)
-              break;
-
-            lastClearStep = step;
-          }
-
-          // Leave a small forward step so the normal collision repair can
-          // resolve contact instead of freezing the zombie exactly at the edge.
-          if (lastClearStep < 2)
-            lastClearStep = intMin(lastClearStep + 1, stepCount - 1);
-
-          const float moveRatio = (float)lastClearStep / (stepCount - 1);
-          moveTrans.SetPosition(prevPos.Lerp(endPos, moveRatio));
-          // Keep movement/turn integration time consistent with the portion
-          // of the candidate path that survived subdivision. Man::Simulate
-          // scales deltaT before its collision-repair pass for this reason.
-          deltaT *= moveRatio;
-        }
-      }
 
       const bool farCollision = false;
       if (prec<=SimulateVisibleFar) 
@@ -998,152 +902,8 @@ void LightAI::Simulate( float deltaT, SimulationImportance prec )
       {
         _stuckStarted = TIME_MAX;
         _ignoreCollisionIfStuck = false;
-        if (!isZombie && ValidatePotentialState(moveTrans) > 0)
+        if (ValidatePotentialState(moveTrans) > 0)
           _ignoreCollisionIfStuck = true;              
-      }
-
-      // LightAI has its own copy of Man::Simulate. Keep the swept movement
-      // collision check here as well: endpoint overlap tests alone can miss
-      // thin walls/fences when an AI step moves completely through them.
-      if (deltaT > 0 && (prec <= SimulateVisibleNear || (isZombie && prec <= SimulateVisibleFar)))
-      {
-        // Use the same swept body radius and vertical offset as zombie route
-        // checks. A zero-radius ray through the aiming point can miss a wall
-        // when the zombie's capsule clips an edge or thin fence section.
-        Vector3 oldPos = FutureVisualState().Position() + ZombieRayTestOffset;
-        Vector3 newPos = moveTrans.Position() + ZombieRayTestOffset;
-
-        CollisionBuffer collision;
-        if (newPos.Distance2(oldPos) > Square(0.1f) && !_ignoreCollisionIfStuck)
-        {
-          GLandscape->ObjectCollisionLine(
-            GetFutureVisualStateAge(), collision, Landscape::FilterIgnoreOne(this),
-            oldPos, newPos, ZombieRayTestRadius, ObjIntersectGeom);
-        }
-
-        if (collision.Size() > 0)
-        {
-          // Keep diagnostic evidence even for objects rejected by the common
-          // IsPassable() mass threshold. This distinguishes a missing
-          // Geometry hit from a hit that collision policy intentionally
-          // discards (a likely failure mode for lightweight map structures).
-          static Time nextZombieCollisionProbe = TIME_MIN;
-          if (isZombie && GetNetworkManager().IsServer() && Glob.time >= nextZombieCollisionProbe)
-          {
-            int logged = 0;
-            for (int i = 0; i < collision.Size() && logged < 3; i++)
-            {
-              const CollisionInfo &info = collision[i];
-              Object *obj = info.object;
-              if (!obj)
-                continue;
-              ZombieProbeLog("[ZombieCollisionProbe] %s hit=%s t=%.3f entry=%d exit=%d mass=%.2f passable=%d static=%d hierarchy=%d geom=%d component=%d point=%.2f %.2f %.2f normal=%.2f %.2f %.2f",
-                cc_cast(Type()->GetName()), cc_cast(obj->GetDebugName()), info.under,
-                info.entry ? 1 : 0, info.exit ? 1 : 0,
-                obj->GetMass(), obj->IsPassable() ? 1 : 0, obj->Static() ? 1 : 0,
-                info.hierLevel, info.geomLevel, info.component,
-                info.pos.X(), info.pos.Y(), info.pos.Z(),
-                info.dirOutNotNorm.X(), info.dirOutNotNorm.Y(), info.dirOutNotNorm.Z());
-              logged++;
-            }
-            nextZombieCollisionProbe = Glob.time + 1.0f;
-          }
-
-          float minT = 1e10f;
-          Object *hitObject = NULL;
-          bool hitEntry = false;
-          bool hitExit = false;
-          int hitGeomLevel = -1;
-          int hitComponent = -1;
-          bool sawStartOverlap = false;
-          Object *startOverlapObject = NULL;
-          bool startOverlapExit = false;
-          for (int i = 0; i < collision.Size(); i++)
-          {
-            const CollisionInfo &info = collision[i];
-            Object *obj = info.object;
-            if (!obj)
-              continue;
-
-            // The generic passability threshold is mass-based. Static map
-            // buildings can have a Geometry LOD but a mass below that
-            // threshold; zombies must still stop at their physical surfaces.
-            // IsPassable() is a generic mass threshold (<10), not a map
-            // collision policy. Static world geometry includes fences and
-            // other obstacle classes that are not necessarily Building
-            // entities, so a zombie must respect every static Geometry hit.
-            const bool zombieStaticWorldBlock = isZombie && obj->Static();
-            if (obj->IsPassable() && !zombieStaticWorldBlock)
-              continue;
-
-            _objectContact = true;
-            _objectContactNonStatic = _objectContactNonStatic || !obj->Static();
-
-            // ObjectCollisionLine reports under == 0 when its start point is
-            // already inside (or touching) the expanded Geometry LOD. That is
-            // not an entry time: clamping to 1% of the proposed move keeps the
-            // zombie in the same overlap on every following frame. The normal
-            // animated-body collision repair and the subdivided pose checks
-            // above are the authoritative fallback for this ambiguous case.
-            // Keep the supplemental sweep for actual outside-to-inside hits,
-            // which are the cases that can tunnel through thin geometry.
-            if (!info.entry)
-            {
-              if (isZombie && !sawStartOverlap)
-              {
-                sawStartOverlap = true;
-                startOverlapObject = obj;
-                startOverlapExit = info.exit;
-              }
-              continue;
-            }
-
-            if (info.under < minT)
-            {
-              minT = info.under;
-              hitObject = obj;
-              hitEntry = info.entry;
-              hitExit = info.exit;
-              hitGeomLevel = info.geomLevel;
-              hitComponent = info.component;
-            }
-          }
-
-          if (sawStartOverlap && minT >= 1e10f && isZombie && GetNetworkManager().IsServer())
-          {
-            static Time nextZombieOverlapDiagnostic = TIME_MIN;
-            if (Glob.time >= nextZombieOverlapDiagnostic)
-            {
-              ZombieProbeLog("[ZombieCollisionStartOverlap] %s object=%s exit=%d from %.2f %.2f %.2f to %.2f %.2f %.2f; leaving to body solver",
-                cc_cast(Type()->GetName()),
-                startOverlapObject ? cc_cast(startOverlapObject->GetDebugName()) : "<unknown>",
-                startOverlapExit ? 1 : 0,
-                oldPos.X(), oldPos.Y(), oldPos.Z(), newPos.X(), newPos.Y(), newPos.Z());
-              nextZombieOverlapDiagnostic = Glob.time + 1.0f;
-            }
-          }
-
-          if (minT < 1)
-          {
-            static Time nextZombieSweepDiagnostic = TIME_MIN;
-            if (isZombie && GetNetworkManager().IsServer() && Glob.time >= nextZombieSweepDiagnostic)
-            {
-              ZombieProbeLog("[ZombieCollisionDiag] %s swept into %s t=%.3f entry=%d exit=%d geom=%d component=%d from %.2f %.2f %.2f to %.2f %.2f %.2f",
-                cc_cast(Type()->GetName()),
-                hitObject ? cc_cast(hitObject->GetDebugName()) : "<unknown>",
-                minT, hitEntry ? 1 : 0, hitExit ? 1 : 0, hitGeomLevel, hitComponent,
-                oldPos.X(), oldPos.Y(), oldPos.Z(), newPos.X(), newPos.Y(), newPos.Z());
-              nextZombieSweepDiagnostic = Glob.time + 1.0f;
-            }
-            // Stop just before the first entering contact. For very short
-            // steps the old 1% lower bound moved the body into the obstacle,
-            // turning the next query into an ambiguous start-overlap.
-            minT = floatMax(minT - 0.005f, 0.0f);
-            Vector3 col = FutureVisualState().Position() * (1 - minT) + moveTrans.Position() * minT;
-            repairMove += col - moveTrans.Position();
-            moveTrans.SetPosition(col);
-          }
-        }
       }
     }
   } // if( _freeFall )
@@ -1295,42 +1055,10 @@ void LightAI::Say(const AutoArray<RStringB>& sounds, bool pos3D)
 
 void LightAI::SimulateAI( float deltaT, SimulationImportance prec )
 {
-    static Time nextZombieAISimEntryProbe = TIME_MIN;
-  if (dynamic_cast<Zombie *>(this) && Glob.time >= nextZombieAISimEntryProbe)
-  {
-    ZombieProbeLog("[ZombieAISimEntry] %s disabled=%d local=%d server=%d prec=%d", cc_cast(Type()->GetName()), IsSimulationDisabled() ? 1 : 0, IsLocal() ? 1 : 0, GetNetworkManager().IsServer() ? 1 : 0, (int)prec);
-    AutoArray<NetPlayerInfo> probePlayers;
-    GetNetworkManager().GetPlayers(probePlayers);
-    ZombieProbeLog("[ZombiePlayerPos] count=%d", probePlayers.Size());
-    for (int playerIndex = 0; playerIndex < probePlayers.Size(); playerIndex++)
-    {
-      Person *probePerson = dyn_cast<Person, NetworkObject>(probePlayers[playerIndex].person);
-      if (probePerson)
-      {
-        Vector3 probePos = probePerson->FutureVisualState().Position();
-        ZombieProbeLog("[ZombiePlayerPos] name=%s pos=%.2f %.2f %.2f", cc_cast(probePlayers[playerIndex].name), probePos.X(), probePos.Y(), probePos.Z());
-      }
-    }
-    nextZombieAISimEntryProbe = Glob.time + 1.0f;
-  }
   if (IsSimulationDisabled())
     return;
 
   PROFILE_SCOPE_EX(siUSo,sim);
-
-  if (dynamic_cast<Zombie *>(this) && GetNetworkManager().IsServer())
-  {
-    static Time nextZombieAISimulationDiagnostic = TIME_MIN;
-    if (Glob.time >= nextZombieAISimulationDiagnostic)
-    {
-      ZombieProbeLog("[ZombieAISim] zombie=%s local=%d brain=%d fsm=%d pos=%.2f %.2f %.2f",
-        cc_cast(Type()->GetName()), IsLocal() ? 1 : 0, Brain() ? 1 : 0,
-        _fsm ? (int)_fsm->GetState() : -1,
-        FutureVisualState().Position().X(), FutureVisualState().Position().Y(),
-        FutureVisualState().Position().Z());
-      nextZombieAISimulationDiagnostic = Glob.time + 1.0f;
-    }
-  }
 
   if( !_isDead )
   {
@@ -1435,13 +1163,9 @@ bool LineLineIntersection(const enf::Vector2& p1, const enf::Vector2& p2, const 
   s1_x = p1_x - p0_x;     s1_y = p1_y - p0_y;
   s2_x = p3_x - p2_x;     s2_y = p3_y - p2_y;
 
-  float denominator = -s2_x * s1_y + s1_x * s2_y;
-  if (fabsf(denominator) < 1e-6f)
-    return false;
-
   float s, t;
-  s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / denominator;
-  t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / denominator;
+  s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
+  t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
 
 //  if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
   if (s > 0 && s < 1 && t > 0 && t < 1)
@@ -1973,7 +1697,7 @@ public:
     static const Vector3 jitter[] = {
       Vector3(0,0,0),
       Vector3(-1,0,-1), Vector3(1,0,-1),
-      Vector3(1,0,1), Vector3(-1,0,1)
+      Vector3(1,0,1), Vector3(1,0,-1)
     };
 
     for(int s = 1; s <= 3; s++)
@@ -2176,10 +1900,12 @@ bool PFObstacle::Intersects(int from, int to, const TNodesArray& _nodes) const
   {
     if(nodes[n] == from)
     {
-      if(nodes[(n + 3) % 4] == to)
+      if(nodes[(n - 1) % 4] == to)
         return false;
       if(nodes[(n + 1) % 4] == to)
         return false;
+      if(nodes[(n - 2) % 4] == to)
+        return true;
       if(nodes[(n + 2) % 4] == to)
         return true;
       break;
@@ -2318,41 +2044,11 @@ bool LightAI::InitPathToTarget(ChaseTarget* target, Vector3Par testOffset, float
 
   CollisionBuffer col;
   GLandscape->ObjectCollisionLine(GetFutureVisualStateAge(),col,FilterIgnoreTwoAndDead(this, target->_target), vs.Position() + testOffset, newPos + testOffset, testRadius,ObjIntersectGeom, ObjIntersectNone, CF_ALL_OBJECTS|CF_FIRST_CONTACT|CF_ONLY_STATIC);
-  if (dynamic_cast<Zombie *>(this) && col.Size() > 0 && GetNetworkManager().IsServer())
-  {
-    static Time nextZombiePathBlockDiagnostic = TIME_MIN;
-    if (Glob.time >= nextZombiePathBlockDiagnostic)
-    {
-      int logged = 0;
-      for (int i = 0; i < col.Size() && logged < 4; i++)
-      {
-        Object *obj = col[i].object;
-        if (!obj)
-          continue;
-        ZombieProbeLog("[ZombiePathBlock] zombie=%s object=%s t=%.3f mass=%.2f passable=%d static=%d hierarchy=%d dist=%.2f",
-          cc_cast(Type()->GetName()), cc_cast(obj->GetDebugName()), col[i].under,
-          obj->GetMass(), obj->IsPassable() ? 1 : 0, obj->Static() ? 1 : 0,
-          col[i].hierLevel, sqrtf(dist2));
-        logged++;
-      }
-      nextZombiePathBlockDiagnostic = Glob.time + 1.0f;
-    }
-  }
   if(col.Size())
   {
     //too much
     if(dist2 > Square(maxDistForPathfinder))
     {
-      if (dynamic_cast<Zombie *>(this) && GetNetworkManager().IsServer())
-      {
-        static Time nextZombiePathOutcomeDiagnostic = TIME_MIN;
-        if (Glob.time >= nextZombiePathOutcomeDiagnostic)
-        {
-          ZombieProbeLog("[ZombiePathResult] zombie=%s outcome=out_of_range dist=%.2f max=%.2f directHits=%d",
-            cc_cast(Type()->GetName()), sqrtf(dist2), maxDistForPathfinder, col.Size());
-          nextZombiePathOutcomeDiagnostic = Glob.time + 1.0f;
-        }
-      }
       return false;
     }
 
@@ -2380,31 +2076,11 @@ bool LightAI::InitPathToTarget(ChaseTarget* target, Vector3Par testOffset, float
     AutoArray<int> path;
     if(!pf.FindPath(vs.Position(), newPos, path))
     {
-      if (dynamic_cast<Zombie *>(this) && GetNetworkManager().IsServer())
-      {
-        static Time nextZombiePathOutcomeDiagnostic = TIME_MIN;
-        if (Glob.time >= nextZombiePathOutcomeDiagnostic)
-        {
-          ZombieProbeLog("[ZombiePathResult] zombie=%s outcome=no_graph_route dist=%.2f directHits=%d",
-            cc_cast(Type()->GetName()), sqrtf(dist2), col.Size());
-          nextZombiePathOutcomeDiagnostic = Glob.time + 1.0f;
-        }
-      }
       return false;
     }
     target->_trail.Clear();
     for(int n = 0; n < path.Size(); n++)
       target->AddWaypoint(pf.NodePosition(path[n]));
-    if (dynamic_cast<Zombie *>(this) && GetNetworkManager().IsServer())
-    {
-      static Time nextZombiePathOutcomeDiagnostic = TIME_MIN;
-      if (Glob.time >= nextZombiePathOutcomeDiagnostic)
-      {
-        ZombieProbeLog("[ZombiePathResult] zombie=%s outcome=detour waypoints=%d dist=%.2f",
-          cc_cast(Type()->GetName()), path.Size(), sqrtf(dist2));
-        nextZombiePathOutcomeDiagnostic = Glob.time + 1.0f;
-      }
-    }
 /*
     Vector3* points = ALLOCA(Vector3, path.Size());
     for(int n = 0; n < path.Size(); n++)
@@ -2473,7 +2149,7 @@ void LightAI::AIPathPilot(SteerInfo& info, float deltaT)
   const VisualState& vs = FutureVisualState();
   const FSM::State fsmState = _fsm->GetState();
 
-  if( _walkTarget && (_walkTarget->_trail.Size() || _walkTarget->_pathBlocked) && CanWalk() )
+  if( _walkTarget && _walkTarget->_trail.Size() && CanWalk() )
   {
     Vector3 position = vs.Position();
     Vector3 dir = vs.Direction();
@@ -2507,61 +2183,10 @@ void LightAI::AIPathPilot(SteerInfo& info, float deltaT)
       }
     }
 
-    if (_walkTarget->_target && Glob.time >= _nextObstacleCheckTime)
+    if( Glob.time > _nextObstacleCheckTime )
     {
-      _nextObstacleCheckTime = Glob.time + 1.0f;
-      const Vector3 targetPos = _walkTarget->_target->FutureVisualState().Position();
-      const float targetDist2 = targetPos.Distance2(position);
-      const bool pathFound = InitPathToTarget(_walkTarget, ZombieRayTestOffset, ZombieRayTestRadius, 100);
-
-      // A failed local route must not leave an old breadcrumb trail that can
-      // point through blocked geometry. Stop and retry after one second.
-      // Keep long-range breadcrumb following until the target enters the
-      // local pathfinder's 100 m working radius.
-      if (!pathFound && targetDist2 <= Square(100.0f))
-      {
-        _walkTarget->_pathBlocked = true;
-        _walkTarget->_trail.Clear();
-
-        static Time nextZombieBlockedRouteDiagnostic = TIME_MIN;
-        if (dynamic_cast<Zombie *>(this) && GetNetworkManager().IsServer() && Glob.time >= nextZombieBlockedRouteDiagnostic)
-        {
-          ZombieProbeLog("[ZombieRouteBlocked] zombie=%s target=%s dist=%.2f",
-            cc_cast(Type()->GetName()), cc_cast(_walkTarget->_target->Type()->GetName()), sqrtf(targetDist2));
-          nextZombieBlockedRouteDiagnostic = Glob.time + 1.0f;
-        }
-      }
-      else
-      {
-        _walkTarget->_pathBlocked = false;
-      }
-
-      if (_walkTarget->_pathBlocked)
-      {
-        info.speedWanted = 0;
-        info.sideSpeedWanted = 0;
-        info.headChange = 0;
-        info.turnPredict = 0;
-        _walkTarget = NULL;
-        return;
-      }
-    }
-
-    if (_walkTarget->_pathBlocked)
-    {
-      info.speedWanted = 0;
-      info.sideSpeedWanted = 0;
-      info.headChange = 0;
-      info.turnPredict = 0;
-      _walkTarget = NULL;
-      return;
-    }
-    if (!_walkTarget->_trail.Size())
-    {
-      info.speedWanted = 0;
-      info.sideSpeedWanted = 0;
-      _walkTarget = NULL;
-      return;
+      // FindPathAroundObstacles(_walkTarget->_trail, _walkTarget->_target);
+      _nextObstacleCheckTime = Glob.time + 1;
     }
 
     Vector3 walkPos = _walkTarget->_trail[0]._pos;
@@ -3524,7 +3149,6 @@ ChaseTarget* Animal::FindThreatTarget()
 
 Zombie::Zombie(const EntityAIType *name, bool fullCreate) : LightAI(name, fullCreate)
 {
-  ZombieProbeLog("[ZombieCtor] type=%s fullCreate=%d", cc_cast(name->GetName()), fullCreate ? 1 : 0);
   static const LightAIFSM::StateInfo states[] = {
     LightAIFSM::StateInfo("none", Dummy, Dummy),
     LightAIFSM::StateInfo("idle", LightAI::IdleStateInit, LightAI::IdleStateCheck),
@@ -3658,33 +3282,6 @@ ChaseTarget* LightAI::UpdateTargets()
   float bestDist = FLT_MAX;
   Vector3 actPos = FutureVisualState().Position();
   AIAgent* agent = static_cast<AIAgent*>(Brain());
-
-  if (dynamic_cast<Zombie *>(this) && GetNetworkManager().IsServer())
-  {
-    static Time nextZombieTargetListDiagnostic = TIME_MIN;
-    if (Glob.time >= nextZombieTargetListDiagnostic)
-    {
-      ZombieProbeLog("[ZombieTargetList] zombie=%s pos=%.2f %.2f %.2f enemyCount=%d",
-        cc_cast(Type()->GetName()), actPos.X(), actPos.Y(), actPos.Z(),
-        agent ? agent->GetTargetList().EnemyCount() : -1);
-      if (agent)
-      {
-        int logged = 0;
-        for (int i = 0; i < agent->GetTargetList().EnemyCount() && logged < 4; i++)
-        {
-          const TargetNormal *target = agent->GetTargetList().GetEnemy(i);
-          const EntityAI *entity = target ? target->idExact : NULL;
-          if (!entity)
-            continue;
-          ZombieProbeLog("[ZombieTargetCandidate] zombie=%s enemy=%s dist=%.2f lastSeenAge=%.2f",
-            cc_cast(Type()->GetName()), cc_cast(entity->GetType()->GetName()),
-            target->Distance(actPos), Glob.time - target->GetLastSeen());
-          logged++;
-        }
-      }
-      nextZombieTargetListDiagnostic = Glob.time + 1.0f;
-    }
-  }
 
   //update trails
   for(int t = 0; t < _targets.Size();)
@@ -4460,15 +4057,6 @@ void Zombie::ChasingStateCheck()
   Man* targ = _actualTarget->_target;
   Vector3 targPos = targ->FutureVisualState().Position();
   Vector3 myPos = FutureVisualState().Position();
-
-  static Time nextZombieChaseDiagnostic = TIME_MIN;
-  if (GetNetworkManager().IsServer() && Glob.time >= nextZombieChaseDiagnostic)
-  {
-    ZombieProbeLog("[ZombieChaseDiag] zombie=%s pos=%.2f %.2f %.2f target=%.2f %.2f %.2f dist=%.2f",
-      cc_cast(Type()->GetName()), myPos.X(), myPos.Y(), myPos.Z(),
-      targPos.X(), targPos.Y(), targPos.Z(), myPos.DistanceXZ(targPos));
-    nextZombieChaseDiagnostic = Glob.time + 1.0f;
-  }
 
   if(_timeForChasingSound < Glob.time)
   {

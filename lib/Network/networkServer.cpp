@@ -1,6 +1,5 @@
-#include "../wpch.hpp"
+﻿#include "../wpch.hpp"
 #include "networkImpl.hpp"
-
 #include "../global.hpp"
 //#include "strIncl.hpp"
 #include "../stringtableExt.hpp"
@@ -338,7 +337,7 @@ void NetworkObjectInfo::NullPlayerObjectInfo(PlayerIndex player, int pid)
 
 RString NetworkObjectInfo::GetDebugName() const
 {
-  if (object.IsNull()) return Format("id=%d:%" OID_FORMAT,id.creator,id.id);
+  if (object.IsNull()) return Format("id=%d:%"OID_FORMAT,id.creator,id.id);
   return object->GetDebugName();
 }
 
@@ -790,7 +789,6 @@ void NetworkServer::BattlEye::PlayerGUIDReceived(int player)
 }
 #endif
 
-#if _ENABLE_STEAM_OWNERSHIP
 void NetworkServer::BattlEye::PlayerGUIDIsValid(int player, const CSteamID &ownerId)
 {
   if (_callbacks._playerGUIDIsValid)
@@ -799,11 +797,6 @@ void NetworkServer::BattlEye::PlayerGUIDIsValid(int player, const CSteamID &owne
     (*_callbacks._playerGUIDIsValid)(player, &ownerSteamId, sizeof(ownerSteamId));
   }
 };
-#else
-void NetworkServer::BattlEye::PlayerGUIDIsValid(int player)
-{
-}
-#endif
 
 bool NetworkServer::BattlEye::UpdatePositionCallback(int player, const char *netId, float x, float y, float z,
   float dirX, float dirY, float dirZ, float upX, float upY, float upZ, float asideX, float asideY, float asideZ)
@@ -1269,9 +1262,6 @@ NetworkServer::NetworkServer(NetworkManager *parent, RString name, RString passw
   _serverState = NSSSelectingMission;
   _serverStateTime = GlobalTickCount();
   _serverTimeOutSent = INT_MAX;
-  #if _ENABLE_DEDICATED_SERVER
-    _sqfExecBusy = false;
-  #endif
   _connectionDesync = CDGood;
   _desyncTotalUpdateNext = GlobalTickCount();
   _desyncTotalAvg = 0;
@@ -2685,7 +2675,7 @@ void NetworkServer::InitSteam()
 #if USER_BebulXX
   _putenv("SteamAppId=223350");
 #else
-  _putenv("SteamAppId=480");
+  _putenv("SteamAppId=221100");
 #endif
   
   // Initialize the SteamGameServer interface, we tell it some info about us, and we request support
@@ -2843,8 +2833,7 @@ void NetworkServer::OnSteamServersConnected(SteamServersConnected_t *logonSucces
 
 void NetworkServer::OnSteamServersConnectFailure( SteamServerConnectFailure_t *connectFailure)
 {
-  // Even if master server connection fails, publish state for LAN / local players
-  ChangeStateSteam();
+	ConsoleF("Failed to connect to Steam");
 }
 
 void NetworkServer::OnSteamServersDisconnected(SteamServersDisconnected_t *loggedOff)
@@ -2898,17 +2887,6 @@ void NetworkServer::DBLoad(RString baseURL, int playerId, GameDataCode *code)
 	  return;
   if (info)
 	  info->DBLoad(baseURL, playerId, identity->id, info->name, code);
-}
-
-void NetworkServer::DBLoad(RString baseURL, int playerId, RString playerUID, GameDataCode *code)
-{
-  const PlayerIdentity *identity = FindIdentityByPlayerId(playerId);
-  if (!identity)
-    return;
-  NetworkPlayerInfo *info = GetPlayerInfo(identity->dpnid);
-  if (!info)
-    return;
-  info->DBLoad(baseURL, playerId, playerUID, info->name, code);
 }
 
 void LoadMissions(bool userMissions, AutoArray<MPMissionInfo> &missionList, bool campaignCheat=false);
@@ -4176,32 +4154,6 @@ void NetworkServer::OnSimulate()
 {
   PROFILE_SCOPE_EX(nwSer, network)
 
-#if _ENABLE_DEDICATED_SERVER
-  // Show the dedicated server's own update rate in the console window title.
-  // This counts server simulation callbacks, not the connected client's render FPS.
-  if (IsDedicatedServer())
-  {
-    static DWORD fpsWindowStart = 0;
-    static unsigned int fpsWindowFrames = 0;
-    const DWORD now = ::GetTickCount();
-    if (fpsWindowStart == 0) fpsWindowStart = now;
-    ++fpsWindowFrames;
-    const DWORD elapsed = now - fpsWindowStart;
-    if (elapsed >= 1000)
-    {
-      const float serverFps = fpsWindowFrames * 1000.0f / elapsed;
-      NetworkServer *server = GNetworkManager.GetServer();
-      if (server)
-      {
-        RString title = APP_NAME " Console version " APP_VERSION_TEXT "." STRINGIZE(BUILD_NO) ": port %d | FPS %.1f";
-        ConsoleTitle(title, server->GetSessionPort(), serverFps);
-      }
-      fpsWindowStart = now;
-      fpsWindowFrames = 0;
-    }
-  }
-#endif
-
 #define DIAGNOSE_NETWORK_OBJECTS 0
 #if DIAGNOSE_NETWORK_OBJECTS
   static volatile bool diagnoseObjects = false;
@@ -4449,12 +4401,6 @@ void NetworkServer::OnSimulate()
     ReceiveLocalMessages();
     ReceiveUserMessages();
   }
-
-  // SDZ_SQF_EXEC: all network messages of this frame are processed; it is now safe
-  // to run scripts that create/delete objects or walk the mission object list.
-  #if _ENABLE_DEDICATED_SERVER
-    if (_dedicated) ProcessQueuedExec();
-  #endif
 
   PerformIntegrityInvestigations();
 
@@ -4830,7 +4776,7 @@ void NetworkServer::OnSimulate()
       BString<1024> text;
       sprintf
       (
-        text, "%s %d:%" OID_FORMAT" - owner %s (%x)",
+        text, "%s %d:%"OID_FORMAT" - owner %s (%x)",
         (const char *)typeName, id.creator.CreatorInt(), id.id,
         (const char *)name, owner
       );
@@ -5780,8 +5726,7 @@ DWORD WINAPI AsyncDBStorage::DBLoadThreadFunction(void *ctx)
     context->_prevContext = NULL; // no longer needed
   }
 
-  RString uidQuery = Format("?uid=%s", cc_cast(context->_playerUID));
-  context->_err = GetResponse(EHTTPREQ_GET,context->_result,context->_url,uidQuery,NULL);
+  context->_err = GetResponse(EHTTPREQ_GET,context->_result,context->_url,context->_playerUID,NULL);
 
   return 0;
 }
@@ -5889,9 +5834,7 @@ void AsyncDBStorage::DBLoad(RString baseURL, int playerId, RString playerUID, RS
   ctx->_prevContext = _lastContext;
   ctx->_code = code;
   ctx->_playerId = playerId;
-  // Keep the raw UID for the SQF completion handler; only the HTTP request
-  // should receive the ?uid= query-string wrapper.
-  ctx->_playerUID = playerUID;
+  ctx->_playerUID = Format("?uid=%s", cc_cast(playerUID));
   ctx->_name = name;
 
 #if USE_MT_LIB_FOR_JOBS
@@ -6281,7 +6224,7 @@ void NetworkServer::RptFObjectNotFound(const NetworkId &id, const char *msg, int
   if (_serverState==NSSLoadingGame || _serverState==NSSPlaying)
   {
 //    RString fromTxt = from>=0 ? Format(" from=%d",from) : RString();
-//    RptF("Server: Object %d:%" OID_FORMAT" not found (message %s)%s", id.creator.CreatorInt(), id.id, msg, cc_cast(fromTxt));
+//    RptF("Server: Object %d:%"OID_FORMAT" not found (message %s)%s", id.creator.CreatorInt(), id.id, msg, cc_cast(fromTxt));
     RptFObjectIdJournal(id);
 #if DIAG_MP_OBJECT_LIFE
     DiagObjectInfoAskMessage ask;
@@ -6810,15 +6753,6 @@ LogF("  sending to %x", pl._player);
         }
       }
       break;
-    case NMTAskForRotateInventoryItem:
-      {
-        AskForRotateInventoryItemMessage ask;
-        TMError err = ask.TransferMsg(ctx);
-        if ((err == TMOK || err == TMNotFound) && ask._person && ask._item &&
-            ask._person->GetRemotePlayer() == from && ask._person->FindItem(ask._item))
-          SendMsg(BOT_CLIENT, msg, type, NMFGuaranteed);
-      }
-      break;
     case NMTAskForSetItemShortcut:
     case NMTAskForMoveItem:
     case NMTAskForTakeItemToHands:
@@ -6960,22 +6894,8 @@ LogF("  sending to %x", pl._player);
             if (action)
             {
               Object *target = nullptr;
-              const NetworkId &targetId = message->_actionTarget;
-              if (!targetId.IsNull())
-                target = dyn_cast<Object>(_parent->GetObject(targetId));
-
-              // Static house/door objects are not always present in the
-              // server's network-object table. For a UserType action, resolve
-              // the player's authoritative current cursor target as fallback.
-              // The action's saved parameters still carry the chosen door id.
-              if (!target && message->_actionType == ATUserType)
-                target = GetPlayerTarget(from);
-
-              if (message->_actionType == ATUserType)
-                RptF("ProcessAction UserType: player=%d targetId=%d:%" OID_FORMAT " resolved=%s fallback=%s",
-                  from, targetId.creator.CreatorInt(), targetId.id,
-                  target ? (const char *)target->GetDebugName() : "<null>",
-                  targetId.IsNull() ? "cursor" : "none");
+              if (!message->_actionTarget.IsNull()) 
+                target = dyn_cast<Object>(_parent->GetObject(message->_actionTarget));
               action->SetTarget(target);
 
               QIStrStream in(message->_actionParams.Data(), message->_actionParams.Size());
@@ -7118,7 +7038,7 @@ sendToAllPlayers:
         NetworkId playerPerson = GetPlayerPerson(from);
         if (playerPerson!=msgAction->_person)
         {
-          RptF("AskForPlayerAction ignored for player %d, person different %d:%" OID_FORMAT "!=%d:%" OID_FORMAT,from, playerPerson.creator.CreatorInt(),playerPerson.id,msgAction->_person.creator.CreatorInt(),msgAction->_person.id);
+          RptF("AskForPlayerAction ignored for player %d, person different %d:%"OID_FORMAT "!=%d:%"OID_FORMAT,from, playerPerson.creator.CreatorInt(),playerPerson.id,msgAction->_person.creator.CreatorInt(),msgAction->_person.id);
         }
 
       }
@@ -7329,7 +7249,7 @@ sendToAllPlayers:
         GObjLifeJournal.Add(id, Format("(%.3f) Delete: from=%d",Glob.time.toFloat(), from));
 #endif
         OnObjectDestroy(id, from);
-        // RptF("Server: Object %d:%" OID_FORMAT" deleted", id.creator.CreatorInt(), id.id);
+        // RptF("Server: Object %d:%"OID_FORMAT" deleted", id.creator.CreatorInt(), id.id);
       }
       break;
     case NMTDeletedObject:
@@ -7387,7 +7307,7 @@ sendToAllPlayers:
         CopyMsg(copy, msg, format);
         NetworkObjectInfo *oInfo = OnObjectCreate(id, from, copy, type);
         if (!oInfo) break;
-// RptF("Server: Object %d:%" OID_FORMAT" created, type %s", id.creator.CreatorInt(), id.id, cc_cast(GetMsgTypeName(type)));
+// RptF("Server: Object %d:%"OID_FORMAT" created, type %s", id.creator.CreatorInt(), id.id, cc_cast(GetMsgTypeName(type)));
 
         auto sendToClient = [this,id,oInfo,from] (int i)
         {
@@ -7431,7 +7351,7 @@ sendToAllPlayers:
           if (dpid==BOT_CLIENT) continue;
           if (DebugMeBoy(oInfo->id))
           {
-            LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} Create message for %d dist %g", oInfo->id.creator.CreatorInt(), oInfo->id.id, dpid, maxDist);
+            LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} Create message for %d dist %g", oInfo->id.creator.CreatorInt(), oInfo->id.id, dpid, maxDist);
           }
           if (maxDist>=FLT_MAX) sendToClient(i);
         }
@@ -7580,7 +7500,7 @@ sendToAllPlayers:
             {
               if (DebugMeBoy(id))
               {
-                LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} init update sent to %d", id.creator.CreatorInt(), id.id, pInfo.dpid);
+                LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} init update sent to %d", id.creator.CreatorInt(), id.id, pInfo.dpid);
               }
               UpdateObject(&pInfo, oInfo, ctx.GetClass(), NMFGuaranteed);
             }
@@ -8192,16 +8112,17 @@ sendToAllPlayers:
             {
               RString expression = cmd._content.ReadString();
 
-              // SDZ_SQF_EXEC: do not evaluate inside the message handler.
-              // Evaluating here ran the script while the network layer was still
-              // walking the object list; object/string churn from the script
-              // corrupted the express heap and killed the server afterwards
-              // (ACCESS_VIOLATION inside FastAlloc / GameDataObject, no RPT line).
-              // The expression goes to a queue drained right after the network
-              // messages of the frame are processed.
-              if (expression.GetLength() > 0)
+              GameVarSpace local(false);
+              int gshandle = _evaluator.BeginContext(&local);
+              GameValue result = _evaluator.EvaluateMultiple(expression, GameState::EvalContext::_default, &_globals); // server namespace
+              _evaluator.EndContext(gshandle);
+
+              if (!result.GetNil())
               {
-                QueueExec(from, expression);
+                NetworkCommandMessage msg;
+                msg._type = NCMTExecResult;
+                msg._content.WriteString(result.GetText());
+                SendMsg(from, &msg, NMFGuaranteed);
               }
             }
           }
@@ -8616,7 +8537,7 @@ sendToAllPlayers:
         {
           OwnerChangedMessage ackMsg;
           ackMsg.TransferMsg(ctx);
-          LogF("Owner of %d:%" OID_FORMAT" changed", ackMsg._creator, ackMsg._id);
+          LogF("Owner of %d:%"OID_FORMAT" changed", ackMsg._creator, ackMsg._id);
           NetworkId id(ackMsg._creator, ackMsg._id);
           NetworkObjectInfo *oInfo = GetObjectInfo(id);
           if (!oInfo)
@@ -8713,7 +8634,7 @@ void NetworkServer::ChangeOwnerFinal( NetworkObjectInfo * oInfo, int from, Netwo
 #endif
     if (DebugMeBoy(id))
     {
-      LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} Owner changed from %d to %d", oInfo->id.creator.CreatorInt(), oInfo->id.id, oInfo->owner, oInfo->pendingOwner);
+      LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} Owner changed from %d to %d", oInfo->id.creator.CreatorInt(), oInfo->id.id, oInfo->owner, oInfo->pendingOwner);
     }
 
     oInfo->owner = oInfo->pendingOwner;
@@ -8721,7 +8642,7 @@ void NetworkServer::ChangeOwnerFinal( NetworkObjectInfo * oInfo, int from, Netwo
   }
   else
   {
-    RptF("Server: OwnerChanged of %d:%" OID_FORMAT" arrived from non owner %d", id.creator.CreatorInt(), id.id, from);
+    RptF("Server: OwnerChanged of %d:%"OID_FORMAT" arrived from non owner %d", id.creator.CreatorInt(), id.id, from);
   }
 }
 
@@ -8877,7 +8798,7 @@ int NetworkServer::FindOwner(const NetworkId &id)
     return dInfo->owner;
   }
 
-  LogF("Owner of %d:%" OID_FORMAT" not known - searching player",id.creator,id.id);
+  LogF("Owner of %d:%"OID_FORMAT" not known - searching player",id.creator,id.id);
   for (int i=0; i<_players.Size(); i++)
   {
     NetworkPlayerInfo &pInfo = *_players[i];
@@ -9814,7 +9735,7 @@ NetworkObjectInfo *NetworkServer::OnObjectUpdate(NetworkId &id, int from, Networ
     }
     if (!allowNonOwner)
     {
-      RptF("Server: Update of object %d:%" OID_FORMAT" arrived from nonowner", id.creator.CreatorInt(), id.id);
+      RptF("Server: Update of object %d:%"OID_FORMAT" arrived from nonowner", id.creator.CreatorInt(), id.id);
       return NULL;
     }
   }
@@ -9822,7 +9743,7 @@ NetworkObjectInfo *NetworkServer::OnObjectUpdate(NetworkId &id, int from, Networ
   bool rejectedFromClient = from!=BOT_CLIENT && oInfo->rejected[cls];
   if (rejectedFromClient)
   {
-    LogF("Received rejected %d for %" OID_FORMAT"",cls,oInfo->id.id);
+    LogF("Received rejected %d for %"OID_FORMAT"",cls,oInfo->id.id);
   }
 
   NetworkCurrentInfo &info = rejectedFromClient ? oInfo->currentRejected[cls] : oInfo->currentUpdate[cls];
@@ -9838,7 +9759,7 @@ NetworkObjectInfo *NetworkServer::OnObjectUpdate(NetworkId &id, int from, Networ
   {
     if (info.from!=from)
     {
-      LogF("Discarded different owner message for %" OID_FORMAT"(%d) because of time. %d!=%d",oInfo->id.id,rejectedFromClient,info.from,from);
+      LogF("Discarded different owner message for %"OID_FORMAT"(%d) because of time. %d!=%d",oInfo->id.id,rejectedFromClient,info.from,from);
     }
 
     // do not update
@@ -9849,12 +9770,12 @@ NetworkObjectInfo *NetworkServer::OnObjectUpdate(NetworkId &id, int from, Networ
 
   if (info.message && info.message->time > msg->time)
   {
-    LogF("Passed old time for %" OID_FORMAT"(%d). %d!=%d",oInfo->id.id,rejectedFromClient,info.from,from);
+    LogF("Passed old time for %"OID_FORMAT"(%d). %d!=%d",oInfo->id.id,rejectedFromClient,info.from,from);
   }
   
   if (info.from!=from && info.message.NotNull())
   {
-    LogF("Changing from %d(%d) for %" OID_FORMAT" %d to %d",cls,rejectedFromClient,oInfo->id.id,info.from,from);
+    LogF("Changing from %d(%d) for %"OID_FORMAT" %d to %d",cls,rejectedFromClient,oInfo->id.id,info.from,from);
   }
 
 
@@ -9873,7 +9794,7 @@ NetworkObjectInfo *NetworkServer::OnObjectUpdate(NetworkId &id, int from, Networ
   }
 
   if (DiagLevel >= 4)
-    DiagLogF("Server: object %d:%" OID_FORMAT" updated", id.creator.CreatorInt(), id.id);
+    DiagLogF("Server: object %d:%"OID_FORMAT" updated", id.creator.CreatorInt(), id.id);
 
   return oInfo;
 }
@@ -9936,7 +9857,7 @@ void NetworkServer::OnRejectChanged(const NetworkId &id, NetworkMessageClass cls
   NetworkObjectInfo *oInfo = GetObjectInfo(id);
   if (oInfo)
   {
-    LogF("Reject update %d %d for %" OID_FORMAT" to BOT_CLIENT",reject,cls,id.id);
+    LogF("Reject update %d %d for %"OID_FORMAT" to BOT_CLIENT",reject,cls,id.id);
     oInfo->rejected[cls] = reject;
     // the update from client ("currentRejected") was accepted by a bot-client, use it as a main object state
     if (!reject)
@@ -9962,7 +9883,7 @@ int NetworkServer::PerformObjectDestroy(const NetworkId &id)
     owner = info->owner;
 
     RemoveInitObjectDeleted(id);
-    //LogF("Performing Object Destroy for (%d:%" OID_FORMAT")", _objects[i]->id.creator.CreatorInt(), _objects[i]->id.id);
+    //LogF("Performing Object Destroy for (%d:%"OID_FORMAT")", _objects[i]->id.creator.CreatorInt(), _objects[i]->id.id);
     for (int i=0; i<_players.Size(); i++)
     {
       NetworkPlayerInfo &pInfo = *_players[i];
@@ -10032,7 +9953,7 @@ int NetworkServer::UpdateObject(NetworkPlayerInfo *pInfo, NetworkObjectInfo *oIn
 
   if (DebugMeBoy(oInfo->id))
   {
-    LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} UpdateObject to %d", oInfo->id.creator.CreatorInt(), oInfo->id.id, to);
+    LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} UpdateObject to %d", oInfo->id.creator.CreatorInt(), oInfo->id.id, to);
   }
 
 
@@ -10629,7 +10550,7 @@ void NetworkServer::ChangeOwner(const NetworkId &id, int from, int to)
 
   if (DebugMeBoy(id))
   {
-    LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} ChangeOwner from %d to %d", oInfo->id.creator.CreatorInt(), oInfo->id.id, from, to);
+    LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} ChangeOwner from %d to %d", oInfo->id.creator.CreatorInt(), oInfo->id.id, from, to);
 
   }
 }
@@ -11475,7 +11396,7 @@ void NetworkServer::OnClientStateChanged(int dpnid, NetworkClientState state)
           SendCreateMessage(dpnid,*info, poInfo);
           poInfo->updating = true;
           pInfo->markAsUpdating(poInfo);
-          //RptF("  %s: %d:%" OID_FORMAT"", cc_cast(GetMsgTypeName(type)), info->id.creator.CreatorInt(), info->id.id);
+          //RptF("  %s: %d:%"OID_FORMAT"", cc_cast(GetMsgTypeName(type)), info->id.creator.CreatorInt(), info->id.id);
         });
 
         //RptF("*** World state sent ***");
@@ -11717,19 +11638,8 @@ Vector3 NetworkServer::GetCameraPosition(int dpid)
 
 NetworkObject *NetworkServer::GetObject(const NetworkId &id)
 {
-  if (id.creator == CreatorId(0)) return NULL;
-  else if (id.creator == CreatorId(STATIC_OBJECT))
-  {
-    ObjectId oid;
-    oid.Decode(id.id);
-    return GLandscape->GetObject(oid);
-  }
-
-  // Message references (OLink) are resolved through NetworkServer while a
-  // dedicated server decodes client requests. The old stub made every such
-  // request fail before its handler ran, including inventory rotation.
-  NetworkObjectInfo *info = GetObjectInfo(id);
-  return info ? info->object.GetLink() : NULL;
+  Fail("Server: GetObject is not implemented");
+  return NULL;
 }
 
 //! Subsidiary structure for sorting messages by error
@@ -12105,7 +12015,7 @@ void NetworkServer::SendCreateMessage( int dpnid, NetworkObjectInfo &info, Netwo
 {
   if (DebugMeBoy(info.id))
   {
-    LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} Create for %d", info.id.creator.CreatorInt(), info.id.id, dpnid);
+    LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} Create for %d", info.id.creator.CreatorInt(), info.id.id, dpnid);
   }
   SendMsg(dpnid, info.create.message, info.create.type, NMFGuaranteed, poInfo);
 }
@@ -12275,7 +12185,7 @@ void NetworkServer::CreateObjectsList(AutoArray<UpdateObjectInfo, MemAllocSA> &o
     {
       if (DebugMeBoy(oInfo.id))
       {
-        LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} Updating for %d state %d", oInfo.id.creator.CreatorInt(), oInfo.id.id, pInfo.dpid, needsUpdate);
+        LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} Updating for %d state %d", oInfo.id.creator.CreatorInt(), oInfo.id.id, pInfo.dpid, needsUpdate);
       }
       if (needsUpdate)
       {
@@ -12335,7 +12245,7 @@ void NetworkServer::CreateObjectsList(AutoArray<UpdateObjectInfo, MemAllocSA> &o
         errorNoCoef = info.message->CalculateErrorInitial();
         error = errCoef * errorNoCoef;
 #if LOG_ERRORS
-        DiagLogF("Initial error for %s %d:%" OID_FORMAT" to %d", NetworkMessageTypeNames[info.type], oInfo.id.creator.CreatorInt(), oInfo.id.id, pInfo.dpid);
+        DiagLogF("Initial error for %s %d:%"OID_FORMAT" to %d", NetworkMessageTypeNames[info.type], oInfo.id.creator.CreatorInt(), oInfo.id.id, pInfo.dpid);
         DiagLogF("  - error %.3f * %.3f = %.3f", errCoef, errorNoCoef, error);
 #endif
       }
@@ -12368,7 +12278,7 @@ void NetworkServer::CreateObjectsList(AutoArray<UpdateObjectInfo, MemAllocSA> &o
         {
           DiagLogF
           (
-            "Object %s %d:%" OID_FORMAT" - update to %d",
+            "Object %s %d:%"OID_FORMAT" - update to %d",
             NetworkMessageTypeNames[info.type], oInfo.id.creator.CreatorInt(), oInfo.id.id,
             pInfo.dpid
           );
@@ -12395,7 +12305,7 @@ void NetworkServer::CreateObjectsList(AutoArray<UpdateObjectInfo, MemAllocSA> &o
       if (DebugMeBoy(oInfo.id) && error>0)
       {
         float msgTime = update.lastSentMsg ? update.lastSentMsg->time.toFloat() : 0; 
-        LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"}, Error: %.2f, lastMsgTime: %.3f", oInfo.id.creator.CreatorInt(), oInfo.id.id, error, msgTime);
+        LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"}, Error: %.2f, lastMsgTime: %.3f", oInfo.id.creator.CreatorInt(), oInfo.id.id, error, msgTime);
       }
 #endif
 
@@ -13045,7 +12955,7 @@ void NetworkServer::SendMessages()
           float times[NMCUpdateN];
           NetworkPlayerObjectInfo *poInfo = oInfo->GetPlayerObjectInfo(playerIndex,pInfo.dpid);
           for (int j=0; j<NMCUpdateN; j++) times[j] = poInfo->updates[j].lastSentMsg ? poInfo->updates[j].lastSentMsg->time.toFloat() : 0;
-          LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} has error %.2f, position in _objects = %d, lastMsgSent: %.02f, %.02f, %.02f", 
+          LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} has error %.2f, position in _objects = %d, lastMsgSent: %.02f, %.02f, %.02f", 
             oInfo->id.creator.CreatorInt(), oInfo->id.id, error, i, times[NMCUpdateGeneric], times[NMCUpdatePosition], times[NMCUpdateDamage]);
         }
 #endif
@@ -13078,7 +12988,7 @@ void NetworkServer::SendMessages()
         {
           LogF
           (
-            "  Server to %s: Object %d:%" OID_FORMAT" updated - size %d bytes, critical",
+            "  Server to %s: Object %d:%"OID_FORMAT" updated - size %d bytes, critical",
             (const char *)pInfo.name, info.oInfo->id.creator.CreatorInt(), info.oInfo->id.id, bytes
           );
         }
@@ -14486,80 +14396,6 @@ void NetworkServer::InitEvaluator()
     _evaluator.NewFunction(ServerUnary[i]);
   //for(int i=0; i<lenof(ServerBinary); i++)
   //  _evaluator.NewOperator(ServerBinary[i]);
-}
-
-void NetworkServer::QueueExec(int from, RString expression)
-{
-  if (expression.GetLength() <= 0) return;
-  _sqfExecQueue.Add(expression);
-  _sqfExecFrom.Add(from);
-}
-
-#if defined(_MSC_VER)
-// No C++ objects with destructors in this function: that keeps __try/__except legal.
-static bool SDZ_TryEvaluateSqf(GameState *state, const char *expression, GameDataNamespace *globals, GameValue *result)
-{
-  __try
-  {
-    *result = state->EvaluateMultiple(expression, GameState::EvalContext::_default, globals);
-    return true;
-  }
-  __except (EXCEPTION_EXECUTE_HANDLER)
-  {
-    RptF("SDZ_SQF_EXEC: excecao 0x%08X ao avaliar o script", (unsigned)GetExceptionCode());
-    return false;
-  }
-}
-#endif
-
-void NetworkServer::ProcessQueuedExec()
-{
-  if (_sqfExecBusy) return;
-  if (_sqfExecQueue.Size() <= 0) return;
-
-  _sqfExecBusy = true;
-
-  // Admin #exec uses the server evaluator, which registers kick/ban/users.
-  GameState *execState = &_evaluator;
-  GameDataNamespace *globals = &_globals; // server namespace
-
-  while (_sqfExecQueue.Size() > 0)
-  {
-    RString expression = _sqfExecQueue[0];
-    int from = _sqfExecFrom[0];
-    _sqfExecQueue.Delete(0);
-    _sqfExecFrom.Delete(0);
-
-    GameVarSpace local(false);
-    int gshandle = execState->BeginContext(&local);
-
-    GameValue result = NOTHING;
-    bool evaluated = false;
-
-    #if defined(_MSC_VER)
-      evaluated = SDZ_TryEvaluateSqf(execState, expression, globals, &result);
-    #else
-      result = execState->EvaluateMultiple(expression, GameState::EvalContext::_default, globals);
-      evaluated = true;
-    #endif
-
-    // Copy the answer before the context and its values are released.
-    RString answer;
-    if (evaluated && !result.GetNil()) answer = result.GetText();
-    result = NOTHING;
-
-    execState->EndContext(gshandle);
-
-    if (from != BOT_CLIENT && answer.GetLength() > 0)
-    {
-      NetworkCommandMessage msg;
-      msg._type = NCMTExecResult;
-      msg._content.WriteString(answer);
-      SendMsg(from, &msg, NMFGuaranteed);
-    }
-  }
-
-  _sqfExecBusy = false;
 }
 
 void NetworkServer::ProfileAnswer(const RString &output)

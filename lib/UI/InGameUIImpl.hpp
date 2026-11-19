@@ -115,14 +115,6 @@ public:
 	InitPtr<CStatic> ammo;
   InitPtr<CStatic> gunnerWeapon;
   InitPtr<CStatic> ammoMode;
-
-  // DayZ status icons
-  InitPtr<CStatic> statusThirst;
-  InitPtr<CStatic> statusHunger;
-  InitPtr<CStatic> statusTemperature;
-  InitPtr<CStatic> statusBlood;
-  InitPtr<CStatic> statusHealth;
-
   InitPtr<CStatic> counterMeasuresAmmo;
   InitPtr<CStatic> counterMeasuresMode;
 

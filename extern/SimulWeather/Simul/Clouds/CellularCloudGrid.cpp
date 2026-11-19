@@ -1,4 +1,3 @@
-#include <algorithm>
 #include "precomp.h"
 
 #if defined(_MSC_VER)

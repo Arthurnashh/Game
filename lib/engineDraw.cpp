@@ -1372,120 +1372,6 @@ void Engine::DrawMeshTLInstanced(
   const ObjectInstanceInfo *instances, int nInstances, float minDist2, const DrawParameters &dp
 )
 {
-  AUTO_STATIC_ARRAY(int,runSecBeg,256);
-  AUTO_STATIC_ARRAY(int,runSecEnd,256);
-  AUTO_STATIC_ARRAY(int,runBias,256);
-  if (nInstances>1)
-  {
-    PROFILE_SCOPE_DETAIL_EX(d9SR,d3d);
-    // Section grouping depends only on this shape. Compute it once for all instances.
-    int secBeg = -1;
-    int secEnd = -1;
-    ShapeSectionInfo sProp;
-    int minBoneIndex = -1;
-    int bonesCount = -1;
-    int firstBias = bias;
-
-    for (int i=0; i<sMesh.NSections(); i++)
-    {
-      const ShapeSection &sec = sMesh.GetSection(i);
-      if (sec.Special()&(IsHidden|IsHiddenProxy)) continue;
-
-      int secBias = ((sec.Special()&ZBiasMask)/ZBiasStep) * 5;
-      int maxBias = intMax(bias, secBias);
-      if (secBeg<0)
-      {
-        secBeg = i;
-        secEnd = i+1;
-        sProp = sec;
-        minBoneIndex = sec._minBoneIndex;
-        bonesCount = sec._bonesCount;
-        firstBias = maxBias;
-      }
-      else if (
-        sec==sProp &&
-        sec._minBoneIndex==minBoneIndex &&
-        sec._bonesCount==bonesCount &&
-        i==secEnd
-      )
-      {
-        secEnd=i+1;
-      }
-      else
-      {
-        // Preserve the original flush bias, which is taken from the first section
-        // of the next run in the existing per-instance loop.
-        runSecBeg.Append() = secBeg;
-        runSecEnd.Append() = secEnd;
-        runBias.Append() = maxBias;
-
-        secBeg = i;
-        secEnd = i+1;
-        sProp = sec;
-        minBoneIndex = sec._minBoneIndex;
-        bonesCount = sec._bonesCount;
-        firstBias = maxBias;
-      }
-    }
-    if (secEnd>secBeg)
-    {
-      runSecBeg.Append() = secBeg;
-      runSecEnd.Append() = secEnd;
-      // The original final flush recalculates bias from the run's first section.
-      runBias.Append() = firstBias;
-    }
-  }
-
-  if (nInstances>1 && runSecBeg.Size()>0 && CanApplyMaterialTL())
-  {
-    // The section state prepared by PrepareTL (texture, sampler, pixel shader,
-    // render states, material) depends only on the section run, not on the
-    // instance. Prepare it once per run and re-apply only the instance-dependent
-    // material/light constants for every instance.
-    //
-    // Establish the state of instance 0 first: BeginInstanceTL selects the pixel
-    // shader type, BeginMeshTL locks/updates the mesh vertex buffer and sets the UV
-    // scale/offset used by the texgen matrix inside PrepareTL.
-    {
-      const ObjectInstanceInfo &info0 = instances[0];
-      SetInstanceInfo(cb, info0._color, info0._shadowCoef);
-      BeginInstanceTL(cb, info0._origin, minDist2, spec, lights, dp);
-      if (!BeginMeshTL(cb, NULL, sMesh, prop, spec, lights, bias))
-      {
-        SetInstanceInfo(cb,HWhite,1);
-        return;
-      }
-    }
-
-    for (int r=0; r<runSecBeg.Size(); r++)
-    {
-      TLMaterial mat;
-      CreateMaterial(mat, HWhite);
-      const ShapeSection &sec = sMesh.GetSection(runSecBeg[r]);
-      sec.PrepareTL(cb, mat, spec, prop, dp);
-
-      // Combine section surface material (.rvmat) just as PolyProperties::PrepareTL does,
-      // so ApplyMaterialTL preserves forcedDiffuse/ambient on foliage and tree crowns.
-      TLMaterial matEff = mat;
-      if (TexMaterial *surfMat = sec.GetMaterialExt())
-      {
-        surfMat->Combine(matEff, mat);
-      }
-
-      for (int j=0; j<nInstances; j++)
-      {
-        const ObjectInstanceInfo &info = instances[j];
-        SetInstanceInfo(cb, info._color, info._shadowCoef);
-        BeginInstanceTL(cb, info._origin, minDist2, spec, lights, dp);
-        ApplyMaterialTL(cb, matEff);
-        DrawSectionTL(cb, sMesh, runSecBeg[r], runSecEnd[r], runBias[r], 0, 0, dp);
-      }
-    }
-    EndMeshTL(cb, sMesh);
-    SetInstanceInfo(cb,HWhite,1);
-    return;
-  }
-
   // Go through the instances
   for (int j = 0; j < nInstances; j++)
   {
@@ -1500,18 +1386,6 @@ void Engine::DrawMeshTLInstanced(
     bool ok = BeginMeshTL(cb, NULL, sMesh, prop, spec, lights, bias);
     if (ok)
     {
-      if (nInstances>1)
-      {
-        for (int r=0; r<runSecBeg.Size(); r++)
-        {
-          TLMaterial mat;
-          CreateMaterial(mat, HWhite);
-          sMesh.GetSection(runSecBeg[r]).PrepareTL(cb,mat, spec, prop);
-          DrawSectionTL(cb,sMesh, runSecBeg[r], runSecEnd[r], runBias[r]);
-        }
-      }
-      else
-      {
       // check first face properties
       int secBeg = -1;
       int secEnd = -1;
@@ -1579,7 +1453,6 @@ void Engine::DrawMeshTLInstanced(
         int maxBias = intMax(bias, secBias);
 
         DrawSectionTL(cb,sMesh, secBeg, secEnd, maxBias);
-      }
       }
 
       EndMeshTL(cb,sMesh);

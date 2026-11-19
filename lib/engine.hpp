@@ -547,16 +547,6 @@ enum RenderTargetID
   XX(type, prefix, SuperExt)                            /* skyscraper & building, intended as super shader light version */\
   XX(type, prefix, SuperAToC)                           /* Super shader AToC variant */\
 	XX(type, prefix, NonTLHeatHaze)                       /* Heat haze effect */\
-  XX(type, prefix, InterpolationAlpha)                  /* alpha interpolation */\
-  XX(type, prefix, VolCloud)                            /* volumetric clouds */\
-  XX(type, prefix, VolCloudSimple)                      /* volumetric clouds without soft particles */\
-  XX(type, prefix, UnderwaterOcclusion)                 /* underwater occlusion */\
-  XX(type, prefix, SuperHair)                           /* hair rendering */\
-  XX(type, prefix, SuperHairAtoC)                       /* hair rendering with alpha to coverage */\
-  XX(type, prefix, Caustics)                            /* water caustics */\
-  XX(type, prefix, Refract)                             /* refraction */\
-  XX(type, prefix, SpriteRefract)                       /* refractive sprites */\
-  XX(type, prefix, SpriteRefractSimple)                 /* simple refractive sprites */\
 
 #define CASE_TERRAIN(baseName) \
   case baseName##1: case baseName##2: case baseName##3: \
@@ -639,12 +629,6 @@ extern const int VertexDeclarations[];
   XX(type, prefix, TreeAdvTrunk)                    /*advanced tree crown shader  VSTreeAdvTrunk*/\
   XX(type, prefix, SimulWeatherClouds)              /*simul weather clouds*/\
   XX(type, prefix, SimulWeatherCloudsCPU)           /*simul weather clouds with CPU distance fading*/\
-  XX(type, prefix, VolCloud)                        /*volumetric clouds*/\
-  XX(type, prefix, Road)                            /*roads*/\
-  XX(type, prefix, UnderwaterOcclusion)             /*underwater occlusion*/\
-  XX(type, prefix, SpriteOnSurface)                 /*sprite on surface*/\
-  XX(type, prefix, TreeAdvModNormals)               /*advanced tree with modified vertex normals*/\
-  XX(type, prefix, Refract)                         /*refraction*/\
 
 //! VertexShaderID enum
 #ifndef DECL_ENUM_VERTEX_SHADER_ID
@@ -681,9 +665,6 @@ extern const EVertexDecl ShaderVertexDeclarations[];
   XX(type, prefix, Skin) \
   XX(type, prefix, TreeAdv) \
   XX(type, prefix, TreeAdvTrunk) \
-  XX(type, prefix, UnderwaterOcclusion) \
-  XX(type, prefix, TreeAdvModNormals) \
-  XX(type, prefix, Refract)
 
 //! Create enum and array of the same names
 #ifndef DECL_ENUM_VSP
@@ -694,8 +675,6 @@ DECLARE_ENUM(VertexShaderPoolID, VSP, VSP_ENUM)
 
 //! Array to convert VS into VSP
 extern const VertexShaderPoolID VSToVSP[];
-//! Array to convert VSP into VS
-extern const VertexShaderID VSPToVS[];
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -709,8 +688,6 @@ extern const VertexShaderID VSPToVS[];
   XX(type, prefix, CalmWater) \
   XX(type, prefix, SimulWeatherClouds) \
   XX(type, prefix, SimulWeatherCloudsCPU) \
-  XX(type, prefix, VolCloud) \
-  XX(type, prefix, SpriteOnSurface)
 
 //   XX(type, prefix, Point) \
 
@@ -1044,7 +1021,6 @@ class TexMaterialLODInfo
 {
 public:
   const TexMaterial *_mat;
-  int _level;
   DefTIMode _defTI;
 
   // store UV offset taken from AnimationContext
@@ -1053,62 +1029,30 @@ public:
   TexMaterialLODInfo()
   {
     _mat = NULL;
-    _level = 0;
     _UVchanged = false;
     _defTI = TIDefault;
   }
   TexMaterialLODInfo(const TexMaterial *mat)
   {
     _mat = mat;
-    _level = 0;
     _UVchanged = false;
-    _defTI = TIDefault;
-  };
-  // Renderer-port overload: retain the material LOD requested by the caller.
-  TexMaterialLODInfo(const TexMaterial *mat, int level)
-  {
-    _mat = mat;
-    _level = level;
-    _UVchanged = false;
-    _defTI = TIDefault;
-  };
-  TexMaterialLODInfo(const TexMaterial *mat, int level, bool UVchanged, float offsetU, float offsetV)
-  {
-    _mat = mat;
-    _level = level;
-    _offsetU = offsetU;
-    _offsetV = offsetV;
-    _UVchanged = UVchanged;
     _defTI = TIDefault;
   };
   TexMaterialLODInfo(const TexMaterial *mat, bool UVchanged, float offsetU, float offsetV, DefTIMode defTI)
   {
     _mat = mat;
-    _level = 0;
     _offsetU = offsetU;
     _offsetV = offsetV;
     _UVchanged = UVchanged;
     _defTI = defTI;
   };
   //!{ Operators
-  __forceinline bool operator== (const TexMaterialLODInfo &sec) const {return _mat == sec._mat && _level == sec._level && _UVchanged == sec._UVchanged && (!_UVchanged || (_offsetU == sec._offsetU && _offsetV == sec._offsetV)) && _defTI==sec._defTI;}
+  __forceinline bool operator== (const TexMaterialLODInfo &sec) const {return _mat == sec._mat && _UVchanged == sec._UVchanged && (!_UVchanged || (_offsetU == sec._offsetU && _offsetV == sec._offsetV)) && _defTI==sec._defTI;}
   __forceinline bool operator!= (const TexMaterialLODInfo &sec) const {return !operator ==(sec);}
   //!}
 };
 
 class PolyProperties;
-
-// The imported DX11 backend was built with material LOD selection disabled.
-class EmptySCharArray
-{
-public:
-  int Size() const {return 0;}
-  int Size() {return 0;}
-  signed char *Data() {return NULL;}
-  signed char operator [] (int) const {return 0;}
-};
-typedef EmptySCharArray SectionMaterialLODs;
-typedef EmptySCharArray SectionMaterialLODsArray;
 
 //! Description of a single crater
 struct CraterProperties
@@ -1177,31 +1121,12 @@ class StatisticsByName;
 class HeatHazeRenderArray;
 
 // post effect types managed from scripts
-enum PostEffectType { PENone, PERadialBlur, PEChromAberration, PEWetDistortion, PEColorCorrections, PEDynamicBlur, PESSAO, PEFilmGrain, PEGodRays, PERain, PEColorInv, PERain3D };
-
-// FSAA mode information shared by the renderer backends.
-struct FSAAInfo
-{
-  FSAAInfo(int samplesCount = 0, int quality = 0, RString name = RString())
-    : _samplesCount(samplesCount), _quality(quality), _name(name) {}
-
-  int _samplesCount;
-  int _quality;
-  RString _name;
-};
-TypeIsMovableZeroed(FSAAInfo)
+enum PostEffectType { PENone, PERadialBlur, PEChromAberration, PEWetDistortion, PEColorCorrections, PEDynamicBlur, PESSAO, PEFilmGrain, PEGodRays, PERain, PEColorInv };
 
 /// rendering/drawing interface
 class Engine
 {
 public:
-  // D3D11 backend controls shared with the legacy renderer port.
-  static bool D3DPerformLock;
-  static bool D3DUseDynamicConstantBuffers;
-  static bool D3DUseMultiSizeConstantBuffers;
-  static bool D3DCreateSingleThreaded;
-  static bool D3DCreateNoThreadOpt;
-
   enum {NFrameDurations=64};
 protected:
   int _messageHandle;
@@ -1655,13 +1580,6 @@ public:
   virtual int GetMaxFSAA() const {return 0;}
   //@}
 
-  virtual bool GetFSAAInfo(int fsaaMode, FSAAInfo &info) {return false;}
-  /// true when the main depth buffer was primed this frame
-  virtual bool ZPrimed() const {return true;}
-  virtual void SetMainDepthPrimed(bool val) {}
-  /// true when the main pass writes depth itself, so the separate z-only priming pass can be skipped
-  virtual bool MainPassPrimesDepth() const {return false;}
-
   //@{ user settings - AToC
   virtual void SetAToC(int level) {}
   virtual int GetAToC() const { return 0; }
@@ -1736,16 +1654,6 @@ public:
     const TLMaterial &tlMat,
     int spec, const EngineShapeProperties &prop
   ) {}
-
-  //! Re-apply only the material/light constants of an already prepared section.
-  /*!
-  Used by instanced drawing: the section state (textures, shaders, render states)
-  is prepared once per section run, while the material constants must be
-  recomputed for every instance (they depend on the object-space transform).
-  */
-  virtual void ApplyMaterialTL(int cb, const TLMaterial &tlMat) {}
-  /// true when ApplyMaterialTL is implemented
-  virtual bool CanApplyMaterialTL() const {return false;}
 
   virtual void PrepareTriangle( int cb, const MipInfo &mip, const TexMaterial *mat, int specFlags )= 0;
   virtual void DrawPolygon( const VertexIndex *i, int n )= 0;
@@ -2076,7 +1984,7 @@ public:
   virtual void ReleaseAllVertexBuffers() {}
   virtual void DeferVBufferRelease( VertexBuffer *buffer ) {}
 
-  virtual void *GetWindowHandle() const { return NULL; }
+  //virtual HWND GetWindowHandle() const = 0;
 
   // shadow related functions
   virtual float ZShadowEpsilon() const = 0; // bias used for shadows

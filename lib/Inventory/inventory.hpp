@@ -159,7 +159,6 @@ TypeIsSimple(InventorySlotId)
 #define UPDATE_INVENTORY_ITEM_MSG(MessageName, XX) \
   XX(MessageName, bool, isOn, NDTBool, bool, NCTNone, DEFVALUE(bool, true), DOC_MSG("Device switched on"),  TRANSF, ET_NOT_EQUAL, ERR_COEF_STRUCTURE) \
   XX(MessageName, RefArray<InventoryItem>, attachments, NDTRefArray, AutoArray<NetworkId>, NCTNone, DEFVALUEREFARRAY, DOC_MSG("Attachments"), TRANSF_REFS, ET_NOT_EQUAL_COUNT, ERR_COEF_MODE) \
-  XX(MessageName, bool, inventoryRotated, NDTBool, bool, NCTNone, DEFVALUE(bool, false), DOC_MSG("Item rotated in inventory grid"), TRANSF, ET_NOT_EQUAL, ERR_COEF_IMMEDIATE) \
   XX(MessageName, bool, inLandscape, NDTBool, bool, NCTNone, DEFVALUE(bool, false), DOC_MSG("Item is in landscape"), TRANSF, ET_NOT_EQUAL, ERR_COEF_IMMEDIATE) \
   
 DECLARE_NET_INDICES_EX_ERR(UpdateInventoryItem, UpdateVehicleAI, UPDATE_INVENTORY_ITEM_MSG)
@@ -174,11 +173,6 @@ private:
 
   // during drawing in UI, different special flags are used
   bool _ui;
-
-  // item footprint is rotated 90 degrees in a cargo grid
-  bool _inventoryRotated;
-  /// drag-preview orientation used by placement checks only (-1 = none)
-  signed char _inventoryRotationPreview;
 
   // content of the container is accessible from the Inventory UI
   bool _opened;
@@ -240,18 +234,6 @@ public:
 
   //! Perform default action for item in the inventory
   virtual bool UseFromInventory(Person *owner);
-
-  // Inventory grid rotation (distinct from the world placement rotation flags).
-  // IsInventoryRotated() is the orientation used for new placements (the drag
-  // preview while one is set); GetInventoryWidth/Height keep the stored footprint.
-  bool IsInventoryRotated() const {return _inventoryRotationPreview >= 0 ? _inventoryRotationPreview != 0 : _inventoryRotated;}
-  void SetInventoryRotated(bool rotated) {_inventoryRotated = rotated;}
-  void SetInventoryRotationPreview(bool rotated) {_inventoryRotationPreview = rotated ? 1 : 0;}
-  void ClearInventoryRotationPreview() {_inventoryRotationPreview = -1;}
-  int GetInventoryWidth() const;
-  int GetInventoryHeight() const;
-  bool CanRotateInInventory() const;
-  bool RotateInInventory();
 
   // cast optimization
   virtual Weapon *GetWeapon() {return NULL;}
@@ -423,7 +405,6 @@ public:
 
   // check if item fits into container, find the place if not given
   int CanAddItem(const InventoryItem *item, int index = -1) const;
-  bool CanRotateItem(const InventoryItem *item) const;
   int CanReplaceItem(const InventoryItem *oldItem, const InventoryItem *newItem) const;
 
   bool AddItem(EntityAI *owner, InventoryItem *item, int index);
@@ -451,7 +432,7 @@ public:
 
 private:
   // check the space for the item
-  int FitsInto(const Array<bool> &image, const InventoryItem *item, int index, bool rotated) const;
+  int FitsInto(const Array<bool> &image, const InventoryItemType *type, int index) const;
 };
 
 // Watch classes
