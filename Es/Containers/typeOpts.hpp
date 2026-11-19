@@ -2,11 +2,7 @@
 #pragma once
 #endif
 
-#if defined(_MSC_VER) && _MSC_VER >= 1900
-#include <new>
-#define __PLACEMENT_NEW_INLINE
-#endif
- #ifndef _TYPE_OPTS_HPP
+#ifndef _TYPE_OPTS_HPP
 #define _TYPE_OPTS_HPP
 
 
@@ -19,12 +15,12 @@
 #ifndef __PLACEMENT_NEW_INLINE
 #define __PLACEMENT_NEW_INLINE
 #ifdef _WIN32
-	static inline void *__cdecl operator new (size_t size, void *addr)
+	inline void *__cdecl operator new (size_t size, void *addr)
 	{
 		return addr;
 	}
 	// delete required for unwinding exceptions
-	static inline void __cdecl operator delete (void *mem, void *addr)
+	inline void __cdecl operator delete (void *mem, void *addr)
 	{
 	}
 #else

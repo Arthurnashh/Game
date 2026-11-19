@@ -469,9 +469,9 @@ extern "C" {
 	#endif
 #endif // GSI_UNICODE
 
-#if defined(_WIN32) && defined(_MSC_VER) && _MSC_VER < 1900
+#if defined(_WIN32)
 	#define snprintf _snprintf
-#endif // legacy MSVC only
+#endif // _WIN32
 
 #if defined(_WIN32)
 	#define strcasecmp _stricmp

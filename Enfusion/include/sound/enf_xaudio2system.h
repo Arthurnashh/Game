@@ -16,6 +16,7 @@
 #include "system/enf_thread.h"
 #include "system/enf_timer.h"
 #include "common/enf_hashmap.h"
+#include "common/enf_pointerhash.h"
 #include <es/Common/win.h>
 #include <Xaudio2.h>
 #include <X3daudio.h>
@@ -239,7 +240,7 @@ struct SourceVoiceContainerHashFunc
 {
 	uint operator()(const SourceVoiceContainer* cont) const
 	{
-		uint hash = reinterpret_cast<uint>(cont->m_pFormat);
+		uint hash = HashPointer(cont->m_pFormat);
 		hash |= cont->m_iFlags;
 		return hash;
 	}

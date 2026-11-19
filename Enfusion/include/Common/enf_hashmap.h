@@ -11,6 +11,7 @@
 
 #include "enf_config.h"
 #include "common/enf_inttypes.h"
+#include "common/enf_pointerhash.h"
 #include "system/enf_memory.h"
 
 namespace enf
@@ -25,7 +26,7 @@ struct ExactStringHashFunc
 {
 	uint operator()(const char *str) const
 	{
-		return reinterpret_cast<uint>(str);
+		return HashPointer(str);
 	}
 
 	int compare(const char* str1, const char* str2) const

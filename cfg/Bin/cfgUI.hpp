@@ -2283,7 +2283,7 @@ class CfgDefaultKeysPresets
       networkStats[] = {DIK_I};
       networkPlayers[] = {DIK_P};
       DSInterface[] = {{DIK_RSHIFT, DIK_P}};
-      turbo[] = {DIK_LSHIFT};
+      turbo[] = {};
       vehicleTurbo[] = {DIK_LSHIFT};
       holdBreath[] = {INPUT_DEVICE_MOUSE + 1};
       
@@ -2296,7 +2296,7 @@ class CfgDefaultKeysPresets
 
       walk[] = {};
       walkRunToggle[] = {KEYBOARD_DOUBLE_TAP_OFFSET+DIK_LSHIFT};
-      walkRunTemp[] = {};
+      walkRunTemp[] = {DIK_LSHIFT};
 
       getOver[] = {DIK_V};
 

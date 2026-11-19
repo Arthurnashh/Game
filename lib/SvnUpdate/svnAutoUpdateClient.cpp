@@ -4,6 +4,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <process.h>
+#include <stdint.h>
 #include <Es/Strings/rString.hpp>
 
 #include "svnAutoUpdateClient.h"
@@ -31,7 +32,8 @@ bool SVNAutoUpdaterClient::Init(const char *svnAUPath, const char *svnURL, const
     HWND fnd = FindWindow("DAYZ_UPDATER", NULL);
     if (fnd==NULL)
     {
-      hProcess = (HANDLE)spawnl(P_NOWAIT, svnAUPath, svnAUPath, NULL);
+      intptr_t spawnedProcessId = spawnl(P_NOWAIT, svnAUPath, svnAUPath, NULL);
+      if (spawnedProcessId == -1) return false;
       // wait until spawned DAYZ_UPDATER is available
       for (int i=0; i<20; i++) //max 20*200 = 4 seconds
       {
@@ -46,25 +48,73 @@ bool SVNAutoUpdaterClient::Init(const char *svnAUPath, const char *svnURL, const
     }
 
     // create in/out pipes 
-    _pipe(&_pipes[0], 4096, O_TEXT); // I read/she writes pipe
-    _pipe(&_pipes[2], 4096, O_TEXT); // She reads/I write pipe
+    if (_pipe(&_pipes[0], 4096, O_TEXT) != 0) { Close(); return false; } // I read/she writes pipe
+    if (_pipe(&_pipes[2], 4096, O_TEXT) != 0) { Close(); return false; } // She reads/I write pipe
 
     // close her pipes and restore stdin/stdout
     HANDLE hInHer = (HANDLE)_get_osfhandle(_pipes[2]);
     HANDLE hOutHer = (HANDLE)_get_osfhandle(_pipes[1]);
-    HANDLE hIn, hOut; // these would be hInHer/Out duplicated to to her 
+    if (hInHer == INVALID_HANDLE_VALUE || hOutHer == INVALID_HANDLE_VALUE)
+    {
+      Close();
+      return false;
+    }
+    HANDLE hIn = NULL, hOut = NULL; // handles duplicated into the updater process
     DWORD processId;
     /*DWORD rtr = */GetWindowThreadProcessId(fnd, &processId);
-    hProcess = OpenProcess(PROCESS_DUP_HANDLE,FALSE,processId);
-    DuplicateHandle(GetCurrentProcess(),  hInHer, hProcess, &hIn, 0, FALSE, DUPLICATE_SAME_ACCESS|DUPLICATE_CLOSE_SOURCE);
-    DuplicateHandle(GetCurrentProcess(),  hOutHer, hProcess, &hOut, 0, FALSE, DUPLICATE_SAME_ACCESS|DUPLICATE_CLOSE_SOURCE);
-    PostMessage(fnd,USER_WM_CONNECT,(WPARAM)hIn,(LPARAM)hOut);
-
-    if(hProcess && (unsigned int)hProcess!=0xffffffff)
+    HANDLE childProcess = OpenProcess(PROCESS_DUP_HANDLE,FALSE,processId);
+    if (!childProcess)
     {
-      _pipeManager.Init(PipeIn(), PipeOut());
-      if ( _pipeManager.Ready() )
+      Close();
+      return false;
+    }
+    BOOL duplicatedIn = DuplicateHandle(GetCurrentProcess(), hInHer, childProcess,
+      &hIn, 0, FALSE, DUPLICATE_SAME_ACCESS);
+    BOOL duplicatedOut = DuplicateHandle(GetCurrentProcess(), hOutHer, childProcess,
+      &hOut, 0, FALSE, DUPLICATE_SAME_ACCESS);
+    if (!duplicatedIn || !duplicatedOut)
+    {
+      if (duplicatedIn)
       {
+        HANDLE localCopy = NULL;
+        if (DuplicateHandle(childProcess, hIn, GetCurrentProcess(), &localCopy,
+            0, FALSE, DUPLICATE_CLOSE_SOURCE|DUPLICATE_SAME_ACCESS) && localCopy)
+          CloseHandle(localCopy);
+      }
+      if (duplicatedOut)
+      {
+        HANDLE localCopy = NULL;
+        if (DuplicateHandle(childProcess, hOut, GetCurrentProcess(), &localCopy,
+            0, FALSE, DUPLICATE_CLOSE_SOURCE|DUPLICATE_SAME_ACCESS) && localCopy)
+          CloseHandle(localCopy);
+      }
+      CloseHandle(childProcess);
+      Close();
+      return false;
+    }
+    if (!PostMessage(fnd,USER_WM_CONNECT,(WPARAM)hIn,(LPARAM)hOut))
+    {
+      HANDLE localCopy = NULL;
+      if (DuplicateHandle(childProcess, hIn, GetCurrentProcess(), &localCopy,
+          0, FALSE, DUPLICATE_CLOSE_SOURCE|DUPLICATE_SAME_ACCESS) && localCopy)
+        CloseHandle(localCopy);
+      localCopy = NULL;
+      if (DuplicateHandle(childProcess, hOut, GetCurrentProcess(), &localCopy,
+          0, FALSE, DUPLICATE_CLOSE_SOURCE|DUPLICATE_SAME_ACCESS) && localCopy)
+        CloseHandle(localCopy);
+      CloseHandle(childProcess);
+      Close();
+      return false;
+    }
+    CloseHandle(childProcess);
+
+    // The updater owns duplicated child ends now. Close the source descriptors.
+    if (_pipes[1] != -1) { close(_pipes[1]); _pipes[1] = -1; }
+    if (_pipes[2] != -1) { close(_pipes[2]); _pipes[2] = -1; }
+
+    _pipeManager.Init(PipeIn(), PipeOut());
+    if ( _pipeManager.Ready() )
+    {
         // send command line
         LPSTR cmdLine = GetCommandLine();
         _pipeManager.Send(CmdCommandline + cmdLine);
@@ -96,8 +146,7 @@ bool SVNAutoUpdaterClient::Init(const char *svnAUPath, const char *svnURL, const
           _pipeManager.Send(CmdUpdateDir + std::string(updateDir));
         }
   
-        _ready = true;
-      }
+      _ready = true;
     }
   }
   return _ready;

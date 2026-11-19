@@ -1,4 +1,11 @@
-//# pragma optimize( "", off ) 
+//# pragma optimize( "", off )
+
+// Enfusion's debug-shape renderer is hard-wired to IDirect3DDevice9.  The
+// x64 client uses EngineDD11; keep the shape data/API available, but do not
+// compile this legacy renderer into the DX11 client.
+#if defined(_WIN64)
+	#define ENF_SHAPES_DUMMYRENDER
+#endif
 
 //-----------------------------------------------------------------------------
 // File: enf_shapes.h
@@ -768,7 +775,7 @@ void ShapeCollection::Insert(Shape* sh)
 	}
 
 	Assert(m_pShapes[m_iFirstFree] == (const Shape*)~0L || m_pShapes[m_iFirstFree] < (const Shape*)MAX_SIZE);
-	uint nextfree = (uint)m_pShapes[m_iFirstFree];
+	uint nextfree = static_cast<uint>(reinterpret_cast<uintptr_t>(m_pShapes[m_iFirstFree]));
 
 	m_iCount++;
 	m_pShapes[m_iFirstFree] = sh;

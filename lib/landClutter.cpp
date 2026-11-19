@@ -591,7 +591,14 @@ class GroundClutterPosMap: public RefCount, public LinkBidirWithFrameStore, publ
   
   public:
   GroundClutterPosMap(int x, int z, int layer, RandomGenerator &randGen, const SurfaceCharacter &surf);
-  ~GroundClutterPosMap() {}
+  ~GroundClutterPosMap()
+  {
+    static volatile LONG dtorDiagnostics = 0;
+    LONG dtorDiagnostic = InterlockedIncrement(&dtorDiagnostics);
+    if (dtorDiagnostic <= 32)
+      RptF("Clutter map dtor: n=%d this=%p refs=%d ranges=%dx%d pos=%p",
+        (int)dtorDiagnostic,this,RefCounter(),_x,_z,_pos.Data1D());
+  }
   
   void Generate() const;
 
@@ -1060,9 +1067,21 @@ void LayerMaskCacheItem::TexAccess::Load()
   int h = _tex->AHeight();
   PacFormat format = _tex->GetFormat();
   int dataSize = PacLevelMem::MipmapSize(format,w,h);
+  if (format==PacDXT1 || format==PacDXT2 || format==PacDXT3 ||
+      format==PacDXT4 || format==PacDXT5)
+  {
+    RptF("Layer mask DXT load: %s %dx%d format=%d bytes=%d",
+      cc_cast(_tex->Name()),w,h,(int)format,dataSize);
+  }
   _data.Realloc(dataSize);
   _data.Resize(dataSize);
   bool dataOk = _tex->GetRect(0,0,0,w,h,format,_data.Data());
+  if (format==PacDXT1 || format==PacDXT2 || format==PacDXT3 ||
+      format==PacDXT4 || format==PacDXT5)
+  {
+    RptF("Layer mask DXT read: %s ok=%d data=%p size=%d",
+      cc_cast(_tex->Name()),dataOk ? 1 : 0,_data.Data(),_data.Size());
+  }
   if (!dataOk)
   {
     _data.Clear();
@@ -1689,10 +1708,19 @@ GroundClutterPosMap::GroundClutterPosMap(
   int x, int z, int layer, RandomGenerator &randGen, const SurfaceCharacter &surf
 )
 {
+  static volatile LONG ctorDiagnostics = 0;
+  LONG ctorDiagnostic = InterlockedIncrement(&ctorDiagnostics);
+  if (ctorDiagnostic <= 8)
+    RptF("Clutter map ctor: n=%d this=%p args=%dx%d layer=%d rand=%p surf=%p size=%u",
+      (int)ctorDiagnostic,this,x,z,layer,&randGen,&surf,(unsigned)sizeof(*this));
   _x = x;
   _z = z;
   _layer = layer;
   _surf = surf;
+  if (ctorDiagnostic <= 8)
+    RptF("Clutter map ctor initialized: n=%d this=%p ranges=%dx%d loaded=%d pos=%p(%d) presence=%p(%d) refs=%d",
+      (int)ctorDiagnostic,this,_x,_z,(bool)_loaded,_pos.Data1D(),_pos.Size1D(),
+      _isHere.Data1D(),_isHere.Size1D(),RefCounter());
   //Generate();
 }
 
@@ -1713,8 +1741,34 @@ void GroundClutterPosMap::GenerateLocked() const
   RandomGenerator &randGen = GLandscape->GetRandGen();
   const SurfaceCharacter &surf = _surf;
 
+  // Capture stale/corrupted Array2D storage before Dim() clears/reallocates
+  // it; the x64 crash currently reaches the AutoArray destructor in this
+  // function with 0x3f800000 passed as its data pointer.
+  void *posData = _pos.Data1D();
+  void *isHereData = _isHere.Data1D();
+  static volatile LONG mapDiagnostics = 0;
+  LONG mapDiagnostic = InterlockedIncrement(&mapDiagnostics);
+  if (mapDiagnostic <= 8)
+  {
+    RptF("Clutter map before Dim: n=%d map=%p size=%dx%d loaded=%d pos=%p(%d) presence=%p(%d)",
+      (int)mapDiagnostic,this,x,z,(bool)_loaded,posData,_pos.Size1D(),
+      isHereData,_isHere.Size1D());
+  }
+  if (posData && (size_t)posData < 0x100000000ULL)
+    RptF("Invalid clutter pos array before Dim: map=%p data=%p size=%d loaded=%d",
+      this,posData,_pos.Size1D(),(bool)_loaded);
+  if (isHereData && (size_t)isHereData < 0x100000000ULL)
+    RptF("Invalid clutter presence array before Dim: map=%p data=%p size=%d loaded=%d",
+      this,isHereData,_isHere.Size1D(),(bool)_loaded);
+  
   _pos.Dim(x,z);
   _isHere.Dim(x,z);
+  if (mapDiagnostic <= 8)
+  {
+    RptF("Clutter map after Dim: n=%d pos=%p(%d) presence=%p(%d)",
+      (int)mapDiagnostic,_pos.Data1D(),_pos.Size1D(),
+      _isHere.Data1D(),_isHere.Size1D());
+  }
   
   // generate a position pair for each grid location
   for (int zz=0; zz<z; zz++) for (int xx=0; xx<x; xx++)
@@ -1810,6 +1864,12 @@ GroundClutterTextureSource::GroundClutterTextureSource(GroundClutterPosMap *posM
 :base(PacARGB8888,size.w,size.h,size.mipmaps),
 _posMap(posMap)
 {
+  static volatile LONG sourceDiagnostics = 0;
+  LONG sourceDiagnostic = InterlockedIncrement(&sourceDiagnostics);
+  if (sourceDiagnostic <= 16)
+    RptF("Clutter texture source ctor: n=%d source=%p map=%p refs=%d ranges=%dx%d tex=%dx%d",
+      (int)sourceDiagnostic,this,posMap,posMap ? posMap->RefCounter() : -1,
+      posMap ? posMap->GetXRange() : 0,posMap ? posMap->GetZRange() : 0,size.w,size.h);
 }
 
 static float ClutterHeightIgnored = 0.10f;

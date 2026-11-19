@@ -4,6 +4,7 @@
 #include <Es/Containers/typeOpts.hpp>
 #include <Es/Containers/staticArray.hpp>
 #include <Es/Algorithms/qsort.hpp>
+#include <stdint.h>
 
 #if CHECK_HEAP_THREAD
 #include <Es/Common/win.h>
@@ -149,7 +150,7 @@ FastAlloc::Chunk *FastAlloc::NewChunk()
 
   Chunk *chunk = (Chunk *)NewPage(_chunkSize,_chunkSize);
   #if !USE_CHUNK_POINTERS
-    Assert(((int)chunk&(_chunkSize-1))==0);
+    Assert(((uintptr_t)chunk&(_chunkSize-1))==0);
   #endif
 
   ConstructAt(*chunk);
@@ -171,7 +172,7 @@ void FastAlloc::DeleteChunk( Chunk *chunk )
 #endif
 
   #if !USE_CHUNK_POINTERS
-    Assert(((int)chunk&(_chunkSize-1))==0);
+    Assert(((uintptr_t)chunk&(_chunkSize-1))==0);
   #endif
   // explicit destruction
   chunk->~Chunk();
@@ -328,7 +329,7 @@ void FastAlloc::FreeCounted(void*pAlloc)
   #else
     // calculate chunk address using known chunk address requirements
     // caution: may cause portability issues
-    int offset = (int)pAlloc&(_chunkSize-1);
+    size_t offset = (uintptr_t)pAlloc&(_chunkSize-1);
     Chunk *ch = (Chunk *)((char *)pAlloc-offset);
   #endif
 
@@ -446,7 +447,7 @@ FastAlloc *FastAlloc::WhichAllocator( void*pAlloc )
 FastAlloc *FastAlloc::WhichAllocatorUnsafe( void*pAlloc, size_t pageSize )
 {
   //int pageSize = GetPageRecommendedSize();
-  int offset = (int)pAlloc&(pageSize-1);
+  size_t offset = (uintptr_t)pAlloc&(pageSize-1);
   Chunk *ch = (Chunk *)((char *)pAlloc-offset);
   DoAssert(ch->null1==0);
   FastAlloc *allocator = ch->allocator;
@@ -575,7 +576,7 @@ bool FastAlloc::Grow()
   if (!chunk) return false;
 
   #if !USE_CHUNK_POINTERS
-    Assert(((int)chunk&(_chunkSize-1))==0);
+    Assert(((uintptr_t)chunk&(_chunkSize-1))==0);
   #endif
   chunk->null1=0;
 

@@ -349,7 +349,9 @@ ISmallBlockAllocator::BlockHead* ISmallBlockAllocator::MemoryBlock::AllocNewBloc
 
 
 	//pointer to next free block
-	*((uint*) pstart) = NULL;
+  // The final free-list link is a pointer; writing only uint bytes leaves
+  // its upper half uninitialized in 64-bit builds.
+  *((void**) pstart) = NULL;
 
 	#ifdef ENF_LEAK_DETECTOR
 	DebugInfo((DebugMemory*) (pstart + m_iRegSize), ENF_DEBUG_FREE);

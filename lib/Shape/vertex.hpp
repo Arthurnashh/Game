@@ -515,7 +515,12 @@ class VertexTable: public RefCount
 	// it is the basic class for building shapes and other visuals
   #ifdef _WIN32
   // must be 8B aligned so that we can use InterlockedExchange64 et. al.
-  # define ALIGNREFVB __declspec(align(8))
+  # ifdef _WIN64
+  // x64 must compare the pointer and frame id as one 128-bit value.
+  #  define ALIGNREFVB __declspec(align(16))
+  # else
+  #  define ALIGNREFVB __declspec(align(8))
+  # endif
   #else
   # define ALIGNREFVB
   #endif
@@ -524,11 +529,28 @@ public:
   ALIGNREFVB struct RefVertexBufferLocked: public Ref<VertexBuffer>
   {
     int _frameId;
+#ifdef _WIN64
+    unsigned int _frameIdPadding;
+#endif
     
-    RefVertexBufferLocked():_frameId(0){}
+    RefVertexBufferLocked():_frameId(0)
+    {
+#ifdef _WIN64
+      _frameIdPadding = 0;
+#endif
+    }
     
     void Lock();
     bool ReleaseIfNotLocked();
+    void SetBuffer(VertexBuffer *buffer);
+#ifdef _WIN64
+    VertexBuffer *GetRef() const;
+    bool NotNull() const {return GetRef()!=NULL;}
+    bool IsNull() const {return GetRef()==NULL;}
+    VertexBuffer *operator -> () const {return GetRef();}
+    operator VertexBuffer *() const {return GetRef();}
+    void Free();
+#endif
   };
   
 protected:

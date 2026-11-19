@@ -178,7 +178,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="UserMacros">
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Static Release|x64'">$(ProjectName)_MT</TargetName>
+  </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SIMUL)/exe/$(Platform)/VC12/$(Configuration)\</OutDir>
@@ -301,7 +303,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SIMUL)/../;$(SIMUL)/External/boost;$(TBB_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern;D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern\SimulWeather;D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern\boost;D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern\SimulWeather;;$(MSBuildThisFileDirectory)..\..;$(SIMUL)/../;$(SIMUL)/External/boost;$(TBB_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN64;_M_AMD64;_DEBUG;_LIB;SIMUL_SKY_DLL;SIMUL_DLL;MAKING_SDK_FLAG=$(MAKING_SDK_FLAG);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -312,7 +314,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <ForcedIncludeFiles>Simul/UseDLLs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
@@ -401,13 +403,13 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SIMUL)/../;$(SIMUL)/External/boost;$(TBB_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern;D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern\SimulWeather;D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern\boost;D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern\SimulWeather;;$(MSBuildThisFileDirectory)..\..;$(SIMUL)/../;$(SIMUL)/External/boost;$(TBB_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN64;_M_AMD64;NDEBUG;_LIB;SIMUL_SKY_DLL;SIMUL_DLL;MAKING_SDK_FLAG=$(MAKING_SDK_FLAG);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <ForcedIncludeFiles>Simul/UseDLLs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
@@ -486,7 +488,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SIMUL)/../;$(SIMUL)/External/boost;$(TBB_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern;D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern\SimulWeather;D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern\boost;D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern\SimulWeather;;$(MSBuildThisFileDirectory)..\..;$(SIMUL)/../;$(SIMUL)/External/boost;$(TBB_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN64;_M_AMD64;_DEBUG;_LIB;SIMUL_SKY_DLL;MAKING_SDK_FLAG=$(MAKING_SDK_FLAG);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -497,7 +499,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <ForcedIncludeFiles>Simul/UseStaticLibs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
@@ -580,13 +582,13 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SIMUL)/../;$(SIMUL)/External/boost;$(TBB_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern;D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern\SimulWeather;D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern\boost;D:\SOURCEDAYZS!!\DayZ-0.45.124252\extern\SimulWeather;;$(MSBuildThisFileDirectory)..\..;$(SIMUL)/../;$(SIMUL)/External/boost;$(TBB_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN64;_M_AMD64;NDEBUG;_LIB;SIMUL_SKY_DLL;MAKING_SDK_FLAG=$(MAKING_SDK_FLAG);%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <ForcedIncludeFiles>Simul/UseStaticLibs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
@@ -594,6 +596,7 @@
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)$(SafeParentName)_MD.lib</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName).lib</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Static Release|Xbox 360'">

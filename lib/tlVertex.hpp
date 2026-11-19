@@ -119,13 +119,15 @@ class TLVertexTable
 	void DoLighting(
 		ColorVal animColor,
 		const Matrix4 &worldToModel, const LightList &lights,
-		const Shape &mesh, int spec
+		const Shape &mesh, int spec,
+		const Vector3 *positions = NULL, const Vector3 *normals = NULL
 	);
 
 	void DoMaterialLightingP(
 		const TLMaterial &mat,
 		const Matrix4 &worldToModel, const LightList &lights,
-		const VertexTable &mesh, int beg, int end
+		const VertexTable &mesh, int beg, int end,
+		const Vector3 *positions = NULL, const Vector3 *normals = NULL
 	);
 	void DoLineLighting(const VertexTable &mesh, int spec);
 

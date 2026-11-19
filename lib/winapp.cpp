@@ -100,11 +100,11 @@ static BOOL CALLBACK MonEnumProc
 }
 #endif
 
-static RWString WAPP_NAME;
+static RWString WAppName;
 
-void InitWindowAPP_NAME()
+void InitWindowAppName()
 {
-  const char *appName = APP_NAME;
+  const char *appName = DayZAppName;
 	if( LandEditor )
 	{
     appName = "Operation Flashpoint"; // hardcoded in Oxygen
@@ -117,7 +117,7 @@ void InitWindowAPP_NAME()
   wBuffer.Resize(len);
   MultiByteToWideChar(CP_UTF8, 0, appName, -1, wBuffer.Data(), len);
   wBuffer[len - 1] = 0; // make sure result is always null terminated
-  WAPP_NAME = wBuffer.Data();
+  WAppName = wBuffer.Data();
 }
 
 HWND AppInit
@@ -141,7 +141,7 @@ HWND AppInit
 	}
 	#endif
 
-  InitWindowAPP_NAME();
+  InitWindowAppName();
 
 	if (!hPrev)
 	{
@@ -151,7 +151,7 @@ HWND AppInit
 		cls.hCursor        = LoadCursor(0,IDC_ARROW);
 		cls.hIcon          = LoadIcon(hInst, "APPICON");
 		cls.lpszMenuName   = NULL;
-		cls.lpszClassName  = WAPP_NAME;
+		cls.lpszClassName  = WAppName;
 		cls.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
 		cls.hInstance      = hInst;
 		cls.style          = CS_VREDRAW | CS_HREDRAW;
@@ -190,8 +190,8 @@ HWND AppInit
 
 		hwndApp = CreateWindowExW(  
 			WIN_EX_STYLE,
-			WAPP_NAME,           // Class name
-			WAPP_NAME,           // Caption
+			WAppName,           // Class name
+			WAppName,           // Caption
 			WIN_STYLE,
 			rect.left, rect.top,   // Position
 			rect.right-rect.left,rect.bottom-rect.top, // Size
@@ -225,8 +225,8 @@ HWND AppInit
 		
 		hwndApp = CreateWindowExW(  
 			FULL_EX_STYLE,
-			WAPP_NAME,           // Class name
-			WAPP_NAME,           // Caption
+			WAppName,           // Class name
+			WAppName,           // Caption
 			FULL_STYLE,
 			rect.left, rect.top,   // Position
 			rect.right-rect.left,rect.bottom-rect.top,             // Size
@@ -313,7 +313,7 @@ BOOL AppDone(HWND hwndApp, HINSTANCE hInstance)
   {
     if (UnregisterClass("DEBUG WINDOW", hInstance))
     {
-      if (UnregisterClassW(WAPP_NAME, hInstance))
+      if (UnregisterClassW(WAppName, hInstance))
       {
         return TRUE;
       }
@@ -340,22 +340,22 @@ void InitWindow( HINSTANCE hInst, HWND hwnd, bool withCommandLine, const char *a
 	{
     if (IsWindowUnicode(hwnd))
     {
-      RWString title = WAPP_NAME + UTFToUnicode(appendix);
+      RWString title = WAppName + UTFToUnicode(appendix);
       RWString commandLine = GetCommandLineW();
       if (withCommandLine && !commandLine.IsEmpty()) title = title +  + L" " + GetCommandLineW();
       SetWindowTextW(hwnd, title);
     }
     else
     {
-      RString title = RString(APP_NAME) + appendix;
+      RString title = RString(DayZAppName) + appendix;
       RString commandLine = GetCommandLineA();
       if (withCommandLine && !commandLine.IsEmpty()) title = title + " " +commandLine;
-		  SetWindowTextA(hwnd, APP_NAME);
+		  SetWindowTextA(hwnd, DayZAppName);
 	  }
 	}
 	// set our own icon
 	HICON icon=LoadIcon(hInst,"APPICON");
-	SetClassLong(hwnd,GCL_HICON,(LONG)icon);
+	SetClassLongPtr(hwnd,GCLP_HICON,(LONG_PTR)icon);
 }
 
 #endif //_WIN32

@@ -64,7 +64,7 @@ TypeIsMovableZeroed(EventInfo);
 //-------------------------------------------------------------------------
 //  EventToCallback:
 
-extern int eventToHandle (const EventInfo &id);
+extern INT_PTR eventToHandle (const EventInfo &id);
 
 class EventToCallback : public RefCountSafe {
 protected:
@@ -92,7 +92,7 @@ protected:
   FindArray<HANDLE,MemAllocSafe> handleArray;
 
   /// Event-array.
-  ImplicitMap<int,EventInfo,eventToHandle,true,MemAllocSafe> eventArray;
+  ImplicitMap<INT_PTR,EventInfo,eventToHandle,true,MemAllocSafe> eventArray;
 
   /// Lock for handleArray (owned by waitingRoutine() in most times).
   PoCriticalSection handleLock;

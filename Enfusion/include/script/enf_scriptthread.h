@@ -10,6 +10,7 @@
 #define ENF_SCRIPTTHREAD_H
 
 #include "enf_config.h"
+#include <stdint.h>
 
 namespace enf
 {
@@ -116,16 +117,16 @@ private:
 	uint		m_iStackPos;						///<position
 	int		m_iDataOff;							///<Data stack offset
 
-	int		m_iData[VMSTACK_DATA_SIZE];	///<Data stack
+	uintptr_t	m_iData[VMSTACK_DATA_SIZE];	///<Data stack; pointer-bearing entries must retain full address width
 	VMStack	m_sStack[VMSTACK_SIZE];			///<stack for this thread
 
-	ENF_INLINE void PushData(uint data) ///<Push data on stack
+	ENF_INLINE void PushData(uintptr_t data) ///<Push data on stack
 	{
 		enf_assert(m_iDataOff < VMSTACK_DATA_SIZE);
 		m_iData[m_iDataOff++] = data;
 	}
 
-	ENF_INLINE uint PopData()				///<Pop data from stack
+	ENF_INLINE uintptr_t PopData()				///<Pop data from stack
 	{
 		enf_assert(m_iDataOff > 0);
 		return m_iData[--m_iDataOff];

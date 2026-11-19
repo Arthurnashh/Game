@@ -10,6 +10,7 @@
 #include "Es/Strings/rString.hpp"
 #include "El/Common/perfProf.hpp"
 #include <io.h>
+#include <stdint.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -48,7 +49,7 @@ struct FileIterator
 {
 #ifdef _WIN32
 	_finddata_t info;
-	mutable long h;
+	mutable intptr_t h;
 	bool valid;
 #else
   mutable DIR *dir;

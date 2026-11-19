@@ -417,7 +417,7 @@ HRESULT WINAPI D3DXCompileShader_Cached(
       if (endSize)
       {
         strncpy(size,sizeStr,endSize-sizeStr);
-        size[endSize-sizeStr] = 0;
+        size[static_cast<int>(endSize-sizeStr)] = 0;
       }
       else
       {
