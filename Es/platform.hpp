@@ -78,7 +78,7 @@
 
 extern void unixPath ( char *path );
 
-#if _MSC_VER < 1900
+#if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf  _snprintf
 #define vsnprintf _vsnprintf
 #endif

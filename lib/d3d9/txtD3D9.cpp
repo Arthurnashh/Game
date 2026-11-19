@@ -1824,12 +1824,16 @@ Color TextureD3D9::GetPixel( int level, float u, float v ) const
   // Reduce the level to the largest used texture
   level = intMax(level, _largestUsed);
 
-  if (!_src) return HWhite;
+  if (!_src || level<0 || level>=_nMipmaps) return HWhite;
 
   PacLevelMem mip = _mipmaps[level];
+  // A failed or incomplete mip request can leave an empty level. Do not pass
+  // zero dimensions to MipmapSize or divide by the height below.
+  if (mip._w<=0 || mip._h<=0) return HWhite;
 
   AutoArray<char> mem;
   int dataSize = PacLevelMem::MipmapSize(mip._dFormat,mip._w,mip._h);
+  if (dataSize<=0) return HWhite;
   mem.Realloc(dataSize);
   mem.Resize(dataSize);
 
@@ -1849,12 +1853,15 @@ bool TextureD3D9::GetRect(
 ) const
 {
   PROFILE_SCOPE_EX(txGRt,tex);
-  Assert(HeadersReadyFast());
+  if (!HeadersReadyFast()) return false;
 
   // open texture file
-  if (!_src) return false;
+  if (!_src || !data || level<0 || level>=_nMipmaps) return false;
 
   PacLevelMem mip = _mipmaps[level];
+  // Invalid mip metadata is recoverable here. In particular, a zero height
+  // would make the pitch calculation below divide by zero and crash the client.
+  if (mip._w<=0 || mip._h<=0) return false;
 
   // only whole surface is currently supported
   DoAssert(x==0);
@@ -1865,6 +1872,7 @@ bool TextureD3D9::GetRect(
   mip._dFormat = format;
 
   int dataSize = PacLevelMem::MipmapSize(format,mip._w,mip._h);
+  if (dataSize<=0) return false;
   
   mip._pitch = dataSize/mip._h;
   
@@ -1876,9 +1884,10 @@ bool TextureD3D9::GetRect(
 
 bool TextureD3D9::RequestGetRect(int level, int x, int y, int w, int h) const
 {
-  if (!HeadersReadyFast()) return false;
+  if (!HeadersReadyFast() || level<0 || level>=_nMipmaps) return false;
   // open texture file
   if (!_src) return false;
+  if (_mipmaps[level]._w<=0 || _mipmaps[level]._h<=0) return false;
 
   // only whole surface is currently supported
   FileRequestPriority prior = FileRequestPriority(10);
@@ -4182,6 +4191,13 @@ MipInfo TextBankD3D9::UseMipmap(Texture *absTexture, int level, int top, int pri
   // when using something, never use mipmaps smaller than some limit
   if (level<texture->_nMipmaps) saturateMin(level,texture->_smallLevel);
   if (levelA<texture->_nMipmaps) saturateMin(levelA,texture->_smallLevel);
+
+  // Incomplete or failed texture headers can leave mip selection negative.
+  // UseMipmap's callers include streamed world assets; never let an invalid
+  // mip index reach LoadLevels/CacheUse (or the array access behind them).
+  if (texture->_nMipmaps<=0) return MipInfo(NULL,0);
+  level = intMax(0,intMin(level,texture->_nMipmaps));
+  levelA = intMax(0,intMin(levelA,texture->_nMipmaps));
   
   DoAssert(level >= 0);
 

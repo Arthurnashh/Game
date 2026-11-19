@@ -60,7 +60,6 @@
 #include <sys/stat.h>
 #ifdef _WIN32
   #include <io.h>
-  #include <objbase.h>
 #endif
 
 #include <Es/Strings/bString.hpp>
@@ -77,42 +76,6 @@
 #endif
 
 #include "El/Speech/debugVoN.hpp"
-
-#if defined(DAYZ_PRIVATE_SERVER) && defined(_WIN32)
-RString GetUserDirectory();
-
-// Stable private-server identity; authentication and authorization remain server responsibilities.
-static RString GetPrivateServerUID()
-{
-  RString path = GetUserDirectory() + RString("private-server-id.txt");
-  FILE *file = fopen(cc_cast(path), "r");
-  if (file)
-  {
-    char saved[64] = {0};
-    size_t count = fread(saved, 1, sizeof(saved)-1, file);
-    fclose(file);
-    if (count == 36 && saved[8]=='-' && saved[13]=='-' && saved[18]=='-' && saved[23]=='-')
-      return RString(saved);
-  }
-
-  GUID guid;
-  if (CoCreateGuid(&guid) != S_OK) return RString();
-  char id[40];
-  sprintf(id, "%08lX-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-    (unsigned long)guid.Data1, (unsigned int)guid.Data2, (unsigned int)guid.Data3,
-    (unsigned int)guid.Data4[0], (unsigned int)guid.Data4[1],
-    (unsigned int)guid.Data4[2], (unsigned int)guid.Data4[3],
-    (unsigned int)guid.Data4[4], (unsigned int)guid.Data4[5],
-    (unsigned int)guid.Data4[6], (unsigned int)guid.Data4[7]);
-  file = fopen(cc_cast(path), "w");
-  if (file)
-  {
-    fwrite(id, 1, 36, file);
-    fclose(file);
-  }
-  return RString(id);
-}
-#endif
 
 #if _PROFILE
 #pragma optimize( "", off )
@@ -2723,7 +2686,7 @@ void DeleteObsoleteFiles(const char *name, const AutoArray<CustomFilePaths> &fil
   sprintf(buffer, "%s\\*.*", name);
 
   _finddata_t info;
-  intptr_t h = X_findfirst(buffer, &info);
+  long h = X_findfirst(buffer, &info);
   if (h != -1)
   {
     do
@@ -3226,9 +3189,7 @@ void NetworkClient::OnMessage(int from, NetworkMessage *msg, NetworkMessageType 
           }
         }
         #endif
-#if defined(DAYZ_PRIVATE_SERVER)
-        identity.id = GetPrivateServerUID();
-#elif BATTLEYE_INTERNAL_ID
+#if BATTLEYE_INTERNAL_ID
 // set BATTLEYE_INTERNAL_ID when you need to test BattlEye using internal DEV666 public keys
         RString fakeID = GetPublicKey();
         identity.id = fakeID.Substring(3,fakeID.GetLength());
@@ -3949,6 +3910,32 @@ void NetworkClient::OnMessage(int from, NetworkMessage *msg, NetworkMessageType 
 
         GStats.OnVehicleDestroyed(info._killed, info._killer);
 
+        // Count only kills caused by this local survivor and persist them per menu slot.
+        if (GWorld && info._killed && info._killer && info._killer == GWorld->PlayerOn())
+        {
+          GameState *state = GWorld->GetGameState();
+          GameDataNamespace *profile = GWorld->GetProfileNamespace();
+          if (state && profile)
+          {
+            GameValue slotValue = state->VarGet("dayzMainMenuCharacterSlot", false, profile);
+            int slot = slotValue.GetType() == GameScalar ? toInt((float)slotValue) : 0;
+            saturate(slot, 0, 2);
+            const char *suffix = NULL;
+            if (info._killed->GetTargetCategory() == GWorld->GetTargetCategories().GetCategory("infected"))
+              suffix = "InfectedKilled";
+            else if (dyn_cast<Person>(info._killed.GetLink()))
+              suffix = "PlayersKilled";
+            if (suffix)
+            {
+              RString key = Format("dayzMainMenuSlot%d%s", slot + 1, suffix);
+              GameValue value = state->VarGet(key, false, profile);
+              float count = value.GetType() == GameScalar ? (float)value : 0;
+              state->VarSet(key, GameValue(count + 1), false, false, profile);
+              GWorld->SaveProfileNamespace();
+            }
+          }
+        }
+
         // FIX - add experience
         if (info._killer && info._killed)
         {
@@ -4527,13 +4514,38 @@ void NetworkClient::OnMessage(int from, NetworkMessage *msg, NetworkMessageType 
       {
         AskForMoveItemMessage ask;
         TMSGCHECK(ask.TransferMsg(ctx))
-        if (ask._target && ask._item && ask._target->CanMoveItem(ask._index, ask._item))
+        if (ask._target && ask._item)
         {
-          Entity *parent = ask._item->GetHierarchyParent();
-          if (parent) parent->RemoveOwnedItem(ask._item);
+          const bool oldRotation = ask._item->IsInventoryRotated();
+          ask._item->SetInventoryRotated(ask._rotated);
+          if (ask._target->CanMoveItem(ask._index, ask._item))
+          {
+            Entity *parent = ask._item->GetHierarchyParent();
+            // Moving an item out of the Hands slot changes both the inventory
+            // hierarchy and the owning character's hands state. The item move
+            // alone replicates the new container, but does not guarantee that
+            // remote clients discard the character's old hands reference.
+            Person *handsOwner = dyn_cast<Person>(parent);
+            const bool movedFromHands = handsOwner && handsOwner->GetItemInHands() == ask._item;
+            if (parent) parent->RemoveOwnedItem(ask._item);
 
-          ask._target->MoveItem(ask._index, ask._item);
+            ask._target->MoveItem(ask._index, ask._item);
+            if (movedFromHands)
+              UpdateObject(handsOwner, NMCUpdateGeneric, NMFGuaranteed);
+            if (oldRotation != ask._rotated)
+              UpdateObject(ask._item, NMCUpdateGeneric, NMFGuaranteed);
+          }
+          else
+            ask._item->SetInventoryRotated(oldRotation);
         }
+      }
+      break;
+    case NMTAskForRotateInventoryItem:
+      {
+        AskForRotateInventoryItemMessage ask;
+        TMSGCHECK(ask.TransferMsg(ctx))
+        if (GetNetworkManager().IsServerOwner() && ask._person && ask._item && ask._person->FindItem(ask._item) && ask._item->RotateInInventory())
+          UpdateObject(ask._item, NMCUpdateGeneric, NMFGuaranteed);
       }
       break;
     case NMTAskForTakeItemToHands:
@@ -7644,15 +7656,23 @@ void NetworkClient::AskForDropItem(Person *person, InventoryItem *item)
   SendMsg(&msg, NMFGuaranteed);
 }
 
-void NetworkClient::AskForMoveItem(EntityAI *target, int index, InventoryItem *item)
+void NetworkClient::AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated)
 {
   AskForMoveItemMessage msg;
   msg._target = target;
   msg._index = index;
   msg._item = item;
+  msg._rotated = rotated;
   SendMsg(&msg, NMFGuaranteed);
 }
 
+void NetworkClient::AskForRotateInventoryItem(Person *person, InventoryItem *item)
+{
+  AskForRotateInventoryItemMessage msg;
+  msg._person = person;
+  msg._item = item;
+  SendMsg(&msg, NMFGuaranteed);
+}
 void NetworkClient::AskForTakeItemToHands(Person *person, InventoryItem *item)
 {
   AskForTakeItemToHandsMessage msg;

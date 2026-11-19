@@ -2652,7 +2652,7 @@ static void JSONSaveArray(JSONValue &result, const GameArrayType &array, JSONAll
     else if (t == GameScalar)
       result.PushBack((float)value, allocator);
     else if (t == GameString)
-      result.PushBack((RString)value.GetText(), allocator);
+      { JSONValue stringValue; RString stringData = value.GetData()->GetString(); stringValue.SetString(cc_cast(stringData), allocator); result.PushBack(stringValue, allocator); }
     else if (t == GameArray)
     {
       JSONValue subarray;
@@ -2742,7 +2742,7 @@ void EntityAI::JSONSaveVariables(JSONValue &container, JSONAllocator &allocator)
         else if (t == GameScalar)
           vars.AddMember(name, (float)value, allocator);
         else if (t == GameString)
-          vars.AddMember(name, (RString)value.GetText(), allocator);
+          { JSONValue stringValue; RString stringData = value.GetData()->GetString(); stringValue.SetString(cc_cast(stringData), allocator); vars.AddMember(name, stringValue, allocator); }
         else if (t == GameArray)
         {
           JSONValue array;

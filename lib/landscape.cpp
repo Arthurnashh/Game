@@ -6000,6 +6000,10 @@ void Landscape::PrimeDepthBuffer(GridRectangle &groundPrimed, Scene &scene, Scen
     GEngine->SetZPrimingDone(-1,false);
     // End depth rendering
     GEngine->EndDepthMapRendering(zOnly);
+    // Main depth buffer is primed only by the z-only pass (or by the shared
+    // depth buffer when FSAA is off). The main scene pass uses ZFUNC EQUAL
+    // and skips alpha test only when this is true.
+    GEngine->SetMainDepthPrimed(zOnly || GEngine->GetFSAA()==0);
 
     //GEngine->RenderStencilShadows();
   }

@@ -2840,6 +2840,10 @@ SoundSystemXA2::~SoundSystemXA2()
 
 int GetMasterVolume()
 {
+  // Dedicated servers have no audio mixer device. Avoid querying the
+  // interactive Windows mixer during server startup/configuration.
+  if (IsDedicatedServer()) return 65535;
+
   do {
     // obtain a handle to the mixer device
     HMIXER hMixer;
@@ -2881,6 +2885,9 @@ int GetMasterVolume()
 
 void SetMasterVolume(int value)
 {
+  // Server volume is not user-configurable and may have no mixer endpoint.
+  if (IsDedicatedServer()) return;
+
   do {
     // obtain a handle to the mixer device
     HMIXER hMixer;
@@ -4558,7 +4565,7 @@ AbstractWave *SoundSystemXA2::CreateWave( const char *filename, bool is3D, bool 
 #if 0
   static char buf[256] = "reload-m16";
   if (strstr(filename, buf)!=NULL)
-    YieldProcessor();
+    _asm nop;
 #endif
   // TODO: use prealloc
   if( !_soundReady ) return NULL;
@@ -5473,7 +5480,7 @@ InternetRadioSystem2::~InternetRadioSystem2()
   curl_multi_cleanup(multi_handle);
   // wait until thread finished
   if ( WaitForSingleObject(threadId,1000) != WAIT_OBJECT_0 )
-    YieldProcessor();
+    _asm nop;
 }
 
 bool InternetRadioSystem2::RequestUrl(const char *url, Ref<WaveStream> &stream)

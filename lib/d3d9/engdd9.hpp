@@ -33,7 +33,6 @@
 #include "../Shape/plane.hpp"
 #include "ShaderSources_3_0/common.h"
 #include "../d3d9/d3d9Buffers.hpp"
-#include "../../Enfusion/include/common/enf_pointerhash.h"
 
 #if _ARMA3_SIMUL_WEATHER
 #include "../SimulWeather/SimulCommonDX9.hpp"
@@ -2438,10 +2437,7 @@ struct MapClassTraits<D3DBoundShader>: public DefMapClassTraits<D3DBoundShader>
   static unsigned int CalculateHashValue(KeyType key)
   {
     //TODO: use IDs instead
-    return enf::HashPointer(key._vs.GetRef())+
-      enf::HashPointer(key._ps.GetRef())*33+
-      enf::HashPointer(key._vd.GetRef())*33+
-      (int)key._stride*33;
+    return (int)key._vs.GetRef()+(int)key._ps.GetRef()*33+(int)key._vd.GetRef()*33+(int)key._stride*33;
   }
 
   /// compare keys, return negative when k1<k2, positive when k1>k2, zero when equal
@@ -2945,6 +2941,8 @@ protected:
   /// should we use AToC?
   bool _useAToC;
   int _AToCMask;
+  /// main scene depth buffer was primed this frame (z-only priming pass)
+  bool _mainDepthPrimed;
   //@}
 
   // enable / disable vertical synchronization, default set to enable
@@ -5095,11 +5093,13 @@ public:
   virtual int GetFSAA() const;
   virtual int GetMaxFSAA() const;
   
-  bool ZPrimed() const
+  virtual bool ZPrimed() const
   {
-      // on PC we currently do not prime z buffer when using MSAA
-      return true;
+      // main depth is primed only when the separate z-only pass has run
+      return _mainDepthPrimed;
   }
+  /// set when the z-only priming pass has filled the main depth buffer
+  virtual void SetMainDepthPrimed(bool val) {_mainDepthPrimed = val;}
 
   //@{ only set values, do not apply it yet
   bool SetFSAAWanted(int quality);
@@ -5740,6 +5740,14 @@ protected: // D3D helpers
     const MipInfo &mip, const TexMaterialLODInfo &mat, int specFlags,
     const TLMaterial &tlMat, int spec, const EngineShapeProperties &prop
     );
+
+  //! Re-apply only the material/light constants of an already prepared section.
+  /*!
+  Used by instanced drawing: the section state (textures, shaders, render states)
+  is prepared once per section run, while the material constants must be
+  recomputed for every instance (they depend on the object-space transform).
+  */
+  virtual void ApplyMaterialTL(int cb, const TLMaterial &tlMat);
 
   void DrawPolygon(const VertexIndex *ii, int n);
   void DrawSection(const FaceArray &face, Offset beg, Offset end);

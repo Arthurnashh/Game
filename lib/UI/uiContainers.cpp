@@ -30,7 +30,12 @@
 
 #include <El/Clipboard/clipboard.hpp>
 #include <El/Evaluator/express.hpp>
-#include <stdint.h>
+
+// Implemented by the inventory UI. The common key dispatcher must give its
+// rotation shortcut priority over the generic default-button handling below.
+extern bool HandleInventorySpaceKey();
+extern void ReleaseInventorySpaceKey();
+extern bool IsInventoryOpened();
 
 #include "uiMap.hpp"
 
@@ -1903,7 +1908,7 @@ void ControlsContainer::OnSimulate(EntityAI *vehicle)
       if (Glob.uiTime >= _tooltipTime) // mouse cursor was still long enough
       {
         // check if area in the control is still the same
-        intptr_t area = ctrl->GetTooltipArea(mouseX, mouseY);
+        int area = ctrl->GetTooltipArea(mouseX, mouseY);
         if (_tooltipArea == 0 && area != 0)
         {
           // show the tooltip now
@@ -1955,6 +1960,11 @@ static int dikCodeShortcutFirst[] = {INPUT_DEVICE_XINPUT + XBOX_Start};
 
 bool ControlsContainer::OnKeyDown(int dikCode)
 {
+  // Space normally activates the default button (the inventory's Close
+  // button). Route it to the active inventory before that generic behavior.
+  if (dikCode == DIK_SPACE && HandleInventorySpaceKey())
+    return true;
+
   bool ok = false;
   bool enableCtrlProcessing = EnableDefaultKeysProcessing();
   bool shift = GInput.keys[DIK_LSHIFT] || GInput.keys[DIK_RSHIFT];
@@ -2155,6 +2165,15 @@ bool ControlsContainer::OnKeyDown(int dikCode)
 
 bool ControlsContainer::OnKeyUp(int dikCode)
 {
+  if (dikCode == DIK_SPACE)
+    ReleaseInventorySpaceKey();
+
+  // Buttons activate on key release. Consume Space here too, otherwise a
+  // stale/default-button press can close the inventory after its keydown was
+  // already handled as an item-rotation request.
+  if (dikCode == DIK_SPACE && IsInventoryOpened())
+    return true;
+
   bool ok = false;
   bool enableCtrlProcessing = EnableDefaultKeysProcessing();
   bool shift = GInput.keys[DIK_LSHIFT] || GInput.keys[DIK_RSHIFT]; (void)shift;
@@ -2468,9 +2487,7 @@ int CmpControlObjects
   ControlObject *obj2 = *pObj2;
   float diff = obj2->GetBasePosition().Z() - obj1->GetBasePosition().Z();
   if (diff != 0) return sign(diff);
-  const uintptr_t address1 = (uintptr_t)obj1;
-  const uintptr_t address2 = (uintptr_t)obj2;
-  return address1 < address2 ? -1 : address1 > address2 ? 1 : 0;
+  return (int)obj1 - (int)obj2;
 }
 
 void ControlsContainer::SortObjects()

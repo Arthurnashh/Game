@@ -4695,7 +4695,8 @@ AnimationStyle Entity::IsAnimated( int level ) const
   AnimationStyle anim = base::IsAnimated(level);
   // TODO: handle somehow in EntityAI
   const EntityType *type = Type();
-  AnimationStyle animHide = type->_damageInfo && !type->_damageInfo->IsEmpty() ? AnimatedTextures : NotAnimated;
+  bool hasVisualDamage = (type->_damageInfo && !type->_damageInfo->IsEmpty()) && (GetTotalDamage() >= 0.5f || _hit.Size() > 0);
+  AnimationStyle animHide = hasVisualDamage ? AnimatedTextures : NotAnimated;
   return anim>animHide ? anim : animHide;
 }
 
@@ -4830,7 +4831,7 @@ void Entity::Animate(AnimationContext &animContext, int level, bool setEngineStu
   }
   // animate materials based on hitpoints / total damage
   // check wound level
-  if (type->_damageInfo && !type->_damageInfo->IsEmpty())
+  if (type->_damageInfo && !type->_damageInfo->IsEmpty() && (GetTotalDamage() >= 0.5f || _hit.Size() > 0))
   {
     // Changed: use hit level 2 at once on the whole model
     float totalDamage = GetTotalDamage();

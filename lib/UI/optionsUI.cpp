@@ -1068,7 +1068,7 @@ void RenameUserProfile(RString oldName, RString newName)
 
     // copy all files to new save
     _finddata_t info;
-    intptr_t h = _findfirst(srcDir + RString("*.*"), &info); // u: drive
+    long h = _findfirst(srcDir + RString("*.*"), &info); // u: drive
     if (h != -1)
     {
       do
@@ -1253,6 +1253,18 @@ RString GetSaveDirectory()
   }
   return LastSaveDirectory;
 #else
+  // Dedicated server saves belong in the server-side storage tree.
+  bool IsDedicatedServer();
+  if (IsDedicatedServer())
+  {
+    if (Glob.header.filenameReal.GetLength() == 0) return RString();
+    // Match the server persistence layout: mission and world identify the
+    // save slot together (for example dayz_Auto.ChernarusPlus).
+    RString dir = RString("storage_1\\") + RString(Glob.header.filenameReal) + RString(".") +
+      RString(Glob.header.worldname) + RString("\\000\\");
+    CreatePath(dir);
+    return dir;
+  }
   RString dir;
   if (GetMissionParameters().GetLength() > 0)
   {
@@ -7227,7 +7239,7 @@ void DisplayMainVBS::OnButtonClicked(int idc)
     {
       _finddata_t info;
       RString dir = GetUserRootDir(name);
-      intptr_t check = X_findfirst(dir, &info);
+      long check = X_findfirst(dir, &info);
 
       Glob.header.SetPlayerName(name);      
       SaveLastPlayer();
@@ -7351,11 +7363,70 @@ bool CheckForSignIn(bool online, bool forceUI = false, bool mustHaveMPPrivilege 
 #endif
 
 
+static void SetMainMenuControlLayout(IControl *raw, float x, float y, float w, float h, const char *label)
+{
+  Control *control = dynamic_cast<Control *>(raw);
+  if (!control) return;
+  control->SetPos(x, y, w, h);
+  control->ShowCtrl(true);
+  control->EnableCtrl(true);
+  if (label)
+  {
+    ITextContainer *text = GetTextContainer(raw);
+    if (text) text->SetText(label);
+  }
+}
+
+static float ReadMainMenuProfileStat(const char *name, bool &available)
+{
+  available = false;
+  if (!GWorld || !GWorld->GetGameState() || !GWorld->GetProfileNamespace()) return 0;
+  GameValue value = GWorld->GetGameState()->VarGet(name, false, GWorld->GetProfileNamespace());
+  if (value.GetType() != GameScalar) return 0;
+  available = true;
+  return (float)value;
+}
+
+void DisplayMain::UpdateMainMenuCharacterData()
+{
+  if (!GWorld || !GWorld->GetGameState() || !GWorld->GetProfileNamespace()) return;
+  GameState *state = GWorld->GetGameState();
+  GameDataNamespace *profile = GWorld->GetProfileNamespace();
+  GameValue storedSlot = state->VarGet("dayzMainMenuCharacterSlot", false, profile);
+  if (storedSlot.GetType() == GameScalar) _mainMenuCharacterSlot = toInt((float)storedSlot);
+  saturate(_mainMenuCharacterSlot, 0, 2);
+
+  ITextContainer *slotText = GetTextContainer(GetCtrl(IDC_MAIN_MENU_SLOT_NAME));
+  if (slotText) slotText->SetText(Format("SURVIVOR %d / 3", _mainMenuCharacterSlot + 1));
+
+  const char *suffixes[] = {"SurvivalSeconds", "PlayersKilled", "InfectedKilled", "DistanceMeters"};
+  const int controls[] = {12042, 12044, 12046, 12048};
+  for (int i = 0; i < 4; ++i)
+  {
+    RString key = Format("dayzMainMenuSlot%d%s", _mainMenuCharacterSlot + 1, suffixes[i]);
+    bool available = false;
+    float value = ReadMainMenuProfileStat(key, available);
+    RString text = i == 0 ? "0m" : (i == 3 ? "0 m" : "0");
+    if (available)
+    {
+      if (i == 0)
+      {
+        int seconds = toInt(value);
+        text = Format("%dh %02dm", seconds / 3600, (seconds / 60) % 60);
+      }
+      else if (i == 3) text = Format("%.0f m", value);
+      else text = Format("%d", toInt(value));
+    }
+    ITextContainer *valueText = GetTextContainer(GetCtrl(controls[i]));
+    if (valueText) valueText->SetText(text);
+  }
+}
 DisplayMain::DisplayMain(ControlsContainer *parent)
   : Display(parent)
 {
   _version = GetAppVersionAndBuild();
   _modIcons = NULL;
+  _mainMenuCharacterSlot = 0;
   _gameInitialized = false;
   _wantedNext = -1;
 #if _VBS3
@@ -7399,6 +7470,66 @@ DisplayMain::DisplayMain(ControlsContainer *parent)
   UpdatePlayerName();
 
   Load("RscDisplayMain");
+  UpdateMainMenuCharacterData();
+  if (GetCtrl(12049)) GetCtrl(12049)->ShowCtrl(false);
+  if (GetCtrl(12050)) GetCtrl(12050)->ShowCtrl(false);
+  // DZ_UI adds a transparent button over the character preview so the survivor
+  // can be rotated with the mouse. Its hitbox covers the right half of the
+  // screen, including the custom menu actions, and consumes their clicks.
+  // Keep the 3D preview, but disable that full-area mouse capture until the
+  // preview can be given a dedicated non-overlapping hitbox.
+  IControl *characterZone = GetCtrl(IDC_MAIN_CHARACTER_ZONE);
+  if (characterZone)
+  {
+    characterZone->ShowCtrl(false);
+    characterZone->EnableCtrl(false);
+  }
+
+  // Explicitly activate every custom main-menu control so rebuilt clients route clicks.
+  const int activeMenuControls[] =
+  {
+    IDC_MAIN_MENU_HELP, IDC_MAIN_MENU_CHARACTER, IDC_MAIN_MENU_SETTINGS,
+    IDC_MAIN_MENU_EXIT, IDC_MAIN_MENU_PLAY, IDC_MAIN_MENU_SLOT_PREV,
+    IDC_MAIN_MENU_SLOT_NEXT, IDC_MAIN_MOD_LAUNCHER
+  };
+  for (int i = 0; i < sizeof(activeMenuControls) / sizeof(activeMenuControls[0]); ++i)
+  {
+    IControl *menuControl = GetCtrl(activeMenuControls[i]);
+    if (menuControl)
+    {
+      menuControl->ShowCtrl(true);
+      menuControl->EnableCtrl(true);
+    }
+  }
+
+  // Place the original DayZ actions inside the new right-hand panel.
+  Control *panel = dynamic_cast<Control *>(GetCtrl(IDC_MAIN_MENU_PANEL));
+  if (panel)
+  {
+    float x = panel->X();
+    float y = panel->Y();
+    float w = panel->W();
+    float h = panel->H();
+    SetMainMenuControlLayout(GetCtrl(IDC_MAIN_PLAYER_NAME), x + w * 0.05f, y + h * 0.585f, w * 0.90f, h * 0.045f, NULL);
+    SetMainMenuControlLayout(GetCtrl(IDC_MAIN_PLAYER), x + w * 0.05f, y + h * 0.64f, w * 0.90f, h * 0.075f, "RENAME");
+    SetMainMenuControlLayout(GetCtrl(IDC_MAIN_MULTIPLAYER), x + w * 0.05f, y + h * 0.735f, w * 0.90f, h * 0.075f, "CHANGE SERVER");
+    // Keep the native mod launcher reachable from the modern menu. The
+    // launcher itself handles discovery and activation of installed mods.
+    SetMainMenuControlLayout(GetCtrl(IDC_MAIN_MOD_LAUNCHER), x + w * 0.78f, y + h * 1.00f, w * 0.17f, h * 0.09f, NULL);
+  }
+  const int hiddenMenuControls[] =
+  {
+    IDC_MAIN_PLAY, IDC_MAIN_GAME, IDC_MAIN_TRAINING, IDC_MAIN_CUSTOM, IDC_MAIN_CREDITS,
+    IDC_MAIN_ARCADE, IDC_MAIN_RANK, IDC_MAIN_ISLAND, IDC_MAIN_MISSION,
+    IDC_MAIN_CONTINUE, IDC_MAIN_EDITOR, IDC_MAIN_BOOK, IDC_MAIN_SINGLE,
+    IDC_MAIN_AAR, IDC_MAIN_ACHIEVEMENTS, IDC_MAIN_SINGLEPLAYER,
+    IDC_MAIN_CHARACTER, IDC_MAIN_OPTIONS, IDC_MAIN_QUIT
+  };
+  for (int i = 0; i < sizeof(hiddenMenuControls) / sizeof(hiddenMenuControls[0]); ++i)
+  {
+    IControl *legacyControl = GetCtrl(hiddenMenuControls[i]);
+    if (legacyControl) legacyControl->ShowCtrl(false);
+  }
 
   if (_modIcons)
   {
@@ -8898,6 +9029,29 @@ bool DisplayMain::CheckStorage()
 
 void DisplayMain::OnButtonClicked(int idc)
 {
+  if (idc == IDC_MAIN_MENU_SLOT_PREV || idc == IDC_MAIN_MENU_SLOT_NEXT)
+  {
+    _mainMenuCharacterSlot += (idc == IDC_MAIN_MENU_SLOT_NEXT) ? 1 : -1;
+    if (_mainMenuCharacterSlot < 0) _mainMenuCharacterSlot = 2;
+    if (_mainMenuCharacterSlot > 2) _mainMenuCharacterSlot = 0;
+    if (GWorld && GWorld->GetGameState() && GWorld->GetProfileNamespace())
+    {
+      GWorld->GetGameState()->VarSet("dayzMainMenuCharacterSlot", GameValue((float)_mainMenuCharacterSlot), false, false, GWorld->GetProfileNamespace());
+      GWorld->SaveProfileNamespace();
+    }
+    UpdateMainMenuCharacterData();
+    return;
+  }
+  // Toolbar icons delegate to the menu actions already implemented below.
+  switch (idc)
+  {
+    case IDC_MAIN_MENU_HELP: idc = IDC_MAIN_CREDITS; break;
+    case IDC_MAIN_MENU_CHARACTER: idc = IDC_MAIN_CHARACTER; break;
+    case IDC_MAIN_MENU_SETTINGS: idc = IDC_MAIN_OPTIONS; break;
+    case IDC_MAIN_MENU_EXIT: idc = IDC_MAIN_QUIT; break;
+    case IDC_MAIN_MENU_PLAY: idc = IDC_MAIN_PLAY; break;
+    default: break;
+  }
 #ifdef _XBOX
   if (!_initialInteractionProcessed)
   {
@@ -9178,6 +9332,7 @@ void DisplayMain::OnInitialInteraction()
 
 void DisplayMain::OnDraw(EntityAI *vehicle, float alpha)
 {
+  UpdateMainMenuCharacterData();
 #ifdef _XBOX
   #if 0 // we currently have no time left and it is unlikely we will have any
   if (!_gameInitialized)
@@ -10024,7 +10179,7 @@ void FlushReadHandles(const char *dir)
   sprintf(buffer, "%s\\*.*", dir);
 
   _finddata_t info;
-  intptr_t h = X_findfirst(buffer, &info);
+  long h = X_findfirst(buffer, &info);
   if (h != -1)
   {
     do
@@ -12488,7 +12643,7 @@ void DisplaySingleMission::LoadDirectory()
     _missionList->ClearStrings();
 #ifdef _XBOX
     _finddata_t info;
-      intptr_t h = _findfirst(_directory + RString("*.*"), &info);  // t: drive
+    long h = _findfirst(_directory + RString("*.*"), &info);  // t: drive
     if (h != -1)
     {
       do
@@ -12611,13 +12766,13 @@ void DisplaySingleMission::LoadDirectory()
         {
           bool exist = true;
           for (int i=0; i< cnd.GetSize();++i)
-            if (!(Pars >> "CfgPatches").FindEntry((RString)cnd[i].GetValue())) exist = false;
+            if (!(Pars >> "CfgPatches").FindEntry(cnd[i].GetValue())) exist = false;
 
           if (!exist) continue;
         }
         else if (cnd.IsTextValue())
         {
-          if (!(Pars >> "CfgPatches").FindEntry((RString)cnd.GetValue())) continue;
+          if (!(Pars >> "CfgPatches").FindEntry(cnd.GetValue())) continue;
         }
       }
 
@@ -12652,9 +12807,9 @@ void DisplaySingleMission::LoadDirectory()
 
   // first search for .pbo files
   #ifdef _XBOX
-    intptr_t h = X_findfirst(dir + RString("*"), &info);
+    long h = X_findfirst(dir + RString("*"), &info);
   #else
-    intptr_t h = _findfirst(dir + RString("*.pbo"), &info);  // not used on Xbox
+    long h = _findfirst(dir + RString("*.pbo"), &info);  // not used on Xbox
   #endif
   if (h != -1)
   {

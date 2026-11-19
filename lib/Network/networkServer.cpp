@@ -1,5 +1,6 @@
 #include "../wpch.hpp"
 #include "networkImpl.hpp"
+
 #include "../global.hpp"
 //#include "strIncl.hpp"
 #include "../stringtableExt.hpp"
@@ -789,7 +790,6 @@ void NetworkServer::BattlEye::PlayerGUIDReceived(int player)
 }
 #endif
 
-#if _ENABLE_STEAM_OWNERSHIP
 void NetworkServer::BattlEye::PlayerGUIDIsValid(int player, const CSteamID &ownerId)
 {
   if (_callbacks._playerGUIDIsValid)
@@ -798,11 +798,6 @@ void NetworkServer::BattlEye::PlayerGUIDIsValid(int player, const CSteamID &owne
     (*_callbacks._playerGUIDIsValid)(player, &ownerSteamId, sizeof(ownerSteamId));
   }
 };
-#else
-void NetworkServer::BattlEye::PlayerGUIDIsValid(int player)
-{
-}
-#endif
 
 bool NetworkServer::BattlEye::UpdatePositionCallback(int player, const char *netId, float x, float y, float z,
   float dirX, float dirY, float dirZ, float upX, float upY, float upZ, float asideX, float asideY, float asideZ)
@@ -1268,6 +1263,9 @@ NetworkServer::NetworkServer(NetworkManager *parent, RString name, RString passw
   _serverState = NSSSelectingMission;
   _serverStateTime = GlobalTickCount();
   _serverTimeOutSent = INT_MAX;
+  #if _ENABLE_DEDICATED_SERVER
+    _sqfExecBusy = false;
+  #endif
   _connectionDesync = CDGood;
   _desyncTotalUpdateNext = GlobalTickCount();
   _desyncTotalAvg = 0;
@@ -2681,7 +2679,7 @@ void NetworkServer::InitSteam()
 #if USER_BebulXX
   _putenv("SteamAppId=223350");
 #else
-  _putenv("SteamAppId=221100");
+  _putenv("SteamAppId=480");
 #endif
   
   // Initialize the SteamGameServer interface, we tell it some info about us, and we request support
@@ -2839,7 +2837,8 @@ void NetworkServer::OnSteamServersConnected(SteamServersConnected_t *logonSucces
 
 void NetworkServer::OnSteamServersConnectFailure( SteamServerConnectFailure_t *connectFailure)
 {
-	ConsoleF("Failed to connect to Steam");
+  // Even if master server connection fails, publish state for LAN / local players
+  ChangeStateSteam();
 }
 
 void NetworkServer::OnSteamServersDisconnected(SteamServersDisconnected_t *loggedOff)
@@ -2893,6 +2892,17 @@ void NetworkServer::DBLoad(RString baseURL, int playerId, GameDataCode *code)
 	  return;
   if (info)
 	  info->DBLoad(baseURL, playerId, identity->id, info->name, code);
+}
+
+void NetworkServer::DBLoad(RString baseURL, int playerId, RString playerUID, GameDataCode *code)
+{
+  const PlayerIdentity *identity = FindIdentityByPlayerId(playerId);
+  if (!identity)
+    return;
+  NetworkPlayerInfo *info = GetPlayerInfo(identity->dpnid);
+  if (!info)
+    return;
+  info->DBLoad(baseURL, playerId, playerUID, info->name, code);
 }
 
 void LoadMissions(bool userMissions, AutoArray<MPMissionInfo> &missionList, bool campaignCheat=false);
@@ -4160,6 +4170,32 @@ void NetworkServer::OnSimulate()
 {
   PROFILE_SCOPE_EX(nwSer, network)
 
+#if _ENABLE_DEDICATED_SERVER
+  // Show the dedicated server's own update rate in the console window title.
+  // This counts server simulation callbacks, not the connected client's render FPS.
+  if (IsDedicatedServer())
+  {
+    static DWORD fpsWindowStart = 0;
+    static unsigned int fpsWindowFrames = 0;
+    const DWORD now = ::GetTickCount();
+    if (fpsWindowStart == 0) fpsWindowStart = now;
+    ++fpsWindowFrames;
+    const DWORD elapsed = now - fpsWindowStart;
+    if (elapsed >= 1000)
+    {
+      const float serverFps = fpsWindowFrames * 1000.0f / elapsed;
+      NetworkServer *server = GNetworkManager.GetServer();
+      if (server)
+      {
+        RString title = APP_NAME " Console version " APP_VERSION_TEXT "." STRINGIZE(BUILD_NO) ": port %d | FPS %.1f";
+        ConsoleTitle(title, server->GetSessionPort(), serverFps);
+      }
+      fpsWindowStart = now;
+      fpsWindowFrames = 0;
+    }
+  }
+#endif
+
 #define DIAGNOSE_NETWORK_OBJECTS 0
 #if DIAGNOSE_NETWORK_OBJECTS
   static volatile bool diagnoseObjects = false;
@@ -4407,6 +4443,12 @@ void NetworkServer::OnSimulate()
     ReceiveLocalMessages();
     ReceiveUserMessages();
   }
+
+  // SDZ_SQF_EXEC: all network messages of this frame are processed; it is now safe
+  // to run scripts that create/delete objects or walk the mission object list.
+  #if _ENABLE_DEDICATED_SERVER
+    if (_dedicated) ProcessQueuedExec();
+  #endif
 
   PerformIntegrityInvestigations();
 
@@ -5732,7 +5774,8 @@ DWORD WINAPI AsyncDBStorage::DBLoadThreadFunction(void *ctx)
     context->_prevContext = NULL; // no longer needed
   }
 
-  context->_err = GetResponse(EHTTPREQ_GET,context->_result,context->_url,context->_playerUID,NULL);
+  RString uidQuery = Format("?uid=%s", cc_cast(context->_playerUID));
+  context->_err = GetResponse(EHTTPREQ_GET,context->_result,context->_url,uidQuery,NULL);
 
   return 0;
 }
@@ -5840,7 +5883,9 @@ void AsyncDBStorage::DBLoad(RString baseURL, int playerId, RString playerUID, RS
   ctx->_prevContext = _lastContext;
   ctx->_code = code;
   ctx->_playerId = playerId;
-  ctx->_playerUID = Format("?uid=%s", cc_cast(playerUID));
+  // Keep the raw UID for the SQF completion handler; only the HTTP request
+  // should receive the ?uid= query-string wrapper.
+  ctx->_playerUID = playerUID;
   ctx->_name = name;
 
 #if USE_MT_LIB_FOR_JOBS
@@ -6759,6 +6804,15 @@ LogF("  sending to %x", pl._player);
         }
       }
       break;
+    case NMTAskForRotateInventoryItem:
+      {
+        AskForRotateInventoryItemMessage ask;
+        TMError err = ask.TransferMsg(ctx);
+        if ((err == TMOK || err == TMNotFound) && ask._person && ask._item &&
+            ask._person->GetRemotePlayer() == from && ask._person->FindItem(ask._item))
+          SendMsg(BOT_CLIENT, msg, type, NMFGuaranteed);
+      }
+      break;
     case NMTAskForSetItemShortcut:
     case NMTAskForMoveItem:
     case NMTAskForTakeItemToHands:
@@ -6900,8 +6954,22 @@ LogF("  sending to %x", pl._player);
             if (action)
             {
               Object *target = nullptr;
-              if (!message->_actionTarget.IsNull()) 
-                target = dyn_cast<Object>(_parent->GetObject(message->_actionTarget));
+              const NetworkId &targetId = message->_actionTarget;
+              if (!targetId.IsNull())
+                target = dyn_cast<Object>(_parent->GetObject(targetId));
+
+              // Static house/door objects are not always present in the
+              // server's network-object table. For a UserType action, resolve
+              // the player's authoritative current cursor target as fallback.
+              // The action's saved parameters still carry the chosen door id.
+              if (!target && message->_actionType == ATUserType)
+                target = GetPlayerTarget(from);
+
+              if (message->_actionType == ATUserType)
+                RptF("ProcessAction UserType: player=%d targetId=%d:%" OID_FORMAT " resolved=%s fallback=%s",
+                  from, targetId.creator.CreatorInt(), targetId.id,
+                  target ? (const char *)target->GetDebugName() : "<null>",
+                  targetId.IsNull() ? "cursor" : "none");
               action->SetTarget(target);
 
               QIStrStream in(message->_actionParams.Data(), message->_actionParams.Size());
@@ -8118,17 +8186,16 @@ sendToAllPlayers:
             {
               RString expression = cmd._content.ReadString();
 
-              GameVarSpace local(false);
-              int gshandle = _evaluator.BeginContext(&local);
-              GameValue result = _evaluator.EvaluateMultiple(expression, GameState::EvalContext::_default, &_globals); // server namespace
-              _evaluator.EndContext(gshandle);
-
-              if (!result.GetNil())
+              // SDZ_SQF_EXEC: do not evaluate inside the message handler.
+              // Evaluating here ran the script while the network layer was still
+              // walking the object list; object/string churn from the script
+              // corrupted the express heap and killed the server afterwards
+              // (ACCESS_VIOLATION inside FastAlloc / GameDataObject, no RPT line).
+              // The expression goes to a queue drained right after the network
+              // messages of the frame are processed.
+              if (expression.GetLength() > 0)
               {
-                NetworkCommandMessage msg;
-                msg._type = NCMTExecResult;
-                msg._content.WriteString(result.GetText());
-                SendMsg(from, &msg, NMFGuaranteed);
+                QueueExec(from, expression);
               }
             }
           }
@@ -11644,8 +11711,19 @@ Vector3 NetworkServer::GetCameraPosition(int dpid)
 
 NetworkObject *NetworkServer::GetObject(const NetworkId &id)
 {
-  Fail("Server: GetObject is not implemented");
-  return NULL;
+  if (id.creator == CreatorId(0)) return NULL;
+  else if (id.creator == CreatorId(STATIC_OBJECT))
+  {
+    ObjectId oid;
+    oid.Decode(id.id);
+    return GLandscape->GetObject(oid);
+  }
+
+  // Message references (OLink) are resolved through NetworkServer while a
+  // dedicated server decodes client requests. The old stub made every such
+  // request fail before its handler ran, including inventory rotation.
+  NetworkObjectInfo *info = GetObjectInfo(id);
+  return info ? info->object.GetLink() : NULL;
 }
 
 //! Subsidiary structure for sorting messages by error
@@ -14402,6 +14480,88 @@ void NetworkServer::InitEvaluator()
     _evaluator.NewFunction(ServerUnary[i]);
   //for(int i=0; i<lenof(ServerBinary); i++)
   //  _evaluator.NewOperator(ServerBinary[i]);
+}
+
+void NetworkServer::QueueExec(int from, RString expression)
+{
+  if (expression.GetLength() <= 0) return;
+  _sqfExecQueue.Add(expression);
+  _sqfExecFrom.Add(from);
+}
+
+#if defined(_MSC_VER)
+// No C++ objects with destructors in this function: that keeps __try/__except legal.
+static bool SDZ_TryEvaluateSqf(GameState *state, const char *expression, GameDataNamespace *globals, GameValue *result)
+{
+  __try
+  {
+    *result = state->EvaluateMultiple(expression, GameState::EvalContext::_default, globals);
+    return true;
+  }
+  __except (EXCEPTION_EXECUTE_HANDLER)
+  {
+    RptF("SDZ_SQF_EXEC: excecao 0x%08X ao avaliar o script", (unsigned)GetExceptionCode());
+    return false;
+  }
+}
+#endif
+
+void NetworkServer::ProcessQueuedExec()
+{
+  if (_sqfExecBusy) return;
+  if (_sqfExecQueue.Size() <= 0) return;
+
+  _sqfExecBusy = true;
+
+  GameState *execState = GWorld ? GWorld->GetGameState() : NULL;
+  GameDataNamespace *mission = GWorld ? GWorld->GetMissionNamespace() : NULL;
+
+  if (!execState || !mission)
+  {
+    RptF("SDZ_SQF_EXEC: sem GameState/mission namespace, %d comandos descartados", _sqfExecQueue.Size());
+    _sqfExecQueue.Resize(0);
+    _sqfExecFrom.Resize(0);
+    _sqfExecBusy = false;
+    return;
+  }
+
+  while (_sqfExecQueue.Size() > 0)
+  {
+    RString expression = _sqfExecQueue[0];
+    int from = _sqfExecFrom[0];
+    _sqfExecQueue.Delete(0);
+    _sqfExecFrom.Delete(0);
+
+    GameVarSpace local(false);
+    int gshandle = execState->BeginContext(&local);
+
+    GameValue result = NOTHING;
+    bool evaluated = false;
+
+    #if defined(_MSC_VER)
+      evaluated = SDZ_TryEvaluateSqf(execState, expression, mission, &result);
+    #else
+      result = execState->EvaluateMultiple(expression, GameState::EvalContext::_default, mission);
+      evaluated = true;
+    #endif
+
+    // Copy the answer before the context and its values are released.
+    RString answer;
+    if (evaluated && !result.GetNil()) answer = result.GetText();
+    result = NOTHING;
+
+    execState->EndContext(gshandle);
+
+    if (from != BOT_CLIENT && answer.GetLength() > 0)
+    {
+      NetworkCommandMessage msg;
+      msg._type = NCMTExecResult;
+      msg._content.WriteString(answer);
+      SendMsg(from, &msg, NMFGuaranteed);
+    }
+  }
+
+  _sqfExecBusy = false;
 }
 
 void NetworkServer::ProfileAnswer(const RString &output)
