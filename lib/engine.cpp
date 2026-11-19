@@ -11,11 +11,6 @@
 #include <stdarg.h>
 Engine *GEngine;
 
-bool Engine::D3DPerformLock = true;
-bool Engine::D3DUseDynamicConstantBuffers = true;
-bool Engine::D3DUseMultiSizeConstantBuffers = true;
-bool Engine::D3DCreateSingleThreaded = false;
-bool Engine::D3DCreateNoThreadOpt = false;
 
 const int TITexSource[] =
 {

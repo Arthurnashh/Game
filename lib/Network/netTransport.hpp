@@ -26,13 +26,6 @@ struct SessionInfo
 {
 	//! URL of host
 	RString guid;
-#if _ENABLE_STEAM_MATCHMAKING
-  // SteamID from SteamMatchmaking
-  unsigned __int64 steamID;
-  int smQueryPort;
-  int smIP;
-  int smPort;
-#endif
 	//! Name of session
 	RString name;
 	//! Last time session was accessed

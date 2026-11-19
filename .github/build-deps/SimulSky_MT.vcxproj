@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2DFE8EF4-E245-4D56-B2BE-F7F8F38ABE9C}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SimulSky_MT</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(MSBuildThisFileDirectory)..\..\build\port-x64\SimulWeather\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\..\build\port-x64\SimulWeather\obj\SimulSky_MT\</IntDir>
+    <TargetName>SimulSky_MT</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>..\..\extern;..\..\extern\SimulWeather;..\..\extern\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN64;NDEBUG;_LIB;SIMUL_SKY_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\BaseKeyframer.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\BaseSky.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\BaseSkyRenderer.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\Binding.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\ColourSky.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\ColourSkyKeyframer.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\ColourSkyNode.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\dllMain.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\Float4.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\Sky.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\SkyKeyframer.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\SkyNode.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\Stars.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\Tex2d.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\Texture1D4.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\Texture2D4.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Sky\TextureGenerator.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

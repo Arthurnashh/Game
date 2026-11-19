@@ -328,8 +328,6 @@ __forceinline int abs(unsigned x)
 __forceinline float fabs(int x) {return fabs(float(x));}
 __forceinline float log(int x) {return log(float(x));}
 __forceinline float sqrt(int x) {return sqrt(float(x));}
-__forceinline float pow(int x, float y) {return pow(float(x),y);}
-//__forceinline float pow(float x, int y) {return pow(x,float(y));}
 
 #endif
 

@@ -12,7 +12,7 @@ param(
   [Parameter(Mandatory = $true)]
   [string]$ManifestPath,
 
-  [string]$RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path,
+  [string]$RepositoryRoot,
   [string]$ArchivePath,
   [string]$ChecksumPath,
   [string]$SevenZipPath,
@@ -22,9 +22,12 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+if (-not $RepositoryRoot) {
+  $RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+}
 $manifestName = 'content-manifest.txt'
 $expectedBikeyHash = 'C1B027CCCC9136767AC11E66AEDB347030CAEB444502BF5CC300F17D7C544B22'
-$expectedMachine = if ($Role -eq 'client') { 0x8664 } else { 0x014c }
+$expectedMachine = 0x8664
 $expectedExecutable = if ($Role -eq 'client') { 'DayZ.exe' } else { 'DayZServer.exe' }
 
 function Get-FirstBytesText([string]$Path) {
@@ -134,6 +137,9 @@ function Assert-Package([string]$Stage) {
     if ($relative -match '(?i)battleye|steam_api(?:64)?\.dll|steamclient(?:64)?\.dll|steam_appid\.txt') {
       throw "Prohibited Steam/BattlEye package content: $relative"
     }
+    if ($file.Name -match '(?i)^d3d(?:x)?1[01](?:_[0-9]+)?\.dll$|^dxgi\.dll$|_DX11\.shdc$') {
+      throw "Unsupported graphics runtime content: $relative"
+    }
     if ($file.Extension -ieq '.pbo' -and (Get-FirstBytesText $file.FullName) -match '^version https://git-lfs\.github\.com/spec/v1') {
       throw "PBO is still a Git LFS pointer: $relative"
     }
@@ -176,22 +182,12 @@ function Assert-Package([string]$Stage) {
     if (Test-Path -LiteralPath (Join-Path $Stage 'dll')) {
       throw 'The client package must not contain a dll directory.'
     }
-    foreach ($runtimeDll in @('d3dx10_41.dll', 'd3dx11_41.dll')) {
-      if (-not (Test-Path -LiteralPath (Join-Path $Stage $runtimeDll) -PathType Leaf)) {
-        throw "Missing client runtime DLL: $runtimeDll"
+    $shaderRoot = Join-Path $Stage 'bin\ShaderSources_3_0'
+    foreach ($shader in @('VS.hlsl', 'PS.hlsl', 'FPShaders.hlsl')) {
+      $path = Join-Path $shaderRoot $shader
+      if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or (Get-Item -LiteralPath $path).Length -eq 0) {
+        throw "Missing or empty Direct3D 9 shader source: $shader"
       }
-    }
-
-    $shaderCacheRoot = Join-Path $Stage 'bin'
-    $shaderCacheFiles = @(Get-ChildItem -LiteralPath $shaderCacheRoot -File -ErrorAction SilentlyContinue)
-    $actualShaderCacheNames = [string[]]@($shaderCacheFiles | ForEach-Object { $_.Name })
-    $expectedShaderCacheNames = [string[]]@('Shaders_PP_DX11.shdc', 'Shaders_PS_DX11.shdc', 'Shaders_VS_DX11.shdc')
-    [Array]::Sort($actualShaderCacheNames, [System.StringComparer]::Ordinal)
-    [Array]::Sort($expectedShaderCacheNames, [System.StringComparer]::Ordinal)
-    if ($shaderCacheFiles.Count -ne 3 -or
-        @($shaderCacheFiles | Where-Object { $_.Length -le 0 }).Count -gt 0 -or
-        @(Compare-Object -ReferenceObject $expectedShaderCacheNames -DifferenceObject $actualShaderCacheNames -CaseSensitive).Count -gt 0) {
-      throw 'Client bin/ must contain exactly the three non-empty DX11 shader caches.'
     }
   }
   if ($Role -eq 'server') {
@@ -203,14 +199,11 @@ function Assert-Package([string]$Stage) {
     if (-not (Test-Path -LiteralPath (Join-Path $Stage 'serverDZ.cfg') -PathType Leaf)) {
       throw 'Server root serverDZ.cfg is missing.'
     }
-    $allocatorNames = @('JEMalloc_bi.dll', 'NedMalloc_bi.dll', 'TCMalloc_bi.dll', 'tbb4malloc_bi.dll')
-    $allocatorRoot = Join-Path $Stage 'dll'
-    $allocatorFiles = @(Get-ChildItem -LiteralPath $allocatorRoot -File -Recurse -ErrorAction SilentlyContinue)
-    $allocatorPaths = @($allocatorFiles | ForEach-Object { $_.FullName.Substring($allocatorRoot.Length).TrimStart('\', '/') })
-    if ($allocatorFiles.Count -ne 4 -or
-        (@($allocatorPaths | Where-Object { $_ -notin $allocatorNames }).Count -gt 0) -or
-        @($allocatorNames | Where-Object { -not (Test-Path -LiteralPath (Join-Path $allocatorRoot $_) -PathType Leaf) }).Count -gt 0) {
-      throw 'Server dll/ must contain exactly the four x86 allocator DLLs.'
+    foreach ($dataFile in @('spawnpoints_players.bin', 'proxyexport.bin')) {
+      $path = Join-Path $Stage $dataFile
+      if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or (Get-Item -LiteralPath $path).Length -eq 0) {
+        throw "Missing or empty ChernarusPlus data: $dataFile"
+      }
     }
   }
 
@@ -299,15 +292,10 @@ try {
       throw "Missing role-specific runtime directory: $Role/$directory"
     }
   }
-  if ($Role -eq 'client' -and
-      -not (Test-Path -LiteralPath (Join-Path $roleAssets 'bin') -PathType Container)) {
-    throw 'Client assets must include bin/ with the three DX11 shader caches.'
-  }
   if ($Role -eq 'server' -and
-      (-not (Test-Path -LiteralPath (Join-Path $roleAssets 'dll') -PathType Container) -or
-       -not (Test-Path -LiteralPath (Join-Path $roleAssets 'MPMissions\dayz_Auto.ChernarusPlus') -PathType Container) -or
+      (-not (Test-Path -LiteralPath (Join-Path $roleAssets 'MPMissions\dayz_Auto.ChernarusPlus') -PathType Container) -or
        -not (Test-Path -LiteralPath (Join-Path $roleAssets 'serverDZ.cfg') -PathType Leaf))) {
-    throw 'Server assets must include dll/, MPMissions/dayz_Auto.ChernarusPlus/, and root serverDZ.cfg.'
+    throw 'Server assets must include MPMissions/dayz_Auto.ChernarusPlus/, and root serverDZ.cfg.'
   }
   $binaryItems = @(Get-ChildItem -LiteralPath $binaryRoot -Force -Recurse)
   if (@($binaryItems | Where-Object { $_.PSIsContainer -or $_.Extension -notmatch '(?i)^\.(exe|dll)$' }).Count -gt 0) {
@@ -339,6 +327,9 @@ try {
   }
   Add-Tree $roleAssets $StageDirectory
   Add-Tree $binaryRoot $StageDirectory
+  if ($Role -eq 'client') {
+    Add-Tree (Join-Path $repoRoot 'lib\d3d9\ShaderSources_3_0') (Join-Path $StageDirectory 'bin\ShaderSources_3_0')
+  }
   Assert-Package $StageDirectory
 
   $manifestStagePath = Join-Path $StageDirectory $manifestName

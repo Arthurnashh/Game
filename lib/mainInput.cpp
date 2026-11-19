@@ -461,10 +461,6 @@ float Input::FreeTrackAxisThresholdLow = 0.2;
 const int Input::_defFilterMouse = 30;
 
 Input::Input()
-#if _ENABLE_STEAM
-  : _callbackServerChangeRequested(this, &Input::OnServerChangeRequested),
-    _callbackPersonaStateChanged(this, &Input::OnPersonaStateChanged)
-#endif
 {
 #if _ENABLE_CHEATS
   cheat12enabled=true;
@@ -478,9 +474,6 @@ Input::Input()
   delayAutorepeatFirst = 500; // ms
   delayAutorepeat = 250; // ms
 
-#if _ENABLE_STEAM
-  steamOverlayActive = false;
-#endif
 
 #if defined (_WIN32)
   int delay = 0;
@@ -3085,19 +3078,19 @@ struct ActionResponseCurveGamma: public IActionResponseCurve
 float ActionResponseCurveGamma::Apply(float x, float zoom) const
 {
   Assert(x>=0);
-  float y = pow(x,_gamma)*_max;
+  float y = powf(x,_gamma)*_max;
   saturateMin(y,+_max);
   return y;
 }
 
 float ActionResponseCurveGamma::GetInverse(float y, float zoom) const
 {
-  //y = pow(x,_gamma)*_max;
+  //y = powf(x,_gamma)*_max;
   //y/_max = pow(x,_gamma)
   //pow(y/_max,1/_gamma) = x
 
   Assert(y>=0);
-  float x = pow(y/_max,1/_gamma);
+  float x = powf(y/_max,1/_gamma);
   return x;
 }
 
@@ -4435,15 +4428,6 @@ void Config::CPUCountChanged()
   #else
   // even with single core we want emulated threading, so that we can use predication
   _renderThread = GetCPUCount()>1 ? ThreadingReal : ThreadingEmulated;
-  #endif
-  #if defined(_WIN64)
-  // The DX11 client crashes inside the AMD driver's packet dispatch (C0000005 at
-  // atidxx64) whenever the render thread runs the frame; the emulated path is
-  // stable in E2E 2/2. -dx11mt opts the render thread back in for profiling.
-  if (strstr(GetCommandLineA(), "-dx11mt"))
-    _renderThread = GetCPUCount()>1 ? ThreadingReal : ThreadingEmulated;
-  else
-    _renderThread = ThreadingEmulated;
   #endif
 }
 

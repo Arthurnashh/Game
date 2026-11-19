@@ -312,12 +312,6 @@ void ProcessKeyboard(DWORD sysTime, DWORD timeDelta)
 	if (IsDedicatedClient() || IsDedicatedServer()) return;
 	// check for the Steam overlay
 	bool overlayRunning = false;
-#if _ENABLE_STEAM
-	if (UseSteam)
-	{
-		overlayRunning = GInput.steamOverlayActive;
-	}
-#endif
 
 	if (GAppPaused || SkipKeysUntilFrame >= GInput.frameID || overlayRunning)
 	{
@@ -1028,64 +1022,6 @@ void Input::ProcessMouse(DWORD timeDelta)  // used from outside too
 }
 
 
-#if _ENABLE_STEAM
-
-//-----------------------------------------------------------------------------
-void Input::RegisterCallbacks()
-{
-	if (UseSteam) _callbackOverlayActivated.Register(this, &Input::OnOverlayActivated);
-}
-
-extern bool SteamOverlayClosed;
-
-//-----------------------------------------------------------------------------
-void Input::OnOverlayActivated(GameOverlayActivated_t *param)
-{
-	steamOverlayActive = param->m_bActive != 0;
-	if (!steamOverlayActive) 
-	{
-		SteamOverlayClosed = true;
-	}
-}
-
-#include "UI/resincl.hpp"
-
-//-----------------------------------------------------------------------------
-void Input::OnServerChangeRequested(GameServerChangeRequested_t *param)
-{
-	LogF("STEAM ServerChangeRequested %s [%s]", param->m_rgchServer, param->m_rgchPassword);
-	// check we are inside Main or MultiplayerDisplay dialogs
-	if (GWorld && GWorld->Options())
-	{
-		int idd = GWorld->Options()->GetTopID();
-		if (idd==IDD_MULTIPLAYER || idd==IDD_MAIN)
-		{
-			changeServer = param->m_rgchServer;
-			changeServerPassword = param->m_rgchPassword; 
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void Input::OnPersonaStateChanged(PersonaStateChange_t *param)
-{
-#if 0
-	// NOTE: we want player name to be configurable inside user profile
-	if (param->m_ulSteamID==SteamUser()->GetSteamID().ConvertToUint64())
-	{ //it is me
-		if (param->m_nChangeFlags & k_EPersonaChangeName)
-		{
-			RString steamPersonalName;
-			if (SteamFriends()) 
-			{
-				steamPersonalName = SteamFriends()->GetPersonaName();
-				if (!steamPersonalName.IsEmpty()) Glob.header.SetPlayerName(steamPersonalName);
-			}
-		}
-	}
-#endif
-}
-#endif
 
 
 //-----------------------------------------------------------------------------

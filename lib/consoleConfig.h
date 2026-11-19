@@ -33,7 +33,6 @@
 #define _ENABLE_DX10              0
 #define _USE_BATTL_EYE_SERVER     0
 #define _USE_BATTL_EYE_CLIENT     0
-#define _ENABLE_STEAM_OWNERSHIP   0
 #define _ENABLE_NEWHEAD           1
 #define _ARMA3_ENV_MAPS           1
 #define _ENABLE_OLD_AI            0
@@ -41,7 +40,6 @@
 #define _VBS3_MORETERRAINLODS     1
 #define _HELISIM_LARGE_OBJECTID   1
 
-#define _PROFILE_IN_STEAM_CLOUD   0
 
 #define _DISABLE_GUI              1
 

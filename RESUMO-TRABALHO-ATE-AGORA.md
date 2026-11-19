@@ -3,7 +3,6 @@
 **Data do registro:** 13/11/2026  
 **Raiz da source:** `D:\SOURCEDAYZS!!\DayZ-0.45.124252`
 
-Este documento registra o estado conhecido para retomarmos depois. Ele distingue evidência encontrada na árvore de arquivos de hipóteses e observações feitas durante os testes. Não declara o jogo, o renderer DX11, a navegação ou o servidor como concluídos.
 
 ## Estado mais recente: queda de FPS perto de cidades
 
@@ -25,7 +24,6 @@ Este documento registra o estado conhecido para retomarmos depois. Ele distingue
 - O checkout tem mudanças recentes nos caminhos de renderização e carregamento, incluindo `lib/shapeDraw.cpp`, `lib/landClutter.cpp`, `lib/transLight.cpp`, `lib/pactext.cpp`, `lib/memNedAlloc.cpp` e o backend `lib/d3d11/`. As datas de modificação mostram trabalho recente, mas não identificam por si só qual mudança alterou o FPS.
 - O relatório técnico registra uma sincronização adicionada em `shapeDraw.cpp` para proteger a rotação das listas de geometria contra operações concorrentes. Ela evitou a repetição de um crash de lista em um teste de mais de 60 segundos, mas não demonstra melhoria de desempenho em cidade.
 - Também existem diagnósticos/guardas adicionados durante a investigação de texturas PAC/PAA, clutter e memória. Instrumentação e validações podem alterar o custo ou o comportamento; precisam ser distinguidas de uma otimização deliberada.
-- O backend DX11 avançou, mas permanece incompleto e com falhas visuais/runtime documentadas. O teste recente de Berezino não deve ser interpretado como prova de que DX11 resolveu (ou causou sozinho) o gargalo. É necessário confirmar qual executável e renderer foram usados antes de comparar builds.
 - Antes de retomar otimizações, registrar o executável exato, configuração, renderer, argumentos, pacote de dados e alterações em relação ao build testado. Preservar um build de referência para comparação.
 
 ## Pista técnica principal a investigar quando retomarmos
@@ -40,17 +38,10 @@ O relato do desenvolvedor aponta para preparação de objetos e materiais no cam
 
 Esses itens são um plano de investigação; não são resultados já medidos.
 
-## Renderer DirectX 11
+## Renderer DirectX 9
 
-Há documentação técnica preexistente em [`DX11_NATIVE_PORT_STATUS.md`](DX11_NATIVE_PORT_STATUS.md) e [`DX11_PORT_STATUS.md`](DX11_PORT_STATUS.md). O resumo confirmado nesses relatórios é:
-
-- Existem helpers DX11 para device/swap chain, shaders, buffers/malhas, texturas, estados, desenho de vértices TL, alpha test e integração inicial com o contrato do engine.
-- O x64 foi compilado repetidas vezes; os relatórios apontam builds Retail x64 concluídos com sucesso em vários marcos. Isso confirma compilação/link desses estados, não paridade funcional nem jogo estável/jogável.
-- O cliente chegou a inicializar o device D3D11 em feature level 11_0 em testes registrados.
-- O porte continua parcial. Há lacunas em materiais, UI, terrain, animação/skinning, instancing, sombras, pós-processamento, streaming/cache de texturas, vídeo e restauração de device.
-- Os relatórios registram crashes de runtime em caminhos de textura/clutter/lista de geometria e telas pretas/parciais em certos testes. A correção de concorrência no cache de geometrias foi associada à estabilidade em um teste, sem validar o FPS em cidades.
-- O executável x64 documentado ainda mantinha imports/dependências D3D9 em auditorias anteriores. Não declarar remoção completa do DX9 nem paridade do DX11.
-- Os seis arquivos que foram reservados para outro trabalho eram `lib/d3d11/Dx11EngineCore.cpp/.hpp`, `Dx11TextBank.cpp/.hpp`, `Dx11Texture.cpp` e `Dx11TLRenderer.cpp`; devem ser conferidos antes de novas edições por risco de trabalho simultâneo.
+O cliente usa Direct3D 9 e carrega os shaders do diretório de instalação.
+A solução de compilação é [Game.sln](Game.sln), com VS2026 e configurações x64 para cliente e servidor.
 
 ## Conteúdo do jogo, mapa e navegação
 
@@ -70,8 +61,6 @@ Há documentação técnica preexistente em [`DX11_NATIVE_PORT_STATUS.md`](DX11_
 
 ## Arquivos de referência existentes
 
-- [`DX11_NATIVE_PORT_STATUS.md`](DX11_NATIVE_PORT_STATUS.md) — progresso, falhas observadas e pendências do porte nativo DX11.
-- [`DX11_PORT_STATUS.md`](DX11_PORT_STATUS.md) — inventário anterior de dependências/estado do renderer.
 - [`PRIVATE_SERVER_AUTH_DESIGN.md`](PRIVATE_SERVER_AUTH_DESIGN.md) e [`PRIVATE_SERVER_AUTH_STATUS.md`](PRIVATE_SERVER_AUTH_STATUS.md) — desenho e estado de autenticação do servidor privado.
 - `build/port-x64/` — builds, logs e perfis de teste. Os diretórios de perfil/RPT e dumps devem ser consultados pela data e pelo executável de cada sessão; não misturar evidências de sessões diferentes.
 
@@ -81,5 +70,4 @@ Há documentação técnica preexistente em [`DX11_NATIVE_PORT_STATUS.md`](DX11_
 2. Comparar as alterações do checkout com o último build jogável, separando instrumentação, correções de estabilidade e mudanças que afetam o caminho de renderização.
 3. Retomar a pista de processamento de objetos e preparação de materiais com medições por thread/função ou instrumentação leve e controlada; evitar mudanças simultâneas em vários subsistemas.
 4. Fazer um teste comparável na mesma rota, sem alterar missão/servidor/assets entre as medições.
-5. Manter o status DX11 como parcial até a cena real estar visualmente correta, estável e comparada com um baseline; manter a extração/validação de navegação como incompleta até haver inventário e teste reproduzível.
 

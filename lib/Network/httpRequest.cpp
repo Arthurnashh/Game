@@ -104,7 +104,7 @@ curl_easy_setopt(c, CURLOPT_SSL_VERIFYPEER, 1);
 #endif
 
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT,20);
-    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT,20);
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT,5);
     /* no need to use CURLOPT_SSL_VERIFYPEER, CURLOPT_SSL_VERIFYHOST - defaults are good */
 
     struct curl_slist *slist=NULL;

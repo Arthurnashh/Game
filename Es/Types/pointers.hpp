@@ -17,7 +17,7 @@
 #include <Es/Memory/normalNew.hpp>
 
 #if defined _CPPRTTI
-  #include "typeinfo.h"
+  #include <typeinfo>
 #endif
 
 //! smart pointers for COM/IUnknown objects.

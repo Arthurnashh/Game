@@ -91,8 +91,6 @@ Basic win32 framework, application init and message handling.
 
 #include "jvmInit.hpp"
 
-#include <Steamworks/steam_api.h>
-
 #include "system/enf_timer.h"
 #if !defined(_WIN64)
   #include "d3d9/engdd9.hpp"
@@ -103,11 +101,6 @@ Basic win32 framework, application init and message handling.
   #include "../Enfusion/include/common/enf_pointerhash.h"
 #endif
 
-#if _ENABLE_STEAM
-//# pragma comment(lib, "steam_api")
-  bool UseSteam						= true;
-	bool SteamOverlayClosed	= false;
-#endif
 
 enum SoundProvider { SPXAudio2 };
 bool CloseRequest;
@@ -577,8 +570,6 @@ static bool JavaExportInterface = false;
 
 int D3DAdapter = -1;
 bool WinXP = false;
-
-#pragma comment(lib, "steam_api")
 
 #if _ENABLE_REPORT
   static bool ShowScriptErrors = true;
@@ -2373,10 +2364,6 @@ void Globals::InitPhase2()
     void CreatePath(RString path);
     CreatePath(filename);
     cfg.Save(filename);
-#if _PROFILE_IN_STEAM_CLOUD
-    // Note: no need to save the profile into the Steam Cloud, as the new profile can be default created on all possible desktops
-    //       only after some changes are applied, the save should be synced to Steam Cloud too
-#endif
     return;
   }
 
@@ -4107,7 +4094,7 @@ struct SingleArgumentFinish
 };
 
 //! SingleArgumentFinish provides support for commandline options which are split into several parts by white char (space)
-//! it is needed for SteamAPI support, where API overlay calls the game with commandline parameters like
+//! This supports command-line arguments such as
 //!     +connect <ip:port>
 //!     +password <password>
 //! instead of our typical -connect=<ip:port> etc.
@@ -4240,9 +4227,6 @@ static void SingleArgument( const char *beg, const char *end )
 #endif
 #if _ENABLE_CHEATS || _ENABLE_AUTOTEST
     static const char autotest[]="autotest=";
-#endif
-#if _ENABLE_STEAM
-    static const char steam[]="steam";
 #endif
 
 #if _ENABLE_REPORT
@@ -4489,9 +4473,6 @@ static void SingleArgument( const char *beg, const char *end )
     else if (IsOption(beg, end, nopatchcheck)) PatchCheck = false;
     else if (IsOption(beg, end, winxp)) WinXP = true;
     else if (IsOption(beg, end, showscripterrors)) ShowScriptErrors = true;
-#if _ENABLE_STEAM
-    else if (IsOption(beg, end, steam)) UseSteam = true;
-#endif
     // path for BattlEye files cache
     else if (!strnicmp(beg, bePath, strlen(bePath)))
     {
@@ -6006,16 +5987,7 @@ bool AppIdle()
   //    timeValid=false;
   bool enableDraw=GetEnableDraw();
 
-#if _ENABLE_STEAM
-  if (SteamOverlayClosed)
-  {
-    EnableMouseMovement(MouseCanMove, SteamOverlayClosed); //reestablish the old value
-    SteamOverlayClosed = false;
-  }
-  else EnableMouseMovement(!GAppActive || !GEngine || GEngine->IsCursorShown());
-#else
   EnableMouseMovement(!GAppActive || !GEngine || GEngine->IsCursorShown());
-#endif
 
   static DWORD lastTime;
   DWORD actTime=::GlobalTickCount();
@@ -6126,9 +6098,6 @@ bool AppIdle()
 
   //if( ( focused || ForceRender && LandEditor ) && CanRender )
 
-#if _ENABLE_STEAM
-  SteamAPI_RunCallbacks();
-#endif
 
   ProcessPipeCommands();
   if( CanRender )
@@ -6670,9 +6639,6 @@ void DDTerm()
   XLiveUnInitialize();
 #endif
 
-#if _ENABLE_STEAM
-  SteamAPI_Shutdown();
-#endif
   #if ENABLE_KEYMOUSE
   if (dInput) dInput->Release(), dInput = NULL;
   if (UseWindow) ClipCursor(NULL);
@@ -8935,7 +8901,7 @@ struct DSConsoleThreadContext
 };
 DSConsoleThreadContext GDSThreadContext;
 
-static int CALLBACK ConsoleDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
   switch (message)
   {
@@ -8983,7 +8949,7 @@ static int CALLBACK ConsoleDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
   return FALSE;
 }
 
-static int CALLBACK SplashDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK SplashDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
   switch (message)
   {
@@ -10385,51 +10351,6 @@ static bool InitGamesForWindows(RString language)
 }
 
 #endif
-
-//-----------------------------------------------------------------------------
-// Purpose: callback hook for debug text emitted from the Steam API
-//-----------------------------------------------------------------------------
-
-extern "C" void __cdecl SteamAPIDebugTextHook(int severity, const char *text)
-{
-  // if you're running in the debugger, only warnings (nSeverity >= 1) will be sent
-  // if you add -debug_steamapi to the command-line, a lot of extra informational messages will also be sent
-  LogF("STEAMWORKS: %s", text);
-}
-
-bool InitSteam()
-{
-#if _ENABLE_STEAM
-  if (!UseSteam) return false;
-
-  // initialize Steam API
-  if (!SteamAPI_Init())
-  {
-#if _SUPER_RELEASE
-    SteamAPI_RestartAppIfNecessary(221100); // Steam appid passed
-#endif
-    return false;
-  }
-#if 0
-  // Steam Profile Name used as PlayerName instead of Windows Profile Name (which is set as default)
-  // one can edit her steam profile name through Steam/Friends/ChangeProfileName
-  RString steamPersonalName;
-  if (SteamFriends()) 
-  {
-    steamPersonalName = SteamFriends()->GetPersonaName();
-    if (!steamPersonalName.IsEmpty()) Glob.header.SetPlayerName(steamPersonalName);
-  }
-#endif
-  if (SteamUtils()) SteamUtils()->SetWarningMessageHook(&SteamAPIDebugTextHook);
-
-  // register Steam callbacks
-  GInput.RegisterCallbacks();
-
-  return true;
-#else
-  return false;
-#endif
-}
 
 /// scan a subclass of ArmA2.par file for arguments
 template <class Function>
@@ -12062,28 +11983,6 @@ it sometimes caused false warnings and premature server termination.
     // handle -showScriptErrors option
     GGameState.ShowScriptErrors(ShowScriptErrors);
 
-    // steam not needed during shaders generation
-    if 
-    (
-      !GenerateShaders // already set in SingleArgument
-#if _ENABLE_DEDICATED_SERVER
-      && !IsDedicatedServer() // dedicated server does not have SteamID
-#endif
-    )
-    {
-#if _ENABLE_STEAM
-      if (!SteamUtils() && !InitSteam())
-      {
-        // if there is a debugger, try it once more
-        if (!GDebugger.IsDebugger() || (BreakIntoDebugger("Steam not found"),!InitSteam()))
-        {
-          ErrorMessage("Unable to locate a running instance of Steam");
-          exit(1);
-        }
-      }
-#endif
-    }
-
     // after processing -cpuCount
     GJobManager.Init();
 
@@ -13004,14 +12903,7 @@ RString GetPublicKey()
 #else
   if (!forcePublicKey.IsEmpty()) return forcePublicKey;
   if(customUID > 0) return Format("%d",customUID);
-  // use SteamID as a player identification
-#if _ENABLE_STEAM
-  if (!SteamUser()) return "ERROR";
-  CSteamID id = SteamUser()->GetSteamID();
-  return Format("%llu", id.ConvertToUint64());
-#else
   return "";
-#endif
 #endif
 }
 

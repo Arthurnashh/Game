@@ -111,9 +111,6 @@
 
 extern int MaxGroups;
 
-#if _ENABLE_STEAM
-#include <Steamworks/steam_api.h>
-#endif
 
 RString FindScript(RString name);
 
@@ -25349,46 +25346,6 @@ GameValue LoadingScreenUpdate(const GameState *state, GameValuePar oper1)
   return NOTHING;
 }
 
-#if _ENABLE_STEAM
-class SessionStatistics
-{
-protected:
-  bool _initialized;
-  bool _updated;
-  bool _achievementStored;
-
-public:
-  SessionStatistics()
-    : _initialized(false), _updated(false), _achievementStored(false),
-    _callbackUserStatsReceived(this, &SessionStatistics::OnUserStatsReceived),
-    _callbackUserStatsStored(this, &SessionStatistics::OnUserStatsStored),
-    _callbackAchievementStored(this, &SessionStatistics::OnAchievementStored)
-    {}
-  bool IsInitialized() const {return _initialized;}
-  bool IsUpdated() const {return _updated;}
-  bool IsAchievementStored() const {return _achievementStored;}
-
-  STEAM_CALLBACK(SessionStatistics, OnUserStatsReceived, UserStatsReceived_t, _callbackUserStatsReceived);
-  STEAM_CALLBACK(SessionStatistics, OnUserStatsStored, UserStatsStored_t, _callbackUserStatsStored);
-  STEAM_CALLBACK(SessionStatistics, OnAchievementStored, UserAchievementStored_t, _callbackAchievementStored);
-};
-
-void SessionStatistics::OnUserStatsReceived(UserStatsReceived_t *callback)
-{
-  _initialized = true;
-}
-
-void SessionStatistics::OnUserStatsStored(UserStatsStored_t *callback)
-{
-  _updated = true;
-}
-
-void SessionStatistics::OnAchievementStored(UserAchievementStored_t *callback)
-{
-  _achievementStored = true;
-}
-
-#endif
 
 GameValue AchievementUnlock(const GameState *state, GameValuePar oper1)
 {
@@ -25397,45 +25354,6 @@ GameValue AchievementUnlock(const GameState *state, GameValuePar oper1)
   ConstParamEntryPtr cls = (Pars >> "CfgAchievements").FindEntry(name);
   if (!cls) return false;
 
-#if _ENABLE_STEAM
-  ISteamUserStats *s = SteamUserStats();
-  if (s)
-  {
-    // TODO: integrate session statistics in different way (asynchronous solution)
-    SessionStatistics stats;
-
-    ProgressScope progress(false, LocalizeString(IDS_LOAD_WORLD), "%s", true);
-
-    if (!s->RequestCurrentStats()) return false;
-    while (!stats.IsInitialized())
-    {
-      SteamAPI_RunCallbacks();
-      progress.Refresh();
-    }
-
-    // check if achievement is already unlocked
-    bool done = false;
-    if (s->GetAchievement(name, &done) && done) return false;
-
-    if (!s->SetAchievement(name)) return false;
-/* (not called)
-    while (!stats.IsAchievementStored())
-    {
-      SteamAPI_RunCallbacks();
-      progress.Refresh();
-    }
-*/
-
-    if (!s->StoreStats()) return false;
-    while (!stats.IsUpdated())
-    {
-      SteamAPI_RunCallbacks();
-      progress.Refresh();
-    }
-
-    return true;
-  }
-#endif
 
   // TODO: proper implementation
 

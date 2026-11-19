@@ -54,7 +54,6 @@
 #define _ENABLE_DX10              0
 #define _USE_BATTL_EYE_SERVER     0
 #define _USE_BATTL_EYE_CLIENT     0
-#define _ENABLE_STEAM             0
 #define _ENABLE_TEXTURE_HEADERS   0 //if reading texture headers from texture headers file is enabled
 
 #define _TIME_ACC_MIN							1.0

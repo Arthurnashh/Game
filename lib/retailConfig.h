@@ -53,28 +53,17 @@
 #if defined(DAYZ_PRIVATE_SERVER)
 #define _USE_BATTL_EYE_SERVER     0
 #define _USE_BATTL_EYE_CLIENT     0
-#define _ENABLE_STEAM_OWNERSHIP   0
-#define _ENABLE_STEAM             0
-#define _ENABLE_STEAM_MATCHMAKING 0
 #else
 #define _USE_BATTL_EYE_SERVER     1
 #define _USE_BATTL_EYE_CLIENT     1
-#define _ENABLE_STEAM_OWNERSHIP   1
-#define _ENABLE_STEAM             1
-#define _ENABLE_STEAM_MATCHMAKING 1
 #endif
-#if defined(DAYZ_PRIVATE_SERVER) && (_USE_BATTL_EYE_SERVER || _USE_BATTL_EYE_CLIENT || _ENABLE_STEAM_OWNERSHIP || _ENABLE_STEAM || _ENABLE_STEAM_MATCHMAKING)
-#error Private server builds must not use Steam or BattlEye identity services.
+#if defined(DAYZ_PRIVATE_SERVER) && (_USE_BATTL_EYE_SERVER || _USE_BATTL_EYE_CLIENT)
+#error Private server builds must not use BattlEye identity services.
 #endif
 #define _ENABLE_SEND_UDP_MESSAGE  0
 #define _ENABLE_TEXTURE_HEADERS   1 //if reading texture headers from texture headers file is enabled
 
 //DayZ
-#if defined(DAYZ_PRIVATE_SERVER)
-#define _PROFILE_IN_STEAM_CLOUD   0
-#else
-#define _PROFILE_IN_STEAM_CLOUD   1
-#endif
 
 //Heli sim
 

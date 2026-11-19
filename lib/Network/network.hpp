@@ -24,13 +24,7 @@
 #include <El/Stringtable/stringtable.hpp>
 #include "../vehicleAI.hpp"
 #include "../global.hpp"
-#if !_ENABLE_STEAM_MATCHMAKING
 class CSteamID;
-#endif
-#if _ENABLE_STEAM_MATCHMAKING
-# include <steamworks/steam_api.h>
-# include <steamworks/steam_gameserver.h>
-#endif
 #if _ENABLE_CONVERSATION
 class KBMessageInfo;
 #endif
@@ -462,9 +456,6 @@ public:
   //! Server time of estimated End of MP game
   virtual DWORD GetEstimatedEndServerTime() = 0;
   //! get battleye to know about Steam GUID validation
-#if _ENABLE_STEAM_OWNERSHIP
-  virtual void PlayerGUIDIsValid(int player, const CSteamID &ownerId) = 0;
-#endif
 
 #if _ENABLE_CHEATS
   virtual void VoNSay(int dpnid, int channel, int frequency, int seconds) = 0;
@@ -2693,136 +2684,6 @@ struct LocalPlayerInfoList: public NetworkSimpleObject
 
 bool IsUserIdMatch(const char *id, const char *match);
 
-#if _ENABLE_STEAM_MATCHMAKING && _ENABLE_DEDICATED_SERVER
-
-//! achievement definition from class CfgAchievements
-struct AchievementDef
-{
-public:
-  RString apiName;
-  RString progressStat; //contains _apiName from DEFINE_STEAM_STAT_CLASSES
-  float   unlockValue;  //maybe int or float, but for config values it does not matter
-  int     statIx;       //index into PlayerIdentity::_stats array
-
-  AchievementDef() : statIx(-1) {}
-  void SetApiName(RString name); 
-};
-TypeIsMovable(AchievementDef)
-
-//! player SteamAchievement
-class SteamAchievement
-{
-public:
-  //! achievement definition
-  AchievementDef *def;
-  //! actual player's achievement state
-  bool unlocked;
-
-  SteamAchievement() : unlocked(false), def(nullptr) {}
-  ~SteamAchievement() { def=nullptr; }
-};
-TypeIsMovable(SteamAchievement)
-
-#define DEFINE_STEAM_STAT_CLASSES(StatName, StatsType, DefaultValue) \
-  class Stat_##StatName : public SteamStat \
-  { \
-    typedef StatsType Type; \
-    StatsType _value; \
-  public: \
-    static RString apiName; /* defined by STEAM_STAT_DEFINE_STATICS */ \
-       \
-    Stat_##StatName() : _value(DefaultValue) {} \
-    StatsType GetValue() const { return _value; } \
-    void SetValue(StatsType val) { _value = val; } \
-    void SetDefault() override { _value=DefaultValue; } \
-    RString ApiName() const override { return Stat_##StatName::apiName; } \
-    void GetStat(CSteamID &userID) override \
-    { \
-      bool ok = SteamGameServerStats()->GetUserStat(userID, ApiName(), &_value); \
-      LogF("Got user stat: %s = %d %s", #StatName, _value, ok ? "" : "(failed)"); \
-    } \
-    void SetStat(CSteamID &userID) override \
-    { \
-      SteamGameServerStats()->SetUserStat(userID, ApiName(), _value); \
-    } \
-    bool TestAchievementUnlocked(float unlockValue) override \
-    { \
-      return ( GetValue()>=(StatsType)unlockValue ); /* maybe float to int */ \
-    } \
-    SteamStatsEnum StatIx() const { return EStat_##StatName; } \
-  };
-
-//! SteamStat is a bit of statistic used for all players
-class SteamStat
-{
-public:
-  SteamStat() {}
-
-  //! ApiName needed to load/save stat from Steam
-  virtual RString ApiName() const = 0;
-  //! reset the stat value to default
-  virtual void SetDefault() = 0;
-  //! get statistics from Steam. Note: one should call it ONLY from the GSStatsReceived_t callback
-  virtual void GetStat(CSteamID &userID) = 0;
-  //! put the current stat value on steam client (to upload it on steam, StoreUserStats need to be used)
-  virtual void SetStat(CSteamID &userID) = 0;
-  //! test whether achievement is to be unlocked
-  virtual bool TestAchievementUnlocked(float unlockValue) = 0;
-};
-
-#define STEAM_STATS_LIST(XX) \
- /*XX(statisticsName, type, defaultValue)*/ \
-   XX(characterTimeAlive, int, 0) \
-
-#define STEAM_STAT_ENUM(name, Type, DefaultValue) \
-  EStat_##name,
-
-DEFINE_ENUM_BEG(SteamStatsEnum)
-  STEAM_STATS_LIST(STEAM_STAT_ENUM)
-  EStatN
-DEFINE_ENUM_END(SteamStatsEnum)
-
-STEAM_STATS_LIST(DEFINE_STEAM_STAT_CLASSES)
-
-class SteamStatistics : public RefCount
-{
-  bool _initialized;
-  //! player steam id
-  CSteamID _steamID;
-  DWORD _lastStatsReceivedTime;
-  DWORD _lastStatsStoredTime;
-  int _nextStoreStatsTime, _nextRequestStatsTime;
-
-	// callback for when user stats are ready
-	void OnUserStatsReceived( GSStatsReceived_t *pCallback, bool bIOFailure );
-	CCallResult<SteamStatistics, GSStatsReceived_t> _steamCallResultUserStatsReceived;
-  void OnUserStatsStored( GSStatsStored_t *pCallback, bool bIOFailure );
-  CCallResult<SteamStatistics, GSStatsStored_t> _steamCallResultUserStatsStored;
-
-public:
-  //! list of possible achivements loaded from CfgAchievements
-  static AutoArray<AchievementDef> achievementsDef;
-
-  SteamStat *_stats[EStatN];
-  AutoArray<SteamAchievement> _achievements;
-
-  SteamStatistics();
-  ~SteamStatistics();
-
-  void Init(CSteamID &steamID);
-  void Reset(SteamStatsEnum stat);
-  
-  void Simulate();
-  void StoreStats();
-  bool StatsValid() const { return _lastStatsReceivedTime!=0; }
-private:
-  //@{ helper states for statistics
-  //! next increment of characterTimeAlive statistic would correspond to tickcount over _lastCharacterTimeAliveSyncTime value
-  DWORD _lastCharacterTimeAliveSyncTime;
-  //@}
-};
-
-#endif
 
 //! Player description
 struct PlayerIdentity : public NetworkSimpleObject
@@ -2836,15 +2697,6 @@ struct PlayerIdentity : public NetworkSimpleObject
 
   LocalPlayerInfoList localPlayerInfoList;
 
-#if _ENABLE_STEAM_MATCHMAKING
-  /// steam id of the player
-  NetInt64 _steamID;
-  /// authentication ticket
-  AutoArray<char> _steamSessionTicket;
-#if _ENABLE_DEDICATED_SERVER
-  Ref<SteamStatistics> _statistics;
-#endif
-#endif
   //! address for peer-to-peer voice transition
   sockaddr_in _voiceAddress;
 

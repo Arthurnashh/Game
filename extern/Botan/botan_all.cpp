@@ -344,7 +344,7 @@ inline V search_map(const std::map<K, V>& mapping,
 * Function adaptor for delete operation
 */
 template<class T>
-class del_fun : public std::unary_function<T, void>
+class del_fun
    {
    public:
       void operator()(T* ptr) { delete ptr; }
@@ -6528,7 +6528,7 @@ std::string X509_Object::hash_used_for_signature() const
 */
 bool X509_Object::check_signature(Public_Key* pub_key) const
    {
-   std::auto_ptr<Public_Key> key(pub_key);
+   std::unique_ptr<Public_Key> key(pub_key);
    return check_signature(*key);
    }
 
@@ -7669,7 +7669,7 @@ X509_Code X509_Store::check_sig(const Cert_Info& cert_info,
 */
 X509_Code X509_Store::check_sig(const X509_Object& object, Public_Key* key)
    {
-   std::auto_ptr<Public_Key> pub_key(key);
+   std::unique_ptr<Public_Key> pub_key(key);
 
    try {
       std::vector<std::string> sig_info =
@@ -18016,7 +18016,7 @@ bool generate_dsa_primes(RandomNumberGenerator& rng,
          "Generating a DSA parameter set with a " + to_string(qbits) +
          "long q requires a seed at least as many bits long");
 
-   std::auto_ptr<HashFunction> hash(
+   std::unique_ptr<HashFunction> hash(
       af.make_hash_function("SHA-" + to_string(qbits)));
 
    const size_t HASH_SIZE = hash->output_length();
@@ -21637,7 +21637,7 @@ SecureVector<byte> PKCS8_decode(DataSource& source, const User_Interface& ui,
          if(is_encrypted)
             {
             DataSource_Memory params(pbe_alg_id.parameters);
-            std::auto_ptr<PBE> pbe(get_pbe(pbe_alg_id.oid, params));
+            std::unique_ptr<PBE> pbe(get_pbe(pbe_alg_id.oid, params));
 
             User_Interface::UI_Result result = User_Interface::OK;
             const std::string passphrase =
@@ -21710,7 +21710,7 @@ SecureVector<byte> BER_encode(const Private_Key& key,
    {
    const std::string DEFAULT_PBE = "PBE-PKCS5v20(SHA-1,AES-256/CBC)";
 
-   std::auto_ptr<PBE> pbe(get_pbe(((pbe_algo != "") ? pbe_algo : DEFAULT_PBE)));
+   std::unique_ptr<PBE> pbe(get_pbe(((pbe_algo != "") ? pbe_algo : DEFAULT_PBE)));
 
    pbe->new_params(rng);
    pbe->set_key(pass);

@@ -14,126 +14,31 @@ permissions:
 jobs:
   build:
     if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
-    runs-on: windows-2022
+    runs-on: windows-2025-vs2026
     steps:
       - uses: actions/checkout@v6
         with:
           lfs: false
 
-      - name: Install MSVC v141 and Windows SDK 10.0.19041
-        shell: pwsh
-        run: |
-          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
-          $vs = & $vswhere -latest -products '*' -property installationPath
-          if (-not $vs) { throw 'Visual Studio installation was not found.' }
-
-          $bootstrapper = Join-Path $env:RUNNER_TEMP 'vs_enterprise.exe'
-          Invoke-WebRequest -Uri 'https://aka.ms/vs/17/release/vs_enterprise.exe' -OutFile $bootstrapper
-          $installerArgs = @(
-            'modify',
-            '--installPath', "`"$vs`"",
-            '--channelId', 'VisualStudio.17.Release',
-            '--add', 'Microsoft.VisualStudio.Component.VC.v141.x86.x64',
-            '--add', 'Microsoft.VisualStudio.Component.Windows10SDK.19041',
-            '--quiet',
-            '--norestart',
-            '--wait'
-          )
-          $installerProcess = Start-Process -FilePath $bootstrapper -ArgumentList $installerArgs -Wait -PassThru
-          if ($installerProcess.ExitCode -ne 0) { throw "Visual Studio component installation failed: $($installerProcess.ExitCode)" }
-
-          $vsWithV141 = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.v141.x86.x64 -property installationPath
-          $v141Compiler = Get-ChildItem (Join-Path $vs 'VC\Tools\MSVC') -Directory -Filter '14.16*' | Select-Object -First 1
-          if ($vsWithV141 -ne $vs -or -not $v141Compiler -or -not (Test-Path (Join-Path $v141Compiler.FullName 'bin\Hostx64\x64\cl.exe'))) {
-            throw 'MSVC v141 is still unavailable after Visual Studio Installer completed.'
-          }
-
-          $sdkLib = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\Lib\10.0.19041.0\um\x64\d3d11.lib'
-          if (-not (Test-Path $sdkLib)) { throw 'Windows SDK 10.0.19041.0 was not installed.' }
-          $d3dCompilerLib = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\Lib\10.0.19041.0\um\x64\d3dcompiler.lib'
-          if (-not (Test-Path $d3dCompilerLib)) { throw 'Windows SDK D3DCompiler library was not installed.' }
-          $shcoreLib = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\Lib\10.0.19041.0\um\x64\shcore.lib'
-          if (-not (Test-Path $shcoreLib)) { throw 'Windows SDK Shcore library was not installed.' }
-
       - uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: '[18.0,19.0)'
+          msbuild-architecture: x64
 
-      - name: Verify private build settings
+      - name: Build x64 client and dedicated server
         shell: pwsh
         run: |
-          [xml]$project = Get-Content 'lib/lib2010.vcxproj' -Raw
-          foreach ($target in @('Retail|x64', 'Retail Server|Win32')) {
-            $group = $project.Project.ItemDefinitionGroup | Where-Object {
-              $_.Condition -eq "'`$(Configuration)|`$(Platform)'=='$target'"
-            }
-            if (-not $group -or $group.ClCompile.PreprocessorDefinitions -notmatch '(^|;)DAYZ_PRIVATE_SERVER=1(;|$)') {
-              throw "$target must define DAYZ_PRIVATE_SERVER=1."
-            }
-            if ($group.Link.DelayLoadDLLs -match '(^|;)steam_api\.dll(;|$)') {
-              throw "$target must not delay-load Steam."
-            }
+          foreach ($configuration in @('Retail', 'Retail Server')) {
+            msbuild Game.sln -m -t:Build "-p:Configuration=$configuration" -p:Platform=x64
+            if ($LASTEXITCODE -ne 0) { throw "$configuration build failed ($LASTEXITCODE)" }
           }
-
-          $steamDlls = @($project.Project.ItemGroup.CustomBuild | Where-Object {
-            $_.Include -like '..\extern\Steamworks\bin\*.dll'
-          })
-          if ($steamDlls.Count -ne 1 -or $steamDlls[0].Include -notlike '*\steam_api.dll') {
-            throw 'Only the legacy steam_api.dll entry may remain in the project.'
-          }
-          $steamApi = $steamDlls[0]
-          if ($steamApi.ExcludedFromBuild.Condition -ne "'`$(Configuration)|`$(Platform)'=='Retail Server|Win32'" -or $steamApi.ExcludedFromBuild.InnerText -ne 'true' -or $steamApi.Command.Condition -contains "'`$(Configuration)|`$(Platform)'=='Retail Server|Win32'") {
-            throw 'The private server must not build or copy Steam runtime files.'
-          }
-
-      - name: Build x64 RSA dependency
-        shell: pwsh
-        run: |
-          msbuild OFPPatch/RSA/rsa_x64.vcxproj -m -t:Build -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v141 -p:WindowsTargetPlatformVersion=10.0.19041.0
-          if ($LASTEXITCODE -ne 0) { throw "RSA build failed: $LASTEXITCODE" }
-
-          $library = 'build/port-x64/RSA/rsa_x64.lib'
-          if (-not (Test-Path $library)) { throw "RSA output missing: $library" }
-
-      - name: Build Win32 and x64 Speex dependencies
-        shell: pwsh
-        run: |
-          foreach ($platform in @('Win32', 'x64')) {
-            foreach ($project in @('.github/build-deps/speex-x64.vcxproj', '.github/build-deps/speexdsp-x64.vcxproj')) {
-              msbuild $project -m -t:Build -p:Configuration=Release -p:Platform=$platform -p:PlatformToolset=v141 -p:WindowsTargetPlatformVersion=10.0.19041.0
-              if ($LASTEXITCODE -ne 0) { throw "Audio dependency build failed: $project ($platform, $LASTEXITCODE)" }
-            }
-          }
-
-          foreach ($library in @('build/port-x86/audio/libspeexMt.lib', 'build/port-x86/audio/libspeexdspMt.lib', 'build/port-x64/audio/libspeexMt.lib', 'build/port-x64/audio/libspeexdspMt.lib')) {
-            if (-not (Test-Path $library)) { throw "Audio dependency output missing: $library" }
-          }
-
-      - name: Build x64 libogg dependency
-        shell: pwsh
-        run: |
-          msbuild extern/audio-x64-src/ogg/win32/VS2015/libogg.sln -m -t:Build -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v141 -p:WindowsTargetPlatformVersion=10.0.19041.0
-          if ($LASTEXITCODE -ne 0) { throw "libogg build failed: $LASTEXITCODE" }
-
-          $library = 'extern/audio-x64-src/ogg/win32/VS2015/x64/Release/libogg.lib'
-          if (-not (Test-Path $library)) { throw "libogg output missing: $library" }
-
-      - name: Build x64 client
-        shell: pwsh
-        run: |
-          msbuild DayZ2010.sln -m -t:Build -p:Configuration=Retail -p:Platform=x64 -p:PlatformToolset=v141 -p:WindowsTargetPlatformVersion=10.0.19041.0
-          if ($LASTEXITCODE -ne 0) { throw "Client build failed: $LASTEXITCODE" }
-
-      - name: Build Win32 dedicated server
-        shell: pwsh
-        run: |
-          msbuild DayZ2010.sln -m -t:Build '-p:Configuration=Retail Server' -p:Platform=Win32 -p:PlatformToolset=v141 -p:WindowsTargetPlatformVersion=10.0.19041.0
-          if ($LASTEXITCODE -ne 0) { throw "Server build failed: $LASTEXITCODE" }
 
       - name: Collect candidate binaries
         shell: pwsh
         run: |
           $targets = @(
             @{ Name = 'client'; Directory = 'build/port-x64/dist'; Executable = 'DayZ.exe' },
-            @{ Name = 'server'; Directory = 'dist'; Executable = 'DayZServer.exe' }
+            @{ Name = 'server'; Directory = 'build/port-x64/dist'; Executable = 'DayZServer.exe' }
           )
 
           foreach ($target in $targets) {
@@ -382,7 +287,7 @@ jobs:
           $notes = @"
           Build: $tag
 
-          Client: Retail x64. Dedicated server: Retail Server Win32. These
+          Client: Retail x64. Dedicated server: Retail Server x64. These
           packages are for private/LAN use only. Steam and BattlEye are
           disabled; there is no account authentication or anti-cheat protection.
 

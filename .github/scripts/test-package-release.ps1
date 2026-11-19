@@ -48,26 +48,21 @@ function Write-PackageFixture([string]$Role) {
   New-Item -ItemType Directory -Path $binaryRoot -Force | Out-Null
   if ($Role -eq 'client') {
     Write-FakePe (Join-Path $binaryRoot 'DayZ.exe') 0x8664
-    foreach ($runtimeDll in @('d3dx10_41.dll', 'd3dx11_41.dll')) {
-      Write-FakePe (Join-Path $assetRoot $runtimeDll) 0x8664
-    }
-    $shaderCacheRoot = Join-Path $assetRoot 'bin'
-    New-Item -ItemType Directory -Path $shaderCacheRoot -Force | Out-Null
-    foreach ($shaderCache in @('Shaders_PP_DX11.shdc', 'Shaders_PS_DX11.shdc', 'Shaders_VS_DX11.shdc')) {
-      [System.IO.File]::WriteAllText((Join-Path $shaderCacheRoot $shaderCache), 'fixture')
+    $shaderRoot = Join-Path $fixture 'lib\d3d9\ShaderSources_3_0'
+    New-Item -ItemType Directory -Path $shaderRoot -Force | Out-Null
+    foreach ($shader in @('VS.hlsl', 'PS.hlsl', 'FPShaders.hlsl')) {
+      [System.IO.File]::WriteAllText((Join-Path $shaderRoot $shader), 'fixture')
     }
   }
   else {
-    Write-FakePe (Join-Path $binaryRoot 'DayZServer.exe') 0x014c
-    $dllRoot = Join-Path $assetRoot 'dll'
-    New-Item -ItemType Directory -Path $dllRoot -Force | Out-Null
-    foreach ($name in @('JEMalloc_bi.dll', 'NedMalloc_bi.dll', 'TCMalloc_bi.dll', 'tbb4malloc_bi.dll')) {
-      Write-FakePe (Join-Path $dllRoot $name) 0x014c
-    }
+    Write-FakePe (Join-Path $binaryRoot 'DayZServer.exe') 0x8664
     $mission = Join-Path $assetRoot 'MPMissions\dayz_Auto.ChernarusPlus'
     New-Item -ItemType Directory -Path $mission -Force | Out-Null
     [System.IO.File]::WriteAllText((Join-Path $mission 'mission.sqm'), 'fixture')
     [System.IO.File]::WriteAllText((Join-Path $assetRoot 'serverDZ.cfg'), 'class Missions {};')
+    foreach ($dataFile in @('spawnpoints_players.bin', 'proxyexport.bin')) {
+      [System.IO.File]::WriteAllText((Join-Path $assetRoot $dataFile), 'fixture')
+    }
   }
 }
 
@@ -145,55 +140,38 @@ try {
     }
   }
 
-  $missingRuntime = Join-Path $fixture 'release-assets\client\d3dx11_41.dll'
-  $savedRuntime = Join-Path $fixture 'd3dx11_41.dll.saved'
-  Move-Item -LiteralPath $missingRuntime -Destination $savedRuntime
-  $missingRejected = $false
-  $missingArguments = @{
-    Role = 'client'
-    BinaryDirectory = (Join-Path $fixture 'binaries\client')
-    StageDirectory = '.\stage\missing-runtime'
-    ManifestPath = '.\manifests\missing-runtime.txt'
+  $negativeArguments = @{
     RepositoryRoot = $fixture
+    Role = 'server'
+    BinaryDirectory = (Join-Path $fixture 'binaries\server')
+    StageDirectory = (Join-Path $fixture 'stage\wrong-architecture')
+    ManifestPath = (Join-Path $fixture 'manifests\wrong-architecture.txt')
   }
-  Push-Location $fixture
+  $serverExe = Join-Path $negativeArguments.BinaryDirectory 'DayZServer.exe'
+  Write-FakePe $serverExe 0x014c
   try {
-    & $packager @missingArguments | Out-Null
+    & $packager @negativeArguments | Out-Null
+    throw 'The packager accepted a 32-bit server.'
   }
   catch {
-    if ($_.Exception.Message -notmatch 'Missing client runtime DLL: d3dx11_41.dll') { throw }
-    $missingRejected = $true
+    if ($_.Exception.Message -notmatch 'Wrong PE architecture.*0x014C') { throw }
   }
-  finally {
-    Pop-Location
-  }
-  Move-Item -LiteralPath $savedRuntime -Destination $missingRuntime
-  if (-not $missingRejected) { throw 'The packager accepted a client package without d3dx11_41.dll.' }
+  Write-FakePe $serverExe 0x8664
 
-  $emptyCache = Join-Path $fixture 'release-assets\client\bin\Shaders_PS_DX11.shdc'
-  $savedCache = [System.IO.File]::ReadAllBytes($emptyCache)
-  [System.IO.File]::WriteAllBytes($emptyCache, (New-Object byte[] 0))
-  $emptyCacheRejected = $false
-  $emptyCacheArguments = @{
-    Role = 'client'
-    BinaryDirectory = (Join-Path $fixture 'binaries\client')
-    StageDirectory = '.\stage\empty-shader-cache'
-    ManifestPath = '.\manifests\empty-shader-cache.txt'
-    RepositoryRoot = $fixture
-  }
-  Push-Location $fixture
+  $shader = Join-Path $fixture 'lib\d3d9\ShaderSources_3_0\PS.hlsl'
+  [System.IO.File]::WriteAllBytes($shader, (New-Object byte[] 0))
+  $negativeArguments.Role = 'client'
+  $negativeArguments.BinaryDirectory = Join-Path $fixture 'binaries\client'
+  $negativeArguments.StageDirectory = Join-Path $fixture 'stage\empty-shader'
+  $negativeArguments.ManifestPath = Join-Path $fixture 'manifests\empty-shader.txt'
   try {
-    & $packager @emptyCacheArguments | Out-Null
+    & $packager @negativeArguments | Out-Null
+    throw 'The packager accepted an empty shader source.'
   }
   catch {
-    if ($_.Exception.Message -notmatch 'Client bin/ must contain exactly the three non-empty DX11 shader caches') { throw }
-    $emptyCacheRejected = $true
+    if ($_.Exception.Message -notmatch 'Missing or empty Direct3D 9 shader source: PS\.hlsl') { throw }
   }
-  finally {
-    Pop-Location
-  }
-  [System.IO.File]::WriteAllBytes($emptyCache, $savedCache)
-  if (-not $emptyCacheRejected) { throw 'The packager accepted an empty client shader cache.' }
+  [System.IO.File]::WriteAllText($shader, 'fixture')
 
   if ($sevenZip) {
     $badArchive = Join-Path $fixture 'archives\checksum-collision.zip'

@@ -1680,7 +1680,7 @@ static float ScanDb(const char *ptr, bool &ok)
   {
     LogF("invalid db value %s",ptr);
   }
-  return pow(10.0f,db*(1.0f/20));
+  return powf(10.0f,db*(1.0f/20));
 }
 
 static float ScanFloatPlain(const char *ptr, bool &ok)

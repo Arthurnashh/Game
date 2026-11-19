@@ -14,7 +14,7 @@
 
 #include "normalNew.hpp"
 #ifdef _CPPRTTI
-#include <typeinfo.h>
+#include <typeinfo>
 #endif
 
 #include <Es/Containers/listBidir.hpp>

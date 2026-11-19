@@ -1,29 +1,16 @@
-# Private server identity and Steam status
+# Private server identity
 
-## Current x64 build
+## x64 client and dedicated server
 
-- `Retail|x64` defines `DAYZ_PRIVATE_SERVER=1` in `lib/lib2010.vcxproj`.
-- `lib/retailConfig.h` uses that define to set `_ENABLE_STEAM`,
-  `_ENABLE_STEAM_MATCHMAKING`, and `_ENABLE_STEAM_OWNERSHIP` to `0`.
-- `Retail Server|Win32` now defines the same macro. Its `serverConfig.h` branch
-  disables those Steam features and both BattlEye integrations; compile-time
-  checks reject either private target if those flags are accidentally enabled.
-- The client and server now use matching no-Steam network structures. The
-  server build and a live client-to-server connection have not yet been tested.
-- The x64 client now compiles without Steam-specific BattlEye GUID callback
-  signatures. The callback declarations and forwarding methods are conditional
-  on Steam ownership.
-- The client uses a stable locally generated Windows GUID from
-  `private-server-id.txt` as its private player identity. That ID is sent as
-  `PlayerIdentity::id`; it is not a SteamID and is not compatible with official
-  Steam or BattlEye identity services.
-- `GetUserCertificate` and the RSA CD-key registration/challenge path are
-  guarded by `_VERIFY_CLIENT_KEY`. Retail private-server configuration sets it
-  to `0`, so this licensing registration flow is not used by the private build.
-- `build/port-x64/dist-private-no-steam/DayZ.exe` built successfully with VS
-  2017/v141. `dumpbin` confirms PE x64/ASLR and shows no `steam_api.dll`,
-  Steam client, or Steamworks import. It still imports `d3d9.dll` and
-  `d3dx9_41.dll`; this build is not the DX11 renderer port.
+- The VS2026 solution builds \`Retail|x64\` and \`Retail Server|x64\` using
+  \`DAYZ_PRIVATE_SERVER=1\`.
+- Private builds use direct connections and a locally generated Windows GUID
+  persisted in \`private-server-id.txt\`. The client sends this GUID as
+  \`PlayerIdentity::id\`.
+- Both targets disable BattlEye and the legacy CD-key registration flow.
+- See [release assets](release-assets/README.md) for build candidate packaging
+  and [the compatibility record](release-assets/COMPATIBILITY-TESTED.md) for
+  end-to-end verification.
 
 ## Authentication boundary
 
@@ -36,8 +23,3 @@ RSA code and `rsa_x64.lib` remain in the wider source/build because cryptographi
 signatures can also protect files and data. The legacy CD-key registration RSA
 path is disabled in this private configuration; removing every cryptographic
 primitive would require auditing those other consumers first.
-
-## Build evidence
-
-- Log: `build/port-x64/private-no-steam-parallel-build.log`
-- Output: `build/port-x64/dist-private-no-steam/DayZ.exe`

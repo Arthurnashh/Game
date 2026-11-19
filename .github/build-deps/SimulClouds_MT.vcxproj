@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{BA686093-89A1-438D-948A-34ECF718D106}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SimulClouds_MT</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(MSBuildThisFileDirectory)..\..\build\port-x64\SimulWeather\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\..\build\port-x64\SimulWeather\obj\SimulClouds_MT\</IntDir>
+    <TargetName>SimulClouds_MT</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>..\..\extern;..\..\extern\SimulWeather;..\..\extern\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN64;NDEBUG;_LIB;SIMUL_CLOUDS_DLL;CLOUDS_THREAD_SAFETY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\BaseCloudRenderer.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\BaseLightningRenderer.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\BasePrecipitationRenderer.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\BaseWeatherRenderer.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\CellularCloudGrid.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\CellularCloudNode.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\Cloud2DGeometryHelper.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\CloudGeometryHelper.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\CloudKeyframer.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\CloudsDllMain.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\FastCloudNode.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\GeoCloudNode.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\RayTrace.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\Tex3d.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\Texture3d4.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\TextureGenerator.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\ThunderCloudNode.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Clouds\TimedNoise3D.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

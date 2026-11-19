@@ -11,97 +11,6 @@
 #include <El/ParamFile/paramFileDecl.hpp>
 #include "paramFileExt.hpp"
 
-#if _ENABLE_STEAM
-# include <Steamworks/steam_api.h>
-
-extern bool UseSteam;
-
-/// Modification of Steam callbacks (CCallback, CCallbackManual) - do not call Unregister when nothing was registered (avoid dll call when not needed)
-template< class T, class P, bool bGameServer >
-class CCallbackEx : private CCallbackBase
-{
-public:
-  typedef void (T::*func_t)( P* );
-
-  // If you can't support constructing a callback with the correct parameters
-  // then uncomment the empty constructor below and manually call
-  // ::Register() for your object
-  // Or, just call the regular constructor with (NULL, NULL)
-  // CCallback() {}
-
-  // constructor for initializing this object in owner's constructor
-  CCallbackEx( T *pObj, func_t func ) : m_pObj( pObj ), m_Func( func )
-  {
-    if (pObj && func)
-      Register( pObj, func );
-  }
-
-  ~CCallbackEx()
-  {
-    if (m_nCallbackFlags & k_ECallbackFlagsRegistered)
-      Unregister();
-  }
-
-  // manual registration of the callback
-  void Register( T *pObj, func_t func )
-  {
-    if (m_nCallbackFlags & k_ECallbackFlagsRegistered)
-      Unregister();
-
-    if (pObj && func)
-    {
-      m_nCallbackFlags |= k_ECallbackFlagsRegistered;
-      if ( bGameServer )
-      {
-        m_nCallbackFlags |= k_ECallbackFlagsGameServer;
-      }
-      m_pObj = pObj;
-      m_Func = func;
-      SteamAPI_RegisterCallback( this, P::k_iCallback );
-    }
-  }
-
-  void Unregister()
-  {
-    m_nCallbackFlags &= ~k_ECallbackFlagsRegistered;
-    m_pObj = NULL;
-    m_Func = NULL;
-    SteamAPI_UnregisterCallback( this );
-  }
-
-private:
-  virtual void Run( void *pvParam )
-  {
-    (m_pObj->*m_Func)( (P *)pvParam );
-  }
-  virtual void Run( void *pvParam, bool, SteamAPICall_t )
-  {
-    (m_pObj->*m_Func)( (P *)pvParam );
-  }
-  int GetCallbackSizeBytes()
-  {
-    return sizeof( P );
-  }
-
-  T *m_pObj;
-  func_t m_Func;
-};
-
-// Allows you to defer registration of the callback
-template< class T, class P, bool bGameServer >
-class CCallbackExManual : public CCallbackEx< T, P, bGameServer >
-{
-public:
-  CCallbackExManual() : CCallbackEx< T, P, bGameServer >( NULL, NULL ) {}
-};
-
-// utility macro for declaring the function and callback object together
-#define STEAM_CALLBACK_EX( thisclass, func, param, var ) CCallbackEx< thisclass, param, false > var; void func( param *pParam )
-
-// same as above, but lets you defer the callback binding by calling Register later
-#define STEAM_CALLBACK_EX_MANUAL( thisclass, func, param, var ) CCallbackExManual< thisclass, param, false > var; void func( param *pParam )
-
-#endif
 
 #if _DISABLE_GUI
   #define ENABLE_KEYMOUSE 0
@@ -925,7 +834,7 @@ struct Input: public InputInterface
     }
     else
     { // interpolate between linear and val^(1/3)
-      val = sVal*pow(val,1/3.0f) + (1-sVal)*val;
+      val = sVal*powf(val,1/3.0f) + (1-sVal)*val;
     }
     // apply steepness
     val *= steepVal;
@@ -1131,14 +1040,6 @@ public:
   void UnblockButton(int key);
   bool ButtonNotBlocked(int key) const;
 
-#if _ENABLE_STEAM
-  bool steamOverlayActive;
-  void RegisterCallbacks();
-  STEAM_CALLBACK_EX_MANUAL(Input, OnOverlayActivated, GameOverlayActivated_t, _callbackOverlayActivated);
-  STEAM_CALLBACK_EX(Input, OnServerChangeRequested, GameServerChangeRequested_t, _callbackServerChangeRequested);
-  STEAM_CALLBACK_EX(Input, OnPersonaStateChanged, PersonaStateChange_t, _callbackPersonaStateChanged);
-  RString changeServer, changeServerPassword;
-#endif
 
 protected:
   //! used for GetKey, GetKeyToDo combination keys purpose

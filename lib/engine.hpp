@@ -1098,7 +1098,7 @@ public:
 
 class PolyProperties;
 
-// The imported DX11 backend was built with material LOD selection disabled.
+// Material LOD selection is disabled.
 class EmptySCharArray
 {
 public:
@@ -1195,13 +1195,6 @@ TypeIsMovableZeroed(FSAAInfo)
 class Engine
 {
 public:
-  // D3D11 backend controls shared with the legacy renderer port.
-  static bool D3DPerformLock;
-  static bool D3DUseDynamicConstantBuffers;
-  static bool D3DUseMultiSizeConstantBuffers;
-  static bool D3DCreateSingleThreaded;
-  static bool D3DCreateNoThreadOpt;
-
   enum {NFrameDurations=64};
 protected:
   int _messageHandle;

@@ -65,7 +65,7 @@
 
 #include <Es/Strings/bString.hpp>
 #ifdef _CPPRTTI
-  #include "typeinfo.h"
+  #include <typeinfo>
 #endif
 
 #include "Es/Common/langExt.hpp"
@@ -409,9 +409,6 @@ void NetworkClient::BattlEye::PrintMessage(const char *message)
 NetworkClient::NetworkClient(NetworkManager *parent, RString address, RString password)
 : NetworkComponent(parent)
 {
-#if _ENABLE_STEAM_MATCHMAKING
-	_hAuthTicket = k_HAuthTicketInvalid;
-#endif
 
 #if DEBUG_CREATOR_ID
   _debugCreatorIdSet = false;
@@ -561,9 +558,6 @@ NetworkRemoteObjectInfo ImplicitMapTraits<NetworkRemoteObjectInfo>::null = {Netw
 NetworkClient::NetworkClient(NetworkManager *parent, NetworkServer *server, int playerRating)
 : NetworkComponent(parent)
 {
-#if _ENABLE_STEAM_MATCHMAKING
-	_hAuthTicket = k_HAuthTicketInvalid;
-#endif
 
 #if DEBUG_CREATOR_ID
   _debugCreatorIdSet = false;
@@ -801,13 +795,6 @@ void NetworkClient::Done()
 
   _radioSubscribers.Clear();
 
-#if _ENABLE_STEAM_MATCHMAKING
-	if (SteamUser() && _hAuthTicket != k_HAuthTicketInvalid )
-	{
-		SteamUser()->CancelAuthTicket(_hAuthTicket);
-  	_hAuthTicket = k_HAuthTicketInvalid;
-	}
-#endif
 
   _client = NULL;
 
@@ -2024,6 +2011,11 @@ void NetworkClient::SetClientState(NetworkClientState state)
   
   if (state == NCSPlaying && _clientState != NCSPlaying)
     OnMissionStarted();
+
+  if (state <= NCSMissionAsked || state == NCSGameFinished)
+    _initScriptRun = false;
+  if (state <= NCSLoggedIn || state == NCSGameFinished)
+    _delayedSpawns.Clear();
 
 #if _GAMES_FOR_WINDOWS
   // Xbox Live - start / end the session
@@ -3251,43 +3243,6 @@ void NetworkClient::OnMessage(int from, NetworkMessage *msg, NetworkMessageType 
         BankList::ReadAccess banks(GFileBanks);
         identity.filesCount = banks.Size() + _additionalSignedFiles.Size();
 
-#if _ENABLE_STEAM_MATCHMAKING
-        if (SteamUser())
-        {
-          identity._steamID = SteamUser()->GetSteamID().ConvertToUint64();
-
-          in_addr addr;
-          int port;
-          uint64 steamId;
-          if (_playerDpid == BOT_CLIENT)
-          {
-            addr.s_addr = htonl(0x7F000001); // localhost
-            port = GetServerPort();
-            steamId = (uint64)identity._steamID;
-          }
-          else
-          {
-            _client->GetDistantAddress(addr, port);
-            steamId = (uint64)playerMsg._steamServerId;
-            // store the <ip:port> of the server into user profile
-            GameDataNamespace globals(NULL, RString(), false); // save - no global namespace
-            ParamFile cfg;
-            bool ParseUserParams(ParamFile &cfg, GameDataNamespace *globals);
-            void SaveUserParams(ParamFile &cfg);
-            if (ParseUserParams(cfg, &globals))
-            {
-              cfg.Add("lastMPServer", Format("%d.%d.%d.%d:%d", addr.S_un.S_un_b.s_b1, addr.S_un.S_un_b.s_b2, addr.S_un.S_un_b.s_b3, addr.S_un.S_un_b.s_b4, ntohs(port)));
-              SaveUserParams(cfg);
-            }
-          }
-
-	        char token[1024];
-	        uint32 tokenSize = 0;
-	        _hAuthTicket = SteamUser()->GetAuthSessionTicket(token, sizeof(token), &tokenSize);
-
-          identity._steamSessionTicket.Copy(token, tokenSize);
-        }
-#endif
 
         GameDataNamespace globals(NULL, RString(), false); // save - no global namespace
 
@@ -4307,10 +4262,16 @@ void NetworkClient::OnMessage(int from, NetworkMessage *msg, NetworkMessageType 
         //GameVarSpace local(state->GetContext(), false);
         //state->BeginContext(&local);
         // TODO: check signature
-        GameState *state = GWorld->GetGameState();
-        Ref<GameDataCode> code = new GameDataCode(state,spawnMsg._code, GWorld->GetMissionNamespace());
-        ScriptVM *script = new ScriptVM(ScriptVMDirect, *code, args, GWorld->GetMissionNamespace());
-        GWorld->AddScriptVM(script, false);
+        if (!_initScriptRun && !IsBotClient())
+        {
+          // the code typically calls functions compiled by the mission init script
+          DelayedSpawnForPlayer &item = _delayedSpawns.Append();
+          item._code = spawnMsg._code;
+          item._args = args;
+          RptF("spawnForClient code delayed until mission init script runs");
+          break;
+        }
+        RunSpawnedCode(spawnMsg._code, args);
         //state->EndContext();
       }
       break;
@@ -5774,6 +5735,7 @@ LogF("Mission %s received", (const char *)_missionHeader.GetLocalizedMissionName
 
   void RunInitFunctionsScript();
   RunInitFunctionsScript();
+  ProcessDelayedSpawns();
 
   return true;
 }
@@ -7549,6 +7511,22 @@ void NetworkClient::ProcessDelayedPublicVariables()
     PublicVariable(item._name, item._player);
   }
   _delayedPublicVariables.Clear();
+}
+
+void NetworkClient::RunSpawnedCode(RString code, GameValuePar args)
+{
+  GameState *state = GWorld->GetGameState();
+  Ref<GameDataCode> compiled = new GameDataCode(state, code, GWorld->GetMissionNamespace());
+  ScriptVM *script = new ScriptVM(ScriptVMDirect, *compiled, args, GWorld->GetMissionNamespace());
+  GWorld->AddScriptVM(script, false);
+}
+
+void NetworkClient::ProcessDelayedSpawns()
+{
+  _initScriptRun = true;
+  for (int i=0; i<_delayedSpawns.Size(); i++)
+    RunSpawnedCode(_delayedSpawns[i]._code, _delayedSpawns[i]._args);
+  _delayedSpawns.Clear();
 }
 
 void NetworkClient::ApplyWeather()

@@ -5,7 +5,7 @@
 #include "../IBlocker.h"
 #include "waitFunctions_win.h"
 #include "../ThreadHook.h"
-#include <typeinfo.h>
+#include <typeinfo>
 #include <stdio.h>
 #include <stdint.h>
 

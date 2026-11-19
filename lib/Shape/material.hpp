@@ -118,7 +118,7 @@ class TexGenInfo: public SerializeClass
     // calculate volume change
     float volScale = fabs(_uvTransform.Orientation().Determinant());
     // assume area change is volume change ^(2/3)
-    return pow(volScale,2.0f/3);
+    return powf(volScale,2.0f/3);
   }
   //! check if default values are used
   bool IsDefaultValue(ParamArchive &ar) const;

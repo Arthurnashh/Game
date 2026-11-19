@@ -751,6 +751,12 @@ void VFTreePRTNoFade(in ShaderIn si, in TransformOutput to, inout AccomLights al
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+// These material IDs are shared with newer renderers. Use the corresponding
+// DX9 vertex layouts for materials whose specialized effects are unavailable.
+#define VFUnderwaterOcclusion VFBasic
+#define VFTreeAdvModNormals VFTreeAdv
+#define VFRefract VFSuper
+
 // ADVANCED TREE
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

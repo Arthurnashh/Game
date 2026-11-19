@@ -128,22 +128,24 @@ static const bool StrictAPI = false;
 
 static void InitShaderDirs()
 {
-  BString<256> shaderDir = __FILE__; // should be something like PROJECT_ROOT "\\d3d9\\engdd9.cpp"
-  const char *nam = GetFilenameExt(shaderDir);
-  if (nam)
+  char exePath[MAX_PATH];
+  const DWORD exeLength = GetModuleFileNameA(NULL, exePath, lenof(exePath));
+  if (exeLength && exeLength < lenof(exePath))
   {
-    // replace the filename part with RelShaderPath_3_0
-    strcpy(LString(shaderDir).Mid(nam),RelShaderPath_3_0);
+    const char *exeName = GetFilenameExt(exePath);
+    HLSLDir = RString(exePath, exeName - exePath) + "bin\\" RelShaderPath_3_0;
   }
-  else
+  if (HLSLDir.IsEmpty() || !QIFileFunctions::FileExists(HLSLDir + "VS.hlsl"))
   {
-    // no failure expected, but if there was one, try to recover
-    Fail("Unexpected file path");
-    strcpy(shaderDir,".\\" RelShaderPath_3_0);
+    BString<512> shaderDir = __FILE__;
+    const char *fileName = GetFilenameExt(shaderDir);
+    if (fileName)
+    {
+      strcpy(LString(shaderDir).Mid(fileName), RelShaderPath_3_0);
+      HLSLDir = shaderDir.cstr();
+    }
   }
-  
-  HLSLDir = shaderDir.cstr();
-  
+
   FPShaders = HLSLDir + "FPShaders.hlsl";
 
   PSHeader = HLSLDir + "PS.h";
@@ -11176,7 +11178,7 @@ void EngineDD9::CreateShader(LazyLoadFile &hlslSource, CONST D3DXMACRO *pDefines
     // and we may ignore the error
       if (vertexShader.IsNull())
       {
-        LogF("%s", (const char*)result.errorMsgs->GetBufferPointer());
+        RptF("DX9 shader compiler (%s, %s): %s", pFunctionName, pProfile, (const char*)result.errorMsgs->GetBufferPointer());
         ErrorMessage("Error compiling vertex shader %s", pFunctionName);
       }
     }
@@ -17477,9 +17479,11 @@ void EngineDD9::InitVertexShaders(VertexShaderID vsID)
     SetMacro(defines.Append(),NULL,NULL);
 
     // Sprite
-    if (vsID==NVertexShaderID || vsID==VSSprite)
+    if (vsID==NVertexShaderID || vsID==VSSprite || vsID==VSVolCloud || vsID==VSSpriteOnSurface)
     {
       CreateShader(VSSpriteFile, defines.Data(), "VSSprite", _caps._vsVersion, flags, _vertexShaderSpecial[VSSSprite]);
+      _vertexShaderSpecial[VSSVolCloud] = _vertexShaderSpecial[VSSSprite];
+      _vertexShaderSpecial[VSSSpriteOnSurface] = _vertexShaderSpecial[VSSSprite];
     }
 
     // Water
@@ -17893,7 +17897,17 @@ static const PSName PSNames[NPixelShaderID][NPixelShaderType] =
 #endif
   PS_VARIANTSMOD(SuperExt),
   PS_VARIANTSMODATOC(SuperAToC),
-	PS_NOVARIANTS(NonTLHeatHaze)
+  PS_NOVARIANTS(NonTLHeatHaze),
+  PS_NOVARIANTS_THERMAL(InterpolationAlpha, HorizonThermal),
+  PS_VARIANTS(Sprite),       // VolCloud
+  PS_VARIANTS(SpriteSimple), // VolCloudSimple
+  PS_VARIANTS_FULL(Discard, Discard, Discard, Discard, Discard, Discard, Discard), // UnderwaterOcclusion
+  PS_VARIANTSMOD_THERMAL(Super, SuperThermal), // SuperHair
+  PS_VARIANTSMODATOC(SuperAToC),               // SuperHairAtoC
+  PS_VARIANTS_FULL(Discard, Discard, Discard, Discard, Discard, Discard, Discard), // Caustics
+  PS_VARIANTSMOD_THERMAL(Super, SuperThermal), // Refract
+  PS_VARIANTS(Sprite),       // SpriteRefract
+  PS_VARIANTS(SpriteSimple)  // SpriteRefractSimple
 };
 
 void EngineDD9::InitPixelShaders(SBTechnique sbTechnique, PixelShaderID from, PixelShaderID to)

@@ -912,9 +912,9 @@ static GameValue ValMax( const GameState *state, GameValuePar oper1, GameValuePa
 }
 static GameValue Na( const GameState *state, GameValuePar oper1, GameValuePar oper2 )
 {
-  return (float)pow((float)oper1, (float)oper2);
+  return powf((float)oper1, (float)oper2);
 }
-static float Na(float oper1, float oper2) {return pow(oper1, oper2);}
+static float Na(float oper1, float oper2) {return powf(oper1, oper2);}
 
 static GameValue CmpE( const GameState *state, GameValuePar oper1, GameValuePar oper2 )
 {

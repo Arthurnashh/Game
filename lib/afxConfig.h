@@ -50,7 +50,6 @@
 #define _ENABLE_DX10              0
 #define _USE_BATTL_EYE_SERVER     1
 #define _USE_BATTL_EYE_CLIENT     1
-#define _ENABLE_STEAM_OWNERSHIP   1
 
 #define _TIME_ACC_MIN							(1.0 / 128.0)
 #define _TIME_ACC_MAX							4.0

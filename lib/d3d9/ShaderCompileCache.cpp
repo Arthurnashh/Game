@@ -87,7 +87,7 @@ bool ShaderCacheFileDesc::PrepareValidTestBlock(const Array<RString> &sources, Q
     // on Xbox DVD timestamps are for whole disk, which is not practical for development
     // use filesize + CRC instead of timestamp - better suited for source control systems
     // Note both branches must write the same number of chars into the testBlock file
-    if (noSources || !QFBankQueryFunctions::FileExists(sources[i]))
+    if (noSources || !QIFileFunctions::FileExists(sources[i]))
     {
       // write file size
       unsigned long size = 0xFFFFFFFF;
@@ -101,8 +101,8 @@ bool ShaderCacheFileDesc::PrepareValidTestBlock(const Array<RString> &sources, Q
     }
     else
     {
-      QIFStreamB in;
-      in.AutoOpen(sources[i]);
+      QIFStream in;
+      in.open(sources[i]);
       // write file size
       unsigned long size = in.rest();
       // we always need to work in little endian (x86) format, even on big endian (X360) platforms
@@ -162,26 +162,12 @@ static int CheckMatch(const char *m1, const char *m2, size_t size)
   return m1-m1start;
 }
 
-/*!
-  \patch 5151 Date 3/29/2007 by Flyman
-  - Fixed: Retail version doesn't try to compile shaders now unless being specifically asked to generate them
-*/
 void ShaderCacheFileDesc::Init(const Array<RString> &sources, const char *sectionName, RStringB customPath, bool forceCreate)
 {
   QOStrStream testBlock;
 
-  // Determine whether we use retail version or not
-  #if _SUPER_RELEASE
-  const bool retail = true;
-  #else
-  const bool retail = false;
-  #endif
-
-  // Enter the no-source code in the following cases:
-  // - sources are really not found
-  // - retail version is being used and cache creation was not forced (that means we don't want to create the shader cache)
-  // - we were forced by a program argument not to create the shader cache
-  bool sourceFilesExist = PrepareValidTestBlock(sources,testBlock, retail && !forceCreate);
+  // The retail DX9 package ships shader sources and builds its cache on first run.
+  const bool sourceFilesExist = PrepareValidTestBlock(sources, testBlock, false);
 
   _sectionName=sectionName;
 
@@ -225,10 +211,6 @@ void ShaderCacheFileDesc::Init(const Array<RString> &sources, const char *sectio
       {
         LogF("Using cache of compiled shaders. (Forced to use it by program argument, no sources).");
       }
-    }
-    else if (retail)
-    {
-      LogF("Using cache of compiled shaders. Retail version.");      
     }
     else
     {

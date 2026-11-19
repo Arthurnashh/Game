@@ -6,14 +6,21 @@ matching role directory.
 
 ## Runtime contract
 
-- Client: `Addons/`, `dta/`, `Keys/dayz.bikey`, candidate `DayZ.exe`, and the
-  Microsoft-signed x64 `d3dx10_41.dll` / `d3dx11_41.dll` runtime files at the
-  package root. `bin/` contains the three generated DX11 shader caches. There
-  is no client `dll/` directory.
-- Server: `Addons/`, `dta/`, `dll/` containing the four x86 allocator DLLs,
-  `Keys/dayz.bikey`, `MPMissions/dayz_Auto.ChernarusPlus/`, and root
-  `serverDZ.cfg`, plus candidate `DayZServer.exe` and its runtime DLLs at the
-  package root.
+- Client: x64 `DayZ.exe`, `Addons/`, `dta/`, `Keys/dayz.bikey`, and
+  Direct3D 9 shader sources in `bin/ShaderSources_3_0/`. Install Microsoft's
+  DirectX End-User Runtimes (June 2010) for the legacy D3DX9 and audio DLLs.
+- Server: x64 `DayZServer.exe`, `Addons/`, `dta/`, `Keys/dayz.bikey`,
+  `MPMissions/dayz_Auto.ChernarusPlus/`, and root `serverDZ.cfg`. The server
+  uses the Windows allocator by default. The root files
+  `spawnpoints_players.bin` and `proxyexport.bin` contain ChernarusPlus
+  player spawn points and loot locations.
+
+Build both x64 executables from the Visual Studio 2026 developer shell:
+
+```powershell
+msbuild Game.sln -m -p:Configuration=Retail -p:Platform=x64
+msbuild Game.sln -m "-p:Configuration=Retail Server" -p:Platform=x64
+```
 
 Every PBO must have its matching `.pbo.dayz.bisign`. Both trees must contain
 the public `Keys/dayz.bikey` whose SHA-256 is

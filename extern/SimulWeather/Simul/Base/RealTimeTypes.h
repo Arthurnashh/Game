@@ -7,11 +7,7 @@
 #error RTTI Should be enabled if RealTimeTypes.h is included.
 #endif
 
-#if !defined(__GNUC__)
-#include <typeinfo.h>		//C++ RTTI
-#else
-#include <typeinfo>			//C++ RTTI
-#endif
+#include <typeinfo>
 #ifdef WIN64
 typedef unsigned int ti_ptr;
 #else
@@ -111,4 +107,3 @@ namespace simul
 	simul::base::PtrNameToTypeName(typeid((Class*)NULL).name())
 #endif
 #endif
-
