@@ -29,6 +29,7 @@ Scene implementation
 #include "Shape/specLods.hpp"
 #include "stringtableExt.hpp"
 #include <time.h>
+#include <stdint.h>
 #include "diagModes.hpp"
 #include "fileLocator.hpp"
 #include "progress.hpp"
@@ -45,6 +46,13 @@ Scene implementation
 #include "baseWorld/enf_shapes.h"
 #include "Common/enf_quicksort.h"
 #include "d3d9/engdd9.hpp"
+
+static int CompareAddress(const void *left, const void *right)
+{
+  const uintptr_t l = reinterpret_cast<uintptr_t>(left);
+  const uintptr_t r = reinterpret_cast<uintptr_t>(right);
+  return l < r ? -1 : (l > r ? 1 : 0);
+}
 
 
 #ifdef _PROFILE
@@ -1499,7 +1507,7 @@ _prepareId(0), _hazeDefaultDistance(-1.0f)
 	}
 
   #if _PIII
-    Assert( ((int)this&0xf)==0 );
+    Assert( (reinterpret_cast<uintptr_t>(this)&0xf)==0 );
   #endif
   ResetFog();
 }
@@ -1984,6 +1992,7 @@ const bool EnableSpotLightsFC = true;
 //-----------------------------------------------------------------------------
 const LightList &Scene::SelectAggLights(Vector3Par pos, float radius, LightList &work)
 {
+  PROFILE_SCOPE_EX(obLSl,drw);
 #if _ENABLE_CHEATS
   if (GInput.GetCheatXToDo(CXTEnableSpotLightsFC))
   {
@@ -4548,7 +4557,7 @@ static OIDInt CmpRoadObj( const SortObjectItem *p1, const SortObjectItem *p2 )
   LODShape *s1=o1->shape;
   LODShape *s2=o2->shape;
   
-  int sDif=(int)s2-(int)s1;
+  int sDif=CompareAddress(s2,s1);
   // no invisible LODs here
   if( sDif )
   {
@@ -4591,7 +4600,7 @@ static inline int CmpProjShadowObj( const SortObjectItem *p1, const SortObjectIt
 
   LODShape *s1 = o1->shape;
   LODShape *s2 = o2->shape;
-  int sDif=(int)s2-(int)s1;
+  int sDif=CompareAddress(s2,s1);
   // first sort by shape
   if( sDif ) return sDif;
   // second sort by LOD
@@ -4611,7 +4620,7 @@ static inline int CmpSBShadowObj( const SortObjectItem *p1, const SortObjectItem
   // first sort by shape
   LODShape *s1 = o1->shape;
   LODShape *s2 = o2->shape;
-  sDif=(int)s2-(int)s1;
+  sDif=CompareAddress(s2,s1);
   if( sDif ) return sDif;
 
   // second sort by LOD
@@ -4628,7 +4637,7 @@ static inline int CmpVolShadowObj( const SortObjectItem *p1, const SortObjectIte
 
   LODShape *s1 = o1->shape;
   LODShape *s2 = o2->shape;
-  int sDif=(int)s2-(int)s1;
+  int sDif=CompareAddress(s2,s1);
   // first sort by shape
   if( sDif ) return sDif;
   // second sort by LOD
@@ -7650,7 +7659,7 @@ static int CmpShapeSlot(SortShapeSlotDist **ss1, SortShapeSlotDist **ss2)
   LODShape *s1 = sd1->name.shape;
   LODShape *s2 = sd2->name.shape;
 
-  int sDif=(int)s2-(int)s1;
+  int sDif=CompareAddress(s2,s1);
   // no invisible LODs here
   if( sDif )
   {
@@ -7680,7 +7689,7 @@ static int CmpBlendingItem(Ref<SortObject> *ss1, Ref<SortObject> *ss2)
   int sDif;
 
   // First sort by shape
-  sDif = (int)shape2 - (int)shape1;
+  sDif = CompareAddress(shape2,shape1);
   if (sDif) return sDif;
 
   // compare lod and blending
@@ -9373,6 +9382,8 @@ void Scene::DrawPreparation(DrawContext &ctx, float deltaT, bool frameRepeated)
   AutoArray<SortObject *, MemAllocDataStack<SortObject*,1024> > farLODObjects;
   if (FarLods)
     farLODObjects.Realloc(_drawObjects.Size());
+  {
+  PROFILE_SCOPE_EX(obCull,drw);
   for( ; s<_drawObjects.Size(); s++ )
   {
     // TODO: optimize
@@ -9436,6 +9447,7 @@ void Scene::DrawPreparation(DrawContext &ctx, float deltaT, bool frameRepeated)
     }
   }
   _drawObjects.Resize(t);
+  }
   //LogF("After not used %d",_drawObjects.Size());
 
 

@@ -44,7 +44,7 @@ struct ShaderHashFunc
 	{
 		uint hashval = 0;
 
-		hashval = (uint)sh->GetName().cstr();
+		hashval = HashPointer(sh->GetName().cstr());
 		hashval += sh->GetDefines().GetHashValue();
 
 		return hashval;

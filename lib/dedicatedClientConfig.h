@@ -51,14 +51,12 @@
 #define _ENABLE_DX10              0
 #define _USE_BATTL_EYE_SERVER     0
 #define _USE_BATTL_EYE_CLIENT     0
-#define _ENABLE_STEAM             0
 #define _ENABLE_SEND_UDP_MESSAGE  1
 #define _ENABLE_TEXTURE_HEADERS   1 //if reading texture headers from texture headers file is enabled
 
 #define _DISABLE_GUI							1 // no GUI (mouse, output, keyboard)
 
 //DayZ
-#define _PROFILE_IN_STEAM_CLOUD   0
 
 /// plaform specific performace libraries disabled by default
 #define _ENABLE_PERFLIB           0

@@ -109,7 +109,7 @@ public:
 	// this should be in entities, not in lights !
 
 	//! returns true if light is really shining
-	inline bool IsShining() const;
+	bool IsShining() const;
 	
 	//! returns true if light is on, not has not to shine !
 	inline bool IsOn() const 
@@ -644,4 +644,5 @@ class LightPointOnVehicle: public LightPointVisible,public AttachedOnVehicle
 #pragma warning(default:4250)
 
 #endif
+
 

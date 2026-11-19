@@ -379,7 +379,7 @@ void Debugger::ProcessAlive()
 
 	if (delay>1000)
 	{
-		__asm nop;
+		YieldProcessor();
 	}
 	if (_watch) _watch->KeepAlive();
 }

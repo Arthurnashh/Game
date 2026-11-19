@@ -12,7 +12,7 @@
 #include <ctype.h>
 
 #ifdef _CPPRTTI
-  #include "typeinfo.h"
+  #include <typeinfo>
 #endif
 
 #include <Es/Containers/array.hpp>

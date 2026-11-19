@@ -27,5 +27,5 @@
 #define RC_ICONS(id, filename) \
   id ICON DISCARDABLE filename
 
-#define AppName APP_NAME
+#define DayZAppName APP_NAME
 

@@ -4,6 +4,8 @@ DayZ.opensdf
 DayZ.v*.suo
 
 # build stuff
+/build/port-*/
+/e2e-local/
 lib/obj
 bin
 cfg/Win32

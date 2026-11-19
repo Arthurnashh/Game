@@ -51,14 +51,10 @@
 #define _ENABLE_DX10              0
 #define _USE_BATTL_EYE_SERVER     1
 #define _USE_BATTL_EYE_CLIENT     1
-#define _ENABLE_STEAM_OWNERSHIP   1
-#define _ENABLE_STEAM             1
-#define _ENABLE_STEAM_MATCHMAKING 1
 #define _ENABLE_SEND_UDP_MESSAGE  1
 #define _ENABLE_TEXTURE_HEADERS   1 //if reading texture headers from texture headers file is enabled
 
 //DayZ
-#define _PROFILE_IN_STEAM_CLOUD   1
 
 //Helisim
 

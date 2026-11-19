@@ -253,7 +253,7 @@ inline int toLargeInt( float f )
 
 #endif
 
-#if _MSC_VER && !_MANAGED && !_M_PPC
+#if _MSC_VER && !_MANAGED && defined(_M_IX86)
 
 // TODO: special PowerPC optimized versions
 // TODO: verify following code works on PowerPC
@@ -285,7 +285,9 @@ inline __int64 to64bInt( float f )
 // portable (non-optimized) version
 
 inline float fastRound( float x ) {return floor(x+0.5f);}
+#if !USING_SSE
 inline int toLargeInt( float x ){return (int)floor(x+0.5f);}
+#endif
 inline __int64 to64bInt( float x ){return (__int64)floor(x+0.5f);}
 
 #endif
@@ -326,8 +328,6 @@ __forceinline int abs(unsigned x)
 __forceinline float fabs(int x) {return fabs(float(x));}
 __forceinline float log(int x) {return log(float(x));}
 __forceinline float sqrt(int x) {return sqrt(float(x));}
-__forceinline float pow(int x, float y) {return pow(float(x),y);}
-//__forceinline float pow(float x, int y) {return pow(x,float(y));}
 
 #endif
 

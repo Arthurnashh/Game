@@ -28,7 +28,6 @@ private:
   virtual void CreateRenderers();
   /// updates cloud renderer based on sky renderer in Simulate
   virtual void UpdateSkyAndCloudHookup();
-  ();
   //@}
 
   /// pointer to dx9 engine

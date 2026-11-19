@@ -10,12 +10,6 @@
 #include <El/Multicore/multicore.hpp>
 #include <El/Credits/credits.hpp>
 
-#ifdef _DEBUG
-  #pragma comment(lib,"libtheoraD.lib")
-#else
-  #pragma comment(lib,"libtheora.lib")
-#endif
-
 OggStream::OggStream( int serial /*= -1*/ ): _serial(serial), _type(TYPE_UNKNOWN), _active(true)
 {
 
@@ -989,4 +983,3 @@ REGISTER_CREDITS("Theora","2002-2009 by the Xiph.Org Foundation http://www.xiph.
 REGISTER_CREDITS("OggVorbis","1994-2002 by the Xiph.Org Foundation http://www.xiph.org/",STANDARD_DISCLAIMER)
 
 #endif
-

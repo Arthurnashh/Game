@@ -311,9 +311,9 @@ unsigned netMessageToUnsigned (const RefD<NetMessage> &msg)
 RefD<NetMessage> ImplicitMapTraits< RefD<NetMessage> >::zombie = (NetMessage*)1;
 RefD<NetMessage> ImplicitMapTraits< RefD<NetMessage> >::null;
 
-unsigned netMessageAddressToUnsigned (const RefD<NetMessage> &msg)
+uintptr_t netMessageAddressToUnsigned (const RefD<NetMessage> &msg)
 {
-    return (unsigned)msg.GetRef();
+    return reinterpret_cast<uintptr_t>(msg.GetRef());
 }
 
 NetMessagePool::NetMessagePool () : recycled(400), used(12)

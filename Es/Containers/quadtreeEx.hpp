@@ -6,7 +6,7 @@
 #define __QUAD_TREE_EX_HPP
 
 #ifdef _CPPRTTI
-#include "typeinfo.h"
+#include <typeinfo>
 #endif
 
 #include <Es/Memory/memAlloc.hpp>

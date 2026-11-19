@@ -388,32 +388,6 @@ BattlEyeLicenceMsgBox::BattlEyeLicenceMsgBox(ControlsContainer *parent, RString 
 
 }
 
-static void SteamOpenWebBrowser(const RString &url, bool relativeToAppPath)
-{
-  RString filePath = url;
-
-  // build full path to file if path is relative to game dir
-  if (relativeToAppPath && SteamApps())
-  {
-    // get appid of the current app
-    AppId_t appId = SteamUtils()->GetAppID();
-
-    // get path
-    int sizeNeeded = SteamApps()->GetAppInstallDir(appId, 0, 0);
-    char * dst = filePath.CreateBuffer(sizeNeeded);
-    SteamApps()->GetAppInstallDir(appId, dst, sizeNeeded);
-
-    // add url
-    filePath = filePath + RString("\\") + url;
-
-    // if file can't be found, revert back to classic url, it's probably web address
-    if (!QIFileFunctions::FileExists(filePath))
-      filePath = url;
-  }
-  
-  if (SteamFriends())
-    SteamFriends()->ActivateGameOverlayToWebPage(cc_cast(filePath));
-}
 
 void BattlEyeLicenceMsgBox::OnButtonClicked(int idc)
 {
@@ -430,15 +404,7 @@ void BattlEyeLicenceMsgBox::OnButtonClicked(int idc)
     break;
   case IDC_USER_BUTTON:
 #if !_BINARIZE
-#if _ENABLE_STEAM
-    {
-      RString url = Pars.ReadValue("battleyeLicenceUrl", RString(""));
-      if (url.GetLength() > 0)
-        SteamOpenWebBrowser(url, true);
-    }
-#else
-    ASSERT_RLS(false, "Missing UI for showing BattlEye licence.");
-#endif
+    // Steam's overlay is unavailable in this build; keep the button inert.
 #endif
     break;
   default:
@@ -555,7 +521,7 @@ bool DeleteDirectoryStructure(const char *name, bool deleteDir =true)
   sprintf(buffer, "%s\\*.*", name);
 
   _finddata_t info;
-  long h = X_findfirst(buffer, &info);
+  intptr_t h = X_findfirst(buffer, &info);
   if (h != -1)
   {
     do
@@ -622,7 +588,7 @@ void CopyDirectoryStructure(const char *dst, const char *src)
   sprintf(buffer, "%s\\*.*", src);
 
   _finddata_t info;
-  long h = X_findfirst(buffer, &info);
+  intptr_t h = X_findfirst(buffer, &info);
   if (h != -1)
   {
     do
@@ -4501,10 +4467,6 @@ static ConnectResult JoinSession(ControlsContainer *disp, SessionType sessionTyp
     if (GWorld && GWorld->UI()) GWorld->UI()->Init();
 
     disp->CreateChild(new DisplayClient(disp));
-#if _ENABLE_STEAM_MATCHMAKING
-    // Add to History list
-    SteamMatchmaking()->AddFavoriteGame(SteamUtils()->GetAppID(), session.smIP, session.smPort, session.smQueryPort, k_unFavoriteFlagHistory, time(NULL));
-#endif
     break;
   case CRPassword:
     disp->CreateMsgBox(MB_BUTTON_OK, LocalizeString(IDS_MSG_MP_PASSWORD));
@@ -7302,22 +7264,15 @@ DisplayMultiplayer::DisplayMultiplayer(ControlsContainer *parent)
   _sessions = NULL;
   _portRemote = _portLocal = GetNetworkPort();
 
-#if _ENABLE_STEAM_MATCHMAKING || _ENABLE_STEAM
-  _source = BSInternet;
-  _activeTab = MPTabInternet;
-#else
   _source = BSLAN;
   _activeTab = MPTabLAN;
-#endif
 
   Load("RscDisplayMultiplayer");
   LoadParams();
 
   _refresh = true;
 
-#if _ENABLE_STEAM_MATCHMAKING
-  _steamServerBrowser = new SteamServerBrowser(_sessions);
-#elif _ENABLE_GAMESPY
+#if _ENABLE_GAMESPY
   _serverBrowser = NULL;
   _listUpdateRunning = Completed;
   _selected = NULL;
@@ -7406,19 +7361,7 @@ DisplayMultiplayer::DisplayMultiplayer(ControlsContainer *parent)
 
   SetSource(source, false);
 
-#if _ENABLE_STEAM_MATCHMAKING
-  _sessions->_sessions.Resize(0);
-  _sessions->_indices.Resize(0);
-  _sessions->SelectSession(0);
-  _sessionSelected = false;
-
-  _steamServerBrowser->SetFilter(_filter);
-  if (_source == BSInternet) _steamServerBrowser->RefreshInternetServers(_activeTab);
-  else if (_source == BSLAN) _steamServerBrowser->RefreshLANServers();
-  else UpdateSessions();
-
-  _refresh = false;
-#elif _ENABLE_GAMESPY
+#if _ENABLE_GAMESPY
   // need to be called to obtain my public IP address
   UpdateServerList();
   if (_source != BSInternet) UpdateSessions();
@@ -7426,13 +7369,10 @@ DisplayMultiplayer::DisplayMultiplayer(ControlsContainer *parent)
   UpdateSessions();
 #endif
       
-#if _ENABLE_STEAM_MATCHMAKING
-  _nextRefreshDetailsTime = ::GetTickCount() + FirstRefresh;
-#endif
   OnSessionChanged(true);
 
 
-#if _ENABLE_GAMESPY || _ENABLE_STEAM_MATCHMAKING
+#if _ENABLE_GAMESPY
   if (_source == BSInternet)
   {
     ShowFilterIcons(true);
@@ -7447,9 +7387,7 @@ DisplayMultiplayer::DisplayMultiplayer(ControlsContainer *parent)
 
 DisplayMultiplayer::~DisplayMultiplayer()
 {
-#if _ENABLE_STEAM_MATCHMAKING
-  // no clean-up needed
-#elif _ENABLE_GAMESPY
+#if _ENABLE_GAMESPY
   if (_serverBrowserUpdate)
     GetNetworkManager().UnregisterUpdateCallback(_serverBrowserUpdate);
   if (_serverBrowser)
@@ -7483,25 +7421,7 @@ Control *DisplayMultiplayer::OnCreateCtrl(int type, int idc, ParamEntryPar cls)
 
 void DisplayMultiplayer::OnSimulateBasic()
 {
-#if _ENABLE_STEAM_MATCHMAKING
-  if (_refresh)
-  {
-    _sessions->_sessions.Resize(0);
-    _sessions->_indices.Resize(0);
-    _sessions->SelectSession(0);
-    _sessionSelected = false;
-
-    if (_source == BSInternet) _steamServerBrowser->RefreshInternetServers(_activeTab);
-    else if (_source == BSLAN) _steamServerBrowser->RefreshLANServers();
-    else UpdateSessions();
-
-    _refresh = false;
-  }
-  else if (_source == BSRemote)
-  {
-    UpdateSessions();
-  }
-#elif _ENABLE_GAMESPY
+#if _ENABLE_GAMESPY
   UpdateServerList();
   if (_listUpdateRunning==StageDone)
   {
@@ -7540,15 +7460,6 @@ void DisplayMultiplayer::OnSimulateBackground(EntityAI *vehicle)
 
 void DisplayMultiplayer::OnSimulate(EntityAI *vehicle)
 {
-  if (!GInput.changeServer.IsEmpty())
-  {
-    if (!GetNetworkManager().IsServer() && !GetNetworkManager().IsClient())
-    {
-      //JoinSession(STStandard, GInput.changeServer, GInput.changeServerPassword, NULL);
-      Exit(IDC_CANCEL);
-    }
-    else GInput.changeServer = RString();
-  }
 
   OnSimulateBasic();
   Display::OnSimulate(vehicle);
@@ -7597,9 +7508,6 @@ void DisplayMultiplayer::SetSource(BrowsingSource source, bool save)
   if (save) SaveParams();
 
   bool internet = false;
-#if _ENABLE_STEAM_MATCHMAKING
-  internet = (source == BSInternet);
-#endif
 
   if (GetCtrl(IDC_MULTI_GAMESPY)) GetCtrl(IDC_MULTI_GAMESPY)->ShowCtrl(internet);
   if (GetCtrl(IDC_MULTI_PROGRESS)) GetCtrl(IDC_MULTI_PROGRESS)->ShowCtrl(internet);
@@ -7607,18 +7515,6 @@ void DisplayMultiplayer::SetSource(BrowsingSource source, bool save)
   if (GetCtrl(IDC_MULTI_FILTER)) GetCtrl(IDC_MULTI_FILTER)->ShowCtrl(internet);
   if (GetCtrl(IDC_MULTI_PORT)) GetCtrl(IDC_MULTI_PORT)->ShowCtrl(!internet);
 
-#if _ENABLE_STEAM_MATCHMAKING
-  if (internet)
-  {
-    IControl *ctrl = GetCtrl(IDC_MULTI_TITLE);
-    ITextContainer *title = GetTextContainer(ctrl);
-    if (title)
-    {
-      title->SetText(LocalizeString(IDS_MULTI_TITLE_INTERNET));
-    }
-  }
-  _refresh = true;
-#endif
 }
 
 void DisplayMultiplayer::UpdateIcons()
@@ -7847,7 +7743,6 @@ void DisplayMultiplayer::UpdateFilter()
       text->SetText(Format("<%d", _filter.maxPing));
     else
       text->SetText(RString());
-  _steamServerBrowser->SetFilter(_filter);
 }
 
 void DisplayMultiplayer::SetProgress(float progress)
@@ -7921,10 +7816,6 @@ void DisplayMultiplayer::JoinSession(SessionType sessionType, RString guid, RStr
 #   endif
 #endif
     CreateChild(new DisplayClient(this));
-#if _ENABLE_STEAM_MATCHMAKING
-    // Add to History list
-    if (session) SteamMatchmaking()->AddFavoriteGame(SteamUtils()->GetAppID(), session->smIP, session->smPort, session->smQueryPort, k_unFavoriteFlagHistory, time(NULL));
-#endif
     break;
   case CRPassword:
     CreateMsgBox(MB_BUTTON_OK, LocalizeString(IDS_MSG_MP_PASSWORD));
@@ -7990,31 +7881,6 @@ void DisplayMultiplayer::ShowFilterIcons(bool show)
 
 void DisplayMultiplayer::UpdateSessionFavorite(const SessionInfo *session)
 {
-#if _ENABLE_STEAM_MATCHMAKING
-  IControl *ctrl = GetCtrl(IDC_MULTI_FAVORITE);
-  ITextContainer *button = GetTextContainer(ctrl);
-  if (!button) return;
-  ctrl->ShowCtrl(session!=nullptr);
-  if (!session) return;
-
-  for (int i=0; i<SteamMatchmaking()->GetFavoriteGameCount(); i++)
-  {
-    AppId_t appId;
-    uint32 ip, lastTime, flag;
-    uint16 port, queryPort;
-    SteamMatchmaking()->GetFavoriteGame(i, &appId, &ip, &port, &queryPort, &flag, &lastTime);
-    if ((flag & k_unFavoriteFlagFavorite) //&& (appId==221100 || appId==223350) <-- do not test appId as it is 0 after game is restarted for some reason
-      && ip==session->smIP && (port==session->smPort || queryPort==session->smQueryPort)) //for some reason smPort is 27016? often
-    { // is favorite
-      session->favorite = true;
-      button->SetText(LocalizeString(IDS_MULTI_REMOVE_FAVORITE));
-      return;
-    }
-  }
-  // is NOT favorite
-  session->favorite = false;
-  button->SetText(LocalizeString(IDS_MULTI_ADD_FAVORITE));
-#endif
 }
 
 void DisplayMultiplayer::OnButtonClicked(int idc)
@@ -8027,55 +7893,6 @@ void DisplayMultiplayer::OnButtonClicked(int idc)
   switch (idc)
   {
 #ifndef _XBOX
-#if _ENABLE_STEAM_MATCHMAKING
-    case IDC_MULTI_TAB_FAVORITE:
-       SetTab(MPTabFavorite);
-       goto DMUpdateServers;
-    case IDC_MULTI_TAB_HISTORY:
-       SetTab(MPTabHistory);
-       goto DMUpdateServers;
-    case IDC_MULTI_TAB_FRIENDS:
-       SetTab(MPTabFriends);
-       goto DMUpdateServers;
-    case IDC_MULTI_TAB_INTERNET:
-       SetTab(MPTabInternet);
-       goto DMUpdateServers;
-DMUpdateServers:
-      if (!_steamServerBrowser)
-		  {
-				UpdateAddress("", _portLocal);
-			}
-			else 
-			{
-				ShowFilterIcons(true);
-				SetSource(BSInternet, true);
-  	  }
-      break;
-    case IDC_MULTI_FAVORITE:
-      if (_sessionSelected)
-      {
-        const SessionInfo *session = NULL;
-        if (_sessions)
-        {
-          int sel = _sessions->SelectedSession();
-          if (sel >= 0 && sel < _sessions->NSessionsNoHost()) session = &_sessions->GetSession(sel);
-        }
-        if (session)
-        {
-          if (session->favorite) 
-          { // selected server is already in Favorite list => remove from Favorite list
-            SteamMatchmaking()->RemoveFavoriteGame(SteamUtils()->GetAppID(), session->smIP, session->smPort, session->smQueryPort, k_unFavoriteFlagFavorite);
-            if (_activeTab==MPTabFavorite) _refresh = true;
-          }
-          else 
-          { // add to Favorite list
-            SteamMatchmaking()->AddFavoriteGame(SteamUtils()->GetAppID(), session->smIP, session->smPort, session->smQueryPort, k_unFavoriteFlagFavorite, time(NULL));
-          }
-          UpdateSessionFavorite(session);
-        }
-      }
-      break;
-#endif
     case IDC_MULTI_TAB_LAN:
       SetTab(MPTabLAN);
       UpdateAddress("", _portLocal);
@@ -8469,7 +8286,7 @@ void DisplayMultiplayer::OnChildDestroyed(int idd, int exit)
       if (exit >= IDC_MAIN_TAB_LOGIN)
         Exit(exit);
 #endif
-#if _ENABLE_GAMESPY || _ENABLE_STEAM
+#if _ENABLE_GAMESPY
       if (_source != BSInternet)
       {
         UpdateAddress(_ipAddress, GetPort());
@@ -8493,9 +8310,6 @@ void DisplayMultiplayer::UpdateAddress(RString ipAddress, int port)
   SetPort(port);
   bool lan = _ipAddress.GetLength() == 0;
   SetSource(lan ? BSLAN : BSRemote, false);
-#if _ENABLE_STEAM_MATCHMAKING
-  ShowFilterIcons(_source == BSInternet); //so do not show icons
-#endif
 
   IControl *ctrl = GetCtrl(IDC_MULTI_TITLE);
   ITextContainer *title = GetTextContainer(ctrl);
@@ -8629,10 +8443,6 @@ const SessionInfo *DisplayMultiplayer::CurrentSession() const
 
 void DisplayMultiplayer::Friends(AutoArray<RString> &friends)
 {
-#if _ENABLE_STEAM_MATCHMAKING
-  if (_steamServerBrowser && _sessions)
-    _steamServerBrowser->Friends(friends);
-#endif
 }
 
 void DisplayMultiplayer::OnSessionChanged(bool changed)
@@ -8647,27 +8457,6 @@ void DisplayMultiplayer::OnSessionChanged(bool changed)
   IControl *ctrl = GetCtrl(IDC_MULTI_JOIN);
   if (ctrl) ctrl->ShowCtrl(session != NULL);
 
-#if _ENABLE_STEAM_MATCHMAKING
-  DWORD curtime = ::GetTickCount();
-  if (changed)
-  {
-    _nextRefreshDetailsTime = curtime+FirstRefresh;
-  }
-  if (session && curtime > _nextRefreshDetailsTime) //only once per second (it is like DoS attack when done every simulation step!)
-  {
-    _nextRefreshDetailsTime = curtime+RepeatRefresh;
-    _steamServerBrowser->RefreshDetails(session->guid, session->smQueryPort);
-    // if there is DisplayMultiplayerDetails child, refresh its data
-    DisplayMultiplayerDetails *details = dynamic_cast<DisplayMultiplayerDetails *>(_child.GetRef());
-    if (details)
-      details->RefreshDetails();
-  }
-  UpdateSessionFavorite(session);
-  
-  // Details button
-  ctrl = GetCtrl(IDC_MULTI_DETAILS);
-  if (ctrl) ctrl->ShowCtrl(session!=nullptr);
-#endif
 
   // fill the host info
   // header
@@ -8911,41 +8700,6 @@ void DisplayMultiplayer::OnSessionChanged(bool changed)
   if (text)
   {
     RString players;
-#if _ENABLE_STEAM_MATCHMAKING
-    if (session)
-    {
-      // Friends list
-      if (_steamServerBrowser)
-      {
-        const AutoArray<RString> &friends = _steamServerBrowser->Players();
-        for (int i=0; i<friends.Size(); i++)
-        {
-          RString player = friends[i];
-          if (i == friends.Size() - 1)
-          {
-            // the last player
-            RString check = players + player;
-            if (text->TextFits(check))
-              players = check;
-            else
-              players = players + RString("...");
-            // break not needed
-          }
-          else
-          {
-            RString check = players + player + RString("; ...");
-            if (text->TextFits(check))
-              players = players + player + RString("; ");
-            else
-            {
-              players = players + RString("...");
-              break;
-            }
-          }
-        }
-      }
-    }
-#endif
     text->SetText(players);
   }
 
@@ -9105,449 +8859,6 @@ static RString CreateServerFilter(const SessionFilter &filter, int stage, int my
   return value;
 }
 
-#if _ENABLE_STEAM_MATCHMAKING
-
-DisplayMultiplayer::SteamServerBrowser::~SteamServerBrowser()
-{
-  if (SteamMatchmakingServers())
-  {
-    if (_request != NULL)
-    {
-      // stop the current update
-      SteamMatchmakingServers()->ReleaseRequest(_request);
-      _request = NULL;
-    }
-
-    if (_queryPing != HSERVERQUERY_INVALID) SteamMatchmakingServers()->CancelServerQuery(_queryPing);
-    if (_queryPlayers != HSERVERQUERY_INVALID) SteamMatchmakingServers()->CancelServerQuery(_queryPlayers);
-    if (_queryRules != HSERVERQUERY_INVALID) SteamMatchmakingServers()->CancelServerQuery(_queryRules);
-  }
-}
-
-TypeIsMovable(MatchMakingKeyValuePair_t);
-struct SteamSBFilter : public AutoArray<MatchMakingKeyValuePair_t>
-{
-  SteamSBFilter() {}
-  
-  void AddFilter(const char *key, const char *value);
-};
-
-void SteamSBFilter::AddFilter(const char *key, const char *value)
-{
-  int ix = Add();
-  MatchMakingKeyValuePair_t &filter = operator[](ix);
-  strncpy(filter.m_szKey, key, sizeof(filter.m_szKey));
-  strncpy(filter.m_szValue, value, sizeof(filter.m_szValue));
-}
-
-void DisplayMultiplayer::SteamServerBrowser::RefreshInternetServers(MPTabs activeTab)
-{
-  if (SteamMatchmakingServers())
-  {
-    if (_request != NULL)
-    {
-      // stop the current update
-      SteamMatchmakingServers()->ReleaseRequest(_request);
-      _request = NULL;
-    }
-
-
-    SteamSBFilter filter;
-
-    filter.AddFilter("gamedir", "dayz");
-    filter.AddFilter("secure", "1");
-    filter.AddFilter("white", "1");
-
-    if (_filter.minPlayers>0) filter.AddFilter("hasplayers","1"); 
-    if (!_filter.fullServers) filter.AddFilter("notfull", "1"); 
-    switch (_filter.battleyeRequired)
-    {
-    case SessionFilter::BEFLT_NONE: break;
-    case SessionFilter::BEFLT_REQUIRED: filter.AddFilter("gametagsand", "battleye"); break;
-    case SessionFilter::BEFLT_WITHOUT_BE: filter.AddFilter("gametagsnor", "battleye"); break;
-    }
-
-    MatchMakingKeyValuePair_t *ptr = filter.Data();
-    // bugbug jmccaskey - passing just the appid without filters results in getting all servers rather than
-    // servers filtered by appid alone.  So, we'll use the filters to filter the results better.
-    switch (activeTab)
-    {
-    case MPTabInternet:
-       _request = SteamMatchmakingServers()->RequestInternetServerList(SteamUtils()->GetAppID(), &ptr, filter.Size(), this);
-       break;
-    case MPTabFriends:
-       _request = SteamMatchmakingServers()->RequestFriendsServerList(SteamUtils()->GetAppID(), &ptr, filter.Size(), this);
-       break;
-    case MPTabFavorite:
-       _request = SteamMatchmakingServers()->RequestFavoritesServerList(SteamUtils()->GetAppID(), &ptr, filter.Size(), this);
-       break;
-    case MPTabHistory:
-       _request = SteamMatchmakingServers()->RequestHistoryServerList(SteamUtils()->GetAppID(), &ptr, filter.Size(), this);
-       break;
-    }
-    _requestedLAN  = false; //internet
-  }
-}
-
-void DisplayMultiplayer::SteamServerBrowser::RefreshLANServers()
-{
-  if (SteamMatchmakingServers())
-  {
-    if (_request != NULL)
-    {
-      // stop the current update
-      SteamMatchmakingServers()->ReleaseRequest(_request);
-      _request = NULL;
-    }
-
-    // LAN refresh doesn't accept filters like internet above does
-    _requestedLAN = true;
-    _request = SteamMatchmakingServers()->RequestLANServerList(SteamUtils()->GetAppID(), this);
-  }
-}
-
-void DisplayMultiplayer::SteamServerBrowser::Friends(AutoArray<RString> &friends)
-{
-  const SessionInfo &session = _sessions->GetSession(_sessions->SelectedSession());
-  for (int i=0; i<_friendList.Size(); i++)
-  {
-    if ( _friendList[i].gameIP==session.smIP && _friendList[i].gamePort==session.smPort )
-    {
-      friends.Add(SteamFriends()->GetFriendPersonaName(_friendList[i].steamID));
-    }
-  }
-}
-
-void DisplayMultiplayer::SteamServerBrowser::RefreshDetails(RString guid, int serverPort)
-{
-  // steam server port is no longer a constant and could be adjusted by parameters. Current value is set in NetworkServer::_steamQueryPort on the server.
-  // uint16 serverPort = 27016; // masterServerUpdaterPort
-
-  if (SteamMatchmakingServers() &&
-    _queryPing == HSERVERQUERY_INVALID && _queryPlayers == HSERVERQUERY_INVALID && _queryRules == HSERVERQUERY_INVALID)
-  {
-    int octet0 = 0, octet1 = 0, octet2 = 0, octet3 = 0;
-    int port = 0;
-    int done = sscanf(guid, "%d.%d.%d.%d:%d", &octet0, &octet1, &octet2, &octet3, &port);
-    if (done == 5)
-    {
-      unsigned int ip = (octet3) + (octet2 << 8) + (octet1 << 16) + (octet0 << 24);
-      _currentServerGuid = guid;
-      _queryPing = SteamMatchmakingServers()->PingServer(ip, serverPort, this);
-      /*
-      // DayZ does not use players list, only friends list (but functionality was tested, works, just uncomment this line)
-      _queryPlayers = SteamMatchmakingServers()->PlayerDetails(ip, serverPort, this);
-      */
-      // currently DayZ utilizes only requiredBuild in rules
-      // there can be more facts like: country, etc.
-      _queryRules = SteamMatchmakingServers()->ServerRules(ip, serverPort, this);
-    }
-  }
-}
-
-int DisplayMultiplayer::SteamServerBrowser::FindSession(RString guid) const
-{
-  // search for session in the list of sessions
-  for (int i=0; i<_sessions->_sessions.Size(); i++)
-  {
-    if (_sessions->_sessions[i].guid == guid) return i;
-  }
-  return -1;
-}
-
-// ISteamMatchmakingServerListResponse implementation
-
-bool DisplayMultiplayer::SteamServerBrowser::CheckFilter(gameserveritem_t *info)
-{
-  //no filter for LAN
-  if (_requestedLAN) return true; 
-
-  // server name
-  if (!_filter.serverName.IsEmpty())
-  {
-    RString name = info->GetName(); name.Lower();
-    if ( !strstr(name, _filter.serverName) ) return false;
-  }
-  // mission name
-  if (!_filter.missionName.IsEmpty())
-  {
-    RString mission = info->m_szMap; mission.Lower();
-    if ( !strstr(mission, _filter.missionName) ) return false;
-  }
-  // min..max Player count
-  if ( (_filter.maxPlayers>0) && (info->m_nPlayers>_filter.maxPlayers) ) return false;
-  if ( (_filter.minPlayers>0) && (info->m_nPlayers<_filter.minPlayers) ) return false;
-  // max ping
-  if ( (_filter.maxPing>0) && (info->m_nPing>_filter.maxPing) ) return false;
-  // passworded
-  if ( !_filter.passwordedServers && info->m_bPassword ) return false;
-  // full servers
-  if ( !_filter.fullServers && (info->m_nMaxPlayers<=info->m_nPlayers) ) return false;
-
-  return true;
-}
-
-void DisplayMultiplayer::SteamServerBrowser::ServerResponded(HServerListRequest request, int server)
-{
-  gameserveritem_t *info = SteamMatchmakingServers()->GetServerDetails(request, server);
-  if (info)
-  {
-    // Filter out servers that don't match our appid here (might get these in LAN calls since we can't put more filters on it)
-    // if (info->m_nAppID != SteamUtils()->GetAppID()) return;
-
-    // Enable servers hosted both by "DayZ" and "DayZ Server" applications
-    if (info->m_nAppID != 221100 && info->m_nAppID != 223350) return;
-
-    RString guid = info->m_NetAdr.GetConnectionAddressString();
-    int index = FindSession(guid);
-
-    if (index < 0)
-    {
-      if (!CheckFilter(info)) return;
-      index = _sessions->_sessions.Add();
-      _sessions->_indices.Add(index);
-    }
-
-    // update friends game playing list
-    DWORD curTime = ::GetTickCount();
-    if (curTime > _lastFriendUpdateTime + 250)
-    {
-      _lastFriendUpdateTime = curTime;
-      _friendList.Resize(0);
-      int friendCount = SteamFriends()->GetFriendCount(k_EFriendFlagAll);
-      for (int i=0; i<friendCount; i++)
-      {
-        CSteamID friendId = SteamFriends()->GetFriendByIndex( i, k_EFriendFlagAll );
-        FriendGameInfo_t fginfo;
-        if (SteamFriends()->GetFriendGamePlayed( friendId, &fginfo ) && (fginfo.m_gameID.AppID()==info->m_nAppID) )
-        {
-          _friendList.Add(FriendOnServer( friendId.ConvertToUint64(), fginfo.m_unGameIP, fginfo.m_usGamePort ));
-        }
-      }
-    }
-    int friendCount = 0;
-    for (int i=0; i<_friendList.Size(); i++)
-    {
-      if ( _friendList[i].gameIP==info->m_NetAdr.GetIP() && _friendList[i].gamePort==info->m_NetAdr.GetConnectionPort() )
-      {
-        friendCount++;
-      }
-    }
-/*
-    // DEBUG>
-    int friendCount = SteamFriends()->GetFriendCountFromSource(info->m_steamID);
-    RptF(" *** Server: \"%s\" (%llu , type=%d) friends: %d", info->GetName(), info->m_steamID.ConvertToUint64(), info->m_steamID.GetEAccountType(), friendCount);
-    for (int i=0; i<friendCount; i++)
-    {
-      CSteamID friendId = SteamFriends()->GetFriendFromSourceByIndex( info->m_steamID, i );
-      FriendGameInfo_t fginfo;
-      if (SteamFriends()->GetFriendGamePlayed( friendId, &fginfo ))
-        RptF("    -> %s [%llu, %llu]", SteamFriends()->GetFriendPersonaName(friendId), fginfo.m_gameID.ToUint64(), fginfo.m_steamIDLobby.ConvertToUint64());
-      else
-        RptF("    -> %s", SteamFriends()->GetFriendPersonaName(friendId));
-    }
-
-    {
-      int friendCount = SteamFriends()->GetFriendCount(k_EFriendFlagAll);
-      RptF(" ### ALL friends: %d", friendCount);
-      for (int i=0; i<friendCount; i++)
-      {
-        CSteamID friendId = SteamFriends()->GetFriendByIndex( i, k_EFriendFlagAll );
-        FriendGameInfo_t fginfo;
-        if (SteamFriends()->GetFriendGamePlayed( friendId, &fginfo ))
-          RptF("    -> %s [%llu, %llu, %x:%d]", SteamFriends()->GetFriendPersonaName(friendId), fginfo.m_gameID.ToUint64(), fginfo.m_steamIDLobby.ConvertToUint64(), fginfo.m_unGameIP, fginfo.m_usGamePort);
-        else
-          RptF("    -> %s (%d)", SteamFriends()->GetFriendPersonaName(friendId), friendId.GetEAccountType());
-      }
-    }
-
-    {
-      int friendCount = SteamFriends()->GetFriendCount(k_EFriendFlagOnGameServer);
-      RptF(" ### friends on game servers: %d", friendCount);
-      for (int i=0; i<friendCount; i++)
-      {
-        CSteamID friendId = SteamFriends()->GetFriendByIndex( i, k_EFriendFlagOnGameServer );
-	      // returns true if the friend is actually in a game, and fills in pFriendGameInfo with an extra details 
-        FriendGameInfo_t fginfo;
-        if (SteamFriends()->GetFriendGamePlayed( friendId, &fginfo ))
-          RptF("    -> %s [%llu, %llu]", SteamFriends()->GetFriendPersonaName(friendId), fginfo.m_gameID.ToUint64(), fginfo.m_steamIDLobby.ConvertToUint64());
-      }
-    }
-*/
-    // fill the fields
-    SessionInfo &session = _sessions->_sessions[index];
-    session.guid = guid;
-    session.smQueryPort = info->m_NetAdr.GetQueryPort();
-    session.smIP = info->m_NetAdr.GetIP();
-    session.smPort = info->m_NetAdr.GetConnectionPort();
-#if USER_Bebul
-    session.name = Format("%d:%s", info->m_nAppID, info->GetName());
-#else
-    session.name = info->GetName();
-#endif
-    session.steamID = info->m_steamID.ConvertToUint64();
-    session.lastTime = 0xffffffff;
-    session.actualVersion = info->m_nServerVersion / 1000000; //29113822 -> 29
-    session.actualBuildNo = info->m_nServerVersion % 1000000; //29113822 -> 113822
-    void CheckMPVersion(SessionInfo &info);
-    CheckMPVersion(session); // sets session.badActualVersion
-    session.requiredVersion = 0;
-    session.password = info->m_bPassword;
-    session.lock = false;
-    session.badRequiredVersion = false;
-    session.badAdditionalMods = false;
-    session.badMod = false;
-    session.gameType = RString();
-    session.mission = info->m_szMap;
-    session.island = info->m_szGameDescription;
-    session.serverState = 0;
-    session.ping = info->m_nPing;
-    session.playersPublic = info->m_nPlayers;
-    session.friends = friendCount;
-    session.slotsPublic = info->m_nMaxPlayers;
-    session.timeleft = 0;
-    session.platform = RString();
-    session.mod = RString();
-    session.equalModRequired = false;
-    session.dedicated = false;
-    session.language = 0;
-    session.difficulty = 0;
-    session.country = RString();
-    session.region = 0;
-    session.timeOfDay = RString();
-    
-    char tags[256]; 
-		strcpy(tags, info->m_szGameTags);
-    char *p = strtok(tags, ",");
-
-    if (p && stricmp(p, "battleye")==0) 
-    {
-      session.battleEye = true;
-      p = strtok(NULL, ",");
-    }
-    else session.battleEye = false;
-
-    if (p && stricmp(p, "no3rd")==0)
-    {
-      session.disable3rdPerson = true;
-      p = strtok(NULL, ",");
-    }
-    else session.disable3rdPerson = false;
-    
-		if (p && stricmp(p, "privHive")==0)
-    {
-      session.privateHive = true;
-      p = strtok(NULL, ",");
-    }
-    else session.privateHive = false;
-
-		session.environmentTimeMul = 0.0f;
-		if (p && strstr(p, "etm") == p)
-		{
-			p += 3;
-			session.environmentTimeMul = floatMinMax(atof(p), 0.0f, 64.0);
-			p = strtok(NULL, ",");
-		}
-
-		if (p)
-    {
-      session.timeOfDay = p;
-      //RptF("Here you are: (gameserveritem_t *)0x%x - %s", info, info->m_szGameTags);
-    }
-
-    //RptF("%d - %d - %s", info->m_nServerVersion, session.badActualVersion, cc_cast(session.name));
-  }
-}
-
-void DisplayMultiplayer::SteamServerBrowser::ServerFailedToRespond(HServerListRequest request, int server)
-{
-  // some reaction possible, but not requested
-  gameserveritem_t *info = SteamMatchmakingServers()->GetServerDetails(request, server);
-  LogF("Server %s (%d) failed to respond", info ? info->GetName() : "???", server);
-}
-
-void DisplayMultiplayer::SteamServerBrowser::RefreshComplete(HServerListRequest request, EMatchMakingServerResponse response)
-{
-  // Doesn't really matter to us whether the response tells us the refresh succeeded or failed,
-  // we just rack whether we are done refreshing or not
-  LogF("RefreshComplete");
-}
-
-// ISteamMatchmakingPingResponse implementation
-void DisplayMultiplayer::SteamServerBrowser::ServerResponded(gameserveritem_t &server)
-{
-  int index = FindSession(_currentServerGuid);
-  if (index >= 0)
-  {
-    // update the fields
-    SessionInfo &session = _sessions->_sessions[index];
-    session.ping = server.m_nPing;
-  }
-
-  _queryPing = HSERVERQUERY_INVALID;
-}
-
-void DisplayMultiplayer::SteamServerBrowser::ServerFailedToRespond()
-{
-  // some reaction possible, but not requested
-  LogF("Server %s failed to respond (ping)", cc_cast(_currentServerGuid));
-  _queryPing = HSERVERQUERY_INVALID;
-}
-
-// ISteamMatchmakingPlayersResponse implementation
-void DisplayMultiplayer::SteamServerBrowser::AddPlayerToList(const char *name, int score, float timePlayed)
-{
-  //LogF("AddPlayerToList: %s, %d, %f", name, score, timePlayed);
-  _playersUpdate.Add(name);
-}
-
-void DisplayMultiplayer::SteamServerBrowser::PlayersFailedToRespond()
-{
-  // some reaction possible, but not requested
-  LogF("Server %s failed to respond (players)", cc_cast(_currentServerGuid));
-  _queryPlayers = HSERVERQUERY_INVALID;
-}
-
-void DisplayMultiplayer::SteamServerBrowser::PlayersRefreshComplete()
-{
-  LogF("PlayersRefreshComplete");
-  QSort(_playersUpdate.Data(), _playersUpdate.Size(), [](RString *str1, RString *str2)->int { return strcmp(cc_cast(*str1), cc_cast(*str2)); });
-  _players = _playersUpdate;
-  _playersUpdate.Resize(0);
-  _queryPlayers = HSERVERQUERY_INVALID;
-}
-
-// ISteamMatchmakingRulesResponse implementation
-void DisplayMultiplayer::SteamServerBrowser::RulesResponded(const char *rule, const char *value)
-{
-  LogF("RulesResponded: %s, %s", rule, value);
-  if ( !stricmp(rule,"requiredBuild") ) 
-  {
-    SessionInfo *session = NULL;
-    if (_sessions)
-    {
-      int sel = _sessions->SelectedSession();
-      if (sel >= 0 && sel < _sessions->NSessionsNoHost()) session = &_sessions->GetSession(sel);
-    }
-    if (session)
-      session->requiredBuildNo = atoi(value);
-  }
-}
-
-void DisplayMultiplayer::SteamServerBrowser::RulesFailedToRespond()
-{
-  // some reaction possible, but not requested
-  LogF("Server %s failed to respond (rules)", cc_cast(_currentServerGuid));
-  _queryRules = HSERVERQUERY_INVALID;
-}
-
-void DisplayMultiplayer::SteamServerBrowser::RulesRefreshComplete()
-{
-  _queryRules = HSERVERQUERY_INVALID;
-  LogF("RulesRefreshComplete");
-}
-
-#endif
 
 /*!
 \patch 1.59 Date 5/24/2002 by Jirka
@@ -9965,11 +9276,7 @@ void DisplayMultiplayer::LoadParams()
   ParamArchiveLoad ar;
   if (!ParseUserParamsArchive(ar, &globals)) return;
 
-#if _ENABLE_STEAM_MATCHMAKING
-  BrowsingSource defaultSource = BSInternet;
-#else
   BrowsingSource defaultSource = BSLAN;
-#endif
 
   ar.SerializeEnum("browsingSource", _source, 1, defaultSource);
 #if _ENABLE_GAMESPY
@@ -10135,30 +9442,6 @@ void DisplayMultiplayerDetails::RefreshDetails()
 		text->SetText(session->environmentTimeMul == 0.0f ? "Real time" : tm);
 	}
 
-#if _ENABLE_STEAM_MATCHMAKING
-  // friends list
-  DWORD curtime = ::GetTickCount();
-  if (curtime > (_lastFriendsUpdate + 2000))
-  {
-    text = GetTextContainer(GetCtrl(IDC_MP_PLAYERS_ROW));
-    if (text)
-    {
-      RString txtFriends;
-      if (session)
-      {
-        // Friends list
-        AutoArray<RString> friends; 
-        multi->Friends(friends);
-        for (int i=0; i<friends.Size(); i++)
-        {
-          txtFriends = txtFriends + friends[i];
-          if (i!=friends.Size()-1) txtFriends = txtFriends + RString("; ");
-        }
-      }
-      text->SetText(txtFriends);
-    }
-  }
-#endif
 
   RefreshVariables();
 
@@ -20834,7 +20117,7 @@ static RString CreateWebsiteButtonURLFile(RString url)
   RString path;
   for (int i=0; i<100000; i++)
   {
-    path = Format("%s%s %d.url", dir, AppName, i);
+    path = Format("%s%s %d.url", dir, DayZAppName, i);
     if (!QIFileFunctions::FileExists(path)) break;
   }
 
@@ -22273,7 +21556,7 @@ bool DisplayNewUser::CanDestroy()
     {
       _finddata_t info;
       RString dir = GetUserRootDir(name);
-      long check = X_findfirst(dir, &info);
+      intptr_t check = X_findfirst(dir, &info);
       if (check != -1)
       {
         // player already exist

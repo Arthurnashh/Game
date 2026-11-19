@@ -3673,7 +3673,7 @@ bool TextureSourceIrradiance::GetMipmapData(void *mem, const PacLevelMem &mip, i
   for (int i=0; i<mip._h; i++)
   {
     float x = i*invH;
-    float res = pow(x,_specPower);
+    float res = powf(x,_specPower);
     int resI = toInt(res*255);
     saturate(resI,0,255);
     specular[i] = resI;
@@ -3757,7 +3757,7 @@ bool TextureSourceWaterIrradiance::GetMipmapData(void *mem, const PacLevelMem &m
   for (int i=0; i<mip._h; i++)
   {
     float x = i*invH;
-    float res = pow(x,_specPower);
+    float res = powf(x,_specPower);
     int resI = toInt(res*255);
     saturate(resI,0,255);
     specular[i] = resI;

@@ -42,9 +42,18 @@ void Variable::Clear(IVariable* cvar) const
 
 	if(IsPtr())
 	{
-		int dim = ArraySize();
-		if(dim != 0)
-			FillMemory32(cvar->Pointer, dim, (int)data);
+		const size_t count = ArraySize();
+		size_t elementSize = static_cast<size_t>(GetType()->Sizeof);
+		if(GetVType() == VARTYPE_VECTOR) elementSize *= VEC_SIZE;
+		if(count != 0 && elementSize != 0)
+		{
+			char *destination = static_cast<char*>(cvar->Pointer);
+			if(data == NULL)
+				memset(destination, 0, count * elementSize);
+			else
+				for(size_t i = 0; i < count; ++i)
+					memcpy(destination + i * elementSize, &data, elementSize);
+		}
 	}
 	else
 	{
@@ -217,6 +226,15 @@ bool Variable::Set(const TToken* init, IVariable* ivar, int x) const
 		return true;
 
 	case VARTYPE_INT:
+		{
+			int* ip = IsPtr() ? (int*)ivar->Pointer : &ivar->Int;
+			if(init->Type == TT_NUMBER)
+				return sscanf(init->Text, "%d", &ip[x]) == 1;
+			if(init->Type == TT_HEXA)
+				return sscanf(init->Text, "%x", &ip[x]) == 1;
+		}
+		return false;
+
 	case VARTYPE_USER0:
 	case VARTYPE_USER1:
 	case VARTYPE_USER2:
@@ -226,18 +244,50 @@ bool Variable::Set(const TToken* init, IVariable* ivar, int x) const
 	case VARTYPE_USER6:
 	case VARTYPE_USER7:
 		{
-			int* ip = IsPtr() ? (int *)ivar->Pointer : &ivar->Int;
-
+			const size_t valueSize = static_cast<size_t>(GetType()->Sizeof);
+			const bool pointerSized = valueSize >= sizeof(uintptr_t);
 			if(init->Text[0] == '#')
-				return ((ip[x] = (int)Module->FindType(&init->Text[1])) != 0);
+			{
+				VarType* type = Module->FindType(&init->Text[1]);
+				if(!type) return false;
+				if(pointerSized)
+				{
+					uintptr_t* values = IsPtr() ? (uintptr_t*)ivar->Pointer : (uintptr_t*)&ivar->Pointer;
+					values[x] = reinterpret_cast<uintptr_t>(type);
+				}
+				else
+				{
+					int* values = IsPtr() ? (int*)ivar->Pointer : &ivar->Int;
+					values[x] = type->Index;
+				}
+				return true;
+			}
 
+			int parsedValue;
 			if(init->Type == TT_NUMBER)
-				return (sscanf(init->Text, "%d", &ip[x]) == 1);
+			{
+				if(sscanf(init->Text, "%d", &parsedValue) != 1) return false;
+			}
+			else if(init->Type == TT_HEXA)
+			{
+				unsigned int parsedHex;
+				if(sscanf(init->Text, "%x", &parsedHex) != 1) return false;
+				parsedValue = static_cast<int>(parsedHex);
+			}
+			else return false;
 
-			if(init->Type == TT_HEXA)
-				return (sscanf(init->Text, "%x", &ip[x]) == 1);
+			if(pointerSized)
+			{
+				uintptr_t* values = IsPtr() ? (uintptr_t*)ivar->Pointer : (uintptr_t*)&ivar->Pointer;
+				values[x] = static_cast<uintptr_t>(static_cast<intptr_t>(parsedValue));
+			}
+			else
+			{
+				int* values = IsPtr() ? (int*)ivar->Pointer : &ivar->Int;
+				values[x] = parsedValue;
+			}
+			return true;
 		}
-		return false;
 
 	case (VARTYPE_VECTOR):
 		if(init->Type != TT_QUOTE || ivar->Pointer == NULL)
@@ -284,6 +334,13 @@ bool Variable::Set(const char* value, IVariable* ivar, int x) const
 		return true;
 
 	case VARTYPE_INT:
+		{
+			int *ip = IsPtr() ? (int *)ivar->Pointer : &ivar->Int;
+			if(value[0] == '0' && value[1] == 'x')
+				return sscanf(value, "%x", &ip[x]) == 1;
+			return sscanf(value, "%d", &ip[x]) == 1;
+		}
+
 	case VARTYPE_USER0:
 	case VARTYPE_USER1:
 	case VARTYPE_USER2:
@@ -293,20 +350,47 @@ bool Variable::Set(const char* value, IVariable* ivar, int x) const
 	case VARTYPE_USER6:
 	case VARTYPE_USER7:
 
-		int *ip;
-		if(IsPtr())
-			ip = (int *)ivar->Pointer;
-		else
-			ip = &ivar->Int;
+		{
+			const size_t valueSize = static_cast<size_t>(GetType()->Sizeof);
+			const bool pointerSized = valueSize >= sizeof(uintptr_t);
+			if(value[0] == '#')
+			{
+				VarType* type = Module->FindType(value + 1);
+				if(!type) return false;
+				if(pointerSized)
+				{
+					uintptr_t* values = IsPtr() ? (uintptr_t*)ivar->Pointer : (uintptr_t*)&ivar->Pointer;
+					values[x] = reinterpret_cast<uintptr_t>(type);
+				}
+				else
+				{
+					int* values = IsPtr() ? (int*)ivar->Pointer : &ivar->Int;
+					values[x] = type->Index;
+				}
+				return true;
+			}
 
-		if(value[0] == '#')
-			return ((ip[x] = (int)Module->FindType(value + 1)) != 0);
+			int parsedValue;
+			if(value[0] == '0' && value[1] == 'x')
+			{
+				unsigned int parsedHex;
+				if(sscanf(value, "%x", &parsedHex) != 1) return false;
+				parsedValue = static_cast<int>(parsedHex);
+			}
+			else if(sscanf(value, "%d", &parsedValue) != 1) return false;
 
-		if(value[0] == '0' && value[1] == 'x')
-			return (sscanf(value, "%x", &ip[x]) == 1);
-		else
-			return (sscanf(value, "%d", &ip[x]) == 1);
-		return false;
+			if(pointerSized)
+			{
+				uintptr_t* values = IsPtr() ? (uintptr_t*)ivar->Pointer : (uintptr_t*)&ivar->Pointer;
+				values[x] = static_cast<uintptr_t>(static_cast<intptr_t>(parsedValue));
+			}
+			else
+			{
+				int* values = IsPtr() ? (int*)ivar->Pointer : &ivar->Int;
+				values[x] = parsedValue;
+			}
+			return true;
+		}
 
 	case (VARTYPE_VECTOR):
 		{

@@ -509,155 +509,6 @@ void SaveUserParamsArchiveToSave(ParamArchiveSave &ar)
 
 #else
 
-#if _PROFILE_IN_STEAM_CLOUD
-/// The following SteamCloud implementation is taken / modified from ArmA3 (SteamUtils.hpp.cpp)
-/* Returns true if cloud is enabled for user and for application
- */
-bool IsSteamCloudEnabled();
-
-/* Function for uploading files to the Steam cloud
- * Files are instantly saved to local Steam cloud, files are synchronized by Steam client after application close and before application starts.
- * Synchronous write, use only for small files.
- */
-enum EUploadResult
-{
-  UROk,
-  URNotEnoughSpace,
-  URSourceFileDesntExists,
-  URInvalidFile,
-  URSteamError
-};
-
-EUploadResult UploadFileToSteamCloud(RString sourcePath, RString steamFileName)
-{
-  if (!SteamRemoteStorage())
-  {
-    LogF("SteamRemoteStorage structure is NULL");
-    return URSteamError;
-  }
-
-  // check file existence
-  if (!QIFileFunctions::FileExists(sourcePath))
-  {
-    LogF("Upload to steam Cloud: Invalid input file!" );
-    return URInvalidFile;
-  }
-
-  // get available space
-  int32 total, availableSpace;
-  if (!SteamRemoteStorage()->GetQuota(&total, &availableSpace))
-    return URSteamError;
-
-  // check if file already exists
-  if (SteamRemoteStorage()->FileExists(steamFileName))
-  {
-    // file will be overwritten, add it's size to available space
-    availableSpace += SteamRemoteStorage()->GetFileSize(steamFileName);
-  }
-
-  // get file size
-  const size_t fileSize = QIFileFunctions::GetFileSize(sourcePath);
-  if (fileSize > availableSpace)
-    return URNotEnoughSpace;
-   
-  // allocate read/write buffer (1MB)
-  const int bufferSize = 1024*1024;
-  Buffer<char> buff(bufferSize);
-
-  int writenByes = 0;
-
-  // open stream to Steam cloud
-  UGCFileWriteStreamHandle_t fileHandle = SteamRemoteStorage()->FileWriteStreamOpen(steamFileName);
-  if (fileHandle == k_UGCFileStreamHandleInvalid)
-  {
-    LogF("Can't open stream to cloud file '%s'.", cc_cast(steamFileName));
-    return URSteamError;
-  }
-
-  QIFStream fileStream;
-  fileStream.open(sourcePath);
-  while (!fileStream.fail() && writenByes < fileSize)
-  {
-    // read from the file to buffer
-    size_t rd = fileStream.read(buff.Data(),bufferSize);
-    // store content of the buffer to Steam stream
-    if (!SteamRemoteStorage()->FileWriteStreamWriteChunk(fileHandle, buff.Data(), rd))
-      break;
-    writenByes += rd;
-  } 
-
-  // close Steam
-  SteamRemoteStorage()->FileWriteStreamClose(fileHandle);
-
-  // check if everything went ok
-  if (writenByes != fileSize)
-  {
-    // when there was a problem with source file, delete file from the cloud, it would be corrupted anyway
-    SteamRemoteStorage()->FileDelete(steamFileName);
-
-    LogF("Saving '%s' file to Steam cloud failed", cc_cast(steamFileName));
-    return URSteamError;
-  }
-  fileStream.close();
-
-  return UROk;
-}
-
-bool LoadFileFromSteamCloud(RString steamFileName, RString targetPath)
-{
-  // no need for target path to exist. If so, it should be overwritten
-  QOFStream out;
-  out.open(targetPath);
-  if ( out.fail() || !SteamRemoteStorage()->FileExists( steamFileName ) ) return false;
-  int size = SteamRemoteStorage()->GetFileSize( steamFileName );
-  Buffer<char> buf(size);
-  if ( SteamRemoteStorage()->FileRead( steamFileName, buf, size ) != size )
-  {
-    out.close(); return false;
-  }
-  QIStrStream in(buf, size);
-  in.copy(out);
-  out.close();
-  return true;
-}
-
-class SteamProfileLoader
-{
-public:
-  SteamProfileLoader()
-  {
-#if _ENABLE_DEDICATED_SERVER
-    bool IsDedicatedServer();
-    if (IsDedicatedServer()) return;
-#endif
-    if (!SteamRemoteStorage()) 
-    {
-      bool InitSteam();
-      if (!InitSteam() || !SteamRemoteStorage())
-      {
-        LogF("SteamProfileLoader has failed!");
-        return;
-      }
-    }
-    RString GetUserParams(bool update);
-    RString filename = GetUserParams(false);
-    RString cloudFileName = GetFilenameExt(filename);
-    if (SteamRemoteStorage()->FileExists(cloudFileName))
-    {
-      if (QIFileFunctions::FileExists(filename))
-      {
-        int64 cloudTimeStamp = SteamRemoteStorage()->GetFileTimestamp(cloudFileName);
-        int64 profileTimeStamp = QIFileFunctions::TimeStamp(filename);
-        if (profileTimeStamp < cloudTimeStamp)
-        { // profile inside cloud is more current, we should overwrite the profile
-          LoadFileFromSteamCloud(cloudFileName, filename);
-        }
-        // else ... maybe manualy edited profile
-      }
-    }
-  }
-};
-#endif
 
 //! returns user profile (parameters) file for given user
 RString GetUserParams(RString name, bool update)
@@ -759,9 +610,6 @@ RString GetUserParams(bool update)
 
 bool ParseUserParams(ParamFile &cfg, RString name, GameDataNamespace *globals)
 {
-#if _PROFILE_IN_STEAM_CLOUD
-  static SteamProfileLoader SPL; //singleton to get profile from cloud on init
-#endif
   RString filename = GetUserParams(name, false);
   if (filename.GetLength() <= 0 || !QIFileFunctions::FileExists(filename))
   {
@@ -804,18 +652,6 @@ void SaveUserParams(ParamFile &cfg)
   cfg.Save();
 #endif
 
-#if _PROFILE_IN_STEAM_CLOUD
-#if _ENABLE_DEDICATED_SERVER
-  bool IsDedicatedServer();
-  if (!IsDedicatedServer())
-#endif
-  {
-    RString filename = GetUserParams(false);
-    RString cloudFileName = GetFilenameExt(filename);
-    /*EUploadResult result = */UploadFileToSteamCloud(filename, cloudFileName);
-    //LogF("UploadFileToSteamCloud: %s result=%d", cc_cast(cloudFileName), result);
-  }
-#endif
 }
 
 void SaveUserParamsToSave(ParamFile &cfg)
@@ -886,8 +722,6 @@ void SaveUserParamsArchive(ParamArchiveSave &ar)
   ar.Save(filename);
 #endif
 
-#if _PROFILE_IN_STEAM_CLOUD
-#endif
 }
 
 void SaveUserParamsArchiveToSave(ParamArchiveSave &ar)
@@ -1068,7 +902,7 @@ void RenameUserProfile(RString oldName, RString newName)
 
     // copy all files to new save
     _finddata_t info;
-    long h = _findfirst(srcDir + RString("*.*"), &info); // u: drive
+    intptr_t h = _findfirst(srcDir + RString("*.*"), &info); // u: drive
     if (h != -1)
     {
       do
@@ -7227,7 +7061,7 @@ void DisplayMainVBS::OnButtonClicked(int idc)
     {
       _finddata_t info;
       RString dir = GetUserRootDir(name);
-      long check = X_findfirst(dir, &info);
+      intptr_t check = X_findfirst(dir, &info);
 
       Glob.header.SetPlayerName(name);      
       SaveLastPlayer();
@@ -9382,18 +9216,6 @@ void DisplayMain::OnSimulate(EntityAI *vehicle)
     GInput.CheatServed();
   }
 #endif
-#if _ENABLE_STEAM
-  if (!GInput.changeServer.IsEmpty())
-  {
-    if (!GetNetworkManager().IsServer() && !GetNetworkManager().IsClient())
-    {
-      void __cdecl CDPCreateClient(RString ip, int port, RString password, RString serverName);
-      extern const int DefaultNetworkPort;
-      CDPCreateClient(GInput.changeServer, DefaultNetworkPort, GInput.changeServerPassword, "");
-    }
-    GInput.changeServer=RString();
-  }
-#endif
 
 #if _GAMES_FOR_WINDOWS || (defined _XBOX && _XBOX_VER >= 200)
   // handle profile change
@@ -10024,7 +9846,7 @@ void FlushReadHandles(const char *dir)
   sprintf(buffer, "%s\\*.*", dir);
 
   _finddata_t info;
-  long h = X_findfirst(buffer, &info);
+  intptr_t h = X_findfirst(buffer, &info);
   if (h != -1)
   {
     do
@@ -12488,7 +12310,7 @@ void DisplaySingleMission::LoadDirectory()
     _missionList->ClearStrings();
 #ifdef _XBOX
     _finddata_t info;
-    long h = _findfirst(_directory + RString("*.*"), &info);  // t: drive
+      intptr_t h = _findfirst(_directory + RString("*.*"), &info);  // t: drive
     if (h != -1)
     {
       do
@@ -12611,13 +12433,13 @@ void DisplaySingleMission::LoadDirectory()
         {
           bool exist = true;
           for (int i=0; i< cnd.GetSize();++i)
-            if (!(Pars >> "CfgPatches").FindEntry((RString)cnd[i])) exist = false;
+            if (!(Pars >> "CfgPatches").FindEntry((RString)cnd[i].GetValue())) exist = false;
 
           if (!exist) continue;
         }
         else if (cnd.IsTextValue())
         {
-          if (!(Pars >> "CfgPatches").FindEntry((RString)cnd)) continue;
+          if (!(Pars >> "CfgPatches").FindEntry((RString)cnd.GetValue())) continue;
         }
       }
 
@@ -12652,9 +12474,9 @@ void DisplaySingleMission::LoadDirectory()
 
   // first search for .pbo files
   #ifdef _XBOX
-    long h = X_findfirst(dir + RString("*"), &info);
+    intptr_t h = X_findfirst(dir + RString("*"), &info);
   #else
-    long h = _findfirst(dir + RString("*.pbo"), &info);  // not used on Xbox
+    intptr_t h = _findfirst(dir + RString("*.pbo"), &info);  // not used on Xbox
   #endif
   if (h != -1)
   {

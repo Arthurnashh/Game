@@ -60,6 +60,7 @@ RString Format(const char *format, ...)
 	return buf;
 }
 
+#if !defined(_WIN64)
 RString FormatByteSize(size_t size)
 {
   const int oneKB = 1024;
@@ -104,6 +105,7 @@ RString FormatByteSize(size_t size)
   #endif
   
 }
+#endif
 
 RString FormatByteSize(unsigned long long size)
 {

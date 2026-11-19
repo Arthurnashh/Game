@@ -245,8 +245,7 @@ bool MemCommit::CheckLockedRange(void *startAddr, void *endAddr) const
 {
   Fail("Not tested");
   
-  // we assume 32b environment here
-  COMPILETIME_COMPARE(sizeof(uintptr_t),4)
+  // Use pointer-width offsets so this check also works in the x64 client.
   int inR = FindRes(startAddr, endAddr);
   DoAssert(inR>=0);
   const MemReservedInfo &res = _res[inR];
@@ -382,20 +381,22 @@ int MemCommit::DecommitPages(int pages)
 char *MemCommit::ExtendEnd(char *end, char *extend)
 {
   // extend end to nearest up page boundary, if allowed by extend range
-  int iEnd = uintptr_t(end)>>_pageSizeLog;
-  if (uintptr_t(extend)>=(iEnd+1)*_pageSize)
+  uintptr_t iEnd = uintptr_t(end)>>_pageSizeLog;
+  uintptr_t nextPage = (iEnd+1)<<_pageSizeLog;
+  if (uintptr_t(extend)>=nextPage)
   {
-    return (char *)((iEnd+1)*_pageSize);
+    return (char *)nextPage;
   }
   return end;
 }
 char *MemCommit::ExtendBeg(char *beg, char *extend)
 {
   // extend end to nearest down page boundary, if allowed by extend range
-  int iBeg = uintptr_t(beg)>>_pageSizeLog;
-  if (uintptr_t(extend)<=iBeg*_pageSize)
+  uintptr_t iBeg = uintptr_t(beg)>>_pageSizeLog;
+  uintptr_t pageAddress = iBeg<<_pageSizeLog;
+  if (uintptr_t(extend)<=pageAddress)
   {
-    return (char *)(iBeg*_pageSize);
+    return (char *)pageAddress;
   }
   return beg;
 }

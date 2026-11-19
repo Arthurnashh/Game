@@ -54,6 +54,8 @@ public:
 		uint				m_iClass;
 		//!Original pointer of object
 		const void*		m_pPointer;
+		//!Stable 32-bit reference written to the serialized TOC
+		SerializedIdentifier m_iIdentifier;
 		//!Offset in serialized stream.
 		uint				m_iOffset;
 		//!Size in serialized stream.
@@ -72,6 +74,7 @@ public:
 			m_iType(type),
 			m_iClass(0xffffffff),
 			m_pPointer(ptr),
+			m_iIdentifier(0),
 			m_iOffset(0),
 			m_iSize(0),
 			m_bStored(false)

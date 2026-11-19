@@ -11,7 +11,6 @@
 #include "SimulWeatherUtils.hpp"
 #include "../global.hpp"
 #include "../scene.hpp"
-#include "../d3d9/engdd9.hpp"
 #include "../world.hpp"
 
 //=====================================================================================

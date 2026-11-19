@@ -912,9 +912,9 @@ static GameValue ValMax( const GameState *state, GameValuePar oper1, GameValuePa
 }
 static GameValue Na( const GameState *state, GameValuePar oper1, GameValuePar oper2 )
 {
-  return (float)pow((float)oper1, (float)oper2);
+  return powf((float)oper1, (float)oper2);
 }
-static float Na(float oper1, float oper2) {return pow(oper1, oper2);}
+static float Na(float oper1, float oper2) {return powf(oper1, oper2);}
 
 static GameValue CmpE( const GameState *state, GameValuePar oper1, GameValuePar oper2 )
 {
@@ -2460,14 +2460,14 @@ GameValue NamespaceSetVariable(const GameState *state, GameValuePar oper1, GameV
   return NOTHING;
 }
 
-inline bool CheckSize(const GameState *state, GameArrayType array, int size)
+static inline bool CheckSize(const GameState *state, GameArrayType array, int size)
 {
   if (array.Size() == size) return true;
   state->SetError(EvalDim, array.Size(), size);
   return false;
 }
 
-inline bool CheckType(const GameState *state, GameValuePar oper, const GameType &type)
+static inline bool CheckType(const GameState *state, GameValuePar oper, const GameType &type)
 {
   if (oper.GetType() == type) return true;
   state->TypeError(type, oper.GetType());

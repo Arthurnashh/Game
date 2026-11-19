@@ -7,6 +7,7 @@
 //-----------------------------------------------------------------------------
 
 //#include "precomp.h"
+#include <stdint.h>
 
 #include "script/enf_scriptmain.h"
 #include "script/enf_scriptinternal.h"
@@ -95,6 +96,7 @@ class ScriptDebugger: public DbgConnection
 
 	ScriptContext*	m_pContext;
 	Set<ScriptModule*> m_Modules;
+	Array<ScriptModule*> m_ModuleIds;
 
 public:
 
@@ -289,8 +291,10 @@ int ScriptContext::StartDebugger(const Funct *fn, Variable *clas, uint line)
 		break;
 
 	case -1:
-#ifdef WIN32
+#if defined(WIN32) && defined(_M_IX86)
 		__asm int 0x03;
+#elif defined(WIN32)
+		DebugBreak();
 #elif defined(ENF_XENON) && defined(ENF_DEVELOPER)
 		DmCrashDump(false);
 #endif
@@ -414,7 +418,8 @@ void ScriptContext::RemoveBreakpoint(const Stat* st)
 //-----------------------------------------------------------------------
 bool ValidateInstancePtr(Instance* inst)
 {
-	if((inst->GetISizeof() & 0xfff00003) != 0 || ((uint)inst->GetClass() & 0x03) != 0 || (uint)inst->GetClass() <= 0xffff)
+	const uintptr_t classAddress = reinterpret_cast<uintptr_t>(inst->GetClass());
+	if((inst->GetISizeof() & 0xfff00003) != 0 || (classAddress & 0x03) != 0 || classAddress <= 0xffff)
 		return false;
 
 #if defined(WIN32)
@@ -432,7 +437,7 @@ void Instance2Text(char* buff, Instance* inst)
 	else if(!ValidateInstancePtr(inst))
 		strcpy(buff, "INVALID");
 	else
-		sprintf(buff, "%s<%x>", inst->GetClass()->GetName(), (unsigned int)inst);
+		sprintf(buff, "%s<%p>", inst->GetClass()->GetName(), (void*)inst);
 }
 
 //-----------------------------------------------------------------------
@@ -477,6 +482,7 @@ int ScriptDebugger::Break(const Funct* fn, Variable* clas, int line)
 	if(!m_Modules.Contains(mod))
 	{
 		m_Modules.Insert(mod);
+		m_ModuleIds.Insert(mod);
 
 		const DebugInfo* di = mod->GetDebugInfo();
 
@@ -499,7 +505,10 @@ int ScriptDebugger::Break(const Funct* fn, Variable* clas, int line)
 		}
 
 		SendCommand(DBGCMD_ADDMODULE);
-		SendInt((int)mod);
+		int moduleId = -1;
+		for(uint i = 0; i < m_ModuleIds.GetCardinality(); i++)
+			if(m_ModuleIds[i] == mod) { moduleId = static_cast<int>(i); break; }
+		SendInt(moduleId);
 		SendInt(di->m_Modules.GetCardinality());
 		SendInt(di->m_Lines.GetCardinality());
 		SendInt(breakpoints.GetCardinality());
@@ -613,7 +622,9 @@ int ScriptDebugger::Break(const Funct* fn, Variable* clas, int line)
 					int line;
 					ReceiveInt(module);
 					ReceiveInt(line);
-					m_Breakpoints[n].m_pModule = (ScriptModule*)module;
+					if(module < 0 || static_cast<uint>(module) >= m_ModuleIds.GetCardinality())
+						return 0;
+					m_Breakpoints[n].m_pModule = m_ModuleIds[module];
 					m_Breakpoints[n].m_iIndex = line;
 				}
 				SetBreakpoints();
@@ -910,7 +921,7 @@ void Variable2Text(const Variable *var, char *tmp, bool type, bool name)
 			if(var->IsPtr())
 				sprintf(num,"'%x'", ((int *)var->Pointer)[n]);
 			else
-				sprintf(num,"'%x'", (unsigned int)var->Pointer);
+				sprintf(num,"'%p'", var->Pointer);
 			break;
 		}
 

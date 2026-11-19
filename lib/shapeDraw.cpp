@@ -1,4 +1,4 @@
-// Poseidon - shape management
+﻿// Poseidon - shape management
 // (C) 1998, SUMA
 
 #include "wpch.hpp"
@@ -39,6 +39,10 @@
 #ifdef _MSC_VER
   #pragma warning( disable: 4355 )
 #endif
+
+// Shape geometry can be released while the free-on-demand manager rotates its
+// cache lists. Serialize both paths so a frame rotation cannot race a draw.
+static CriticalSection ShapeBankGeometryCacheLock;
 
 
 #if _ENABLE_PERFLOG
@@ -87,6 +91,17 @@ void Shape::DrawSections(int cb, const AnimationContext *animContext, ColorVal a
     end = NSections();
   }
 
+  // Early out: nothing to draw
+  if (beg >= end) return;
+
+  // Hoist material creation out of the section loop — it only depends on
+  // animColor, which is constant across all sections of this shape draw.
+  TLMaterial mat;
+  CreateMaterial(mat, animColor);
+
+  // Pre-fetch the crater flag once, used by every iteration
+  const bool hasCraters = (dp._cratersCount > 0);
+
   // Go through the sections and draw them
   // there was section merging working here - it cannot work
   // as we cannot access FaceArray _face here (it can be discarded)
@@ -95,16 +110,18 @@ void Shape::DrawSections(int cb, const AnimationContext *animContext, ColorVal a
     // const ShapeSection &sec = GetSection(i);
     const PolyProperties &pp = animContext ? animContext->GetSection(this, i) : GetSection(i);
 
+    const int ppSpec = pp.Special();
+
     // If we render craters and the pixel shader is not designed for drawing craters (f.i. tree crowns), then go to the next section
-    if (dp._cratersCount > 0)
+    if (hasCraters)
     {
       // Tree crown is determined by backface drawing and special pixel shader
-      if (pp.Special()&NoBackfaceCull)
+      if (ppSpec & NoBackfaceCull)
       {
-        const TexMaterial *mat = pp.GetMaterialExt();
-        if (mat)
+        const TexMaterial *pmat = pp.GetMaterialExt();
+        if (pmat)
         {
-          PixelShaderID ps = mat->GetPixelShaderID();
+          PixelShaderID ps = pmat->GetPixelShaderID();
           switch (ps)
           {
           case PSNormalMapThrough:
@@ -125,15 +142,11 @@ void Shape::DrawSections(int cb, const AnimationContext *animContext, ColorVal a
     }
 
     // Proxy or hidden - don't draw
-    if (pp.Special() & (IsHidden | IsHiddenProxy)) continue;
+    if (ppSpec & (IsHidden | IsHiddenProxy)) continue;
 
     // Calculate the bias for section
-    int secBias = ((pp.Special() & ZBiasMask) / ZBiasStep) * 5;
+    int secBias = ((ppSpec & ZBiasMask) / ZBiasStep) * 5;
     int maxBias = intMax(bias, secBias);
-
-    // Get the material
-    TLMaterial mat;
-    CreateMaterial(mat,animColor);
 
     // Prepare and draw section
     bool uvchanged = false;
@@ -553,7 +566,7 @@ void Shape::ConvertToVBuffer(VBType type, const LODShape *lodShape, int level) c
   ShapeGeometryLock<> lock;
   if (lodShape)
     lock.Lock(lodShape,level);
-  _buffer.Ref<VertexBuffer>::operator =( GEngine->CreateVertexBuffer(*this, type, frequent) );
+  _buffer.SetBuffer(GEngine->CreateVertexBuffer(*this, type, frequent));
   }
   if (_buffer)
   {
@@ -926,6 +939,7 @@ void ShapeBank::ShapeUnloaded(ShapeRefManaged *shapeRef)
 
 void ShapeBank::ShapeGeometryReleased(Shape *shape)
 {
+  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   AssertMainThread();
   if (shape->IsInList())
   {
@@ -994,6 +1008,7 @@ void ShapeBank::ShapeReleased(ShapeRefManaged *shapeRef)
 
 void ShapeBank::UnloadGeometry(Shape *shape)
 {
+  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   if (shape->IsInList())
   {
     Assert(shape->GeometryCanBeUnloaded());
@@ -1016,6 +1031,7 @@ RString ShapeBank::GetDebugNameGeom() const
 }
 size_t ShapeBank::FreeOneItemGeom()
 {
+  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   Shape *unload = _geometryLoaded.First();
   if (!unload) return 0;
   
@@ -1037,15 +1053,18 @@ size_t ShapeBank::FreeOneItemGeom()
 }
 size_t ShapeBank::MemoryControlledRecentGeom() const
 {
+  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   return _geometryLoaded.MemoryControlledRecent();
 }
 size_t ShapeBank::MemoryControlledGeom() const
 {
+  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   return _geometryLoaded.MemoryControlled();
 }
 
 void ShapeBank::MemoryControlledFrameGeom()
 {
+  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   _geometryLoaded.Frame();
   
 #if 0
@@ -1223,6 +1242,7 @@ void ShapeBank::MemoryControlledFrameLODShape()
 
 void ShapeBank::AddRefGeometry(const Shape *shape, const ShapeRef *shapeRef)
 {
+  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   if (!shape->AddRefLoad())
   {
     // TODO:MC: create a SLL of those which need the handling below to be done
@@ -1242,6 +1262,7 @@ void ShapeBank::AddRefGeometry(const Shape *shape, const ShapeRef *shapeRef)
 
 void ShapeBank::ReleaseGeometry(const Shape *shape)
 {
+  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   //size_t size = shape->GeometrySize();
   if (!shape->ReleaseLoad())
   {
@@ -1573,7 +1594,7 @@ void Shape::PrepareTextures(float z2, AnimationContext *animContext, int special
   }
 
   float aotFactor = GScene->GetCamera()->GetAOTFactor();
-  if (!prepareBaseTextureOnly && _texArea._valid)
+  if (!prepareBaseTextureOnly && _texArea._valid && (!animContext || !animContext->HasChangedSections()))
   {
     for (int i=0; i<_texArea._items.Size(); i++)
     {
@@ -1691,4 +1712,5 @@ void Shape::PrepareTextures(float z2, AnimationContext *animContext, int special
     }
   }
 }
+
 

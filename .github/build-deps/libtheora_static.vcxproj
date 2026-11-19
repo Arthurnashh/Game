@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{653F3841-3F26-49B9-AFCF-091DB4B67031}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>libtheora_static</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(MSBuildThisFileDirectory)..\..\build\port-x64\audio\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\..\build\port-x64\audio\obj\libtheora_static\</IntDir>
+    <TargetName>libtheora_static</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>..\..\extern\audio-x64-src\ogg\include;..\..\extern\audio-x64-src\theora\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\analyze.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\encapiwrapper.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\encfrag.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\encinfo.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\encode.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\enquant.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\fdct.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\huffenc.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\mathops.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\mcenc.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\rate.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\tokenize.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\x86_vc\mmxencfrag.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\x86_vc\mmxfdct.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\x86_vc\x86cpu.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\x86_vc\x86enc.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\apiwrapper.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\bitpack.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\decapiwrapper.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\decinfo.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\decode.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\dequant.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\fragment.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\huffdec.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\idct.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\info.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\internal.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\quant.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\state.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\x86_vc\mmxfrag.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\x86_vc\mmxidct.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\x86_vc\mmxstate.c" />
+    <ClCompile Include="..\..\extern\audio-x64-src\theora\lib\x86_vc\x86state.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

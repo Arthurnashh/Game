@@ -8,6 +8,7 @@
 
 //#include "precomp.h"
 //#include <stdio.h>
+#include <stdint.h>
 #include "common/enf_types.h"
 #include "common/enf_staticbuffer.h"
 #include "script/enf_scriptmain.h"
@@ -133,11 +134,11 @@ void ScriptListing::Add(const char *str)
 //-----------------------------------------------------------------------
 const Variable* ScriptListing::GetVar(const void *v)
 {
-	if((int)v >= 0x10000)
-		return (Variable*)v;
+	if(reinterpret_cast<uintptr_t>(v) >= 0x10000)
+		return (const Variable*)v;
 	else
 	{
-		return m_pCompiler->m_pModule->m_Refs[(int)v].m_pVar;
+		return m_pCompiler->m_pModule->m_Refs[static_cast<int>(reinterpret_cast<uintptr_t>(v))].m_pVar;
 	}
 }
 
@@ -385,7 +386,7 @@ static ushort ptl = 0;
 		if(GetVar(st->Op[1])->GetVType() == VARTYPE_FLOAT)
 			Add(*(float*)&st->Op[0]);
 		else
-			Add((int)st->Op[0]);
+			Add(static_cast<int>(reinterpret_cast<uintptr_t>(st->Op[0])));
 	break;
 
 	case OP_MOVE:
@@ -755,7 +756,7 @@ void ScriptListing::Add(const Variable *v)
 			}
 		}
 		else
-			fprintf((FILE*)m_fFile,"[0x%x]", (unsigned int)v);
+			fprintf((FILE*)m_fFile,"[%p]", (const void*)v);
 	}
 }
 }

@@ -1,4 +1,4 @@
-﻿#include "../wpch.hpp"
+#include "../wpch.hpp"
 #include "networkImpl.hpp"
 #include "../global.hpp"
 //#include "strIncl.hpp"
@@ -337,7 +337,7 @@ void NetworkObjectInfo::NullPlayerObjectInfo(PlayerIndex player, int pid)
 
 RString NetworkObjectInfo::GetDebugName() const
 {
-  if (object.IsNull()) return Format("id=%d:%"OID_FORMAT,id.creator,id.id);
+  if (object.IsNull()) return Format("id=%d:%" OID_FORMAT,id.creator,id.id);
   return object->GetDebugName();
 }
 
@@ -716,7 +716,7 @@ bool NetworkServer::BattlEye::Run(const NetworkServer *server)
     }
 
     // add all players
-#if _VERIFY_CLIENT_KEY || _ENABLE_STEAM_OWNERSHIP
+#if _VERIFY_CLIENT_KEY
     const AutoArray<PlayerIdentity> *identities = server->GetIdentities();
     if (identities)
     {
@@ -726,11 +726,7 @@ bool NetworkServer::BattlEye::Run(const NetworkServer *server)
           sockaddr_in address;
           server->_server->GetClientAddress(identity.dpnid, address);
         AddPlayer(identity.dpnid, address.sin_addr.s_addr, address.sin_port, identity.name);
-#if _ENABLE_STEAM_OWNERSHIP
-        PlayerGUIDReceived(identity.dpnid, CSteamID((uint64)identity._steamID));
-#else
         PlayerGUIDReceived(identity.dpnid);
-#endif
         if (identity.clientState == NCSPlaying)
           PlayerGoesInGame(identity.dpnid);
         //else PlayerGoesInLobby(identity.dpnid); //<- assumed as default after AddPlayer
@@ -766,17 +762,6 @@ void NetworkServer::BattlEye::PlayerDisconnected(int player)
   if (_callbacks._changePlayerStatus) (*_callbacks._changePlayerStatus)(player, -1);
 }
 
-#if _ENABLE_STEAM_OWNERSHIP
-void NetworkServer::BattlEye::PlayerGUIDReceived(int player, const CSteamID &id)
-{
-  if (_callbacks._receivedPlayerGUID) 
-  {
-    uint64 steamId = id.ConvertToUint64();
-    (*_callbacks._receivedPlayerGUID)(player, &steamId, sizeof(steamId));
-  }
-}
-
-#else
 void NetworkServer::BattlEye::PlayerGUIDReceived(int player)
 {
   if (_callbacks._receivedPlayerGUID) 
@@ -787,16 +772,10 @@ void NetworkServer::BattlEye::PlayerGUIDReceived(int player)
 #endif
   }
 }
-#endif
 
-void NetworkServer::BattlEye::PlayerGUIDIsValid(int player, const CSteamID &ownerId)
+void NetworkServer::BattlEye::PlayerGUIDIsValid(int player)
 {
-  if (_callbacks._playerGUIDIsValid)
-  {
-    uint64 ownerSteamId = ownerId.ConvertToUint64();
-    (*_callbacks._playerGUIDIsValid)(player, &ownerSteamId, sizeof(ownerSteamId));
-  }
-};
+}
 
 bool NetworkServer::BattlEye::UpdatePositionCallback(int player, const char *netId, float x, float y, float z,
   float dirX, float dirY, float dirZ, float upX, float upY, float upZ, float asideX, float asideY, float asideZ)
@@ -1020,243 +999,12 @@ QFBank *FindBank(const char *prefix)
   const int DefaultSecureIdRequired = 0;
 #endif
 
-#if _ENABLE_STEAM_MATCHMAKING && _ENABLE_DEDICATED_SERVER
 
-#define STEAM_STAT_DEFINE_STATICS(name, Type, DefaultValue) \
-  RString Stat_##name::apiName=RString(#name);
-  
-STEAM_STATS_LIST(STEAM_STAT_DEFINE_STATICS)
-
-#define CREATE_STAT_VAR(name, Type, DefaultValue) \
-  _stats[EStat_##name] = new Stat_##name;
-
-SteamStatistics::SteamStatistics()
-  : _initialized(false), _lastStatsReceivedTime(0), _lastStatsStoredTime(0), _nextStoreStatsTime(0), _nextRequestStatsTime(0),
-    _lastCharacterTimeAliveSyncTime(0)
-{
-  for (int i=0; i<EStatN; ++i) _stats[i]=nullptr;
-}
-
-SteamStatistics::~SteamStatistics()
-{
-  for (int i=0; i<EStatN; ++i) 
-  { 
-    if (_stats[i]) 
-    {
-      delete _stats[i]; 
-      _stats[i]=nullptr; 
-    }
-  }
-}
-
-//! list of possible achivements loaded from CfgAchievements
-AutoArray<AchievementDef> SteamStatistics::achievementsDef;
-
-void SteamStatistics::Init(CSteamID &steamID)
-{
-  _steamID = steamID;
-  //LogF("STEAM: SteamStatiscics::Init(%llu)", steamID.ConvertToUint64());
-
-  // fill in the SteamStat *_stats[] array
-  STEAM_STATS_LIST(CREATE_STAT_VAR)
-  SteamAPICall_t hSteamAPICall = SteamGameServerStats()->RequestUserStats(_steamID);
-  // set the function to call when this API completes
-  _steamCallResultUserStatsReceived.Set( hSteamAPICall, this, &SteamStatistics::OnUserStatsReceived );
-
-  _achievements.Realloc(achievementsDef.Size());
-  _achievements.Resize(achievementsDef.Size());
-  for (int i=0; i<_achievements.Size(); i++)
-  {
-    _achievements[i].def = &achievementsDef[i]; //SteamAchievement::ix is index into achievementsDef array
-  }
-}
-
-void SteamStatistics::Reset(SteamStatsEnum stat)
-{
-  if (_stats[stat])
-  {
-    _stats[stat]->SetDefault();
-    _stats[stat]->SetStat(_steamID);
-    StoreStats();
-  }
-}
-
-void SteamStatistics::OnUserStatsReceived( GSStatsReceived_t *pCallback, bool bIOFailure )
-{
-  //LogF("STEAM: OnUserStatsReceived %llu", pCallback->m_steamIDUser.ConvertToUint64());
-  if ( bIOFailure ) 
-  {
-    _nextRequestStatsTime = ::GetTickCount() + GRandGen.RandomValue()*120*1000; //within 0..120 seconds
-    return;
-  }
-  if (pCallback->m_steamIDUser != _steamID)
-  {
-    RptF("STEAM: Unexpected steamID in OnUserStatsReceived!");
-    return;
-  }
-
-  // even when user has no stats, we can consider SteamStatistics as initialized
-  _nextRequestStatsTime = 0;
-  _initialized = true;
-
-  if (pCallback->m_eResult == k_EResultFail) // user has no stats
-  {
-    //LogF("STEAM: storing default statistics");
-    for (int i=0; i<EStatN; i++)
-    {
-      _stats[i]->SetDefault();
-      _stats[i]->SetStat(_steamID);
-    }
-    StoreStats();
-    return;
-  }
-
-  // There was no Failure => fill in stats state
-  for (int i=0; i<EStatN; ++i)
-    _stats[i]->GetStat(_steamID);
-
-  // fill in achievements state
-  for (int i=0; i<_achievements.Size(); i++)
-  {
-    AchievementDef *aDef = _achievements[i].def;
-    if ( aDef && !aDef->apiName.IsEmpty() )
-    {
-      if ( SteamGameServerStats()->GetUserAchievement( _steamID, aDef->apiName, &_achievements[i].unlocked ) )
-        LogF("  achievement state: %s = %d", cc_cast(aDef->apiName), _achievements[i].unlocked);
-      else 
-        LogF("  achievement state request has FAILED!");
-    }
-  }
-
-  _lastStatsReceivedTime = _lastCharacterTimeAliveSyncTime = ::GetTickCount();
-}
-
-void SteamStatistics::OnUserStatsStored( GSStatsStored_t *pCallback, bool bIOFailure )
-{
-  //LogF("STEAM: OnUserStatsStored %llu", pCallback->m_steamIDUser.ConvertToUint64());
-  _lastStatsStoredTime = ::GetTickCount();
-  _nextStoreStatsTime = _lastStatsStoredTime + 60*1000 + GRandGen.RandomValue()*120*1000; //within 1..3 min
-}
-
-void SteamStatistics::Simulate()
-{
-  if (_initialized)
-  {
-    DWORD curtime = ::GetTickCount();
-    if ( StatsValid() )
-    {
-      //{@ characterTimeAlive Update
-      Stat_characterTimeAlive *stat = dynamic_cast<Stat_characterTimeAlive *>(_stats[EStat_characterTimeAlive]);
-      if (stat)
-      {
-        int aliveTime = stat->GetValue();
-        if ( _lastCharacterTimeAliveSyncTime && curtime>_lastCharacterTimeAliveSyncTime )
-        {
-          int timeElapsed = curtime - _lastCharacterTimeAliveSyncTime;
-          int overtimeMS = timeElapsed % 1000;
-          timeElapsed /= 1000; //in seconds
-          if (timeElapsed)
-          {
-            stat->SetValue(aliveTime + timeElapsed);
-            stat->SetStat(_steamID);
-            _lastCharacterTimeAliveSyncTime = curtime - overtimeMS; // we should add these miliseconds later
-            //LogF("STEAM: characterTimeAlive=%d", aliveTime + timeElapsed);
-          }
-        }
-      }
-      //@}
-    }
-    // check achievements
-    for (int i=0; i<_achievements.Size(); i++)
-    {
-      SteamAchievement &achvm = _achievements[i];
-      if (!achvm.unlocked && achvm.def)
-      {
-        if (achvm.def->statIx>=0 && achvm.def->statIx<EStatN)
-        {
-          SteamStat *stat = _stats[achvm.def->statIx];
-          if (stat->TestAchievementUnlocked(achvm.def->unlockValue))
-          {
-            if (SteamGameServerStats()->SetUserAchievement(_steamID, achvm.def->apiName)) //UnLOCK achievement
-            {
-              achvm.unlocked = true;
-              _nextStoreStatsTime = curtime; //force storeStats
-              LogF("STEAM: achievement %s UNLOCKED", cc_cast(achvm.def->apiName));
-            }
-          }
-        }
-      }
-#if USER_Bebul
-      else // Bebul can reset the achievement manualy
-      {
-        static bool doIt = false;
-        if (doIt)
-        {
-          doIt = false;
-          achvm.unlocked = false;
-          SteamGameServerStats()->ClearUserAchievement( _steamID, achvm.def->apiName );
-          _nextStoreStatsTime = curtime; //force storeStats
-          RptF("STEAM: achievement %s CLEARED", cc_cast(achvm.def->apiName));
-        }
-      }
-#endif
-    }
-    if ( _nextRequestStatsTime && (curtime>=_nextRequestStatsTime) && !_steamCallResultUserStatsReceived.IsActive() )
-    {
-      _nextRequestStatsTime = 0;
-      SteamAPICall_t hSteamAPICall = SteamGameServerStats()->RequestUserStats(_steamID);
-      // set the function to call when this API completes
-      _steamCallResultUserStatsReceived.Set( hSteamAPICall, this, &SteamStatistics::OnUserStatsReceived );
-    }
-    if ( !_nextStoreStatsTime && _lastStatsReceivedTime ) // data are valid, we can store them
-    {
-      _nextStoreStatsTime = curtime + 60*1000 + GRandGen.RandomValue()*120*1000; //within 1..3 minutes
-    }
-    else if ( curtime>=_nextStoreStatsTime )
-    {
-      StoreStats();
-    }
-  }
-}
-
-void SteamStatistics::StoreStats()
-{
-  if ( !_steamCallResultUserStatsStored.IsActive() )
-  {
-    _lastStatsStoredTime = ::GetTickCount();
-    _nextStoreStatsTime= _lastStatsStoredTime + 10*60*1000; //10 minutes, but it SHOULD be reset, as OnUserStatsStored callback is supposed to be called
-    SteamAPICall_t hSteamAPICall = SteamGameServerStats()->StoreUserStats(_steamID);
-    // set the function to call when this API completes
-    _steamCallResultUserStatsStored.Set( hSteamAPICall, this, &SteamStatistics::OnUserStatsStored );
-  }
-}
-
-#endif
-
-#if _ENABLE_STEAM_MATCHMAKING && _ENABLE_DEDICATED_SERVER
-void AchievementDef::SetApiName(RString name)
-{
-#define STEAM_STAT_TEST(name, Type, DefaultValue) \
-  if (apiName==Stat_##name::apiName) { statIx=EStat_##name; break; }
-
-  apiName = name;
-  do {
-    // note: macro uses apiName just set
-    STEAM_STATS_LIST(STEAM_STAT_TEST)
-  } while(false);
-}
-#endif
 
 NetworkServer::NetworkServer(NetworkManager *parent, RString name, RString password, int maxPlayers, int port, bool isPrivate)
 : NetworkComponent(parent)
 #if _ENABLE_DEDICATED_SERVER
 , _globals(&_evaluator, "server", false)
-#endif
-#if _ENABLE_STEAM_MATCHMAKING
-, _callbackSteamServersConnected(this, &NetworkServer::OnSteamServersConnected)
-, _callbackSteamServersConnectFailure(this, &NetworkServer::OnSteamServersConnectFailure)
-, _callbackSteamServersDisconnected(this, &NetworkServer::OnSteamServersDisconnected)
-, _callbackPolicyResponse(this, &NetworkServer::OnPolicyResponse)
 #endif
 {
   _serverState = NSSSelectingMission;
@@ -1396,34 +1144,7 @@ NetworkServer::NetworkServer(NetworkManager *parent, RString name, RString passw
   ProgressFinish(p);
 #endif
 
-#if _ENABLE_STEAM
 
-#if _ENABLE_STEAM_MATCHMAKING && _ENABLE_DEDICATED_SERVER
-  ConstParamEntryPtr achEntry = Pars.FindEntry("CfgAchievements");
-  if (achEntry && achEntry->IsClass())
-  {
-    SteamStatistics::achievementsDef.Clear();
-    for (int i=0; i<achEntry->GetEntryCount(); i++)
-    {
-      ParamEntryVal cls = achEntry->GetEntry(i);
-      // Steam APIName
-      int ix = SteamStatistics::achievementsDef.Add();
-      AchievementDef &achievement = SteamStatistics::achievementsDef[ix];
-      achievement.SetApiName(cls.GetName()); //ix set inside
-      ConstParamEntryPtr entry = cls.FindEntry("progressStat");
-      if (entry) achievement.progressStat = (*entry);
-      entry = cls.FindEntry("unlockValue");
-      if (entry) achievement.unlockValue = (*entry);
-    }
-  }
-#endif
-#endif
-
-#if _ENABLE_STEAM_MATCHMAKING
-  // ports for Steam services, default are values used in prev. versions
-  _steamPort = 8766;
-  _steamQueryPort = 27016;
-#endif
 }
 
 void NetworkServer::CreateDebugWindow()
@@ -1694,9 +1415,6 @@ NetworkServer::~NetworkServer()
 #endif
 //}
 
-#if _ENABLE_STEAM_MATCHMAKING
-  DoneSteam();
-#endif
 
   Done();
 
@@ -2661,209 +2379,6 @@ void NetworkServer::OnQueryRules(char *outbuf, int maxlen)
 #endif
 //}
 
-//{ STEAMWORKS SDK
-#if _ENABLE_STEAM_MATCHMAKING
-
-void NetworkServer::InitSteam()
-{
-  uint32 ip = bindIPAddress;
-  uint16 masterServerUpdaterPort = _steamQueryPort;
-  uint16 authenticationPort = _steamPort;
-  EServerMode mode = eServerModeAuthenticationAndSecure;
-  RString steamVersion = Format("%s.%d", APP_VERSION_TEXT, BUILD_NO); //such as 0.28.113666
-
-#if USER_BebulXX
-  _putenv("SteamAppId=223350");
-#else
-  _putenv("SteamAppId=221100");
-#endif
-  
-  // Initialize the SteamGameServer interface, we tell it some info about us, and we request support
-  // for both Authentication (making sure users own games) and secure mode, VAC running in our game
-  // and kicking users who are VAC banned
-  bool initOK = false;
-  for (int i=0; i<15; i++, authenticationPort+=13, masterServerUpdaterPort++) //try 15 local ports
-  {
-    if (SteamGameServer_Init(ip, authenticationPort, GetSessionPort(), masterServerUpdaterPort, mode, steamVersion))
-    {
-      initOK = true;
-      break;
-    }
-  }
-
-  // Connect to steam servers
-  if (initOK && SteamGameServer())
-  {
-    ConsoleF("SUCCESS: SteamGameServer_Init(%x,%d,%d,%d,%d,%s)", ip, authenticationPort, GetSessionPort(), masterServerUpdaterPort, mode, steamVersion);
-    RptF("SUCCESS: SteamGameServer_Init(%x,%d,%d,%d,%d,%s)", ip, authenticationPort, GetSessionPort(), masterServerUpdaterPort, mode, steamVersion);
-    SteamGameServer()->SetDedicatedServer(_dedicated);
-		// Set the "game dir".
-		// This is currently required for all games.  However, soon we will be
-		// using the AppID for most purposes, and this string will only be needed
-		// for mods.  it may not be changed after the server has logged on
-		SteamGameServer()->SetModDir("dayz");
-
-    // Tell the Steam Master Server about our game
-    SteamGameServer()->SetProduct("dayz"); //was APP_NAME
- 		SteamGameServer()->SetGameDescription(APP_NAME);
-
-    //SteamGameServer()->SetGameData("Bebul,Game");
-    if (_beIntegration.IsEnabled()) 
-      SteamGameServer()->SetGameTags("battleye");
-
-    SteamGameServer()->LogOnAnonymous();
-    SteamGameServer()->EnableHeartbeats(true);
-  }
-  else
-  {
-    ConsoleF("FAILED: SteamGameServer_Init(%x,%d,%d,%d,%d,%s)", ip, authenticationPort, GetSessionPort(), masterServerUpdaterPort, mode, steamVersion);
-    RptF("FAILED: SteamGameServer_Init(%x,%d,%d,%d,%d,%s)", ip, authenticationPort, GetSessionPort(), masterServerUpdaterPort, mode, steamVersion);
-  }
-}
-
-void NetworkServer::DoneSteam()
-{
-  // Disconnect from the steam servers
-  if (SteamGameServer()) SteamGameServer()->LogOff();
-
-  // Release our reference to the steam client library
-  SteamGameServer_Shutdown();
-}
-
-void NetworkServer::SimulateSteam()
-{
-  // Run any Steam Game Server API callbacks
-  SteamGameServer_RunCallbacks();
-
-  // Update our server details
-  ChangeStateSteam();
-}
-
-void NetworkServer::ChangeStateSteam()
-{
-  if (SteamGameServer())
-  {
-    // Tell the Steam Master Server about our game
-    SteamGameServer()->SetMaxPlayerCount(GetMaxPlayers());
-    SteamGameServer()->SetPasswordProtected(_password || _sessionLocked);
-    SteamGameServer()->SetServerName(_server->GetSessionName());
-    SteamGameServer()->SetMapName(_missionHeader.GetLocalizedMissionName());
-
-    // update any rule values we publish
-    SteamGameServer()->SetKeyValue("requiredVersion", Format("%d", MP_VERSION_REQUIRED));
-//  SteamGameServer()->SetKeyValue("gameType", _missionHeader._gameType);
-    SteamGameServer()->SetKeyValue("island", _missionHeader._island);
-//  SteamGameServer()->SetKeyValue("serverState", Format("%d", _serverState));
-#if USE_MOD_LIST
-    SteamGameServer()->SetKeyValue("mod", GetModListNames());
-#endif
-//  SteamGameServer()->SetKeyValue("equalModRequired", _equalModRequired ? "1" : "0");
-    SteamGameServer()->SetKeyValue("dedicated", _dedicated ? "1" : "0");
-    SteamGameServer()->SetKeyValue("language", Format("%d", GetGameLanguage()));
-//  SteamGameServer()->SetKeyValue("difficulty", Format("%d", Glob.config.difficulty));
-    SteamGameServer()->SetKeyValue("requiredBuild", Format("%d", _buildNoRequired));
-
-    RString gameTags;
-    if (_beIntegration.IsEnabled()) 
-      gameTags = "battleye,";
-    if (_disable3rdPerson) 
-      gameTags = gameTags + "no3rd,";
-
-    extern const char* GetInstanceId( void );
-    if ( GetInstanceId() && stricmp(GetInstanceId(),"000000")!=0 && stricmp(GetInstanceId(),"000001")!=0 )
-    { // it is private "hive" server
-      gameTags = gameTags + "privHive,";
-    }
-    
-		if (_environmentTimeMul > 0.0f)
-		{
-			RString tm = Format("etm%f,", _environmentTimeMul);
-			gameTags = gameTags + tm;
-		}
-
-    float dayT = Glob.clockWeather.GetTimeOfDay()*24.0f;
-    RString dayTm = Format("%02d:%02d", toIntFloor(dayT), toIntFloor(60*(dayT-toIntFloor(dayT))));
-    gameTags = gameTags + dayTm;
-    SteamGameServer()->SetGameTags(gameTags);
-    
-#if defined(_WIN32)
-    SteamGameServer()->SetKeyValue("platform", "win");
-#elif defined(_LINUX)
-    SteamGameServer()->SetKeyValue("platform", "linux");
-#else
-    SteamGameServer()->SetKeyValue("platform", "?");
-#endif
-
-    int timeleft;
-    if (_serverState == NSSPlaying)
-    {
-      timeleft = 15;
-
-      float et = _missionHeader._estimatedEndTime.toFloat();
-      if (et > 0)
-      {
-        et -= Glob.time.toFloat();
-        timeleft = toInt(et / 60.0);
-        saturateMax(timeleft, 1);
-      }
-    }
-    else timeleft = 0;
-    SteamGameServer()->SetKeyValue("timeLeft", Format("%d", timeleft));
-    if (SteamUtils()) SteamGameServer()->SetKeyValue("country", SteamUtils()->GetIPCountry());
-
-    // Update all the players names/scores
-    for (int i=0; i<_identities.Size(); i++)
-    {
-      const PlayerIdentity &identity = _identities[i];
-      
-      // TODO: find the score
-      int score = 0;
-      SteamGameServer()->BUpdateUserData(CSteamID((uint64)identity._steamID), identity.GetName(), score);
-    }
-  }
-}
-
-void NetworkServer::OnSteamServersConnected(SteamServersConnected_t *logonSuccess)
-{
-  ConsoleF("Connected to Steam");
-
-  // Steam servers are ready to accept our session info now
-  ChangeStateSteam();
-}
-
-void NetworkServer::OnSteamServersConnectFailure( SteamServerConnectFailure_t *connectFailure)
-{
-	ConsoleF("Failed to connect to Steam");
-}
-
-void NetworkServer::OnSteamServersDisconnected(SteamServersDisconnected_t *loggedOff)
-{
-  ConsoleF("Disconnected from Steam");
-}
-
-void NetworkServer::OnPolicyResponse(GSPolicyResponse_t *policyResponse)
-{
-  ConsoleF("Steam policy response");
-}
-
-#if _ENABLE_DEDICATED_SERVER
-void NetworkServer::ResetCharacterTimeAlive(AIBrain *unit)
-{
-  Person *person = unit->GetPerson();
-  if (person)
-  {
-    int dpnid = person->GetRemotePlayer();
-    PlayerIdentity *identity = FindIdentity(dpnid);
-    if (identity && identity->_statistics)
-    {
-      identity->_statistics->Reset(EStat_characterTimeAlive);
-    }
-  }
-}
-#endif
-
-#endif
-//}
 
 bool NetworkServer::DBSave(RString baseURL, int dpnid, RString request)
 {
@@ -4720,11 +4235,6 @@ void NetworkServer::OnSimulate()
 #endif
 //}
 
-  //{ STEAMWORKS SDK
-#if _ENABLE_STEAM_MATCHMAKING
-  SimulateSteam();
-#endif
-  //}
 
   //DoAssert(CheckIntegrityOfPendingMessages());
 
@@ -4776,7 +4286,7 @@ void NetworkServer::OnSimulate()
       BString<1024> text;
       sprintf
       (
-        text, "%s %d:%"OID_FORMAT" - owner %s (%x)",
+        text, "%s %d:%" OID_FORMAT" - owner %s (%x)",
         (const char *)typeName, id.creator.CreatorInt(), id.id,
         (const char *)name, owner
       );
@@ -4888,16 +4398,6 @@ if(_server)
     _players[i]->DBCheckLoaded();
   }
 
-#if _ENABLE_STEAM_MATCHMAKING && _ENABLE_DEDICATED_SERVER
-  static int counter = 0;
-  if ((counter++ % 10)==0) // TODO
-  {
-    for (int i=0; i<_identities.Size(); ++i)
-    {
-      if (_identities[i]._statistics) _identities[i]._statistics->Simulate();
-    }
-  }
-#endif
 }
 
 void NetworkServer::OnSimulateDone()
@@ -5283,10 +4783,6 @@ void NetworkServer::CreateIdentity(PlayerIdentity &ident)
   PlayerIdentity &identity = _identities[index];
   identity.playerid = NextPlayerId();
 
-#if _ENABLE_STEAM_MATCHMAKING && _ENABLE_DEDICATED_SERVER
-  identity._statistics = new SteamStatistics();
-  identity._statistics->Init(CSteamID((uint64)identity._steamID));
-#endif
 
 #if _VERIFY_KEY
   // check for double id
@@ -6224,7 +5720,7 @@ void NetworkServer::RptFObjectNotFound(const NetworkId &id, const char *msg, int
   if (_serverState==NSSLoadingGame || _serverState==NSSPlaying)
   {
 //    RString fromTxt = from>=0 ? Format(" from=%d",from) : RString();
-//    RptF("Server: Object %d:%"OID_FORMAT" not found (message %s)%s", id.creator.CreatorInt(), id.id, msg, cc_cast(fromTxt));
+//    RptF("Server: Object %d:%" OID_FORMAT" not found (message %s)%s", id.creator.CreatorInt(), id.id, msg, cc_cast(fromTxt));
     RptFObjectIdJournal(id);
 #if DIAG_MP_OBJECT_LIFE
     DiagObjectInfoAskMessage ask;
@@ -6590,15 +6086,6 @@ LogF("  sending to %x", pl._player);
 
         _squadChecks.Add(new CheckSquadObject(identity, _proxy, this));
 
-#if _ENABLE_STEAM_MATCHMAKING
-        for (int i=0; i<_players.Size(); i++) // TODO: use some search instead
-        {
-          NetworkPlayerInfo &info = *_players[i];
-          if (info.dpid != from) continue;
-          info._steamValidate.Start(identity,this);
-          break;
-        }
-#endif
         //}
 
         // send server time to player just connected
@@ -7038,7 +6525,7 @@ sendToAllPlayers:
         NetworkId playerPerson = GetPlayerPerson(from);
         if (playerPerson!=msgAction->_person)
         {
-          RptF("AskForPlayerAction ignored for player %d, person different %d:%"OID_FORMAT "!=%d:%"OID_FORMAT,from, playerPerson.creator.CreatorInt(),playerPerson.id,msgAction->_person.creator.CreatorInt(),msgAction->_person.id);
+          RptF("AskForPlayerAction ignored for player %d, person different %d:%" OID_FORMAT "!=%d:%" OID_FORMAT,from, playerPerson.creator.CreatorInt(),playerPerson.id,msgAction->_person.creator.CreatorInt(),msgAction->_person.id);
         }
 
       }
@@ -7249,7 +6736,7 @@ sendToAllPlayers:
         GObjLifeJournal.Add(id, Format("(%.3f) Delete: from=%d",Glob.time.toFloat(), from));
 #endif
         OnObjectDestroy(id, from);
-        // RptF("Server: Object %d:%"OID_FORMAT" deleted", id.creator.CreatorInt(), id.id);
+        // RptF("Server: Object %d:%" OID_FORMAT" deleted", id.creator.CreatorInt(), id.id);
       }
       break;
     case NMTDeletedObject:
@@ -7307,7 +6794,7 @@ sendToAllPlayers:
         CopyMsg(copy, msg, format);
         NetworkObjectInfo *oInfo = OnObjectCreate(id, from, copy, type);
         if (!oInfo) break;
-// RptF("Server: Object %d:%"OID_FORMAT" created, type %s", id.creator.CreatorInt(), id.id, cc_cast(GetMsgTypeName(type)));
+// RptF("Server: Object %d:%" OID_FORMAT" created, type %s", id.creator.CreatorInt(), id.id, cc_cast(GetMsgTypeName(type)));
 
         auto sendToClient = [this,id,oInfo,from] (int i)
         {
@@ -7351,7 +6838,7 @@ sendToAllPlayers:
           if (dpid==BOT_CLIENT) continue;
           if (DebugMeBoy(oInfo->id))
           {
-            LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} Create message for %d dist %g", oInfo->id.creator.CreatorInt(), oInfo->id.id, dpid, maxDist);
+            LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} Create message for %d dist %g", oInfo->id.creator.CreatorInt(), oInfo->id.id, dpid, maxDist);
           }
           if (maxDist>=FLT_MAX) sendToClient(i);
         }
@@ -7500,7 +6987,7 @@ sendToAllPlayers:
             {
               if (DebugMeBoy(id))
               {
-                LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} init update sent to %d", id.creator.CreatorInt(), id.id, pInfo.dpid);
+                LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} init update sent to %d", id.creator.CreatorInt(), id.id, pInfo.dpid);
               }
               UpdateObject(&pInfo, oInfo, ctx.GetClass(), NMFGuaranteed);
             }
@@ -8537,7 +8024,7 @@ sendToAllPlayers:
         {
           OwnerChangedMessage ackMsg;
           ackMsg.TransferMsg(ctx);
-          LogF("Owner of %d:%"OID_FORMAT" changed", ackMsg._creator, ackMsg._id);
+          LogF("Owner of %d:%" OID_FORMAT" changed", ackMsg._creator, ackMsg._id);
           NetworkId id(ackMsg._creator, ackMsg._id);
           NetworkObjectInfo *oInfo = GetObjectInfo(id);
           if (!oInfo)
@@ -8634,7 +8121,7 @@ void NetworkServer::ChangeOwnerFinal( NetworkObjectInfo * oInfo, int from, Netwo
 #endif
     if (DebugMeBoy(id))
     {
-      LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} Owner changed from %d to %d", oInfo->id.creator.CreatorInt(), oInfo->id.id, oInfo->owner, oInfo->pendingOwner);
+      LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} Owner changed from %d to %d", oInfo->id.creator.CreatorInt(), oInfo->id.id, oInfo->owner, oInfo->pendingOwner);
     }
 
     oInfo->owner = oInfo->pendingOwner;
@@ -8642,7 +8129,7 @@ void NetworkServer::ChangeOwnerFinal( NetworkObjectInfo * oInfo, int from, Netwo
   }
   else
   {
-    RptF("Server: OwnerChanged of %d:%"OID_FORMAT" arrived from non owner %d", id.creator.CreatorInt(), id.id, from);
+    RptF("Server: OwnerChanged of %d:%" OID_FORMAT" arrived from non owner %d", id.creator.CreatorInt(), id.id, from);
   }
 }
 
@@ -8798,7 +8285,7 @@ int NetworkServer::FindOwner(const NetworkId &id)
     return dInfo->owner;
   }
 
-  LogF("Owner of %d:%"OID_FORMAT" not known - searching player",id.creator,id.id);
+  LogF("Owner of %d:%" OID_FORMAT" not known - searching player",id.creator,id.id);
   for (int i=0; i<_players.Size(); i++)
   {
     NetworkPlayerInfo &pInfo = *_players[i];
@@ -9283,13 +8770,7 @@ LogF
   msg._updatesGuaranteed = _updatesGuaranteed;
   msg._steamServerId = 0;
   msg._steamSecure = false;
-#if _ENABLE_STEAM_MATCHMAKING
-  if (SteamGameServer())
-  {
-    msg._steamServerId = SteamGameServer()->GetSteamID().ConvertToUint64();
-    msg._steamSecure = SteamGameServer()->BSecure();
-  }
-#elif _VERIFY_CLIENT_KEY
+#if _VERIFY_CLIENT_KEY
   if (SecureIdRequired()>0)
   {
     msg._steamServerId = GetSecureRandom();
@@ -9735,7 +9216,7 @@ NetworkObjectInfo *NetworkServer::OnObjectUpdate(NetworkId &id, int from, Networ
     }
     if (!allowNonOwner)
     {
-      RptF("Server: Update of object %d:%"OID_FORMAT" arrived from nonowner", id.creator.CreatorInt(), id.id);
+      RptF("Server: Update of object %d:%" OID_FORMAT" arrived from nonowner", id.creator.CreatorInt(), id.id);
       return NULL;
     }
   }
@@ -9743,7 +9224,7 @@ NetworkObjectInfo *NetworkServer::OnObjectUpdate(NetworkId &id, int from, Networ
   bool rejectedFromClient = from!=BOT_CLIENT && oInfo->rejected[cls];
   if (rejectedFromClient)
   {
-    LogF("Received rejected %d for %"OID_FORMAT"",cls,oInfo->id.id);
+    LogF("Received rejected %d for %" OID_FORMAT"",cls,oInfo->id.id);
   }
 
   NetworkCurrentInfo &info = rejectedFromClient ? oInfo->currentRejected[cls] : oInfo->currentUpdate[cls];
@@ -9759,7 +9240,7 @@ NetworkObjectInfo *NetworkServer::OnObjectUpdate(NetworkId &id, int from, Networ
   {
     if (info.from!=from)
     {
-      LogF("Discarded different owner message for %"OID_FORMAT"(%d) because of time. %d!=%d",oInfo->id.id,rejectedFromClient,info.from,from);
+      LogF("Discarded different owner message for %" OID_FORMAT"(%d) because of time. %d!=%d",oInfo->id.id,rejectedFromClient,info.from,from);
     }
 
     // do not update
@@ -9770,12 +9251,12 @@ NetworkObjectInfo *NetworkServer::OnObjectUpdate(NetworkId &id, int from, Networ
 
   if (info.message && info.message->time > msg->time)
   {
-    LogF("Passed old time for %"OID_FORMAT"(%d). %d!=%d",oInfo->id.id,rejectedFromClient,info.from,from);
+    LogF("Passed old time for %" OID_FORMAT"(%d). %d!=%d",oInfo->id.id,rejectedFromClient,info.from,from);
   }
   
   if (info.from!=from && info.message.NotNull())
   {
-    LogF("Changing from %d(%d) for %"OID_FORMAT" %d to %d",cls,rejectedFromClient,oInfo->id.id,info.from,from);
+    LogF("Changing from %d(%d) for %" OID_FORMAT" %d to %d",cls,rejectedFromClient,oInfo->id.id,info.from,from);
   }
 
 
@@ -9794,7 +9275,7 @@ NetworkObjectInfo *NetworkServer::OnObjectUpdate(NetworkId &id, int from, Networ
   }
 
   if (DiagLevel >= 4)
-    DiagLogF("Server: object %d:%"OID_FORMAT" updated", id.creator.CreatorInt(), id.id);
+    DiagLogF("Server: object %d:%" OID_FORMAT" updated", id.creator.CreatorInt(), id.id);
 
   return oInfo;
 }
@@ -9857,7 +9338,7 @@ void NetworkServer::OnRejectChanged(const NetworkId &id, NetworkMessageClass cls
   NetworkObjectInfo *oInfo = GetObjectInfo(id);
   if (oInfo)
   {
-    LogF("Reject update %d %d for %"OID_FORMAT" to BOT_CLIENT",reject,cls,id.id);
+    LogF("Reject update %d %d for %" OID_FORMAT" to BOT_CLIENT",reject,cls,id.id);
     oInfo->rejected[cls] = reject;
     // the update from client ("currentRejected") was accepted by a bot-client, use it as a main object state
     if (!reject)
@@ -9883,7 +9364,7 @@ int NetworkServer::PerformObjectDestroy(const NetworkId &id)
     owner = info->owner;
 
     RemoveInitObjectDeleted(id);
-    //LogF("Performing Object Destroy for (%d:%"OID_FORMAT")", _objects[i]->id.creator.CreatorInt(), _objects[i]->id.id);
+    //LogF("Performing Object Destroy for (%d:%" OID_FORMAT")", _objects[i]->id.creator.CreatorInt(), _objects[i]->id.id);
     for (int i=0; i<_players.Size(); i++)
     {
       NetworkPlayerInfo &pInfo = *_players[i];
@@ -9953,7 +9434,7 @@ int NetworkServer::UpdateObject(NetworkPlayerInfo *pInfo, NetworkObjectInfo *oIn
 
   if (DebugMeBoy(oInfo->id))
   {
-    LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} UpdateObject to %d", oInfo->id.creator.CreatorInt(), oInfo->id.id, to);
+    LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} UpdateObject to %d", oInfo->id.creator.CreatorInt(), oInfo->id.id, to);
   }
 
 
@@ -10550,7 +10031,7 @@ void NetworkServer::ChangeOwner(const NetworkId &id, int from, int to)
 
   if (DebugMeBoy(id))
   {
-    LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} ChangeOwner from %d to %d", oInfo->id.creator.CreatorInt(), oInfo->id.id, from, to);
+    LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} ChangeOwner from %d to %d", oInfo->id.creator.CreatorInt(), oInfo->id.id, from, to);
 
   }
 }
@@ -11274,16 +10755,6 @@ void NetworkServer::OnClientStateChanged(int dpnid, NetworkClientState state)
   if (identity)
   {    
 #if _USE_BATTL_EYE_SERVER
-#if _ENABLE_STEAM_MATCHMAKING
-    if (state == NCSPlaying && identity->clientState != NCSPlaying)
-    {
-      _beIntegration.PlayerGoesInGame(identity->dpnid);
-    }
-    if (identity->clientState == NCSPlaying && state != NCSPlaying)
-    {
-      _beIntegration.PlayerGoesInLobby(identity->dpnid);
-    }
-#endif
 #endif
 
     identity->clientState = state;
@@ -11396,7 +10867,7 @@ void NetworkServer::OnClientStateChanged(int dpnid, NetworkClientState state)
           SendCreateMessage(dpnid,*info, poInfo);
           poInfo->updating = true;
           pInfo->markAsUpdating(poInfo);
-          //RptF("  %s: %d:%"OID_FORMAT"", cc_cast(GetMsgTypeName(type)), info->id.creator.CreatorInt(), info->id.id);
+          //RptF("  %s: %d:%" OID_FORMAT"", cc_cast(GetMsgTypeName(type)), info->id.creator.CreatorInt(), info->id.id);
         });
 
         //RptF("*** World state sent ***");
@@ -11545,17 +11016,6 @@ void NetworkServer::SetClientState(int dpnid, NetworkClientState state)
   if (identity)
   {    
 #if _USE_BATTL_EYE_SERVER
-#if _ENABLE_STEAM_MATCHMAKING
-    if (state == NCSPlaying && identity->clientState != NCSPlaying)
-    {
-
-      _beIntegration.PlayerGoesInGame(identity->dpnid);
-    }
-    if (identity->clientState == NCSPlaying && state != NCSPlaying)
-    {
-      _beIntegration.PlayerGoesInLobby(identity->dpnid);
-    }
-#endif
 #endif
     NetLog("Client %s - changed state from %s to %s",cc_cast(identity->name),cc_cast(FindEnumName(identity->clientState)),cc_cast(FindEnumName(state)));
     identity->clientState = state;
@@ -11798,13 +11258,6 @@ static void LogError
 */
 void NetworkServer::CheckFadeOut()
 {
-#if _ENABLE_STEAM_MATCHMAKING
-  for (int i=0; i<_players.Size(); i++)
-  {
-    NetworkPlayerInfo &pInfo = *_players[i];
-    pInfo._steamValidate.HandleTimeout();
-  }
-#endif
 
   if (_serverState == NSSPlaying)
   {
@@ -12015,7 +11468,7 @@ void NetworkServer::SendCreateMessage( int dpnid, NetworkObjectInfo &info, Netwo
 {
   if (DebugMeBoy(info.id))
   {
-    LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} Create for %d", info.id.creator.CreatorInt(), info.id.id, dpnid);
+    LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} Create for %d", info.id.creator.CreatorInt(), info.id.id, dpnid);
   }
   SendMsg(dpnid, info.create.message, info.create.type, NMFGuaranteed, poInfo);
 }
@@ -12185,7 +11638,7 @@ void NetworkServer::CreateObjectsList(AutoArray<UpdateObjectInfo, MemAllocSA> &o
     {
       if (DebugMeBoy(oInfo.id))
       {
-        LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} Updating for %d state %d", oInfo.id.creator.CreatorInt(), oInfo.id.id, pInfo.dpid, needsUpdate);
+        LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} Updating for %d state %d", oInfo.id.creator.CreatorInt(), oInfo.id.id, pInfo.dpid, needsUpdate);
       }
       if (needsUpdate)
       {
@@ -12245,7 +11698,7 @@ void NetworkServer::CreateObjectsList(AutoArray<UpdateObjectInfo, MemAllocSA> &o
         errorNoCoef = info.message->CalculateErrorInitial();
         error = errCoef * errorNoCoef;
 #if LOG_ERRORS
-        DiagLogF("Initial error for %s %d:%"OID_FORMAT" to %d", NetworkMessageTypeNames[info.type], oInfo.id.creator.CreatorInt(), oInfo.id.id, pInfo.dpid);
+        DiagLogF("Initial error for %s %d:%" OID_FORMAT" to %d", NetworkMessageTypeNames[info.type], oInfo.id.creator.CreatorInt(), oInfo.id.id, pInfo.dpid);
         DiagLogF("  - error %.3f * %.3f = %.3f", errCoef, errorNoCoef, error);
 #endif
       }
@@ -12278,7 +11731,7 @@ void NetworkServer::CreateObjectsList(AutoArray<UpdateObjectInfo, MemAllocSA> &o
         {
           DiagLogF
           (
-            "Object %s %d:%"OID_FORMAT" - update to %d",
+            "Object %s %d:%" OID_FORMAT" - update to %d",
             NetworkMessageTypeNames[info.type], oInfo.id.creator.CreatorInt(), oInfo.id.id,
             pInfo.dpid
           );
@@ -12305,7 +11758,7 @@ void NetworkServer::CreateObjectsList(AutoArray<UpdateObjectInfo, MemAllocSA> &o
       if (DebugMeBoy(oInfo.id) && error>0)
       {
         float msgTime = update.lastSentMsg ? update.lastSentMsg->time.toFloat() : 0; 
-        LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"}, Error: %.2f, lastMsgTime: %.3f", oInfo.id.creator.CreatorInt(), oInfo.id.id, error, msgTime);
+        LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"}, Error: %.2f, lastMsgTime: %.3f", oInfo.id.creator.CreatorInt(), oInfo.id.id, error, msgTime);
       }
 #endif
 
@@ -12955,7 +12408,7 @@ void NetworkServer::SendMessages()
           float times[NMCUpdateN];
           NetworkPlayerObjectInfo *poInfo = oInfo->GetPlayerObjectInfo(playerIndex,pInfo.dpid);
           for (int j=0; j<NMCUpdateN; j++) times[j] = poInfo->updates[j].lastSentMsg ? poInfo->updates[j].lastSentMsg->time.toFloat() : 0;
-          LogF("*** DebugMeBoy: {%d:%"OID_FORMAT"} has error %.2f, position in _objects = %d, lastMsgSent: %.02f, %.02f, %.02f", 
+          LogF("*** DebugMeBoy: {%d:%" OID_FORMAT"} has error %.2f, position in _objects = %d, lastMsgSent: %.02f, %.02f, %.02f", 
             oInfo->id.creator.CreatorInt(), oInfo->id.id, error, i, times[NMCUpdateGeneric], times[NMCUpdatePosition], times[NMCUpdateDamage]);
         }
 #endif
@@ -12988,7 +12441,7 @@ void NetworkServer::SendMessages()
         {
           LogF
           (
-            "  Server to %s: Object %d:%"OID_FORMAT" updated - size %d bytes, critical",
+            "  Server to %s: Object %d:%" OID_FORMAT" updated - size %d bytes, critical",
             (const char *)pInfo.name, info.oInfo->id.creator.CreatorInt(), info.oInfo->id.id, bytes
           );
         }
@@ -13721,19 +13174,6 @@ bool NetworkServer::SetDedicated(RString config)
     _updatesGuaranteed = *entry;
   }
 
-#if _ENABLE_STEAM_MATCHMAKING
-  entry = _serverCfg.FindEntry("steamPort");
-  if (entry)
-    _steamPort = *entry;
-  else
-    _steamPort = 8766; // some default value used in prev. versions
-
-  entry = _serverCfg.FindEntry("steamQueryPort");
-  if (entry)
-    _steamQueryPort = *entry;
-  else
-    _steamQueryPort = 27016; // some default value used in prev. versions
-#endif
 
   _buildNoRequired = _serverCfg.ReadValue<int>("requiredBuild",0);
   // server can never require version higher than it has, as the bot client should meet the requirements as well
@@ -13766,11 +13206,6 @@ bool NetworkServer::SetDedicated(RString config)
   entry = _serverCfg.FindEntry("maxPlayers");
   if (entry) _maxPlayersLimit = *entry;
 
-#if _ENABLE_STEAM_MATCHMAKING
-  // steam does not support more than 127 players, the number gets negative for higher values
-  // see https://projects.bistudio.com/dayz/negative_number_on_Player_Count_in_Server_Browsers.txt
-  saturateMin(_maxPlayersLimit, 127);
-#endif
 
   entry = _serverCfg.FindEntry("timeStampFormat");
   if (entry && entry->IsTextValue())

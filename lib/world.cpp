@@ -11835,7 +11835,7 @@ void World::Simulate(float deltaT, bool &enableSceneDraw, bool &enableHUDDraw)
   for (int i=0; i<debugPl.Size(); i++)
   {
     NetworkId nid = debugPl[i]->GetNetworkId();
-    plinfo = Format("%s (%d:%"OID_FORMAT") ", cc_cast(plinfo), nid.creator.CreatorInt(), nid.id);
+    plinfo = Format("%s (%d:%" OID_FORMAT") ", cc_cast(plinfo), nid.creator.CreatorInt(), nid.id);
   }
   DIAG_MESSAGE(1000, plinfo);
 #endif
@@ -17898,7 +17898,7 @@ _nearbyItemTransmittersChanged(false)
     _camTypeNewFactor = 1;
   }
   #if _PIII
-    Assert( ((int)this&0xf)==0 );
+    Assert( (reinterpret_cast<uintptr_t>(this)&0xf)==0 );
   #endif
 
   _radio = new RadioChannel(CCGlobal, Pars >> "RadioChannels" >> "GlobalChannel");
@@ -18820,45 +18820,6 @@ void World::AddClientCameraPosition(ClientCameraPositionObject *obj)
   _clientCameraPositions.Add(obj);
 }
 
-#if _PROFILE_IN_STEAM_CLOUD
-class SteamProfileNSLoader
-{
-public:
-  SteamProfileNSLoader()
-  {
-#if _ENABLE_DEDICATED_SERVER
-    bool IsDedicatedServer();
-    if (IsDedicatedServer()) return;
-#endif
-    if (!SteamRemoteStorage()) 
-    {
-      bool InitSteam();
-      if (!InitSteam() || !SteamRemoteStorage())
-      {
-        LogF("SteamProfileNamespaceLoader has failed!");
-        return;
-      }
-    }
-    RString name = Glob.header.GetPlayerName();
-    RString filename = GetUserDirectory(name) + EncodeFileName(GetLoginName()) + RString(".vars.") + GetExtensionProfile();    
-    RString cloudFileName = GetFilenameExt(filename);
-    if (SteamRemoteStorage()->FileExists(cloudFileName))
-    {
-      if (QIFileFunctions::FileExists(filename))
-      {
-        int64 cloudTimeStamp = SteamRemoteStorage()->GetFileTimestamp(cloudFileName);
-        int64 profileTimeStamp = QIFileFunctions::TimeStamp(filename);
-        if (profileTimeStamp < cloudTimeStamp)
-        { // profile inside cloud is more current, we should overwrite the profile
-          bool LoadFileFromSteamCloud(RString steamFileName, RString targetPath);
-          LoadFileFromSteamCloud(cloudFileName, filename);
-        }
-        // else ... maybe manualy edited profile vars file
-      }
-    }
-  }
-};
-#endif
 
 enum EUploadResult;
 void World::SaveProfileNamespace()
@@ -18873,28 +18834,11 @@ void World::SaveProfileNamespace()
   pfvAr.Serialize("ProfileVariables", _profileNamespace->GetVariables(), 1);
   pfvAr.SaveSigned(pfvFile);
 
-#if _PROFILE_IN_STEAM_CLOUD
-#if _ENABLE_DEDICATED_SERVER
-  bool IsDedicatedServer();
-  if (!IsDedicatedServer())
-#endif
-  {
-    RString name = Glob.header.GetPlayerName();
-    RString filename = GetUserDirectory(name) + EncodeFileName(GetLoginName()) + RString(".vars.") + GetExtensionProfile();    
-    RString cloudFileName = GetFilenameExt(filename);
-    EUploadResult UploadFileToSteamCloud(RString sourcePath, RString steamFileName);
-    /*EUploadResult result = */UploadFileToSteamCloud(filename, cloudFileName);
-    //LogF("UploadFileToSteamCloud: %s result=%d", cc_cast(cloudFileName), result);
-  }
-#endif
 }
 
 #include "El/ParamFile/classDbParamFile.hpp"
 void World::LoadProfileNamespace()
 {
-#if _PROFILE_IN_STEAM_CLOUD
-  static SteamProfileNSLoader SPL; //singleton to get profile from cloud on init
-#endif
   // serialize variables stored in profile namespace
   // Load from *.pfv ... PRofile Variables file
   _profileNamespace->Reset();

@@ -47,9 +47,17 @@ as they are changed by macromedia protection.
 
 #include "../stringtableExt.hpp"
 #include "../mbcs.hpp"
+#include <stdint.h>
 
 #include "../drawText.hpp"
 #include "../progress.hpp"
+
+static int CompareUIObjectAddress(const void *left, const void *right)
+{
+  const uintptr_t l = reinterpret_cast<uintptr_t>(left);
+  const uintptr_t r = reinterpret_cast<uintptr_t>(right);
+  return l < r ? -1 : (l > r ? 1 : 0);
+}
 
 #include "../gameStateExt.hpp"
 
@@ -101,7 +109,7 @@ bool Action::HasEqualType(const Action *to) const
 
 int Action::Compare(const Action *with) const
 {
-  int s = (int)GetTarget() - (int)with->GetTarget();
+  int s = CompareUIObjectAddress(GetTarget(), with->GetTarget());
   if (s != 0) return s;
   s = (int)GetType() - (int)with->GetType();
   return s;
@@ -501,7 +509,7 @@ int ActionTurret::Compare(const Action *with) const
   int s = base::Compare(with);
   if (s != 0) return s;
   const ActionTurret *actionTyped = static_cast<const ActionTurret *>(with);
-  s = (int)GetTurret() - (int)actionTyped->GetTurret();
+  s = CompareUIObjectAddress(GetTurret(), actionTyped->GetTurret());
   return s;
 }
 
@@ -693,11 +701,11 @@ int ActionWeaponIndex::Compare(const Action *with) const
   int s = base::Compare(with);
   if (s != 0) return s;
   const ActionWeaponIndex *actionTyped = static_cast<const ActionWeaponIndex *>(with);
-  s = (int)GetGunner() - (int)actionTyped->GetGunner();
+  s = CompareUIObjectAddress(GetGunner(), actionTyped->GetGunner());
   if (s != 0) return s;
   Weapon *w1 = GetWeaponIndex()._weapon;
   Weapon *w2 = actionTyped->GetWeaponIndex()._weapon;
-  s = (int)w1 - (int)w2;
+  s = CompareUIObjectAddress(w1, w2);
   if (s != 0) return s;
   s = GetWeaponIndex()._muzzle - actionTyped->GetWeaponIndex()._muzzle;
   if (s != 0) return s;
@@ -1051,7 +1059,7 @@ int ActionCrafting::Compare(const Action *with) const
   int s = base::Compare(with);
   if (s != 0) return s;
   const ActionCrafting *actionTyped = static_cast<const ActionCrafting *>(with);
-  s = (int)GetItem() - (int)actionTyped->GetItem();
+  s = CompareUIObjectAddress(GetItem(), actionTyped->GetItem());
   if (s != 0) return s;
   s = strcmp(GetRecipe(), actionTyped->GetRecipe());
   return s;
@@ -1134,9 +1142,9 @@ int ActionMagazine::Compare(const Action *with) const
   int s = base::Compare(with);
   if (s != 0) return s;
   const ActionMagazine *actionTyped = static_cast<const ActionMagazine *>(with);
-  s = (int)GetGunner() - (int)actionTyped->GetGunner();
+  s = CompareUIObjectAddress(GetGunner(), actionTyped->GetGunner());
   if (s != 0) return s;
-  s = (int)GetMagazine() - (int)actionTyped->GetMagazine();
+  s = CompareUIObjectAddress(GetMagazine(), actionTyped->GetMagazine());
   return s;
 }
 

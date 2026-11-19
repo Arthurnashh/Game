@@ -14,7 +14,6 @@
 #include "d3d9defs.hpp"
 #include "../textbank.hpp"
 #include "txtd3d9.hpp"
-#include "DXGI.h"
 
 #include <Es/Containers/array.hpp>
 #include <Es/Strings/bString.hpp>
@@ -33,6 +32,7 @@
 #include "../Shape/plane.hpp"
 #include "ShaderSources_3_0/common.h"
 #include "../d3d9/d3d9Buffers.hpp"
+#include "../../Enfusion/include/common/enf_pointerhash.h"
 
 #if _ARMA3_SIMUL_WEATHER
 #include "../SimulWeather/SimulCommonDX9.hpp"
@@ -2437,7 +2437,10 @@ struct MapClassTraits<D3DBoundShader>: public DefMapClassTraits<D3DBoundShader>
   static unsigned int CalculateHashValue(KeyType key)
   {
     //TODO: use IDs instead
-    return (int)key._vs.GetRef()+(int)key._ps.GetRef()*33+(int)key._vd.GetRef()*33+(int)key._stride*33;
+    return enf::HashPointer(key._vs.GetRef())+
+      enf::HashPointer(key._ps.GetRef())*33+
+      enf::HashPointer(key._vd.GetRef())*33+
+      (int)key._stride*33;
   }
 
   /// compare keys, return negative when k1<k2, positive when k1>k2, zero when equal
@@ -2752,7 +2755,7 @@ public:
     int _hRTComputed;    
     /// HDR precision requested by the user (8,16 or 32 may make a sense)
     HDRPrec _hdrPrec;
-    /// wanted quality of MSAA (corresponds to quality in DXGI_SAMPLE_DESC)
+    /// wanted quality of MSAA
     int _multiSampleQuality;
     // enable / disable vertical synchronization, default set to enable
     bool _vsync;
@@ -6299,7 +6302,6 @@ public:
   
   void Init3D();
 
-  void InitDXGIInfo(const DXGI_ADAPTER_DESC &adapterDesc);
   void InitDirectDraw7(int adapter);
   void Done3D();
   // make sure adapter is selected and _deviceLevel set

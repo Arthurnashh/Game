@@ -22,9 +22,6 @@
 # endif
 #endif
 
-#if _ENABLE_STEAM_MATCHMAKING
-# include <steamworks/steam_api.h>
-#endif
 
 #include "uiMap.hpp"
 
@@ -783,7 +780,7 @@ public:
 	) override; 
 };
 
-#if _ENABLE_GAMESPY || _ENABLE_STEAM_MATCHMAKING
+#if _ENABLE_GAMESPY
 #define BROWSING_SOURCE_ENUM(type, prefix, XX) \
 	XX(type, prefix, LAN) \
 	XX(type, prefix, Internet) \
@@ -867,104 +864,6 @@ protected:
 
 #endif
 
-#if _ENABLE_STEAM_MATCHMAKING
-  class SteamServerBrowser : 
-    public ISteamMatchmakingServerListResponse,
-    public ISteamMatchmakingPingResponse,
-    public ISteamMatchmakingPlayersResponse,
-    public ISteamMatchmakingRulesResponse
-  {
-  protected:
-    /// to distinguish between internet and LAN requests
-    bool _requestedLAN;
-    /// update in progress
-    HServerListRequest _request;
-    /// sessions info listbox
-    CSessionsContainer *_sessions;
-
-    //! filter for sessions
-    SessionFilter _filter;
-    
-    /// Server asking for details
-    RString _currentServerGuid;
-    HServerQuery _queryPing;
-    HServerQuery _queryPlayers;
-    HServerQuery _queryRules;
-
-    struct FriendOnServer 
-    {
-      uint64 steamID;
-      uint32 gameIP;
-    	uint16 gamePort;
-      FriendOnServer() {}
-      FriendOnServer(uint64 id, uint32 ip, uint16 port) :steamID(id), gameIP(ip), gamePort(port) {}
-      ClassIsMovableZeroed(FriendOnServer)
-    };
-    AutoArray<FriendOnServer> _friendList;
-    DWORD _lastFriendUpdateTime;
-    //@{servers for update details in SteamServerBrowser::AddPlayerToList
-    AutoArray<RString> _playersUpdate, _players;
-    //@}
-
-  public:
-    SteamServerBrowser(CSessionsContainer *sessions) : _sessions(sessions) 
-    {
-      _request = NULL;
-      _queryPing = HSERVERQUERY_INVALID;
-      _queryPlayers = HSERVERQUERY_INVALID;
-      _queryRules = HSERVERQUERY_INVALID;
-      _lastFriendUpdateTime = 0;
-      _requestedLAN = false;
-    }
-    ~SteamServerBrowser();
-
-   	//! filter for sessions
-    void SetFilter(const SessionFilter &filter) { _filter=filter; _filter.serverName.Lower(); _filter.missionName.Lower(); }
-    //! check whether ServerResponded info matches the filter rules
-    bool CheckFilter(gameserveritem_t *info);
-
-    // Initiate a refresh of internet servers
-    void RefreshInternetServers(MPTabs activeTabs);
-
-    // Initiate a refresh of LAN servers
-    void RefreshLANServers();
-
-    // Initiate a query about the server details
-    void RefreshDetails(RString guid, int serverPort);
-
-    // formated Player list 
-    const AutoArray<RString>& Players() const { return _players; }
-    // friends array list of the selected server
-    void Friends(AutoArray<RString> &friends);
- 
-    // ISteamMatchmakingServerListResponse implementation
-    void ServerResponded(HServerListRequest request, int server);
-    void ServerFailedToRespond(HServerListRequest request, int server);
-    void RefreshComplete(HServerListRequest request, EMatchMakingServerResponse response);
-
-    // ISteamMatchmakingPingResponse implementation
-    void ServerResponded(gameserveritem_t &server);
-    void ServerFailedToRespond();
-
-    // ISteamMatchmakingPlayersResponse implementation
-    void AddPlayerToList(const char *name, int score, float timePlayed);
-    void PlayersFailedToRespond();
-    void PlayersRefreshComplete();
-
-    // ISteamMatchmakingRulesResponse implementation
-    void RulesResponded(const char *rule, const char *value);
-    void RulesFailedToRespond();
-    void RulesRefreshComplete();
-
-  protected:
-    int FindSession(RString guid) const;
-  };
-
-  SRef<SteamServerBrowser> _steamServerBrowser;
-  DWORD _nextRefreshDetailsTime;
-  static const int FirstRefresh = 2000;
-  static const int RepeatRefresh = 30000;
-#endif
 
   MPTabs _activeTab;
 	//! which sessions are listed

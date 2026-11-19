@@ -54,7 +54,6 @@
 #define _ENABLE_DX10              0
 #define _USE_BATTL_EYE_SERVER     1
 #define _USE_BATTL_EYE_CLIENT     1
-#define _ENABLE_STEAM             0
 #define _ENABLE_TEXTURE_HEADERS   1 //if reading texture headers from texture headers file is enabled
 
 //Heli sim

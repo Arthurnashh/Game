@@ -461,8 +461,6 @@ float Input::FreeTrackAxisThresholdLow = 0.2;
 const int Input::_defFilterMouse = 30;
 
 Input::Input()
-  : _callbackServerChangeRequested(this, &Input::OnServerChangeRequested),
-    _callbackPersonaStateChanged(this, &Input::OnPersonaStateChanged)
 {
 #if _ENABLE_CHEATS
   cheat12enabled=true;
@@ -476,9 +474,6 @@ Input::Input()
   delayAutorepeatFirst = 500; // ms
   delayAutorepeat = 250; // ms
 
-#if _ENABLE_STEAM
-  steamOverlayActive = false;
-#endif
 
 #if defined (_WIN32)
   int delay = 0;
@@ -3083,19 +3078,19 @@ struct ActionResponseCurveGamma: public IActionResponseCurve
 float ActionResponseCurveGamma::Apply(float x, float zoom) const
 {
   Assert(x>=0);
-  float y = pow(x,_gamma)*_max;
+  float y = powf(x,_gamma)*_max;
   saturateMin(y,+_max);
   return y;
 }
 
 float ActionResponseCurveGamma::GetInverse(float y, float zoom) const
 {
-  //y = pow(x,_gamma)*_max;
+  //y = powf(x,_gamma)*_max;
   //y/_max = pow(x,_gamma)
   //pow(y/_max,1/_gamma) = x
 
   Assert(y>=0);
-  float x = pow(y/_max,1/_gamma);
+  float x = powf(y/_max,1/_gamma);
   return x;
 }
 

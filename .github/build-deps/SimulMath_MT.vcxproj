@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B6CB4EE4-90E3-4B11-8706-E4D7B9024801}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SimulMath_MT</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(MSBuildThisFileDirectory)..\..\build\port-x64\SimulWeather\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\..\build\port-x64\SimulWeather\obj\SimulMath_MT\</IntDir>
+    <TargetName>SimulMath_MT</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>..\..\extern;..\..\extern\SimulWeather;..\..\extern\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN64;_LIB;VISUAL_CPP;UNIT_TEST;NDEBUG;INTEL_COMPATIBLE;SIMUL_MATH_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\Float2.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\Float3.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\GeometricFunctions.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\Iteration.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\MathFunctions.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\Matrix.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\Matrix4x4.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\MatrixVector.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\MatrixVector3.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\Noise1D.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\Noise2D.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\Noise3D.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\PointerList.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\Quaternion.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\RandomNumberGenerator.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\SimVector.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\Vector3.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Math\VirtualVector.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

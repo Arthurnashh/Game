@@ -50,16 +50,20 @@
 #define _ENABLE_COMPILED_SHADER_CACHE 1
 #define _USE_FCPHMANAGER          1
 #define _ENABLE_DX10              0
+#if defined(DAYZ_PRIVATE_SERVER)
+#define _USE_BATTL_EYE_SERVER     0
+#define _USE_BATTL_EYE_CLIENT     0
+#else
 #define _USE_BATTL_EYE_SERVER     1
 #define _USE_BATTL_EYE_CLIENT     1
-#define _ENABLE_STEAM_OWNERSHIP   1
-#define _ENABLE_STEAM             1
-#define _ENABLE_STEAM_MATCHMAKING 1
+#endif
+#if defined(DAYZ_PRIVATE_SERVER) && (_USE_BATTL_EYE_SERVER || _USE_BATTL_EYE_CLIENT)
+#error Private server builds must not use BattlEye identity services.
+#endif
 #define _ENABLE_SEND_UDP_MESSAGE  0
 #define _ENABLE_TEXTURE_HEADERS   1 //if reading texture headers from texture headers file is enabled
 
 //DayZ
-#define _PROFILE_IN_STEAM_CLOUD   1
 
 //Heli sim
 

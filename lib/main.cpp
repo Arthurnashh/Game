@@ -91,16 +91,16 @@ Basic win32 framework, application init and message handling.
 
 #include "jvmInit.hpp"
 
-#include <Steamworks/steam_api.h>
-
 #include "system/enf_timer.h"
-#include "d3d9/engdd9.hpp"
-
-#if _ENABLE_STEAM
-//# pragma comment(lib, "steam_api")
-  bool UseSteam						= true;
-	bool SteamOverlayClosed	= false;
+#if !defined(_WIN64)
+  #include "d3d9/engdd9.hpp"
+#else
+  #include "textbank.hpp"
+  #include <Es/ReportStack/reportStack.hpp>
+  #include <El/FreeOnDemand/memFreeReq.hpp>
+  #include "../Enfusion/include/common/enf_pointerhash.h"
 #endif
+
 
 enum SoundProvider { SPXAudio2 };
 bool CloseRequest;
@@ -571,8 +571,6 @@ static bool JavaExportInterface = false;
 int D3DAdapter = -1;
 bool WinXP = false;
 
-#pragma comment(lib, "steam_api")
-
 #if _ENABLE_REPORT
   static bool ShowScriptErrors = true;
 #else
@@ -755,7 +753,9 @@ static bool LoadAddons = true;
 static bool NoSplash=false;
 static bool GenerateShaders=false;
 bool DisableShaderGeneration=false;
+#if !defined(_WIN64)
 static bool ForceDX9=false;
+#endif
 bool EnableSM3=true;
 static bool DoPause=false;
 static bool DoRestore=false;
@@ -776,7 +776,9 @@ static bool CanRender; // everything is initialized
 extern bool LandEditor;
 static bool NoSplash=false;
 static bool GenerateShaders=false;
+#if !defined(_WIN64)
 static bool ForceDX9=false;
+#endif
 static bool DoCreateServer=true;
 static bool LoadAddons = true;
 static bool UseOpenAL = false;
@@ -2362,10 +2364,6 @@ void Globals::InitPhase2()
     void CreatePath(RString path);
     CreatePath(filename);
     cfg.Save(filename);
-#if _PROFILE_IN_STEAM_CLOUD
-    // Note: no need to save the profile into the Steam Cloud, as the new profile can be default created on all possible desktops
-    //       only after some changes are applied, the save should be synced to Steam Cloud too
-#endif
     return;
   }
 
@@ -4096,7 +4094,7 @@ struct SingleArgumentFinish
 };
 
 //! SingleArgumentFinish provides support for commandline options which are split into several parts by white char (space)
-//! it is needed for SteamAPI support, where API overlay calls the game with commandline parameters like
+//! This supports command-line arguments such as
 //!     +connect <ip:port>
 //!     +password <password>
 //! instead of our typical -connect=<ip:port> etc.
@@ -4144,7 +4142,9 @@ static void SingleArgument( const char *beg, const char *end )
     static const char noSplashStr[]="nosplash";
     static const char generateShadersStr[]="generateshaders";
     static const char disableShaderGenerationStr[]="disableShaderGeneration";
+#if !defined(_WIN64)
     static const char forceDX9Str[]="forceDX9";
+#endif
     static const char enableSM3Str[]="sm3";
     static const char forceSM2Str[]="sm2";
     static const char noLimitTreeLODsStr[]="noLimitTreeLODs";
@@ -4227,9 +4227,6 @@ static void SingleArgument( const char *beg, const char *end )
 #endif
 #if _ENABLE_CHEATS || _ENABLE_AUTOTEST
     static const char autotest[]="autotest=";
-#endif
-#if _ENABLE_STEAM
-    static const char steam[]="steam";
 #endif
 
 #if _ENABLE_REPORT
@@ -4350,7 +4347,9 @@ static void SingleArgument( const char *beg, const char *end )
     }
 #ifdef _WIN32
     else if (IsOption(beg,end,disableShaderGenerationStr)) DisableShaderGeneration=true;
+#if !defined(_WIN64)
     else if (IsOption(beg,end,forceDX9Str)) ForceDX9=true;
+#endif
     else if (IsOption(beg,end,enableSM3Str)) EnableSM3=true;
     else if (IsOption(beg,end,forceSM2Str)) EnableSM3=false;
 #endif
@@ -4474,9 +4473,6 @@ static void SingleArgument( const char *beg, const char *end )
     else if (IsOption(beg, end, nopatchcheck)) PatchCheck = false;
     else if (IsOption(beg, end, winxp)) WinXP = true;
     else if (IsOption(beg, end, showscripterrors)) ShowScriptErrors = true;
-#if _ENABLE_STEAM
-    else if (IsOption(beg, end, steam)) UseSteam = true;
-#endif
     // path for BattlEye files cache
     else if (!strnicmp(beg, bePath, strlen(bePath)))
     {
@@ -5991,12 +5987,7 @@ bool AppIdle()
   //    timeValid=false;
   bool enableDraw=GetEnableDraw();
 
-  if (SteamOverlayClosed)
-  {
-    EnableMouseMovement(MouseCanMove, SteamOverlayClosed); //reestablish the old value
-    SteamOverlayClosed = false;
-  }
-  else EnableMouseMovement(!GAppActive || !GEngine || GEngine->IsCursorShown());
+  EnableMouseMovement(!GAppActive || !GEngine || GEngine->IsCursorShown());
 
   static DWORD lastTime;
   DWORD actTime=::GlobalTickCount();
@@ -6107,7 +6098,6 @@ bool AppIdle()
 
   //if( ( focused || ForceRender && LandEditor ) && CanRender )
 
-  SteamAPI_RunCallbacks();
 
   ProcessPipeCommands();
   if( CanRender )
@@ -6649,7 +6639,6 @@ void DDTerm()
   XLiveUnInitialize();
 #endif
 
-  SteamAPI_Shutdown();
   #if ENABLE_KEYMOUSE
   if (dInput) dInput->Release(), dInput = NULL;
   if (UseWindow) ClipCursor(NULL);
@@ -7871,6 +7860,7 @@ static void ReloadMaterialFromObjektiv(HANDLE mutex, HANDLE shared)
 */
 
 #if defined (_WIN32)
+#include <stdint.h>
 
 unsigned int CalculateExeCRC(int offset, int size)
 {
@@ -7888,8 +7878,12 @@ unsigned int CalculateExeCRC(int offset, int size)
   // From the DOS header, find the NT (PE) header
   PIMAGE_NT_HEADERS pNtHdr = (PIMAGE_NT_HEADERS)((char *)hMod + pDosHdr->e_lfanew);
 
-  int checkStart = offset;
-  int checkEnd = offset + size;
+  if (offset < 0 || size <= 0) return 0;
+  const uintptr_t imageBase = reinterpret_cast<uintptr_t>(hMod);
+  uintptr_t checkStart = imageBase + static_cast<uintptr_t>(offset);
+  uintptr_t checkEnd = checkStart + static_cast<uintptr_t>(size);
+  const uintptr_t imageEnd = imageBase + pNtHdr->OptionalHeader.SizeOfImage;
+  if (checkEnd < checkStart || checkEnd > imageEnd) checkEnd = imageEnd;
 
   PIMAGE_SECTION_HEADER pSection = IMAGE_FIRST_SECTION(pNtHdr);
   for (WORD i=0; i<pNtHdr->FileHeader.NumberOfSections; i++)
@@ -7897,19 +7891,24 @@ unsigned int CalculateExeCRC(int offset, int size)
     if ((pSection->Characteristics & (IMAGE_SCN_CNT_CODE | IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_CNT_UNINITIALIZED_DATA)) != 0)
     {
       // section containing code or data
-      int sectionStart = (int)hMod + pSection->PointerToRawData;
-      int sectionSize = pSection->SizeOfRawData;
-      int sectionEnd = sectionStart + sectionSize;
+      uintptr_t sectionStart = imageBase + pSection->VirtualAddress;
+      uintptr_t sectionSize = pSection->SizeOfRawData;
+      uintptr_t sectionEnd = sectionStart + sectionSize;
+      if (sectionEnd < sectionStart || sectionEnd > imageEnd) sectionEnd = imageEnd;
+      if (sectionStart >= sectionEnd) { pSection++; continue; }
+      sectionSize = sectionEnd - sectionStart;
       if (checkStart < sectionEnd && checkEnd > sectionStart)
       {
         // non-empty intersection - calculate the CRC from this segment
-        saturate(checkStart, sectionStart, sectionEnd);
-        saturate(checkEnd, sectionStart, sectionEnd);
+        uintptr_t crcStart = checkStart > sectionStart ? checkStart : sectionStart;
+        uintptr_t crcEnd = checkEnd < sectionEnd ? checkEnd : sectionEnd;
 
-        LogF("%x:%x, testing %x:%x", sectionStart, sectionSize, checkStart, checkEnd - checkStart);
+        LogF("%p:%u, testing %p:%u", reinterpret_cast<void*>(sectionStart),
+          static_cast<unsigned int>(sectionSize), reinterpret_cast<void*>(crcStart),
+          static_cast<unsigned int>(crcEnd - crcStart));
         CRCCalculator crc;
         crc.Reset();
-        crc.Add((void *)checkStart,checkEnd-checkStart);
+        crc.Add(reinterpret_cast<void*>(crcStart), static_cast<unsigned int>(crcEnd - crcStart));
         return crc.GetResult();
       }
     }
@@ -7918,13 +7917,17 @@ unsigned int CalculateExeCRC(int offset, int size)
 
   // segment containing the given block not found, calculate the CRC from the whole first segment
   pSection = IMAGE_FIRST_SECTION(pNtHdr);
-  int sectionStart = (int)hMod + pSection->PointerToRawData;
-  int sectionSize = pSection->SizeOfRawData;
+  uintptr_t sectionStart = imageBase + pSection->VirtualAddress;
+  uintptr_t sectionSize = pSection->SizeOfRawData;
+  const uintptr_t firstSectionEnd = sectionStart + sectionSize;
+  if (firstSectionEnd < sectionStart || firstSectionEnd > imageEnd) sectionSize = imageEnd - sectionStart;
 
-  LogF("%x:%x, testing %x:%x",sectionStart,sectionSize,sectionStart,sectionSize);
+  LogF("%p:%u, testing %p:%u", reinterpret_cast<void*>(sectionStart),
+    static_cast<unsigned int>(sectionSize), reinterpret_cast<void*>(sectionStart),
+    static_cast<unsigned int>(sectionSize));
   CRCCalculator crc;
   crc.Reset();
-  crc.Add((void *)sectionStart, sectionSize);
+  crc.Add(reinterpret_cast<void*>(sectionStart), static_cast<unsigned int>(sectionSize));
   return crc.GetResult();
 //))EXE_CRC_CHECK
 }
@@ -8898,7 +8901,7 @@ struct DSConsoleThreadContext
 };
 DSConsoleThreadContext GDSThreadContext;
 
-static int CALLBACK ConsoleDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
   switch (message)
   {
@@ -8946,7 +8949,7 @@ static int CALLBACK ConsoleDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
   return FALSE;
 }
 
-static int CALLBACK SplashDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK SplashDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
   switch (message)
   {
@@ -10349,51 +10352,6 @@ static bool InitGamesForWindows(RString language)
 
 #endif
 
-//-----------------------------------------------------------------------------
-// Purpose: callback hook for debug text emitted from the Steam API
-//-----------------------------------------------------------------------------
-
-extern "C" void __cdecl SteamAPIDebugTextHook(int severity, const char *text)
-{
-  // if you're running in the debugger, only warnings (nSeverity >= 1) will be sent
-  // if you add -debug_steamapi to the command-line, a lot of extra informational messages will also be sent
-  LogF("STEAMWORKS: %s", text);
-}
-
-bool InitSteam()
-{
-#if _ENABLE_STEAM
-  if (!UseSteam) return false;
-#endif
-
-  // initialize Steam API
-  if (!SteamAPI_Init())
-  {
-#if _SUPER_RELEASE
-    SteamAPI_RestartAppIfNecessary(221100); // Steam appid passed
-#endif
-    return false;
-  }
-#if 0
-  // Steam Profile Name used as PlayerName instead of Windows Profile Name (which is set as default)
-  // one can edit her steam profile name through Steam/Friends/ChangeProfileName
-  RString steamPersonalName;
-  if (SteamFriends()) 
-  {
-    steamPersonalName = SteamFriends()->GetPersonaName();
-    if (!steamPersonalName.IsEmpty()) Glob.header.SetPlayerName(steamPersonalName);
-  }
-#endif
-  if (SteamUtils()) SteamUtils()->SetWarningMessageHook(&SteamAPIDebugTextHook);
-
-#if _ENABLE_STEAM
-  // register Steam callbacks
-  GInput.RegisterCallbacks();
-#endif
-
-  return true;
-}
-
 /// scan a subclass of ArmA2.par file for arguments
 template <class Function>
 void ScanArguments(ParamEntryPar args, Function func)
@@ -11124,7 +11082,7 @@ void ReadExpansionsFromRegistry(ModInfos &regMods)
 #include "UI/displayUI.hpp"
 
 // 1. Loads the GModInfosRegistry from registry ConfigApp\\Expansions key
-//          ie. "Software\\Bohemia Interactive Studio\\" AppName "\\Expansions"
+//          ie. "Software\\Bohemia Interactive Studio\\" DayZAppName "\\Expansions"
 // 2. Loads the GModInfosProfile from flashpoint cfg.
 void LoadModList()
 {
@@ -11434,7 +11392,7 @@ static void InitPlayerName()
   Glob.header.SetPlayerName(GetLoginName()); // MUST be set before ParseUserParams is called, or profile would not be found otherwise
   ParseUserParams(cfg, &globals);
   ConstParamEntryPtr entry = cfg.FindEntry("playerName");
-  if (entry && !RString(*entry).IsEmpty()) Glob.header.SetPlayerName(*entry);
+  if (entry && !entry->GetValue().IsEmpty()) Glob.header.SetPlayerName(entry->GetValue());
 #endif
     }
 #else
@@ -12025,26 +11983,6 @@ it sometimes caused false warnings and premature server termination.
     // handle -showScriptErrors option
     GGameState.ShowScriptErrors(ShowScriptErrors);
 
-    // steam not needed during shaders generation
-    if 
-    (
-      !GenerateShaders // already set in SingleArgument
-#if _ENABLE_DEDICATED_SERVER
-      && !IsDedicatedServer() // dedicated server does not have SteamID
-#endif
-    )
-    {
-      if (!SteamUtils() && !InitSteam())
-      {
-        // if there is a debugger, try it once more
-        if (!GDebugger.IsDebugger() || (BreakIntoDebugger("Steam not found"),!InitSteam()))
-        {
-          ErrorMessage("Unable to locate a running instance of Steam");
-          exit(1);
-        }
-      }
-    }
-
     // after processing -cpuCount
     GJobManager.Init();
 
@@ -12216,18 +12154,14 @@ it sometimes caused false warnings and premature server termination.
 
       avoidUserInput = AUITrue;
 
-    #if _ENABLE_DX10
-      if (ForceDX9)
-      {
+      #if _ENABLE_DX10
+        if (ForceDX9)
+          GEngine=CreateEngineD3D9(pars);
+        else
+          GEngine=CreateEngineD3DT(pars);
+      #else
         GEngine=CreateEngineD3D9(pars);
-      }
-      else
-      {
-      GEngine=CreateEngineD3DT(pars);
-      }
-    #else
-      GEngine=CreateEngineD3D9(pars);
-    #endif
+      #endif
         if (GenerateShaders)
         {
     #if defined(_WIN32) 
@@ -12239,7 +12173,11 @@ it sometimes caused false warnings and premature server termination.
 
         if (!GEngine)
         {
+#if defined(_WIN64)
+          ErrorMessage("Error creating Direct3D 11 Graphical engine");
+#else
           ErrorMessage("Error creating Direct3D 9 Graphical engine");
+#endif
           exit(1);
         }
   
@@ -12255,7 +12193,11 @@ it sometimes caused false warnings and premature server termination.
 								
 				enf::CStr profileName = "";
 
+#if defined(_WIN64)
+				if (!enf::GetEngine()->Create((HWND)GEngine->GetWindowHandle(), cfgFile.cstr(), profileName.cstr()))
+#else
 				if (!enf::GetEngine()->Create(GEngineDD->GetHWND(), cfgFile.cstr(), profileName.cstr()))
+#endif
 					return -1;
 			#endif
 			
@@ -12961,10 +12903,7 @@ RString GetPublicKey()
 #else
   if (!forcePublicKey.IsEmpty()) return forcePublicKey;
   if(customUID > 0) return Format("%d",customUID);
-  // use SteamID as a player identification
-  if (!SteamUser()) return "ERROR";
-  CSteamID id = SteamUser()->GetSteamID();
-  return Format("%llu", id.ConvertToUint64());
+  return "";
 #endif
 }
 
@@ -13086,7 +13025,7 @@ void OFPFrameFunctions::ErrorMessage(const char *format, va_list argptr)
 #endif
   DDTermError();
   // kill main application window
-  //MessageBox(hwndApp,buf,AppName,MB_OK);
+  //MessageBox(hwndApp,buf,DayZAppName,MB_OK);
   //WinDestroy();
   // show message
 #ifdef _WIN32
@@ -13100,10 +13039,10 @@ void OFPFrameFunctions::ErrorMessage(const char *format, va_list argptr)
   wBuffer[len - 1] = 0; // make sure result is always null terminated
 
   // convert application name from UTF-8 to Unicode
-  len = MultiByteToWideChar(CP_UTF8, 0, AppName, -1, NULL, 0);
+  len = MultiByteToWideChar(CP_UTF8, 0, DayZAppName, -1, NULL, 0);
   AUTO_STATIC_ARRAY(wchar_t, wAppName, 1024);
   wAppName.Resize(len);
-  MultiByteToWideChar(CP_UTF8, 0, AppName, -1, wAppName.Data(), len);
+  MultiByteToWideChar(CP_UTF8, 0, DayZAppName, -1, wAppName.Data(), len);
   wAppName[len - 1] = 0; // make sure result is always null terminated
 
   if (!Silent) //when autotest is running, we want no error messages
@@ -13205,10 +13144,10 @@ void WarningMessageLevel( ErrorMessageLevel level, const char *format, va_list a
     wBuffer[len - 1] = 0; // make sure result is always null terminated
 
     // convert application name from UTF-8 to Unicode
-    len = MultiByteToWideChar(CP_UTF8, 0, AppName, -1, NULL, 0);
+    len = MultiByteToWideChar(CP_UTF8, 0, DayZAppName, -1, NULL, 0);
     AUTO_STATIC_ARRAY(wchar_t, wAppName, 1024);
     wAppName.Resize(len);
-    MultiByteToWideChar(CP_UTF8, 0, AppName, -1, wAppName.Data(), len);
+    MultiByteToWideChar(CP_UTF8, 0, DayZAppName, -1, wAppName.Data(), len);
     wAppName[len - 1] = 0; // make sure result is always null terminated
 
     if (!Silent) //when autotest is running, we want no error messages

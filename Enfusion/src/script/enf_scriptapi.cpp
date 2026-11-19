@@ -228,7 +228,7 @@ void BaseWorld::AddThread(Instance* ins, ScriptThread *rt)
 		rt->m_pUserPrev = &m_psThread;
 	}
 
-	rt->m_iID = (int)this;
+	rt->m_iID = reinterpret_cast<intptr_t>(this);
 }
 
 //-----------------------------------------------------------------------
@@ -3598,7 +3598,8 @@ EnforceScriptContext::EnforceScriptContext(StaticBuffer* stat): ScriptContext(st
 void EnforceScriptContext::InitAPI()
 {
 	//user types
-	g_vtVObjectType = AddType("vobject", VARTYPE_VOBJECT, sizeof(int));
+	// vobject values are ObjectResource* handles, so their script storage follows pointer width.
+	g_vtVObjectType = AddType("vobject", VARTYPE_VOBJECT, sizeof(void*));
 	g_vtSoundType = AddType("hsound", VARTYPE_HSOUND, sizeof(int));
 
 	m_pEntityClass = ENF_NEW EntityClass(this, "_entity", sizeof(Entity), NULL);

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9A8051A1-5C9F-4635-92CD-AD8DA3F8FF41}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SimulBase_MT</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(MSBuildThisFileDirectory)..\..\build\port-x64\SimulWeather\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\..\build\port-x64\SimulWeather\obj\SimulBase_MT\</IntDir>
+    <TargetName>SimulBase_MT</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>..\..\extern;..\..\extern\SimulWeather;..\..\extern\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN64;_LIB;VISUAL_CPP;UNIT_TEST;NDEBUG;INTEL_COMPATIBLE;_CRT_SECURE_NO_DEPRECATE;SIMUL_BASE_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\Curve.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\DllMain.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\EnvironmentVariables.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\IdFlags.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\inifile.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\InitializeAndDetectProcessor.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\Modules.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\precomp.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\ReadWriteMutex.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\RealTimeTypes.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\Referenced.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\RelativeFilePath.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\StringFunctions.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\StringToWString.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\TabbedLogger.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\Timer.cpp" />
+    <ClCompile Include="..\..\extern\SimulWeather\Simul\Base\Units.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

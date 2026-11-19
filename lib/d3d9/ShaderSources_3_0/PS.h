@@ -4512,6 +4512,18 @@ half4 PSInterpolation(half4 ambientColor:TEXCOORDAMBIENT,
 
 //////////////////////////////////////////////
 
+float4 PSDiscard() : COLOR
+{
+  clip(-1);
+  return 0;
+}
+
+half4 PSInterpolationAlpha(half4 ambientColor : TEXCOORDAMBIENT, float2 uv : TEXCOORD0) : COLOR
+{
+  half4 diffuse = lerp(tex2D(sampler1, uv), tex2D(sampler0, uv), ambientColor.a);
+  return ApplySrcAlpha(half4(ToRTColorSpace(ambientColor.rgb * diffuse.rgb), diffuse.a));
+}
+
 /// used for sky horizon layer
 
 float4 PSHorizon(half4 ambientColor : TEXCOORDAMBIENT, float4 tDiffuseMap : TEXCOORD0) : COLOR

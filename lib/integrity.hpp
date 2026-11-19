@@ -204,6 +204,7 @@ Note: windows.h needs to be loaded to use GET_FADE_EVENT / SET_FADE_EVENT
 // avoid using direct adress of DoFade here
 // SetCRC application will replace it
 
+#if defined(_M_IX86)
 #define IF_FADE() \
 	bool doFade; \
 	{ \
@@ -214,6 +215,9 @@ Note: windows.h needs to be loaded to use GET_FADE_EVENT / SET_FADE_EVENT
 		__asm setne doFade \
 	} \
 	if (doFade)
+#else
+#define IF_FADE() if (DoFade)
+#endif
 
 #else
 

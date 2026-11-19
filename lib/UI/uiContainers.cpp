@@ -30,6 +30,7 @@
 
 #include <El/Clipboard/clipboard.hpp>
 #include <El/Evaluator/express.hpp>
+#include <stdint.h>
 
 #include "uiMap.hpp"
 
@@ -1902,7 +1903,7 @@ void ControlsContainer::OnSimulate(EntityAI *vehicle)
       if (Glob.uiTime >= _tooltipTime) // mouse cursor was still long enough
       {
         // check if area in the control is still the same
-        int area = ctrl->GetTooltipArea(mouseX, mouseY);
+        intptr_t area = ctrl->GetTooltipArea(mouseX, mouseY);
         if (_tooltipArea == 0 && area != 0)
         {
           // show the tooltip now
@@ -2467,7 +2468,9 @@ int CmpControlObjects
   ControlObject *obj2 = *pObj2;
   float diff = obj2->GetBasePosition().Z() - obj1->GetBasePosition().Z();
   if (diff != 0) return sign(diff);
-  return (int)obj1 - (int)obj2;
+  const uintptr_t address1 = (uintptr_t)obj1;
+  const uintptr_t address2 = (uintptr_t)obj2;
+  return address1 < address2 ? -1 : address1 > address2 ? 1 : 0;
 }
 
 void ControlsContainer::SortObjects()

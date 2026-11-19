@@ -111,9 +111,6 @@
 
 extern int MaxGroups;
 
-#if _ENABLE_STEAM
-#include <Steamworks/steam_api.h>
-#endif
 
 RString FindScript(RString name);
 
@@ -1679,14 +1676,14 @@ const GameType GameTextOrString(GameText | GameString);
     return Veh##Xxx(state, oper1, false); \
   }
 
-inline bool CheckSize(const GameState *state, GameArrayType array, int size)
+bool CheckSize(const GameState *state, GameArrayType array, int size)
 {
   if (array.Size() == size) return true;
   state->SetError(EvalDim, array.Size(), size);
   return false;
 }
 
-inline bool CheckType(const GameState *state, GameValuePar oper, const GameType &type)
+bool CheckType(const GameState *state, GameValuePar oper, const GameType &type)
 {
   if (oper.GetType() == type) return true;
   state->TypeError(type, oper.GetType());
@@ -9769,7 +9766,7 @@ GameValue ObjName( const GameState *state, GameValuePar oper1 )
   if (!unit)
   {
     RptF("WARNING: Function 'name' - %s has no unit", (const char *)veh->GetDebugName());
-    RptF(" - network id %d:%"OID_FORMAT"", veh->GetNetworkId().creator.CreatorInt(), veh->GetNetworkId().id);
+    RptF(" - network id %d:%" OID_FORMAT"", veh->GetNetworkId().creator.CreatorInt(), veh->GetNetworkId().id);
     Person *person = dyn_cast<Person>(veh);
     if (person)
     {
@@ -10493,7 +10490,7 @@ GameValue ObjMoveInDriver( const GameState *state, GameValuePar oper1, GameValue
 /*
 RptF
 (
-  "Move in driver (procedure): %s (id %d:%"OID_FORMAT") into %s (id %d:%"OID_FORMAT")",
+  "Move in driver (procedure): %s (id %d:%" OID_FORMAT") into %s (id %d:%" OID_FORMAT")",
   cc_cast(soldier->GetDebugName()), soldier->GetNetworkId().creator.CreatorInt(), soldier->GetNetworkId().id,
   cc_cast(veh->GetDebugName()), veh->GetNetworkId().creator.CreatorInt(), veh->GetNetworkId().id
 );
@@ -15622,7 +15619,7 @@ GameValue ConfigListNames(const GameState *state)
   RString mask = GetUserDirectory() + RString("Config\\*.*");
 
   _finddata_t info;
-  long h = X_findfirst(mask, &info);
+  intptr_t h = X_findfirst(mask, &info);
   if (h != -1)
   {
     do
@@ -19763,7 +19760,7 @@ GameValue SelectPlayer(const GameState *state, GameValuePar oper1)
   }
 
   //NetworkId mid = veh->GetNetworkId();
-  //RptF(" %d:%"OID_FORMAT" LastSimulationTime = %.3f (%.3f)", mid.creator.CreatorInt(), mid.id, veh->GetLastSimulationTime().toFloat(), veh->GetSimSkip());
+  //RptF(" %d:%" OID_FORMAT" LastSimulationTime = %.3f (%.3f)", mid.creator.CreatorInt(), mid.id, veh->GetLastSimulationTime().toFloat(), veh->GetSimSkip());
 
   AIBrain *unit = veh->CommanderUnit();
   if (!unit) return NOTHING;
@@ -25349,46 +25346,6 @@ GameValue LoadingScreenUpdate(const GameState *state, GameValuePar oper1)
   return NOTHING;
 }
 
-#if _ENABLE_STEAM
-class SessionStatistics
-{
-protected:
-  bool _initialized;
-  bool _updated;
-  bool _achievementStored;
-
-public:
-  SessionStatistics()
-    : _initialized(false), _updated(false), _achievementStored(false),
-    _callbackUserStatsReceived(this, &SessionStatistics::OnUserStatsReceived),
-    _callbackUserStatsStored(this, &SessionStatistics::OnUserStatsStored),
-    _callbackAchievementStored(this, &SessionStatistics::OnAchievementStored)
-    {}
-  bool IsInitialized() const {return _initialized;}
-  bool IsUpdated() const {return _updated;}
-  bool IsAchievementStored() const {return _achievementStored;}
-
-  STEAM_CALLBACK(SessionStatistics, OnUserStatsReceived, UserStatsReceived_t, _callbackUserStatsReceived);
-  STEAM_CALLBACK(SessionStatistics, OnUserStatsStored, UserStatsStored_t, _callbackUserStatsStored);
-  STEAM_CALLBACK(SessionStatistics, OnAchievementStored, UserAchievementStored_t, _callbackAchievementStored);
-};
-
-void SessionStatistics::OnUserStatsReceived(UserStatsReceived_t *callback)
-{
-  _initialized = true;
-}
-
-void SessionStatistics::OnUserStatsStored(UserStatsStored_t *callback)
-{
-  _updated = true;
-}
-
-void SessionStatistics::OnAchievementStored(UserAchievementStored_t *callback)
-{
-  _achievementStored = true;
-}
-
-#endif
 
 GameValue AchievementUnlock(const GameState *state, GameValuePar oper1)
 {
@@ -25397,45 +25354,6 @@ GameValue AchievementUnlock(const GameState *state, GameValuePar oper1)
   ConstParamEntryPtr cls = (Pars >> "CfgAchievements").FindEntry(name);
   if (!cls) return false;
 
-#if _ENABLE_STEAM
-  ISteamUserStats *s = SteamUserStats();
-  if (s)
-  {
-    // TODO: integrate session statistics in different way (asynchronous solution)
-    SessionStatistics stats;
-
-    ProgressScope progress(false, LocalizeString(IDS_LOAD_WORLD), "%s", true);
-
-    if (!s->RequestCurrentStats()) return false;
-    while (!stats.IsInitialized())
-    {
-      SteamAPI_RunCallbacks();
-      progress.Refresh();
-    }
-
-    // check if achievement is already unlocked
-    bool done = false;
-    if (s->GetAchievement(name, &done) && done) return false;
-
-    if (!s->SetAchievement(name)) return false;
-/* (not called)
-    while (!stats.IsAchievementStored())
-    {
-      SteamAPI_RunCallbacks();
-      progress.Refresh();
-    }
-*/
-
-    if (!s->StoreStats()) return false;
-    while (!stats.IsUpdated())
-    {
-      SteamAPI_RunCallbacks();
-      progress.Refresh();
-    }
-
-    return true;
-  }
-#endif
 
   // TODO: proper implementation
 
@@ -30139,3 +30057,4 @@ INIT_MODULE(ComRef, 1000)
 #endif
 #endif
 }
+

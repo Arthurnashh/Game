@@ -1971,32 +1971,6 @@ bool IsUserIdMatch(const char *id, const char *match)
   XX(MessageName, int, build, NDTInteger, int, NCTNone, DEFVALUE(int, -1), DOC_MSG("Build player is using"), TRANSF)\
   XX(MessageName, LocalPlayerInfoList, localPlayerInfoList, NDTObject, REF_MSG(NetworkMessageLocPlayerInfoList), NCTNone, DEFVALUE_MSG(NMTLocPlayerInfoList), DOC_MSG("List of local player infos"), TRANSF_OBJECT)
 
-#elif _ENABLE_STEAM_MATCHMAKING
-
-// steamID is necessary in matchmaking to calculate the number of players
-
-#define LOGIN_MSG(MessageName, XX) \
-  XX(MessageName, int, dpnid, NDTInteger, int, NCTNone, DEFVALUE(int, 0), DOC_MSG("Client (player) ID"), TRANSF) \
-  XX(MessageName, int, playerid, NDTInteger, int, NCTNone, DEFVALUE(int, 0), DOC_MSG("ID unique in session (shorter than dpnid)"), TRANSF) \
-  XX(MessageName, int, inaddr, NDTInteger, int, NCTNone, DEFVALUE(int, 0), DOC_MSG("IP address"), TRANSF) \
-  XX(MessageName, NetInt64, steamID, NDTInt64, NetInt64, NCTNone, DEFVALUE(NetInt64, 0), DOC_MSG("Steam user id"), TRANSF) \
-  XX(MessageName, AutoArray<char>, steamSessionTicket, NDTRawData, AutoArray<char>, NCTNone, DEFVALUERAWDATA, DOC_MSG("Steam authentication ticket"), TRANSF) \
-  XX(MessageName, RString, id, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("Unique id of player (derivated from CD key)"), TRANSF) \
-  XX(MessageName, RString, name, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("Nick (short) name of player"), TRANSF) \
-  XX(MessageName, RString, face, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("Selected face"), TRANSF) \
-  XX(MessageName, RString, glasses, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("Selected glasses"), TRANSF) \
-  XX(MessageName, RString, speaker, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("Selected speaker"), TRANSF) \
-  XX(MessageName, float, pitch, NDTFloat, float, NCTNone, DEFVALUE(float, 1.0f), DOC_MSG("Selected voice pitch"), TRANSF) \
-  XX(MessageName, RString, squad, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("unique id (URL) of squad"), TRANSF) \
-  XX(MessageName, RString, fullname, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("Full name of player"), TRANSF) \
-  XX(MessageName, RString, email, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("E-mail of player"), TRANSF) \
-  XX(MessageName, RString, icq, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("ICQ of player"), TRANSF) \
-  XX(MessageName, RString, remark, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("Remark about player"), TRANSF) \
-  XX(MessageName, int, filesCount, NDTInteger, int, NCTSmallUnsigned, DEFVALUE(int, 0), DOC_MSG("Number of files checked by the client"), TRANSF) \
-  XX(MessageName, int, clientState, NDTInteger, int, NCTNone, DEFVALUE(int, NCSNone), DOC_MSG("State of player's network client"), TRANSF) \
-  XX(MessageName, int, version, NDTInteger, int, NCTNone, DEFVALUE(int, 0), DOC_MSG("Version player is using"), TRANSF)\
-  XX(MessageName, int, build, NDTInteger, int, NCTNone, DEFVALUE(int, -1), DOC_MSG("Build player is using"), TRANSF)
-
 #else
 
 #define LOGIN_MSG(MessageName, XX) \
@@ -2109,17 +2083,12 @@ TMError PlayerIdentity::TransferMsg(NetworkMessageContext &ctx)
       TRANSF_EX(isVoice, voiceOn)
       TRANSF_EX(privateSlot, privateSlot)
       TRANSF_EX(rating, rating)
-#elif _ENABLE_STEAM_MATCHMAKING
-      TRANSF(steamID)
-      TRANSF(steamSessionTicket)
 #endif
       TRANSF_EX(id, id)
-#if !_ENABLE_STEAM_MATCHMAKING // TODO: find other define
       TRANSF_EX(certificate, certificate)
       TRANSF_EX(challengeSigned, challengeSigned)
       TRANSF_EX(blockedKeys, blockedKeys)
       TRANSF_EX(blockedKeysSignature, blockedKeysSignature)
-#endif
       TRANSF_EX(name, name)
       TRANSF_EX(face, face)
       TRANSF_EX(glasses, glasses)
@@ -2541,128 +2510,6 @@ NetworkMessage *CreateNetworkMessage(NetworkMessageType type)
 #endif
 
 
-#if _ENABLE_STEAM_MATCHMAKING
-SteamValidation::SteamValidation()
-: _callbackGSAuthTicketResponse(nullptr, nullptr), _server(nullptr), _started(false)
-{
-
-}
-void SteamValidation::Start(PlayerIdentity &identity, NetworkServer *server)
-{
-  _server = server;
-  _steamId = identity._steamID;
-  _steamSessionTicket = identity._steamSessionTicket;
-  _name = identity.GetName();
-  _dpid = identity.dpnid;
-  _authDone = true;
-  _authOK = false;
-  _started = true;
-  _ticksStarted = ::GlobalTickCount();
-
-  _callbackGSAuthTicketResponse.Register(this, &SteamValidation::OnValidateAuthTicketResponse);
-  if (SteamGameServer())
-  {
-    sockaddr_in addr;
-    if (server->GetClientAddress(identity.dpnid, addr))
-    {
-#if _NO_STEAM_AUTH
-      _authDone = true;
-      _authOK = true;
-#else
-      _authDone = false; //must be set by callbacks
-      EBeginAuthSessionResult result = SteamGameServer()->BeginAuthSession(
-        _steamSessionTicket.Data(), _steamSessionTicket.Size(),
-        CSteamID(_steamId));
-      if (result != k_EBeginAuthSessionResultOK)
-      { 
-        LogF("Cannot start Steam authentication of player %s, reason %d", cc_cast(identity.GetName()), result);
-        // when function fails, callbacks will not be called => auth is done but not succeed
-        _authDone = true;
-        _started = false;
-        _server->KickOff(_dpid, KOROther, "Steam Auth Failed");
-
-      }
-      else 
-      {
-#if _USE_BATTL_EYE_SERVER
-          // Local check is ok, add player to BattlEye
-          server->PlayerGUIDReceived(identity.dpnid, CSteamID((uint64)identity._steamID));
-#endif
-      }
-#endif
-    }
-  }
-}
-
-void SteamValidation::HandleTimeout()
-{
-  if (_started && !_authDone && GlobalTickCount()>_ticksStarted+60000)
-  {
-    _server->KickOff(_dpid, KORAuthTimeOut);
-    _authOK = false;
-    _authDone = true;
-  }
-}
-
-SteamValidation::~SteamValidation()
-{
-  if (_started)
-  {
-    if (SteamGameServer()) SteamGameServer()->EndAuthSession(_steamId);
-  }
-}
-
-#define STEAM_AUTH_REASONS(XXXX) \
-    XXXX(UserNotConnectedToSteam) \
-    XXXX(NoLicenseOrExpired) \
-    XXXX(VACBanned) \
-    XXXX(LoggedInElseWhere) \
-    XXXX(VACCheckTimedOut) \
-    XXXX(AuthTicketCanceled) \
-    XXXX(AuthTicketInvalidAlreadyUsed) \
-    XXXX(AuthTicketInvalid) \
-  
-
-
-void SteamValidation::OnValidateAuthTicketResponse(ValidateAuthTicketResponse_t *response)
-{
-  // not a response to my request
-  if (response->m_SteamID.ConvertToUint64() != _steamId) return;
-
-  if (response->m_eAuthSessionResponse == k_EAuthSessionResponseOK)
-  {
-    // This is the final approval, and means we should let the client play (find the pending auth by steamid)
-    _authOK = true;
-#if _USE_BATTL_EYE_SERVER && _ENABLE_STEAM_MATCHMAKING
-    GetNetworkManager().PlayerGUIDIsValid(_dpid, CSteamID(_steamId));
-#endif
-    LogF("Steam authentication of player %s completed", cc_cast(_name));
-  }
-  else
-  {
-    // Tell the GS the user is leaving the server
-    // no need to call EndAuthSession, will be handled in the destructor
-
-    _authOK = false;
-    RString reason;
-    switch (response->m_eAuthSessionResponse)
-    {
-      #define CASE_REASON_NAME(x) case k_EAuthSessionResponse##x: reason = #x; break;
-      STEAM_AUTH_REASONS(CASE_REASON_NAME)
-    default:
-      reason = Format("%d", response->m_eAuthSessionResponse);
-      break;
-    }
-
-    // player is not authenticated to play this game - kick off
-    _server->KickOff(_dpid, KOROther, reason);
-
-    LogF("Steam authentication of player %s failed, reason %s", cc_cast(_name), cc_cast(reason));
-  }
-  _authDone = true;
-}
-
-#endif
 
 /*!
 \patch 1.14 Date 08/09/2001 by Ondra
@@ -4296,13 +4143,6 @@ DWORD NetworkManager::GetEstimatedEndServerTime()
   return 0;
 }
 
-void NetworkManager::PlayerGUIDIsValid(int player, const CSteamID &ownerId)
-{
-  if (_server)
-  {
-    _server->PlayerGUIDIsValid(player, ownerId);
-  }
-}
 
 bool NetworkManager::VoiceReady() const
 {
@@ -4621,11 +4461,7 @@ bool NetworkManager::CreateSession(SessionType sessionType, RString name, RStrin
 #endif
 //}
 
-#if _ENABLE_STEAM_MATCHMAKING
-  _server->InitSteam();
-  // initialize GameSpy QR2 when all info is ready
-//{ QUERY & REPORTING SDK
-#elif _ENABLE_GAMESPY
+#if _ENABLE_GAMESPY
   if (!isPrivate) 
     _server->InitQR(isPrivate); //do not use GameSpy QR when server runs only as LAN server
 #endif
@@ -5586,14 +5422,6 @@ void NetworkManager::UpdateObject(NetworkObject *object, NetworkMessageClass cls
 void NetworkManager::OnVehicleDestroyed(EntityAI *killed, EntityAI *killer)
 {
   if (_client) _client->OnVehicleDestroyed(killed, killer);
-#if _ENABLE_STEAM_MATCHMAKING && _ENABLE_DEDICATED_SERVER
-  if (_server)
-  {
-    AIBrain *unit = killed->CommanderUnit();
-    if (unit && unit->IsAnyPlayer()) 
-      _server->ResetCharacterTimeAlive(unit);
-  }
-#endif
 }
 
 void NetworkManager::OnVehicleDamaged(EntityAI *damaged, EntityAI *killer, float damage, RString ammo)
