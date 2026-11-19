@@ -12255,10 +12255,6 @@ it sometimes caused false warnings and premature server termination.
 
       avoidUserInput = AUITrue;
 
-#if defined(_WIN64)
-      // The x64 client uses the native D3D11 backend directly.
-      GEngine=CreateEngineD3D11(pars);
-#else
       #if _ENABLE_DX10
         if (ForceDX9)
           GEngine=CreateEngineD3D9(pars);
@@ -12267,7 +12263,6 @@ it sometimes caused false warnings and premature server termination.
       #else
         GEngine=CreateEngineD3D9(pars);
       #endif
-#endif
         if (GenerateShaders)
         {
     #if defined(_WIN32) 
