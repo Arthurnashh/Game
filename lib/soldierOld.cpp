@@ -2923,6 +2923,7 @@ static Object *DirectHitCheck(Man *man, Vector3Par beg, Vector3 &hit, const Ammo
 void Man::TakeItemToHands(InventoryItem *item)
 {
   _itemInHandsWanted = item;
+  _emptyHandsWanted = (item == NULL);
 }
 
 
@@ -2946,12 +2947,16 @@ void Man::PlayForcedMove(const MoveIdExt &item, ActionContextBase *context)
 void Man::ProcessItemToHands()
 {
   if (IsOnAnyLadder()) return;
-  if (_itemInHandsWanted == _itemInHands) return;
+  if (_itemInHandsWanted == _itemInHands)
+  {
+    _emptyHandsWanted = false;
+    return;
+  }
   // A hands item restored from a save or an authoritative update has no
   // pending request. Starting the Disarm transition for it would restart the
   // TakeInHands action forever ("Cancel Action" loop when joining with an
-  // item already in hands).
-  if (!_itemInHandsWanted) return;
+  // item already in hands). An explicit TakeItemToHands(NULL) still empties them.
+  if (!_itemInHandsWanted && !_emptyHandsWanted) return;
   if (IsActionInProgress(MFTakeInHands)) return;
   const MoveIdExt &moveWanted = GetMove("Disarm");
   if (moveWanted.id != MoveIdNone)
@@ -3033,6 +3038,7 @@ void Man::TakeInHandsAction(InventoryItem *item)
   // Use the common ownership transfer: remove the selected item from its
   // clothing/cargo slot and put it in ISHands before making it active.
   Person::TakeItemToHands(item);
+  _emptyHandsWanted = false;
 
   // If the transfer could not put the item into Hands, clear the pending
   // request instead of letting ProcessItemToHands retry the action forever.

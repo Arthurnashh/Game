@@ -34,6 +34,7 @@ _sensorRowID(-1),_remotePlayer(1),_getOutReady(false),
 _disableDamageFromObjUntil(Glob.time)
 {
 	_handsTransferInProgress = false;
+	_emptyHandsWanted = false;
 	_info._rank = RankPrivate;
 	_info._experience = 0;
 	_info._initExperience = 0;
@@ -1703,7 +1704,13 @@ void Person::HandleItemInHands(InventoryItem *item)
 
 void Person::TakeItemToHands(InventoryItem *item)
 {
-  if (!item) return;
+  if (!item)
+  {
+    // explicit request to empty the hands: stow the current item
+    HandleItemInHands(nullptr);
+    _itemInHands = NULL;
+    return;
+  }
 
   HandleItemInHands(item);
 

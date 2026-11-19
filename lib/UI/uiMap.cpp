@@ -6516,6 +6516,10 @@ void CItemBase::DropItem(Person *owner, InventoryItem *item)
   }
 }
 
+// Set when a local (server owner) move placed an item using its current
+// inventory orientation; see InventoryRotationPreviewScope.
+static bool GInventoryPlacedLocally = false;
+
 void CItemBase::MoveItem(EntityAI *target, int index, InventoryItem *item)
 {
   // CItemBase::CanMoveItem should be called and succeed before
@@ -6531,6 +6535,7 @@ void CItemBase::MoveItem(EntityAI *target, int index, InventoryItem *item)
     if (parent) parent->RemoveOwnedItem(item);
 
     target->MoveItem(index, item);
+    GInventoryPlacedLocally = true;
     if (movedFromHands)
       GetNetworkManager().UpdateObject(handsOwner, NMCUpdateGeneric);
   }
@@ -10237,22 +10242,27 @@ bool SwapItems(InventoryItem *item1, InventoryItem *item2, Person *owner)
 }
 
 // Temporarily expose the drag-preview orientation to the existing cargo
-// validation code, then restore the item's authoritative orientation.
+// validation code. The original orientation is restored unless the item was
+// placed locally with the preview orientation (remote requests carry the
+// orientation and the server update applies it).
 class InventoryRotationPreviewScope
 {
 private:
   InventoryItem *_item;
   bool _original;
+  bool _committed;
 public:
   InventoryRotationPreviewScope(InventoryItem *item, bool rotated)
-    : _item(item), _original(item ? item->IsInventoryRotated() : false)
+    : _item(item), _original(item ? item->IsInventoryRotated() : false), _committed(false)
   {
+    GInventoryPlacedLocally = false;
     if (_item) _item->SetInventoryRotated(rotated);
   }
   ~InventoryRotationPreviewScope()
   {
-    if (_item) _item->SetInventoryRotated(_original);
+    if (_item && !_committed && !GInventoryPlacedLocally) _item->SetInventoryRotated(_original);
   }
+  void Commit() {_committed = true;}
 };
 
 unsigned char DisplayInventory::OnDragging(IControl *dragCtrl,  IControl *dropCtrl,  float x, float y)
@@ -10459,7 +10469,11 @@ bool DisplayInventory::OnDrop(IControl *dragCtrl, IControl *dropCtrl, float x, f
               GetNetworkManager().AskForSwapItems(item, info._item, person);
               return true;
             }
-            else if (SwapItems(item, info._item, person)) return true;
+            else if (SwapItems(item, info._item, person))
+            {
+              rotationPreview.Commit();
+              return true;
+            }
           }
 
           if (canAddOwnedItem)
@@ -10473,6 +10487,7 @@ bool DisplayInventory::OnDrop(IControl *dragCtrl, IControl *dropCtrl, float x, f
               if (parent) DoVerify(parent->RemoveOwnedItem(item));
     
               info._item->AddOwnedItem(item);
+              rotationPreview.Commit();
             }
             return true;
           }
@@ -10525,7 +10540,11 @@ bool DisplayInventory::OnDrop(IControl *dragCtrl, IControl *dropCtrl, float x, f
                 return true;
               }
             }
-            else if (SwapItems(item, oldItem, person)) return true;
+            else if (SwapItems(item, oldItem, person))
+            {
+              rotationPreview.Commit();
+              return true;
+            }
           }
         }
 

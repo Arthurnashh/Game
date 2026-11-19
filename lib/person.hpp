@@ -176,6 +176,9 @@ protected:
   // Prevent RemoveItemInHands from re-adding an item while it is being moved
   // to another inventory owner.
   bool _handsTransferInProgress;
+  // TakeItemToHands(NULL) asked to empty the hands; distinguishes this request
+  // from a NULL _itemInHandsWanted with no pending request (restored state).
+  bool _emptyHandsWanted;
 
   #if _VBS2 // fatigue model
 protected:
