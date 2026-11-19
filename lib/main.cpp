@@ -9155,9 +9155,9 @@ THREAD_PROC_RETURN THREAD_PROC_MODE DedicatedClientMessageLooperThreadProc ( voi
 static void CreateDedicatedClientConsoleWindow(HINSTANCE hInst, CreateEnginePars &pars)
 {
   Engine *CreateEngineDummy();
-  void InitWindowAPP_NAME();
+  void InitWindowAppName();
   GEngine = CreateEngineDummy();
-  InitWindowAPP_NAME();
+  InitWindowAppName();
   if (GEngine)
   {
     GEngine->Init();
