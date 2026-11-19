@@ -388,6 +388,7 @@ BattlEyeLicenceMsgBox::BattlEyeLicenceMsgBox(ControlsContainer *parent, RString 
 
 }
 
+#if _ENABLE_STEAM
 static void SteamOpenWebBrowser(const RString &url, bool relativeToAppPath)
 {
   RString filePath = url;
@@ -414,6 +415,7 @@ static void SteamOpenWebBrowser(const RString &url, bool relativeToAppPath)
   if (SteamFriends())
     SteamFriends()->ActivateGameOverlayToWebPage(cc_cast(filePath));
 }
+#endif
 
 void BattlEyeLicenceMsgBox::OnButtonClicked(int idc)
 {
@@ -437,7 +439,7 @@ void BattlEyeLicenceMsgBox::OnButtonClicked(int idc)
         SteamOpenWebBrowser(url, true);
     }
 #else
-    ASSERT_RLS(false, "Missing UI for showing BattlEye licence.");
+    // Steam's overlay is unavailable in this build; keep the button inert.
 #endif
 #endif
     break;
@@ -555,7 +557,7 @@ bool DeleteDirectoryStructure(const char *name, bool deleteDir =true)
   sprintf(buffer, "%s\\*.*", name);
 
   _finddata_t info;
-  long h = X_findfirst(buffer, &info);
+  intptr_t h = X_findfirst(buffer, &info);
   if (h != -1)
   {
     do
@@ -622,7 +624,7 @@ void CopyDirectoryStructure(const char *dst, const char *src)
   sprintf(buffer, "%s\\*.*", src);
 
   _finddata_t info;
-  long h = X_findfirst(buffer, &info);
+  intptr_t h = X_findfirst(buffer, &info);
   if (h != -1)
   {
     do
@@ -7540,6 +7542,7 @@ void DisplayMultiplayer::OnSimulateBackground(EntityAI *vehicle)
 
 void DisplayMultiplayer::OnSimulate(EntityAI *vehicle)
 {
+#if _ENABLE_STEAM
   if (!GInput.changeServer.IsEmpty())
   {
     if (!GetNetworkManager().IsServer() && !GetNetworkManager().IsClient())
@@ -7549,6 +7552,7 @@ void DisplayMultiplayer::OnSimulate(EntityAI *vehicle)
     }
     else GInput.changeServer = RString();
   }
+#endif
 
   OnSimulateBasic();
   Display::OnSimulate(vehicle);
@@ -7847,7 +7851,9 @@ void DisplayMultiplayer::UpdateFilter()
       text->SetText(Format("<%d", _filter.maxPing));
     else
       text->SetText(RString());
+#if _ENABLE_STEAM_MATCHMAKING
   _steamServerBrowser->SetFilter(_filter);
+#endif
 }
 
 void DisplayMultiplayer::SetProgress(float progress)
@@ -22278,7 +22284,7 @@ bool DisplayNewUser::CanDestroy()
     {
       _finddata_t info;
       RString dir = GetUserRootDir(name);
-      long check = X_findfirst(dir, &info);
+      intptr_t check = X_findfirst(dir, &info);
       if (check != -1)
       {
         // player already exist

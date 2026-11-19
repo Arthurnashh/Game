@@ -790,6 +790,7 @@ void NetworkServer::BattlEye::PlayerGUIDReceived(int player)
 }
 #endif
 
+#if _ENABLE_STEAM_OWNERSHIP
 void NetworkServer::BattlEye::PlayerGUIDIsValid(int player, const CSteamID &ownerId)
 {
   if (_callbacks._playerGUIDIsValid)
@@ -798,6 +799,11 @@ void NetworkServer::BattlEye::PlayerGUIDIsValid(int player, const CSteamID &owne
     (*_callbacks._playerGUIDIsValid)(player, &ownerSteamId, sizeof(ownerSteamId));
   }
 };
+#else
+void NetworkServer::BattlEye::PlayerGUIDIsValid(int player)
+{
+}
+#endif
 
 bool NetworkServer::BattlEye::UpdatePositionCallback(int player, const char *netId, float x, float y, float z,
   float dirX, float dirY, float dirZ, float upX, float upY, float upZ, float asideX, float asideY, float asideZ)

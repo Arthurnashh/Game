@@ -15628,7 +15628,7 @@ GameValue ConfigListNames(const GameState *state)
   RString mask = GetUserDirectory() + RString("Config\\*.*");
 
   _finddata_t info;
-  long h = X_findfirst(mask, &info);
+  intptr_t h = X_findfirst(mask, &info);
   if (h != -1)
   {
     do

@@ -1068,7 +1068,7 @@ void RenameUserProfile(RString oldName, RString newName)
 
     // copy all files to new save
     _finddata_t info;
-    long h = _findfirst(srcDir + RString("*.*"), &info); // u: drive
+    intptr_t h = _findfirst(srcDir + RString("*.*"), &info); // u: drive
     if (h != -1)
     {
       do
@@ -7239,7 +7239,7 @@ void DisplayMainVBS::OnButtonClicked(int idc)
     {
       _finddata_t info;
       RString dir = GetUserRootDir(name);
-      long check = X_findfirst(dir, &info);
+      intptr_t check = X_findfirst(dir, &info);
 
       Glob.header.SetPlayerName(name);      
       SaveLastPlayer();
@@ -10179,7 +10179,7 @@ void FlushReadHandles(const char *dir)
   sprintf(buffer, "%s\\*.*", dir);
 
   _finddata_t info;
-  long h = X_findfirst(buffer, &info);
+  intptr_t h = X_findfirst(buffer, &info);
   if (h != -1)
   {
     do
@@ -12643,7 +12643,7 @@ void DisplaySingleMission::LoadDirectory()
     _missionList->ClearStrings();
 #ifdef _XBOX
     _finddata_t info;
-    long h = _findfirst(_directory + RString("*.*"), &info);  // t: drive
+      intptr_t h = _findfirst(_directory + RString("*.*"), &info);  // t: drive
     if (h != -1)
     {
       do
@@ -12807,9 +12807,9 @@ void DisplaySingleMission::LoadDirectory()
 
   // first search for .pbo files
   #ifdef _XBOX
-    long h = X_findfirst(dir + RString("*"), &info);
+    intptr_t h = X_findfirst(dir + RString("*"), &info);
   #else
-    long h = _findfirst(dir + RString("*.pbo"), &info);  // not used on Xbox
+    intptr_t h = _findfirst(dir + RString("*.pbo"), &info);  // not used on Xbox
   #endif
   if (h != -1)
   {

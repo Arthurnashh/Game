@@ -60,6 +60,7 @@
 #include <sys/stat.h>
 #ifdef _WIN32
   #include <io.h>
+  #include <objbase.h>
 #endif
 
 #include <Es/Strings/bString.hpp>
@@ -76,6 +77,42 @@
 #endif
 
 #include "El/Speech/debugVoN.hpp"
+
+#if defined(DAYZ_PRIVATE_SERVER) && defined(_WIN32)
+RString GetUserDirectory();
+
+// Stable private-server identity; authentication and authorization remain server responsibilities.
+static RString GetPrivateServerUID()
+{
+  RString path = GetUserDirectory() + RString("private-server-id.txt");
+  FILE *file = fopen(cc_cast(path), "r");
+  if (file)
+  {
+    char saved[64] = {0};
+    size_t count = fread(saved, 1, sizeof(saved)-1, file);
+    fclose(file);
+    if (count == 36 && saved[8]=='-' && saved[13]=='-' && saved[18]=='-' && saved[23]=='-')
+      return RString(saved);
+  }
+
+  GUID guid;
+  if (CoCreateGuid(&guid) != S_OK) return RString();
+  char id[40];
+  sprintf(id, "%08lX-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+    (unsigned long)guid.Data1, (unsigned int)guid.Data2, (unsigned int)guid.Data3,
+    (unsigned int)guid.Data4[0], (unsigned int)guid.Data4[1],
+    (unsigned int)guid.Data4[2], (unsigned int)guid.Data4[3],
+    (unsigned int)guid.Data4[4], (unsigned int)guid.Data4[5],
+    (unsigned int)guid.Data4[6], (unsigned int)guid.Data4[7]);
+  file = fopen(cc_cast(path), "w");
+  if (file)
+  {
+    fwrite(id, 1, 36, file);
+    fclose(file);
+  }
+  return RString(id);
+}
+#endif
 
 #if _PROFILE
 #pragma optimize( "", off )
@@ -2686,7 +2723,7 @@ void DeleteObsoleteFiles(const char *name, const AutoArray<CustomFilePaths> &fil
   sprintf(buffer, "%s\\*.*", name);
 
   _finddata_t info;
-  long h = X_findfirst(buffer, &info);
+  intptr_t h = X_findfirst(buffer, &info);
   if (h != -1)
   {
     do
@@ -3189,7 +3226,9 @@ void NetworkClient::OnMessage(int from, NetworkMessage *msg, NetworkMessageType 
           }
         }
         #endif
-#if BATTLEYE_INTERNAL_ID
+#if defined(DAYZ_PRIVATE_SERVER)
+        identity.id = GetPrivateServerUID();
+#elif BATTLEYE_INTERNAL_ID
 // set BATTLEYE_INTERNAL_ID when you need to test BattlEye using internal DEV666 public keys
         RString fakeID = GetPublicKey();
         identity.id = fakeID.Substring(3,fakeID.GetLength());

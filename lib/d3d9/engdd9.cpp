@@ -12460,7 +12460,7 @@ void EngineDD9::DrawIndexedPrimitive(int cb, int beg, int end, const Shape &sMes
         }
         else
         {
-          __asm nop;
+          YieldProcessor();
         }
       }
       //LogF("TLEnd");
@@ -22332,8 +22332,8 @@ void EngineDD9::Init3D()
   #if !XBOX_D3D
     #define RESTORE_AFFINITY 1
     // remember current affinity so that we can restore it later
-    DWORD oldAffinity = ~0;
-    DWORD sysAffinity = ~0;
+    DWORD_PTR oldAffinity = ~DWORD_PTR(0);
+    DWORD_PTR sysAffinity = ~DWORD_PTR(0);
     GetProcessAffinityMask(GetCurrentProcess(),&oldAffinity,&sysAffinity);
     #if 1
       // limit us to 2 CPU to fool driver detection and prevent driver using threaded optimizations

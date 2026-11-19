@@ -4297,6 +4297,7 @@ DWORD NetworkManager::GetEstimatedEndServerTime()
   return 0;
 }
 
+#if _ENABLE_STEAM_OWNERSHIP
 void NetworkManager::PlayerGUIDIsValid(int player, const CSteamID &ownerId)
 {
   if (_server)
@@ -4304,6 +4305,7 @@ void NetworkManager::PlayerGUIDIsValid(int player, const CSteamID &ownerId)
     _server->PlayerGUIDIsValid(player, ownerId);
   }
 }
+#endif
 
 bool NetworkManager::VoiceReady() const
 {

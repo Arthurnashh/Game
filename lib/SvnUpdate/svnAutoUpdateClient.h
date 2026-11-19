@@ -36,9 +36,9 @@ public:
 
   void Close()
   {
-    // close my pipe ends
-    if (_pipes[0]!=-1) { close(_pipes[0]); _pipes[0]=-1; }
-    if (_pipes[3]!=-1) { close(_pipes[3]); _pipes[3]=-1; }
+    // Close whichever ends are still owned by this process.
+    for (int i=0; i<4; i++)
+      if (_pipes[i]!=-1) { close(_pipes[i]); _pipes[i]=-1; }
   }
 
   bool Update();
@@ -60,7 +60,6 @@ protected:
   // pipe to communicate with SvnAutoUpdater (server)
   PipeManager _pipeManager;
   int _pipes[4];
-  HANDLE hProcess;
 };
 
 ISVNAutoUpdaterClient *CreateSVNAutoUpdaterClient();

@@ -3383,6 +3383,11 @@ protected:
 	};
 
 public:
+    ENF_INLINE AAB(const AAB &other)
+    {
+        for (int i=0; i<6; ++i) MinMax[i]=other.MinMax[i];
+    }
+
 //!Constructor creating AAB set to defined point
 	AAB(const Vector3& point): Mins(point), Maxs(point) {}
 
@@ -3391,9 +3396,6 @@ public:
 
 //!Constructor creating AAB with defined extents
 	AAB(float minx, float miny, float minz, float maxx, float maxy, float maxz): Mins(minx, miny, minz), Maxs(maxx, maxy, maxz) {}
-
-//!Copy constructor for modern compilers, preserving both bounds.
-	AAB(const AAB& aabb): Mins(aabb.Mins), Maxs(aabb.Maxs) {}
 
 /*!
 Basic constructor.

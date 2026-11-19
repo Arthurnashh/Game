@@ -18148,7 +18148,7 @@ _nearbyItemTransmittersChanged(false)
     _camTypeNewFactor = 1;
   }
   #if _PIII
-    Assert( ((int)this&0xf)==0 );
+    Assert( (reinterpret_cast<uintptr_t>(this)&0xf)==0 );
   #endif
 
   _radio = new RadioChannel(CCGlobal, Pars >> "RadioChannels" >> "GlobalChannel");
