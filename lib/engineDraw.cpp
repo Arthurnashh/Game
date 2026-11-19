@@ -1436,7 +1436,7 @@ void Engine::DrawMeshTLInstanced(
     }
   }
 
-  if (nInstances>1 && runSecBeg.Size()>0)
+  if (nInstances>1 && runSecBeg.Size()>0 && CanApplyMaterialTL())
   {
     // The section state prepared by PrepareTL (texture, sampler, pixel shader,
     // render states, material) depends only on the section run, not on the

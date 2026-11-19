@@ -5104,6 +5104,7 @@ public:
   }
   /// set when the z-only priming pass has filled the main depth buffer
   virtual void SetMainDepthPrimed(bool val) {_mainDepthPrimed = val;}
+  virtual bool MainPassPrimesDepth() const {return true;}
 
   //@{ only set values, do not apply it yet
   bool SetFSAAWanted(int quality);
@@ -5752,6 +5753,7 @@ protected: // D3D helpers
   recomputed for every instance (they depend on the object-space transform).
   */
   virtual void ApplyMaterialTL(int cb, const TLMaterial &tlMat);
+  virtual bool CanApplyMaterialTL() const {return true;}
 
   void DrawPolygon(const VertexIndex *ii, int n);
   void DrawSection(const FaceArray &face, Offset beg, Offset end);

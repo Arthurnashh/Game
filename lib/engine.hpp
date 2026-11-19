@@ -1659,6 +1659,8 @@ public:
   /// true when the main depth buffer was primed this frame
   virtual bool ZPrimed() const {return true;}
   virtual void SetMainDepthPrimed(bool val) {}
+  /// true when the main pass writes depth itself, so the separate z-only priming pass can be skipped
+  virtual bool MainPassPrimesDepth() const {return false;}
 
   //@{ user settings - AToC
   virtual void SetAToC(int level) {}
@@ -1742,6 +1744,8 @@ public:
   recomputed for every instance (they depend on the object-space transform).
   */
   virtual void ApplyMaterialTL(int cb, const TLMaterial &tlMat) {}
+  /// true when ApplyMaterialTL is implemented
+  virtual bool CanApplyMaterialTL() const {return false;}
 
   virtual void PrepareTriangle( int cb, const MipInfo &mip, const TexMaterial *mat, int specFlags )= 0;
   virtual void DrawPolygon( const VertexIndex *i, int n )= 0;

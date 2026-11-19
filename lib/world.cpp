@@ -10526,13 +10526,12 @@ void World::DrawSceneR2T(Entity *camInVehicle, bool frameRepeated, float deltaT)
 
     // Render the shadow buffer
      _scene.GetLandscape()->DrawRectShadowBuffer(drawContext, _scene);
-    // FPS experiment: separate z-only priming (RMZPrime) removed, see World::Simulate
-    // if (GEngine->GetFSAA()>0)
-    // {
-    //   // PC with FSAA required separate depth priming
-    //   _scene.GetLandscape()->PrimeDepthBuffer(groundPrimed, _scene, drawContext, true, frameRepeated,
-    //     drawState._drawObjId);
-    // }
+    if (GEngine->GetFSAA()>0 && !GEngine->MainPassPrimesDepth())
+    {
+      // PC with FSAA required separate depth priming
+      _scene.GetLandscape()->PrimeDepthBuffer(groundPrimed, _scene, drawContext, true, frameRepeated, 
+        drawState._drawObjId);
+    }
 
     // need to be called several times during the frame
     GetNetworkManager().FastUpdate();
@@ -12932,15 +12931,18 @@ if (_playerOn)
       SectionTimeHandle tSB = StartSectionTime();
       _scene.GetLandscape()->DrawRectShadowBuffer(drawContext, _scene);
       fpsDiagShadowBufMs = GetSectionTime(tSB) * 1000.0f;
-      // FPS experiment: the separate z-only pass (RMZPrime) is redundant - it
-      // re-submits every near object only to prime the main depth buffer. The
-      // main pass now writes depth normally (see EngineDD9::ZPrimed). The SSSM
-      // depth map above is still produced by the RMDPrime pass.
-      // _scene.GetLandscape()->PrimeDepthBuffer(groundPrimed, _scene, drawContext, true, frameRepeated
-      // #if _HELISIM_RENDER_TO_TEXTURE
-      //   , 0
-      // #endif
-      //   );
+      // The separate z-only pass (RMZPrime) re-submits every near object only to
+      // prime the main depth buffer. Skip it when the main pass writes depth itself
+      // (EngineDD9); the SSSM depth map above is still produced by RMDPrime.
+      // PC with FSAA requires separate depth priming otherwise.
+      if (GEngine->GetFSAA()>0 && !GEngine->MainPassPrimesDepth())
+      {
+        _scene.GetLandscape()->PrimeDepthBuffer(groundPrimed, _scene, drawContext, true, frameRepeated
+#if _HELISIM_RENDER_TO_TEXTURE
+          , 0
+#endif
+          );
+      }
     }
     else
     {
