@@ -1679,14 +1679,14 @@ const GameType GameTextOrString(GameText | GameString);
     return Veh##Xxx(state, oper1, false); \
   }
 
-inline bool CheckSize(const GameState *state, GameArrayType array, int size)
+bool CheckSize(const GameState *state, GameArrayType array, int size)
 {
   if (array.Size() == size) return true;
   state->SetError(EvalDim, array.Size(), size);
   return false;
 }
 
-inline bool CheckType(const GameState *state, GameValuePar oper, const GameType &type)
+bool CheckType(const GameState *state, GameValuePar oper, const GameType &type)
 {
   if (oper.GetType() == type) return true;
   state->TypeError(type, oper.GetType());
