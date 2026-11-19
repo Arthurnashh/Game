@@ -1179,14 +1179,9 @@ Object *Landscape::GetObjectLocked( const ObjectId &id ) const
       return obj;
     }
   }
-  // if zero-limit search failed, try larger area
-#if _HELISIM_LARGE_OBJECTID
-  ErrF("Object id %I64x (%d) not found in slot %d,%d",id.Encode(),id.GetObjId(),x,z);
-#else
-  ErrF("Object id %x (%d) not found in slot %d,%d",id.Encode(),id.GetObjId(),x,z);
-#endif
-  Fail("Link cannot be resolved");
-
+  // The object may be indexed in an adjacent cell (for example, after
+  // loading a world link whose encoded cell differs from its current slot).
+  // Search neighboring cells before treating the soft link as unresolved.
   int maxRange = 4;
   saturateMin(maxRange,GetLandRange());
 
@@ -1212,6 +1207,12 @@ Object *Landscape::GetObjectLocked( const ObjectId &id ) const
       }
     }
   }
+#if _HELISIM_LARGE_OBJECTID
+  ErrF("Object id %I64x (%d) not found in slot %d,%d",id.Encode(),id.GetObjId(),x,z);
+#else
+  ErrF("Object id %x (%d) not found in slot %d,%d",id.Encode(),id.GetObjId(),x,z);
+#endif
+  Fail("Link cannot be resolved");
   return NULL;
 }
 

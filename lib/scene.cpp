@@ -1997,7 +1997,6 @@ const bool EnableSpotLightsFC = true;
 //-----------------------------------------------------------------------------
 const LightList &Scene::SelectAggLights(Vector3Par pos, float radius, LightList &work)
 {
-  PROFILE_SCOPE_EX(obLSl,drw);
 #if _ENABLE_CHEATS
   if (GInput.GetCheatXToDo(CXTEnableSpotLightsFC))
   {
@@ -5185,7 +5184,7 @@ static GameValue SetDiagDrawMode(const GameState *state, GameValuePar oper)
 #if _VBS3  
   if(!Glob.vbsAdminMode) return NOTHING;
 #endif
-  const char *modeStr = (RString)oper;
+  const char *modeStr = oper.GetData()->GetString();
   DiagDrawMode mode = GetEnumValue<DiagDrawMode>(modeStr);
   if ((int)mode==-1) return NOTHING;
   DiagDrawModeState = mode;
@@ -5197,7 +5196,7 @@ static GameValue SetDiagEnable(const GameState *state, GameValuePar oper1, GameV
 #if _VBS3  
   if(!Glob.vbsAdminMode) return NOTHING;
 #endif
-  const char *modeStr = (RString)oper1;
+  const char *modeStr = oper1.GetData()->GetString();
   bool onOff = oper2;
   int modeMask = ~0;
   int modeMask2 = ~0;
@@ -5219,7 +5218,7 @@ static GameValue SetDiagToggle(const GameState *state, GameValuePar oper1)
 #if _VBS3  
   if(!Glob.vbsAdminMode) return NOTHING;
 #endif
-  const char *modeStr = (RString)oper1;
+  const char *modeStr = oper1.GetData()->GetString();
   DiagEnable mode = GetEnumValue<DiagEnable>(modeStr);
   if ((int)mode==-1) return NOTHING;
   int modeMask = 0;
@@ -6072,8 +6071,8 @@ static inline int CmpInstances(
   const ObjectInstanceInfo *info1, const ObjectInstanceInfo *info2, const CmpInstanceContext &ctx
 )
 {
-  int idx1 = ctx._scene->GetLightGridIndex(info1->_origin.Position().X(), info1->_origin.Position().Z());
-  int idx2 = ctx._scene->GetLightGridIndex(info2->_origin.Position().X(), info2->_origin.Position().Z());
+  int idx1 = info1->_lightGridIndex;
+  int idx2 = info2->_lightGridIndex;
   if (idx1!=idx2)
   {
     const LightList &lst1 = ctx._scene->GetLightGridItem(idx1);
@@ -6121,6 +6120,10 @@ void Scene::DrawObjectsInstanced(
   const int maxInstancingChain = 512;
   // if instance count is very large, it would cause memory allocation
   // we rather to split it into several chains on the top level instead
+  // Shadow buffer cascades (and non-predicated depth priming) do not consume per-instance
+  // landscape shadow coefficients or point-light grid sorting. When predication is active,
+  // zprime records the CB replayed in the color pass, so keep full color data there.
+  const bool skipColorPrep = dp._sbIsBeingRendered || (dp._zprimeIsBeingRendered && !Glob.config._predication);
   
   while (instancesBeg<=instancesEnd)
   {
@@ -6155,6 +6158,7 @@ void Scene::DrawObjectsInstanced(
         int startTgt = tgt;
       #endif
       bool canBlend = iObj->GetObject()->GetShape()->CanBlend();
+      float color = iObj->GetBlendingCoef(bao,canBlend);
       if (const ObjectListFull *list = iObj->_list)
       {
 				int li;
@@ -6165,38 +6169,37 @@ void Scene::DrawObjectsInstanced(
 					{
             Object *obj = list->Get(li);
 
-            float color = iObj->GetBlendingCoef(bao,canBlend);
             if (color>0)
             {
             ObjectInstanceInfo &info = instances[tgt++];
             info._origin = obj->RenderVisualState().Transform();
+              info._lightGridIndex = (!skipColorPrep && _gridLights.Size()) ? GetLightGridIndex(info._origin.Position().X(), info._origin.Position().Z()) : -1;
               info._color = Color(1,1,1,color);
-              info._shadowCoef = GetLandShadowSmooth(info._origin.Position());
+              info._shadowCoef = skipColorPrep ? 1.0f : GetLandShadowSmooth(info._origin.Position());
             info._object = info._parentObject = obj;
             info._limitSpriteSize = iObj->limitSpriteSize;
           }
           }
-          if (updateBF) iObj->UpdateBlendFactor();
         }
 				//do the last one
 				{
 					if (iObj->IsVisible(li))
 					{
             Object *obj = list->Get(li);
-            float color = iObj->GetBlendingCoef(bao,canBlend);
             if (color>0)
             {
 
             ObjectInstanceInfo &info = instances[tgt++];
             info._origin = obj->RenderVisualState().Transform();
+              info._lightGridIndex = (!skipColorPrep && _gridLights.Size()) ? GetLightGridIndex(info._origin.Position().X(), info._origin.Position().Z()) : -1;
               info._color = Color(1,1,1,color);
-              info._shadowCoef = GetLandShadowSmooth(info._origin.Position());
+              info._shadowCoef = skipColorPrep ? 1.0f : GetLandShadowSmooth(info._origin.Position());
             info._object = info._parentObject = obj;
             info._limitSpriteSize = iObj->limitSpriteSize;
           }
           }
-          if (updateBF) iObj->UpdateBlendFactor();
         }
+        if (updateBF) iObj->UpdateBlendFactor();
         // assume scale is around 1, therefore the same for all objects here
         if (minDist2>iObj->distance2) // TODO: this should perhaps be done inside in the loop - or can distance2 be assumed to be known for all at once?
         {
@@ -6206,14 +6209,14 @@ void Scene::DrawObjectsInstanced(
       }
       else
       {
-        float color = iObj->GetBlendingCoef(bao,canBlend);
         if (color>0)
         {
         ObjectInstanceInfo &info = instances[tgt++];
         info._origin = iObj->position.position;
+          info._lightGridIndex = (!skipColorPrep && _gridLights.Size()) ? GetLightGridIndex(info._origin.Position().X(), info._origin.Position().Z()) : -1;
           info._color = Color(1,1,1,color);
         Assert(!iObj->position.camSpace);
-          info._shadowCoef = GetLandShadowSmooth(info._origin.Position());
+          info._shadowCoef = skipColorPrep ? 1.0f : GetLandShadowSmooth(info._origin.Position());
         info._object = info._parentObject = iObj->GetObject();
         info._limitSpriteSize = iObj->limitSpriteSize;
         }
@@ -6270,8 +6273,12 @@ void Scene::DrawObjectsInstanced(
     Assert(!obj->Airborne());
 
     // In case there is a day here (or zero lights) then draw it without worrying,
-    // else draw it split into groups
-    if (_gridLights.Size() == 0 /*(NLights()==0 || MainLight()->NightEffect()<0.01)*/)
+    // else draw it split into groups.
+    // Depth priming renders with PSAlphaOnly shaders, which do not consume any
+    // light. Sorting the whole chain by light grid and splitting it into groups
+    // would only add O(n log n) work and extra draws with identical depth output,
+    // so the chain is drawn in a single call with an empty light list there.
+    if (skipColorPrep || _gridLights.Size() == 0 /*(NLights()==0 || MainLight()->NightEffect()<0.01)*/)
     {
       // Draw the instances
       LightList empty;
@@ -6298,13 +6305,13 @@ void Scene::DrawObjectsInstanced(
       while (instanceIndex < instances.Size())
       {
         const ObjectInstanceInfo &info = instances[instanceIndex];
-        int lastLightGridIndex = GetLightGridIndex(info._origin.Position().X(), info._origin.Position().Z());
+        int lastLightGridIndex = info._lightGridIndex;
         const LightList *lastLights = _gridLights[lastLightGridIndex];
         int newInstanceIndex;
         for (newInstanceIndex = instanceIndex + 1; newInstanceIndex < instances.Size(); newInstanceIndex++)
         {
           const ObjectInstanceInfo &info = instances[newInstanceIndex];
-          int newLightGridIndex = GetLightGridIndex(info._origin.Position().X(), info._origin.Position().Z());
+          int newLightGridIndex = info._lightGridIndex;
           if (newLightGridIndex != lastLightGridIndex)
           {
             const LightList *lights = _gridLights[newLightGridIndex];
@@ -7176,7 +7183,7 @@ struct ObjDrawShadowInstanced: public ObjDrawBase
 
 template <
   bool basicLODs = true, class LoadedLevelsFunctor=ShapeLoadedLevels, class CmpLevelFunctor=CompareDrawLevel,
-  bool prepareNeeded=false
+  bool prepareNeeded=true
 >
 struct MergeInstances
 {
@@ -8675,6 +8682,8 @@ void Scene::AdjustComplexity(DrawContext &ctx, SlotObjectsContext &slotCtx, bool
 
       // TODO: smart handling of NeedsPrepareProxiesForDrawing
       // TODO: once common UseLevel
+      int level = -2;
+      ShapeUsed lock;
       for (int o=0; o<nObjs; o++)
       {
         SortObject *so = slotDist.objs[o];
@@ -8686,18 +8695,29 @@ void Scene::AdjustComplexity(DrawContext &ctx, SlotObjectsContext &slotCtx, bool
           continue;
         }
         DoAssert(!so->_list);
-        int level = slotDist.name.shape->UseLevel(slotDist.drawLOD,false);
-        if (level>=0)
+        if (level == -2)
         {
+          level = slotDist.name.shape->UseLevel(slotDist.drawLOD,false);
+          if (level >= 0)
+          {
+            lock = slotDist.name.shape->Level(level);
+          }
+        }
+        if (level>=0 && lock.NotNull())
+        {
+          const EntityType *entType = obj->GetEntityType();
+          if (!obj->DrawProxiesNeeded(level) && (!entType || !entType->IsPerson()))
+          {
+            continue;
+          }
           DoAssert(slotCtx.objs.slots.Size()<=_drawObjects.Size());
           // if in list, we need to traverse all objects?
           // we need to call animate to make sure selections are hidden
           // we use setEngineStuff=true to avoid any bone animation
           Object::ProtectedVisualState<const ObjectVisualState> vs = obj->RenderVisualStateScope();
-          ShapeUsed lock = slotDist.name.shape->Level(level);
           AnimationContextStorageRender storage;
           AnimationContext animContext(vs,storage);
-          lock->InitAnimationContext(animContext, slotDist.name.shape->GetConvexComponents(level), false);
+          lock->InitAnimationContext(animContext, NULL, false);
           obj->Animate(animContext,level,true,obj,so->distance2);
           obj->PrepareProxiesForDrawing(obj, level, animContext, so->position, level, so->orClip, so);
           obj->Deanimate(level,true);
@@ -9330,7 +9350,7 @@ SceneCoverage::PixelCoverage SceneCoverage::RenderBBox(const Matrix4 &trans, con
 }
 
 
-const int FarLodsDefault = 2;
+const int FarLodsDefault = 1;
 #if _ENABLE_CHEATS
   static int FarLods = FarLodsDefault;
 #else
@@ -9387,8 +9407,6 @@ void Scene::DrawPreparation(DrawContext &ctx, float deltaT, bool frameRepeated)
   AutoArray<SortObject *, MemAllocDataStack<SortObject*,1024> > farLODObjects;
   if (FarLods)
     farLODObjects.Realloc(_drawObjects.Size());
-  {
-  PROFILE_SCOPE_EX(obCull,drw);
   for( ; s<_drawObjects.Size(); s++ )
   {
     // TODO: optimize
@@ -9452,7 +9470,6 @@ void Scene::DrawPreparation(DrawContext &ctx, float deltaT, bool frameRepeated)
     }
   }
   _drawObjects.Resize(t);
-  }
   //LogF("After not used %d",_drawObjects.Size());
 
 
@@ -9463,13 +9480,12 @@ void Scene::DrawPreparation(DrawContext &ctx, float deltaT, bool frameRepeated)
     PROFILE_SCOPE_EX(oFLod,*);
     // sometimes there is no need for any farlods management, as there is enough polygons for whole scene
     // how can we detect this?
-    // sort "farLOD" objects by distance
-    QSort(farLODObjects,SortByZ());
-
     const float minAreaFactor = 0.01f;
     // for all objects rasterize their bounding boxes
     if (FarLods>=2)
     {
+      // sort "farLOD" objects by distance
+      QSort(farLODObjects,SortByZ());
       SceneCoverage coverage(64,32); // TODO: adjust to FOV
       int terrainComplexity = ComputeTerrainComplexity();
       int givenComplexity = terrainComplexity+areaCtx.worstLODComplexity;
@@ -9557,6 +9573,8 @@ void Scene::DrawPreparation(DrawContext &ctx, float deltaT, bool frameRepeated)
       int maxComplexity = 0;
       int minComplexity = 0;
       float controlledArea = 0;
+      float minDist2 = FLT_MAX;
+      float maxDist2 = 0.0f;
       for (int i=0; i<farLODObjects.Size(); i++)
       {
         SortObject *so = farLODObjects[i];
@@ -9569,6 +9587,8 @@ void Scene::DrawPreparation(DrawContext &ctx, float deltaT, bool frameRepeated)
         maxComplexity += maxComplexityShape;
         minComplexity += minComplexityShape;
         controlledArea += so->coveredArea;
+        if (so->distance2 < minDist2) minDist2 = so->distance2;
+        if (so->distance2 > maxDist2) maxDist2 = so->distance2;
       }
 
       // average density achieved when all objects are selected in the lod as needed by density (should be close to MaxDensity)
@@ -9579,25 +9599,19 @@ void Scene::DrawPreparation(DrawContext &ctx, float deltaT, bool frameRepeated)
       float minDist = 0;
       float maxDist = Glob.config.objectsZ;
       int tgtComplexity = _complexityTarget-terrainComplexity-areaCtx.worstLODComplexity;
-      if (maxComplexity>tgtComplexity && farLODObjects.Size()>=2)
+      if (maxComplexity>tgtComplexity && farLODObjects.Size()>=2 && maxDist2 > minDist2)
       {
-        minDist = sqrt(farLODObjects[0]->distance2);
-        maxDist = sqrt(farLODObjects.Last()->distance2);
+        minDist = sqrt(minDist2);
+        maxDist = sqrt(maxDist2);
         // we want to reach the tgtComplexity
 
         farDensity = tgtComplexity/controlledArea; // inaccurate, but simple: assume we will use the farDensity everywhere
-//         else if (FarLods==4)
-//         {
-//           // assume polygon distribution is linear with distance
-//           float relDensity = Interpolativ(tgtComplexity,minComplexity,maxComplexity,0,1);
-//           farDensity = (2*relDensity-1)*(MaxDensity-minCDensity)+minCDensity;
-//         }
 
         // gradual interpolation: full density near, no density far
 
         for (int i=0; i<farLODObjects.Size(); i++)
         {
-          float densityI = InterpolativC(sqrt(farLODObjects[i]->distance2),minDist,maxDist,MaxDensity,farDensity);
+          float densityI = InterpolativC(farLODObjects[i]->distance2,minDist2,maxDist2,MaxDensity,farDensity);
           saturate(densityI,minCDensity,MaxDensity);
           float ratio2 = floatMinMax(densityI*(1.0f/MaxDensity),minAreaFactor,1.0f);
           farLODObjects[i]->_visibleRatio = ratio2;

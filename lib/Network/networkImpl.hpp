@@ -359,8 +359,15 @@ DECLARE_NET_MESSAGE(AskForDropItem, ASK_FOR_DROP_ITEM_MSG)
   XX(MessageName, OLinkPermO(EntityAI), target, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("New owner of the item"), TRANSF_REF) \
   XX(MessageName, int, index, NDTInteger, int, NCTSmallSigned, DEFVALUE(int, 0), DOC_MSG("Slot index"), TRANSF)\
   XX(MessageName, OLinkPermO(InventoryItem), item, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Moved item"), TRANSF_REF) \
+  XX(MessageName, bool, rotated, NDTBool, bool, NCTNone, DEFVALUE(bool, false), DOC_MSG("Requested inventory orientation"), TRANSF) \
 
 DECLARE_NET_MESSAGE(AskForMoveItem, ASK_FOR_MOVE_ITEM_MSG)
+
+#define ASK_FOR_ROTATE_INVENTORY_ITEM_MSG(MessageName, XX) \
+  XX(MessageName, OLinkPermO(Person), person, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Player requesting item rotation"), TRANSF_REF) \
+  XX(MessageName, OLinkPermO(InventoryItem), item, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Item to rotate in cargo"), TRANSF_REF) \
+
+DECLARE_NET_MESSAGE(AskForRotateInventoryItem, ASK_FOR_ROTATE_INVENTORY_ITEM_MSG)
 
 #define ASK_FOR_TAKE_ITEM_TO_HANDS_MSG(MessageName, XX) \
   XX(MessageName, OLinkPermO(Person), person, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Person holding the item"), TRANSF_REF) \
@@ -2817,7 +2824,8 @@ public:
   void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type);
   void AskForThrowItem(Man *person, InventoryItem *item, Vector3 pos, Vector3 dir);
 	void AskForDropItem(Person *person, InventoryItem *item);
-  void AskForMoveItem(EntityAI *target, int index, InventoryItem *item);
+  void AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated);
+  void AskForRotateInventoryItem(Person *person, InventoryItem *item);
   void AskForTakeItemToHands(Person *person, InventoryItem *item);
   void AskForSwapItems(InventoryItem *item1, InventoryItem *item2, Person *owner);
 
@@ -4800,6 +4808,14 @@ protected:
   GameState _evaluator;
   /// global variables for _evaluator
   GameDataNamespace _globals;
+
+  /// SDZ_SQF_EXEC: scripts coming from #exec are queued and evaluated after the
+  /// network messages of the current frame have been processed. Running arbitrary
+  /// SQF in the middle of message handling touched half-updated object lists and
+  /// corrupted the script heap (server crashed with no RPT message).
+  AutoArray<RString> _sqfExecQueue;
+  AutoArray<int> _sqfExecFrom;
+  bool _sqfExecBusy;
   //! event handlers
   RString _eventHandlers[NServerEvent];
 
@@ -4972,6 +4988,11 @@ public:
   /// add specific server scripting commands to the _evaluator
   void InitEvaluator();
 
+  /// SDZ_SQF_EXEC: queue an expression received through #exec
+  void QueueExec(int from, RString expression);
+  /// SDZ_SQF_EXEC: evaluate (and answer) every queued expression
+  void ProcessQueuedExec();
+
   void ProfileAnswer(const RString &output);
 #endif
 //}
@@ -5029,6 +5050,7 @@ public:
 
   bool DBSave(RString baseURL, int dpnid, RString request);
   void DBLoad(RString baseURL, int playerId, GameDataCode *code);
+  void DBLoad(RString baseURL, int playerId, RString playerUID, GameDataCode *code);
 
   void OnDraw();
   void OnSimulate();
@@ -5826,6 +5848,7 @@ public:
   virtual bool DBItemDrop(RString baseURL, RString request) override;
 
   virtual void DBLoad(RString baseURL, int playerId, GameDataCode *code) override;
+  virtual void DBLoad(RString baseURL, int playerId, RString playerUID, GameDataCode *code) override;
 
   virtual InputInterface *GetInputInterface(int player) override;
   virtual RString GetDiagText(const NetworkObject *obj) const override;
@@ -5951,7 +5974,8 @@ public:
   virtual void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type) override;
   virtual void AskForThrowItem(Man *person, InventoryItem *item, Vector3 pos, Vector3 dir) override;
 	virtual void AskForDropItem(Person *person, InventoryItem *item) override;
-  virtual void AskForMoveItem(EntityAI *target, int index, InventoryItem *item) override;
+  virtual void AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated) override;
+  virtual void AskForRotateInventoryItem(Person *person, InventoryItem *item) override;
   virtual void AskForTakeItemToHands(Person *person, InventoryItem *item) override;
   virtual void AskForSwapItems(InventoryItem *item1, InventoryItem *item2, Person *owner) override;
 

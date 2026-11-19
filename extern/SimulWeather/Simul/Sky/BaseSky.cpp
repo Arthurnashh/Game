@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "precomp.h"
 
 #include "Simul/Sky/BaseSky.h"

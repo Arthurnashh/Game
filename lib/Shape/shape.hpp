@@ -476,6 +476,8 @@ struct ObjectInstanceInfo
   Color _color;
   //! Shadow coefficient
   float _shadowCoef;
+  //! Cached scene light-grid index; valid for Scene::DrawObjectsInstanced batches
+  int _lightGridIndex;
   /// object instance (it may be needed in some situations)
   Object *_object;
   Object *_parentObject;
@@ -525,8 +527,12 @@ public:
     const RefR<Texture> *_tex;
     /// Area Over Texture for both principal and additional UV coordinates
     float _aot;
+    /// z2 scale applied to this texture when preparing mipmaps (UV scale of the texgen)
+    float _z2Scale;
     /// sometimes we want some mip to be present
     bool _someDataWanted;
+    /// stage does not use UV mapping - only mipmap 0 can be requested
+    bool _forceMipmap0;
     
     ClassIsSimple(Item)
   };
@@ -539,7 +545,7 @@ public:
   TexAreaIndex();
   
   /// add or update a texture reference
-  void AddItem(const RefR<Texture> *tex, float aot, bool someDataWanted);
+  void AddItem(const RefR<Texture> *tex, float aot, bool someDataWanted, float z2Scale=1.0f, bool forceMipmap0=false);
   
   void Clear();
 };
@@ -800,6 +806,13 @@ private:
   FaceArray _face;
   /// tex.area information for all textures, used to optimize mipmap handling
   TexAreaIndex _texArea;
+  /// tex.area index built from all sections, used by ordinary object shapes
+  /**
+    Separate from _texArea, which is built by the landscape loader and keeps its
+    historical mipmap behaviour. This index mirrors the section scan used by
+    Shape::PrepareTextures and is built lazily when the vertex buffer is created.
+  */
+  TexAreaIndex _texAreaDraw;
   
   /// area of all non-proxy faces in the shape
   float _faceArea;
@@ -940,6 +953,10 @@ public:
   void BuildTexAreaIndex(TexAreaIndex &tgt) const;
   /// special case - build _texArea from sections
   void BuildTexAreaIndex(){BuildTexAreaIndex(_texArea);}
+  /// build _texAreaDraw, mirroring the per-section scan in Shape::PrepareTextures
+  void BuildTexAreaDrawIndex();
+  /// drop _texAreaDraw if sections/materials changed
+  void InvalidateTexAreaDrawIndex(){_texAreaDraw.Clear();}
 
   /// check if _texArea is valid
   bool CheckTexAreaIndex() const;
@@ -1461,7 +1478,8 @@ public:
   {
     return _loadedSections ? _sections[i] : shape->_face._sections[i];
   }
-  __forceinline bool HasChangedSections() const {return _loadedSections;}
+  /// true when SetSection was used and base sections no longer describe this context
+  __forceinline bool SectionsChanged() const {return _loadedSections;}
   // load the context if needed
   __forceinline PolyProperties &SetSection(const Shape *shape, int i)
   {
@@ -3131,7 +3149,6 @@ private:
 
   /// list of all shapes which have geometry loaded, but it can be released
   FramedMemoryControlledList<Shape> _geometryLoaded;
-
 
   FramedMemoryControlledList<LODShape> _lodShapeCache;
     

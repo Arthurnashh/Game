@@ -9161,8 +9161,8 @@ void DisplayMultiplayer::SteamServerBrowser::RefreshInternetServers(MPTabs activ
     SteamSBFilter filter;
 
     filter.AddFilter("gamedir", "dayz");
-    filter.AddFilter("secure", "1");
-    filter.AddFilter("white", "1");
+    //filter.AddFilter("secure", "1");
+    //filter.AddFilter("white", "1");
 
     if (_filter.minPlayers>0) filter.AddFilter("hasplayers","1"); 
     if (!_filter.fullServers) filter.AddFilter("notfull", "1"); 
@@ -9209,6 +9209,11 @@ void DisplayMultiplayer::SteamServerBrowser::RefreshLANServers()
     // LAN refresh doesn't accept filters like internet above does
     _requestedLAN = true;
     _request = SteamMatchmakingServers()->RequestLANServerList(SteamUtils()->GetAppID(), this);
+
+    // Direct ping to loopback query ports (27016 default DayZ query port, 27015 standard Steam query port)
+    _currentServerGuid = RString();
+    SteamMatchmakingServers()->PingServer(0x7f000001, 27016, this);
+    SteamMatchmakingServers()->PingServer(0x7f000001, 27015, this);
   }
 }
 
@@ -9301,8 +9306,8 @@ void DisplayMultiplayer::SteamServerBrowser::ServerResponded(HServerListRequest 
     // Filter out servers that don't match our appid here (might get these in LAN calls since we can't put more filters on it)
     // if (info->m_nAppID != SteamUtils()->GetAppID()) return;
 
-    // Enable servers hosted both by "DayZ" and "DayZ Server" applications
-    if (info->m_nAppID != 221100 && info->m_nAppID != 223350) return;
+    // Enable servers hosted by DayZ (221100), DayZ Server (223350), and Spacewar (480) applications
+    if (info->m_nAppID != 221100 && info->m_nAppID != 223350 && info->m_nAppID != 480) return;
 
     RString guid = info->m_NetAdr.GetConnectionAddressString();
     int index = FindSession(guid);
@@ -20840,7 +20845,7 @@ static RString CreateWebsiteButtonURLFile(RString url)
   RString path;
   for (int i=0; i<100000; i++)
   {
-    path = Format("%s%s %d.url", dir, DayZAppName, i);
+    path = Format("%s%s %d.url", dir, APP_NAME, i);
     if (!QIFileFunctions::FileExists(path)) break;
   }
 

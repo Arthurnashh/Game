@@ -2550,18 +2550,44 @@ removeAction:
 #endif
 }
 
-static bool IsAccessible(EntityAI *entity, const EntityVisualState &vs, Vector3Par pos)
+static bool IsAccessible(EntityAI *entity, const EntityVisualState &vs, Vector3Par pos, float maxDistance=0.0f)
 {
   Vector3 modelPos = vs.PositionWorldToModel(pos);
 
   // limit angle
   if (fabs(modelPos.X()) > modelPos.Z()) return false;
 
-  // limit distance
-  float maxDistance = entity->CollisionSize() + 2.0f;
+  // Preserve the standard range for existing actions; door actions pass an
+  // explicit short interaction range below.
+  if (maxDistance <= 0.0f) maxDistance = entity->CollisionSize() + 2.0f;
   if (modelPos.SquareSize() > Square(maxDistance)) return false;
 
   return true;
+}
+
+// User actions on buildings often share one target object, but each door has
+// its own configured memory point. Keep only the action whose point is close
+// to the actual cursor hit; object-level ray hits alone are too broad and
+// expose every door on the building at once.
+static bool IsActionPointUnderCursor(const UIAction &action, Object *target, Object *cursorObject, Vector3Par cursorPos, const ObjectVisualState &vsTarget, EntityAI *actor, const EntityVisualState &vsActor)
+{
+  if (target != cursorObject || action.action->GetType() != ATUserType || action._memoryPoints.Size() == 0)
+    return false;
+
+  const LODShape *shape = target->GetShape();
+  if (!shape) return false;
+  int mem = shape->FindMemoryLevel();
+  if (mem < 0) return false;
+
+  const float maxHitDistance = 1.25f;
+  const float maxDoorInteractionDistance = 2.5f;
+  for (int i=0; i<action._memoryPoints.Size(); i++)
+  {
+    Vector3 actionPos = vsTarget.PositionModelToWorld(target->AnimatePoint(vsTarget, mem, action._memoryPoints[i]));
+    if ((actionPos - cursorPos).SquareSize() <= Square(maxHitDistance) &&
+      IsAccessible(actor, vsActor, actionPos, maxDoorInteractionDistance)) return true;
+  }
+  return false;
 }
 
 void InGameUI::UpdateActions(const AutoArray<UIAction> &myActions, const AutoArray<UIAction> &targetActions)
@@ -2797,7 +2823,9 @@ void InGameUI::ProcessActions(AIBrain *unit)
         if (target)
         {
           Object::ProtectedVisualState<const ObjectVisualState> vsTarget = target->FutureVisualStateScope();
+          bool isUserAction = action.action->GetType() == ATUserType;
 
+          bool actionAccessible = false;
           if (action._memoryPoints.Size() > 0)
           {
             const LODShape *shape = target->GetShape();
@@ -2809,18 +2837,36 @@ void InGameUI::ProcessActions(AIBrain *unit)
                 for (int j=0; j<action._memoryPoints.Size(); j++)
                 {
                   Vector3 pos = vsTarget->PositionModelToWorld(target->AnimatePoint(vsTarget, mem, action._memoryPoints[j]));
-                  if (IsAccessible(veh, vsVeh, pos))
+                  // Keep the normal reach/facing test. For a building hit,
+                  // allow the action only when this specific configured
+                  // point is near the cursor hit, not merely because the
+                  // cursor hit some part of the same building.
+                  bool pointAccessible = (isUserAction && target == _cursorObject)
+                    ? IsActionPointUnderCursor(action, target, _cursorObject, _cursorObjectPos, *vsTarget, veh, vsVeh)
+                    : IsAccessible(veh, vsVeh, pos);
+                  if (pointAccessible)
                   {
                     actions.Add(action);
+                    actionAccessible = true;
                     break;
                   }
                 }
               }
             }
           }
-          else
+
+          // Preserve the cursor-hit fallback for other target actions. Door
+          // UserType actions must pass the per-door memory-point test above.
+          if (!actionAccessible)
           {
-            if (IsAccessible(veh, vsVeh, target->AimingPosition(vsTarget)))
+            Vector3 actionPos = (target == _cursorObject)
+              ? _cursorObjectPos
+              : target->AimingPosition(vsTarget);
+            bool isDoorActionPoint = IsActionPointUnderCursor(action, target, _cursorObject, _cursorObjectPos, *vsTarget, veh, vsVeh);
+            bool allowFallback = (isUserAction && target == _cursorObject)
+              ? isDoorActionPoint
+              : ((!isUserAction && target == _cursorObject) || IsAccessible(veh, vsVeh, actionPos));
+            if (allowFallback)
               actions.Add(action);
           }
         }
@@ -2828,6 +2874,43 @@ void InGameUI::ProcessActions(AIBrain *unit)
         {
           // no target required
           actions.Add(action);
+        }
+      }
+
+      // Static buildings expose doors as CfgVehicles UserActions. In MP the
+      // server normally supplies these in _targetActions, but older server
+      // snapshots can omit UserType entries for the currently hit building.
+      // Re-evaluate the hit EntityAI's configured UserType actions on the
+      // client and supplement only the action point directly under the cursor.
+      // This prevents local fallback from reintroducing every door on a house.
+      if (!GetNetworkManager().IsServerOwner() && _cursorObject)
+      {
+        EntityAI *cursorEntity = dyn_cast<EntityAI,Object>(_cursorObject);
+        if (cursorEntity && cursorEntity != veh && cursorEntity != person)
+        {
+          AutoArray<UIAction> localTargetActions;
+          cursorEntity->GetActions(
+            [&localTargetActions](const UIAction &action) -> void { localTargetActions.Add(action); },
+            unit);
+
+          for (int i=0; i<localTargetActions.Size(); i++)
+          {
+            const UIAction &localAction = localTargetActions[i];
+            if (!localAction.action || localAction.action->GetType() != ATUserType) continue;
+            Object::ProtectedVisualState<const ObjectVisualState> vsCursor = cursorEntity->FutureVisualStateScope();
+            if (!IsActionPointUnderCursor(localAction, cursorEntity, _cursorObject, _cursorObjectPos, *vsCursor, veh, vsVeh)) continue;
+
+            bool alreadyAvailable = false;
+            for (int j=0; j<actions.Size(); j++)
+            {
+              if (actions[j].action && actions[j].action->IsEqual(localAction.action))
+              {
+                alreadyAvailable = true;
+                break;
+              }
+            }
+            if (!alreadyAvailable) actions.Add(localAction);
+          }
         }
       }
 
@@ -2929,6 +3012,11 @@ void DisplayUnitInfo::InitControls()
   gunner = NULL;
   gunnerWeapon = NULL;
   ammoMode = NULL;
+  statusThirst = NULL;
+  statusHunger = NULL;
+  statusTemperature = NULL;
+  statusBlood = NULL;
+  statusHealth = NULL;
   counterMeasuresAmmo = NULL;
   counterMeasuresMode = NULL;
 
@@ -3107,6 +3195,21 @@ Control *DisplayUnitInfo::OnCreateCtrl(int type, int idc, ParamEntryPar cls)
     case IDC_IGUI_WEAPON_MODE:
       ammoMode = new CStatic(this, idc, cls);
       return ammoMode;
+    case IDC_IGUI_STATUS_THIRST:
+      statusThirst = new CStatic(this, idc, cls);
+      return statusThirst;
+    case IDC_IGUI_STATUS_HUNGER:
+      statusHunger = new CStatic(this, idc, cls);
+      return statusHunger;
+    case IDC_IGUI_STATUS_TEMPERATURE:
+      statusTemperature = new CStatic(this, idc, cls);
+      return statusTemperature;
+    case IDC_IGUI_STATUS_BLOOD:
+      statusBlood = new CStatic(this, idc, cls);
+      return statusBlood;
+    case IDC_IGUI_STATUS_HEALTH:
+      statusHealth = new CStatic(this, idc, cls);
+      return statusHealth;
     case IDC_IGUI_VEHICLE:
       vehicle = new CStatic(this, idc, cls);
       return vehicle;

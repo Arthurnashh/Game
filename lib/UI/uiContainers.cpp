@@ -30,7 +30,12 @@
 
 #include <El/Clipboard/clipboard.hpp>
 #include <El/Evaluator/express.hpp>
-#include <stdint.h>
+
+// Implemented by the inventory UI. The common key dispatcher must give its
+// rotation shortcut priority over the generic default-button handling below.
+extern bool HandleInventorySpaceKey();
+extern void ReleaseInventorySpaceKey();
+extern bool IsInventoryOpened();
 
 #include "uiMap.hpp"
 
@@ -1955,6 +1960,11 @@ static int dikCodeShortcutFirst[] = {INPUT_DEVICE_XINPUT + XBOX_Start};
 
 bool ControlsContainer::OnKeyDown(int dikCode)
 {
+  // Space normally activates the default button (the inventory's Close
+  // button). Route it to the active inventory before that generic behavior.
+  if (dikCode == DIK_SPACE && HandleInventorySpaceKey())
+    return true;
+
   bool ok = false;
   bool enableCtrlProcessing = EnableDefaultKeysProcessing();
   bool shift = GInput.keys[DIK_LSHIFT] || GInput.keys[DIK_RSHIFT];
@@ -2155,6 +2165,15 @@ bool ControlsContainer::OnKeyDown(int dikCode)
 
 bool ControlsContainer::OnKeyUp(int dikCode)
 {
+  if (dikCode == DIK_SPACE)
+    ReleaseInventorySpaceKey();
+
+  // Buttons activate on key release. Consume Space here too, otherwise a
+  // stale/default-button press can close the inventory after its keydown was
+  // already handled as an item-rotation request.
+  if (dikCode == DIK_SPACE && IsInventoryOpened())
+    return true;
+
   bool ok = false;
   bool enableCtrlProcessing = EnableDefaultKeysProcessing();
   bool shift = GInput.keys[DIK_LSHIFT] || GInput.keys[DIK_RSHIFT]; (void)shift;

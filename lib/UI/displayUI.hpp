@@ -937,6 +937,9 @@ protected:
     // friends array list of the selected server
     void Friends(AutoArray<RString> &friends);
  
+    // Add or update server session in browser list
+    void AddOrUpdateServer(gameserveritem_t *info);
+
     // ISteamMatchmakingServerListResponse implementation
     void ServerResponded(HServerListRequest request, int server);
     void ServerFailedToRespond(HServerListRequest request, int server);
@@ -3124,6 +3127,7 @@ protected:
 	RString _version;
   //! mod icons controlsGroup
   CControlsGroup *_modIcons;
+  int _mainMenuCharacterSlot;
 
 #if _VBS3
   DWORD   _reConnectDelay;
@@ -3177,6 +3181,7 @@ public:
 
   bool IsGameInitialized() const {return _gameInitialized;}
   void UpdatePlayerName();
+  void UpdateMainMenuCharacterData();
 
 protected:
   void EnableVideo(bool enable);

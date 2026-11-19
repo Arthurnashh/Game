@@ -2945,6 +2945,8 @@ protected:
   /// should we use AToC?
   bool _useAToC;
   int _AToCMask;
+  /// main scene depth buffer was primed this frame (z-only priming pass)
+  bool _mainDepthPrimed;
   //@}
 
   // enable / disable vertical synchronization, default set to enable
@@ -5095,11 +5097,14 @@ public:
   virtual int GetFSAA() const;
   virtual int GetMaxFSAA() const;
   
-  bool ZPrimed() const
+  virtual bool ZPrimed() const
   {
-      // on PC we currently do not prime z buffer when using MSAA
-      return true;
+      // main depth is primed only when the separate z-only pass has run
+      return _mainDepthPrimed;
   }
+  /// set when the z-only priming pass has filled the main depth buffer
+  virtual void SetMainDepthPrimed(bool val) {_mainDepthPrimed = val;}
+  virtual bool MainPassPrimesDepth() const {return true;}
 
   //@{ only set values, do not apply it yet
   bool SetFSAAWanted(int quality);
@@ -5740,6 +5745,15 @@ protected: // D3D helpers
     const MipInfo &mip, const TexMaterialLODInfo &mat, int specFlags,
     const TLMaterial &tlMat, int spec, const EngineShapeProperties &prop
     );
+
+  //! Re-apply only the material/light constants of an already prepared section.
+  /*!
+  Used by instanced drawing: the section state (textures, shaders, render states)
+  is prepared once per section run, while the material constants must be
+  recomputed for every instance (they depend on the object-space transform).
+  */
+  virtual void ApplyMaterialTL(int cb, const TLMaterial &tlMat);
+  virtual bool CanApplyMaterialTL() const {return true;}
 
   void DrawPolygon(const VertexIndex *ii, int n);
   void DrawSection(const FaceArray &face, Offset beg, Offset end);

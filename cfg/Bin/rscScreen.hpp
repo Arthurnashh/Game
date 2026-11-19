@@ -500,11 +500,58 @@ class RscDisplayMainMap
 class RscDisplayMain: RscStandardDisplay
 {
 	idd = IDD_MAIN;
+	onLoad = "(_this select 0) createDisplay 'RscConfirmEarlyAccess';";
 
 	#define MAIN_ACTIVETEXT_Y 0.2
 
+    class controlsBackground
+    {
+        class DZ_MainMenuSurvivor: RscObject
+        {
+            idc = 12031;
+            model = "\DZ\characters\bodies\survivor1_m.p3d";
+            x = SafeZoneX + SafeZoneW * 0.27;
+            y = SafeZoneY + SafeZoneH * 0.12;
+            w = SafeZoneW * 0.42;
+            h = SafeZoneH * 0.78;
+            scale = 1.0;
+            direction[] = {0, 0, 1};
+            up[] = {0, 1, 0};
+        };
+        class DZ_MainMenuPanel: RscText
+        {
+            idc = 12030;
+            x = SafeZoneX + SafeZoneW * 0.70;
+            y = SafeZoneY + SafeZoneH * 0.29;
+            w = SafeZoneW * 0.29;
+            h = SafeZoneH * 0.59;
+            text = "";
+            colorBackground[] = {0.025, 0.030, 0.034, 0.72};
+        };
+        class DZ_MainMenuAccent: RscText
+        {
+            idc = -1;
+            x = SafeZoneX + SafeZoneW * 0.70;
+            y = SafeZoneY + SafeZoneH * 0.29;
+            w = SafeZoneW * 0.003;
+            h = SafeZoneH * 0.59;
+            text = "";
+            colorBackground[] = {0.72, 0.08, 0.055, 0};
+        };
+        class DZ_MainMenuDivider: RscText
+        {
+            idc = -1;
+            x = SafeZoneX + SafeZoneW * 0.72;
+            y = SafeZoneY + SafeZoneH * 0.777;
+            w = SafeZoneW * 0.25;
+            h = SafeZoneH * 0.002;
+            text = "";
+            colorBackground[] = {0.72, 0.08, 0.055, 0.85};
+        };
+    };
+
 	//Todo:
-	//BISML™ 1.0 Strict testing:
+	//BISMLï¿½ 1.0 Strict testing:
 	/*class controlsBackground
 	{
 		BISML_BODY(0, 0, 1, 1)
@@ -518,30 +565,186 @@ class RscDisplayMain: RscStandardDisplay
 					//Controls
 	};*/
 
-	class controls
-	{
-		//Version number of the application.
+    class controls
+    {
+        class DZ_MenuHelp: RscActiveText
+        {
+            idc = 12020; style = ST_CENTER;
+            x = SafeZoneX + SafeZoneW * 0.835; y = SafeZoneY + SafeZoneH * 0.025;
+            w = SafeZoneW * 0.025; h = SafeZoneH * 0.04;
+            text = "?"; tooltip = "Help and information";
+            color[] = {1, 1, 1, 0.85}; colorActive[] = {1, 1, 1, 1};
+        };
+        class DZ_MenuCharacter: RscActiveText
+        {
+            idc = 12021; style = ST_PICTURE;
+            x = SafeZoneX + SafeZoneW * 0.87; y = SafeZoneY + SafeZoneH * 0.025;
+            w = SafeZoneW * 0.025; h = SafeZoneH * 0.04;
+            text = "\DZ\ui\data\gui\rsc\RscDisplayArcadeMap\icon_ID_ca.paa";
+            tooltip = "Character"; color[] = {1, 1, 1, 0.85}; colorActive[] = {1, 1, 1, 1};
+        };
+        class DZ_MenuSettings: RscActiveText
+        {
+            idc = 12022; style = ST_PICTURE;
+            x = SafeZoneX + SafeZoneW * 0.905; y = SafeZoneY + SafeZoneH * 0.025;
+            w = SafeZoneW * 0.025; h = SafeZoneH * 0.04;
+            text = "\DZ\ui\data\gui\rsc\RscDisplayArcadeMap\icon_config_ca.paa";
+            tooltip = "Settings"; color[] = {1, 1, 1, 0.85}; colorActive[] = {1, 1, 1, 1};
+        };
+        class DZ_MenuExit: RscActiveText
+        {
+            idc = 12023; style = ST_PICTURE;
+            x = SafeZoneX + SafeZoneW * 0.94; y = SafeZoneY + SafeZoneH * 0.025;
+            w = SafeZoneW * 0.025; h = SafeZoneH * 0.04;
+            text = "\DZ\ui\data\gui\rsc\RscDisplayArcadeMap\icon_exit_cross_ca.paa";
+            tooltip = "Exit"; color[] = {1, 1, 1, 0.85}; colorActive[] = {1, 1, 1, 1};
+        };
+        class DZ_MenuLogo: RscPicture
+        {
+            idc = -1;
+            x = SafeZoneX + SafeZoneW * 0.055;
+            y = SafeZoneY + SafeZoneH * 0.045;
+            w = SafeZoneW * 0.235;
+            h = SafeZoneH * 0.17;
+            text = "\DZ\ui\data\Logos\dayz_ca.paa";
+        };
+        class DZ_MenuPlay: RscButton
+        {
+            idc = 12024;
+            x = SafeZoneX + SafeZoneW * 0.72;
+            y = SafeZoneY + SafeZoneH * 0.79;
+            w = SafeZoneW * 0.25;
+            h = SafeZoneH * 0.08;
+            style = ST_CENTER;
+            text = "PLAY";
+            sizeEx = Size_Text_Default;
+            colorText[] = {1, 1, 1, 1};
+            colorBackground[] = {0.04, 0.05, 0.055, 0.70};
+            colorBackgroundActive[] = {0.72, 0.08, 0.055, 0.95};
+        };
+        class DZ_MenuSlotPrev: RscButton
+        {
+            idc = IDC_MAIN_MENU_SLOT_PREV;
+            x = SafeZoneX + SafeZoneW * 0.72;
+            y = SafeZoneY + SafeZoneH * 0.575;
+            w = SafeZoneW * 0.045;
+            h = SafeZoneH * 0.045;
+            text = "<";
+            tooltip = "Previous survivor";
+            style = ST_CENTER;
+            colorText[] = {1, 1, 1, 0.95};
+            colorBackground[] = {0.02, 0.025, 0.03, 0.35};
+            colorBackgroundActive[] = {0.72, 0.08, 0.055, 0.9};
+        };
+        class DZ_MenuSlotName: RscText
+        {
+            idc = IDC_MAIN_MENU_SLOT_NAME;
+            style = ST_CENTER;
+            x = SafeZoneX + SafeZoneW * 0.77;
+            y = SafeZoneY + SafeZoneH * 0.575;
+            w = SafeZoneW * 0.15;
+            h = SafeZoneH * 0.045;
+            text = "SURVIVOR 1 / 3";
+            sizeEx = Size_Text_Small;
+            colorText[] = {1, 1, 1, 0.95};
+        };
+        class DZ_MenuSlotNext: DZ_MenuSlotPrev
+        {
+            idc = IDC_MAIN_MENU_SLOT_NEXT;
+            x = SafeZoneX + SafeZoneW * 0.925;
+            text = ">";
+            tooltip = "Next survivor";
+        };
+        class DZ_MenuStatisticsTitle: RscText
+        {
+            idc = 12040; style = ST_CENTER;
+            x = SafeZoneX + SafeZoneW * 0.72; y = SafeZoneY + SafeZoneH * 0.345;
+            w = SafeZoneW * 0.25; h = SafeZoneH * 0.035;
+            text = "STATISTICS"; sizeEx = Size_Text_Small;
+            colorText[] = {1, 1, 1, 0.95};
+        };
+        class DZ_MenuStatTime: RscText
+        {
+            idc = 12041; style = ST_LEFT;
+            x = SafeZoneX + SafeZoneW * 0.72; y = SafeZoneY + SafeZoneH * 0.395;
+            w = SafeZoneW * 0.20; h = SafeZoneH * 0.03;
+            text = "TIME SURVIVED"; sizeEx = Size_Text_Very_Small;
+            colorText[] = {0.88, 0.89, 0.89, 1};
+        };
+        class DZ_MenuStatTimeValue: DZ_MenuStatTime
+        {
+            idc = 12042; style = ST_RIGHT;
+            x = SafeZoneX + SafeZoneW * 0.92; w = SafeZoneW * 0.05; text = "--";
+        };
+        class DZ_MenuStatPlayers: DZ_MenuStatTime
+        {
+            idc = 12043; y = SafeZoneY + SafeZoneH * 0.44; text = "PLAYERS KILLED";
+        };
+        class DZ_MenuStatPlayersValue: DZ_MenuStatTimeValue
+        {
+            idc = 12044; y = SafeZoneY + SafeZoneH * 0.44;
+        };
+        class DZ_MenuStatInfected: DZ_MenuStatTime
+        {
+            idc = 12045; y = SafeZoneY + SafeZoneH * 0.485; text = "INFECTED KILLED";
+        };
+        class DZ_MenuStatInfectedValue: DZ_MenuStatTimeValue
+        {
+            idc = 12046; y = SafeZoneY + SafeZoneH * 0.485;
+        };
+        class DZ_MenuStatDistance: DZ_MenuStatTime
+        {
+            idc = 12047; y = SafeZoneY + SafeZoneH * 0.53; text = "DISTANCE TRAVELLED";
+        };
+        class DZ_MenuStatDistanceValue: DZ_MenuStatTimeValue
+        {
+            idc = 12048; y = SafeZoneY + SafeZoneH * 0.53;
+        };
+        class DZ_MenuStatRange: DZ_MenuStatTime
+        {
+            idc = 12049; y = SafeZoneY + SafeZoneH * 0.575; text = "LONGEST HIT";
+        };
+        class DZ_MenuStatRangeValue: DZ_MenuStatTimeValue
+        {
+            idc = 12050; y = SafeZoneY + SafeZoneH * 0.575;
+        };
+        //Version number of the application.
 		class Version: RscText
 		{
 		  idc = IDC_MAIN_VERSION;
-		  style = ST_CENTER;
-      x = 0.2; y = 0.1;
-      w = 0.2;
-		  sizeEx = Size_Text_Small;
+		  style = ST_LEFT;
+		  x = SafeZoneX + SafeZoneW * 0.025;
+		  y = SafeZoneY + SafeZoneH * 0.94;
+		  w = SafeZoneW * 0.22;
+		  h = SafeZoneH * 0.025;
+		  sizeEx = Size_Text_Very_Small;
 		};
 
+        class DZ_MenuCopyright: RscText
+        {
+          idc = -1;
+          style = ST_LEFT;
+          x = SafeZoneX + SafeZoneW * 0.025;
+          y = SafeZoneY + SafeZoneH * 0.968;
+          w = SafeZoneW * 0.50;
+          h = SafeZoneH * 0.02;
+          text = "Copyright (C) 2019 Bohemia Interactive. All rights reserved.";
+          sizeEx = Size_Text_Very_Small;
+          colorText[] = {1, 1, 1, 0.75};
+        };
     class ModList: RscStructuredText
     {
       idc = IDC_MAIN_MOD_LIST;
       style = ST_LEFT;
-      x=0.75; y=0.4;
-      w=0.24; h=0.5;
+      x=SafeZoneX + SafeZoneW * 0.025;
+      y=SafeZoneY + SafeZoneH * 0.80;
+      w=SafeZoneW * 0.38; h=SafeZoneH * 0.12;
       size = SizeSmall;
       class Attributes
       {
         font = FontMAIN;
         color = "#ffffff";
-        align = "right";
+        align = "left";
         shadow = false;
       };
     };
@@ -576,6 +779,11 @@ class RscDisplayMain: RscStandardDisplay
 			idc = IDC_MAIN_MULTIPLAYER;
 			y = MAIN_ACTIVETEXT_Y + 0.2;
 			text = $STR_DISP_MAIN_MULTI;
+		
+			style = ST_CENTER;
+			colorText[] = {1, 1, 1, 0.95};
+			colorBackground[] = {0.025, 0.03, 0.034, 0.50};
+			colorBackgroundActive[] = {0.72, 0.08, 0.055, 0.85};
 		};
 
 		//Start the mission editor.
@@ -598,6 +806,12 @@ class RscDisplayMain: RscStandardDisplay
 			idc = IDC_MAIN_OPTIONS;
 			x = 0.566; y = MAIN_ACTIVETEXT_Y;
 			text = $STR_DISP_MAIN_OPTIONS;
+		
+			style = ST_CENTER;
+			colorText[] = {1, 1, 1, 0.95};
+			colorBackground[] = {0.025, 0.03, 0.034, 0.50};
+			colorBackgroundActive[] = {0.72, 0.08, 0.055, 0.85};
+			colorFocused[] = {0, 0, 0, 0};
 		};
 
 		//Open the profile screen.
@@ -606,6 +820,8 @@ class RscDisplayMain: RscStandardDisplay
 			idc = IDC_MAIN_PLAYER;
 			y = MAIN_ACTIVETEXT_Y + 0.1;
 			text = $STR_DISP_ERROR;
+		
+			style = ST_CENTER;
 		};
 
 		//Start the credits
@@ -620,7 +836,12 @@ class RscDisplayMain: RscStandardDisplay
     {
       idc = IDC_MAIN_MOD_LAUNCHER;
       y = MAIN_ACTIVETEXT_Y + 0.5;
-      text = "Expansions"; //$STR_DISP_MAIN_EXPANSIONS;
+      style = ST_PICTURE;
+      text = "\DZ\ui\data\gui\rsc\rscdisplayarcademap\icon_toolbox_modules_ca.paa";
+      tooltip = "Mods";
+      colorText[] = {1, 1, 1, 0.95};
+      colorBackground[] = {0, 0, 0, 0};
+      colorBackgroundActive[] = {0.72, 0.08, 0.055, 0.75};
     };
 
 		//Exit the application
@@ -4607,4 +4828,10 @@ class RscDisplayOptionsVideoQuality
 			text = "Close";//TODO: stringtable
 		};
 	};
+};
+
+// Close the legacy early-access confirmation after main-menu initialization.
+class RscConfirmEarlyAccess
+{
+	 onLoad = "closeDialog 0;";
 };

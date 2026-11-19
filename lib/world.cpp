@@ -31,6 +31,12 @@
 #include "versionNo.h"
 #include "baseWorld/enf_shapes.h"
 
+// Implemented by the inventory UI module. The weapon raise input must not
+// react to Space while the inventory is open (Space is the rotate-item key).
+extern bool IsInventoryOpened();
+extern bool HandleInventorySpaceKey();
+extern void ReleaseInventorySpaceKey();
+
 #if _VBS2 && !_VBS2_LITE
   #include "UI/dispMissionEditor.hpp"
   #include "HLA/Tracking.hpp"
@@ -2673,7 +2679,14 @@ void World::PreloadMission()
 bool RaiseWeaponActions::CheckAndUpdate(InputInterface *input)
 {
   // Hold action to raise/lower weapon during the action is active
-  bool holdActive = (input->GetAction(UATempRaiseWeapon) > 0.5f);
+  const bool inventoryOpen = IsInventoryOpened();
+  bool holdActive = !inventoryOpen && (input->GetAction(UATempRaiseWeapon) > 0.5f);
+  if (inventoryOpen)
+  {
+    // Consume the toggle too, so a Space press cannot leak into combat state.
+    input->GetActionToDo(UAToggleRaiseWeapon);
+    _startTime = 0;
+  }
   // Raise weapon for given amount of time
   bool tempRaise = false;
   if (_startTime)
@@ -6457,6 +6470,19 @@ class HorizonPrune
   mutable Matrix4 _modelToView;
   mutable const Object* _lastObject;
 
+  // Small direct-mapped cache for repeated endpoints in one occluder shape.
+  // A collision only replaces an entry; it can never return another vertex.
+  static const int nVertexCache = 128;
+  struct VertexCacheEntry
+  {
+    unsigned int generation;
+    int index;
+    Vector3 position;
+    int clipCode;
+  };
+  VertexCacheEntry _vertexCache[nVertexCache];
+  unsigned int _vertexCacheGeneration;
+
 public:
   void SetModel(const Object* obj) const
   {
@@ -6590,6 +6616,13 @@ HorizonPrune::HorizonPrune(Vector3Par dir, Vector3Par pos, float fov)
 {
   _actBuffer = 0;
   _t = 0;
+  _lastObject = NULL;
+  _vertexCacheGeneration = 0;
+  for (int i=0; i<nVertexCache; i++)
+  {
+    _vertexCache[i].generation = 0;
+    _vertexCache[i].index = -1;
+  }
   
   // when starting assume no horizon (in any frame)
   for (int i = 0; i < nBuffers; i++)
@@ -7285,19 +7318,45 @@ bool HorizonPrune::CheckMinmaxBox(const Object* obj, const Vector3 minmax[2], Cl
 
 void HorizonPrune::AddObjectHorizon(const Object* obj, const Shape *view, const AutoArray<OcclusionEdge> &edges)
 {
+  PROFILE_SCOPE_DETAIL_EX(hObj,drw);
   SetModel(obj);
   // TODO: if the object is too small to be any significant, do not add it any more
-  // TODO: optimization: transform each vertex to view/screen space only once
   //Matrix4 modelToView = _invViewSpace*toWorld;
 
   const AutoArray<Vector3>& posarray = view->GetPosArray();
+  unsigned int generation = ++_vertexCacheGeneration;
+  if (generation==0)
+  {
+    for (int i=0; i<nVertexCache; i++)
+      _vertexCache[i].generation = 0;
+    generation = ++_vertexCacheGeneration;
+  }
 
   for (int e=0; e<edges.Size(); e++)
   {
-    Vector3 pos0 = _modelToView.FastTransform(posarray[edges[e].a]);
-    Vector3 pos1 = _modelToView.FastTransform(posarray[edges[e].b]);
-    int cc0 = ViewSpaceClipPoint(pos0);
-    int cc1 = ViewSpaceClipPoint(pos1);
+    int index0 = edges[e].a;
+    int index1 = edges[e].b;
+    VertexCacheEntry &vertex0 = _vertexCache[index0 & (nVertexCache-1)];
+    if (vertex0.generation!=generation || vertex0.index!=index0)
+    {
+      vertex0.position = _modelToView.FastTransform(posarray[index0]);
+      vertex0.clipCode = ViewSpaceClipPoint(vertex0.position);
+      vertex0.index = index0;
+      vertex0.generation = generation;
+    }
+    Vector3 pos0 = vertex0.position;
+    int cc0 = vertex0.clipCode;
+
+    VertexCacheEntry &vertex1 = _vertexCache[index1 & (nVertexCache-1)];
+    if (vertex1.generation!=generation || vertex1.index!=index1)
+    {
+      vertex1.position = _modelToView.FastTransform(posarray[index1]);
+      vertex1.clipCode = ViewSpaceClipPoint(vertex1.position);
+      vertex1.index = index1;
+      vertex1.generation = generation;
+    }
+    Vector3 pos1 = vertex1.position;
+    int cc1 = vertex1.clipCode;
 
     if((cc0 & cc1) != 0)
       continue; //line is completely behind something
@@ -8149,6 +8208,8 @@ void World::PrepareDraw(Object *camInside, bool inPreload, float preloadDist)
 #ifdef TRAP_FOR_0x8000
     //GEngine->TrapFor0x8000("World.PrepareDraw ENTERING major grid traversal loop");
 #endif
+		{
+			PROFILE_SCOPE_DETAIL_EX(wGrd,wPrep);
 		for (int major = floop.GetMajorBegin(); major != floop.GetMajorEnd(); major+=floop.GetMajorIncrement(),lineI++)
 		{
 			int minorBegin = floop.GetMinorBegin(major);
@@ -8160,6 +8221,7 @@ void World::PrepareDraw(Object *camInside, bool inPreload, float preloadDist)
 
 			for (int minor = minorBegin; minor < minorEnd; minor++)
 			{
+				PROFILE_SCOPE_DETAIL_EX(wCel,wGrd);
 				int x = floop.GetX(minor, major);
 				int z = floop.GetZ(minor, major);
 
@@ -8558,6 +8620,7 @@ void World::PrepareDraw(Object *camInside, bool inPreload, float preloadDist)
 			}
 #endif
 		} // for (major grid traversal loop)
+		}
 #ifdef TRAP_FOR_0x8000
     //GEngine->TrapFor0x8000("World.PrepareDraw LEAVING major grid traversal loop");
 #endif
@@ -9063,7 +9126,23 @@ void World::SelectCameraType(float deltaT)
         }
         ShowMap(false);
       }
-      if (!IsShowMapWanted() && GInput.GetActionToDo(UAOptics))
+
+      // Quick tap of the right mouse button toggles the real weapon optics
+      // (3D sight / scope). Holding the button keeps the classic 2D aim.
+      bool opticsTap = false;
+      {
+        static bool rmbWasDown = false;
+        static Time rmbDownTime = Glob.time;
+        const bool rmbDown = GInput.GetMouseButton(1) > 0.5f;
+        if (rmbDown && !rmbWasDown) rmbDownTime = Glob.time;
+        else if (!rmbDown && rmbWasDown)
+        {
+          const float heldTime = Glob.time - rmbDownTime;
+          if (heldTime > 0.02f && heldTime < 0.25f) opticsTap = true;
+        }
+        rmbWasDown = rmbDown;
+      }
+      if (!IsShowMapWanted() && (GInput.GetActionToDo(UAOptics) || opticsTap))
       {
         // toggle optics
         bool forceOptics = camAI && camAI->GetForceOptics(person, _camTypeMain);
@@ -10447,7 +10526,7 @@ void World::DrawSceneR2T(Entity *camInVehicle, bool frameRepeated, float deltaT)
 
     // Render the shadow buffer
      _scene.GetLandscape()->DrawRectShadowBuffer(drawContext, _scene);
-    if (GEngine->GetFSAA()>0)
+    if (GEngine->GetFSAA()>0 && !GEngine->MainPassPrimesDepth())
     {
       // PC with FSAA required separate depth priming
       _scene.GetLandscape()->PrimeDepthBuffer(groundPrimed, _scene, drawContext, true, frameRepeated, 
@@ -11792,6 +11871,63 @@ void World::SimulateRTD(bool doSim, float deltaT)
 }
 
 bool GUAGearActive = false;
+
+// Maintain profile-backed values consumed by the character statistics on the main menu.
+static void UpdateMainMenuLifetimeStats(World *world, float deltaT)
+{
+  static Vector3 previousPosition(VZero);
+  static bool previousPositionValid = false;
+  static int previousSlot = -1;
+  static float saveTimer = 0;
+  if (!world || !world->GetGameState() || !world->GetProfileNamespace()) return;
+  Person *player = world->PlayerOn();
+  if (!player || player->IsDamageDestroyed() || !player->Brain() || player->Brain()->GetLifeState() == LifeStateDead)
+  {
+    previousPositionValid = false;
+    return;
+  }
+
+  GameState *state = world->GetGameState();
+  GameDataNamespace *profile = world->GetProfileNamespace();
+  GameValue slotValue = state->VarGet("dayzMainMenuCharacterSlot", false, profile);
+  int slot = slotValue.GetType() == GameScalar ? toInt((float)slotValue) : 0;
+  saturate(slot, 0, 2);
+
+  Vector3 position = player->GetPosition();
+  if (previousSlot != slot) previousPositionValid = false;
+  previousSlot = slot;
+
+  float elapsed = deltaT;
+  if (elapsed < 0) elapsed = 0;
+  if (elapsed > 1.0f) elapsed = 1.0f;
+  RString survivalKey = Format("dayzMainMenuSlot%dSurvivalSeconds", slot + 1);
+  GameValue survivalValue = state->VarGet(survivalKey, false, profile);
+  float survival = survivalValue.GetType() == GameScalar ? (float)survivalValue : 0;
+  survival += elapsed;
+  state->VarSet(survivalKey, GameValue(survival), false, false, profile);
+
+  RString distanceKey = Format("dayzMainMenuSlot%dDistanceMeters", slot + 1);
+  GameValue distanceValue = state->VarGet(distanceKey, false, profile);
+  float distance = distanceValue.GetType() == GameScalar ? (float)distanceValue : 0;
+  if (previousPositionValid)
+  {
+    Vector3 movement = position - previousPosition;
+    float distanceThisFrame = sqrt(movement.SquareSizeXZ());
+    // Ignore teleport/spawn corrections while retaining ordinary player movement.
+    if (distanceThisFrame <= elapsed * 20.0f) distance += distanceThisFrame;
+    state->VarSet(distanceKey, GameValue(distance), false, false, profile);
+  }
+  previousPosition = position;
+  previousPositionValid = true;
+
+  saveTimer += elapsed;
+  if (saveTimer >= 30.0f)
+  {
+    saveTimer = 0;
+    world->SaveProfileNamespace();
+  }
+}
+
 void World::Simulate(float deltaT, bool &enableSceneDraw, bool &enableHUDDraw)
 {
 #if !defined _CONSOLE && _ENABLE_CHEATS
@@ -11812,6 +11948,7 @@ void World::Simulate(float deltaT, bool &enableSceneDraw, bool &enableHUDDraw)
   }
 #endif
   PROFILE_SCOPE_EX_HIER(wSimu,*);
+  UpdateMainMenuLifetimeStats(this, deltaT);
   GMatrixCache.Clear();
   ClearClutterDrawCache();
 
@@ -12328,6 +12465,13 @@ if (_playerOn)
 
   Entity *camInsideVehicle = dyn_cast<Entity>(GetCamInsideVehicle());
 
+  SectionTimeHandle fpsDiagFrameStart = StartSectionTime();
+  float fpsDiagSimMs = 0.0f, fpsDiagFinPresMs = 0.0f, fpsDiagPrepDrawMs = 0.0f;
+  float fpsDiagFPrs1Ms = 0.0f, fpsDiagAISndMs = 0.0f, fpsDiagAnimLMs = 0.0f;
+  float fpsDiagRectPrepMs = 0.0f, fpsDiagDPrimeMs = 0.0f, fpsDiagShadowBufMs = 0.0f;
+  float fpsDiagSimUIMs = 0.0f, fpsDiagDrawSceneMs = 0.0f, fpsDiagDrawUIMs = 0.0f, fpsDiagFinDrawMs = 0.0f;
+  int fpsDiagP1ON = 0, fpsDiagP1OF = 0, fpsDiagP1AN = 0, fpsDiagP2 = 0, fpsDiagSBObj = 0;
+
   // Simulation
   {
     PROFILE_SCOPE_GRF_EX(wsSet,*,SCOPE_COLOR_BLUE);
@@ -12555,13 +12699,17 @@ if (_playerOn)
   // when using PIX on old Xbox it was sometimes necessary to draw the same frame twice
   const bool frameRepeated = false;
   
+  SectionTimeHandle tFPrs1 = StartSectionTime();
   GEngine->FinishPresent();
+  fpsDiagFPrs1Ms = GetSectionTime(tFPrs1) * 1000.0f;
 
+  SectionTimeHandle tAISnd = StartSectionTime();
   if (GEngine->PresentIsAsync())
   {
     useTimeForAIAndSound.AI();
     useTimeForAIAndSound.Sound();
   }
+  fpsDiagAISndMs = GetSectionTime(tAISnd) * 1000.0f;
   
   if (IsDisplayEnabled())
     AdjustEyeAccom(wantNV
@@ -12572,7 +12720,9 @@ if (_playerOn)
 
 #if ANIMATION_RT_SLIST
   // prior drawing, load all needed animations
+  SectionTimeHandle tAnimL = StartSectionTime();
   PerformAnimationRTLoading();
+  fpsDiagAnimLMs = GetSectionTime(tAnimL) * 1000.0f;
 #endif
 
   AbilityToDraw isAbleToDraw = ATDAble;
@@ -12639,6 +12789,7 @@ if (_playerOn)
 #endif
   {
     PROFILE_SCOPE_EX(rendr,*);
+    fpsDiagSimMs = GetSectionTime(fpsDiagFrameStart) * 1000.0f;
 
     // If scene is to be drawn, do the preparation and render DB and SB
     bool rendering = false;
@@ -12656,7 +12807,9 @@ if (_playerOn)
         camInsideVehicle=dyn_cast<Entity>(GetCamInsideVehicle());
         LogF("Camera vehicle '%s' disappeared unexpectedly, now '%s'",cc_cast(camInsideVehicleName), camInsideVehicle ? cc_cast(camInsideVehicle->GetDebugName()) : "");
       }
+      SectionTimeHandle tSt = StartSectionTime();
       GEngine->FinishFinishPresent(); // texture loading is finished here, might have cause a device reset when unlucky
+      fpsDiagFinPresMs = GetSectionTime(tSt) * 1000.0f;
 
 #if _HELISIM_RENDER_TO_TEXTURE
 
@@ -12734,7 +12887,9 @@ if (_playerOn)
       }
 
       // Prepare list of scene objects for drawing
+      SectionTimeHandle tPrep = StartSectionTime();
       PrepareDraw(camInsideVehicle,false,FLT_MAX);
+      fpsDiagPrepDrawMs = GetSectionTime(tPrep) * 1000.0f;
 
       _scene.RecalculateLighting(1,_scene.GetLandscape());
 
@@ -12754,20 +12909,34 @@ if (_playerOn)
       GWorld->BeginWindEmitterScope(_scene.GetCamera(),Glob.config.horizontZ);
 
       // Preparation to be done prior landscape drawing
+      SectionTimeHandle tRectPrep = StartSectionTime();
       _scene.GetLandscape()->DrawRectPrepare(drawContext, _scene, deltaT, frameRepeated);
+      fpsDiagRectPrepMs = GetSectionTime(tRectPrep) * 1000.0f;
+      fpsDiagP1ON = drawContext._drawPass1ON._original.Size() + drawContext._drawPass1ON._blending.Size();
+      fpsDiagP1OF = drawContext._drawPass1OF._original.Size() + drawContext._drawPass1OF._blending.Size();
+      fpsDiagP1AN = drawContext._drawPass1AN.Size() + drawContext._drawPass1AF.Size();
+      fpsDiagP2 = drawContext._drawPass2.Size();
+      fpsDiagSBObj = drawContext._drawShadowProj.Size();
 
       // render the depth buffer (may perform priming as well, unless separate priming is required)
+      SectionTimeHandle tDPrime = StartSectionTime();
       _scene.GetLandscape()->PrimeDepthBuffer(groundPrimed, _scene, drawContext, false, frameRepeated 
 #if _HELISIM_RENDER_TO_TEXTURE 
         , 0
 #endif
         , true /*debugMe*/);
+      fpsDiagDPrimeMs = GetSectionTime(tDPrime) * 1000.0f;
 
       // Render the shadow buffer
+      SectionTimeHandle tSB = StartSectionTime();
       _scene.GetLandscape()->DrawRectShadowBuffer(drawContext, _scene);
-      if (GEngine->GetFSAA()>0)
+      fpsDiagShadowBufMs = GetSectionTime(tSB) * 1000.0f;
+      // The separate z-only pass (RMZPrime) re-submits every near object only to
+      // prime the main depth buffer. Skip it when the main pass writes depth itself
+      // (EngineDD9); the SSSM depth map above is still produced by RMDPrime.
+      // PC with FSAA requires separate depth priming otherwise.
+      if (GEngine->GetFSAA()>0 && !GEngine->MainPassPrimesDepth())
       {
-        // PC with FSAA required separate depth priming
         _scene.GetLandscape()->PrimeDepthBuffer(groundPrimed, _scene, drawContext, true, frameRepeated
 #if _HELISIM_RENDER_TO_TEXTURE
           , 0
@@ -12785,7 +12954,9 @@ if (_playerOn)
       //SelectCameraPosition must be called before UI simulation (precise actions needs precise camera position)
       //not very nice place to simulate UI, but SelectCameraPosition takes 1ms
       PROFILE_SCOPE_EX(simUI,*);
+      SectionTimeHandle tSimUI = StartSectionTime();
       SimulateUI(deltaT);
+      fpsDiagSimUIMs = GetSectionTime(tSimUI) * 1000.0f;
     }
 
     // during handling of _drawObjects, camera vehicle can change (even be destroyed)
@@ -12827,7 +12998,9 @@ if (_playerOn)
       // when Present and 2D rendering requires flush, we want to use the time before flushing
       useTime = &useTimeForAIAndSound;
 
+    SectionTimeHandle tDrwScn = StartSectionTime();
     DrawScene(drawContext, groundPrimed, enableSceneDraw, camInsideVehicle, frameRepeated, wantNV, wantFlir, frameRepeated ? 0 : deltaT, *useTime);
+    fpsDiagDrawSceneMs = GetSectionTime(tDrwScn) * 1000.0f;
 
     if (rendering)
       GWorld->EndWindEmitterScope();
@@ -12845,7 +13018,11 @@ if (_playerOn)
 
     // draw HUD
     if (enableHUDDraw)
+    {
+      SectionTimeHandle tDrwUI = StartSectionTime();
       DrawUI(wantNV, wantFlir);
+      fpsDiagDrawUIMs = GetSectionTime(tDrwUI) * 1000.0f;
+    }
 
 
 #if LOG_FAST_UPDATES
@@ -12854,6 +13031,7 @@ if (_playerOn)
     // need to be called several times during the frame
     GetNetworkManager().FastUpdate();
 
+    SectionTimeHandle tFinDrw = StartSectionTime();
     if (enableSceneDraw || enableHUDDraw)
     {
       PROFILE_SCOPE_EX(drwFn,*);
@@ -12923,6 +13101,62 @@ if (_playerOn)
       GEngine->FinishNoDraw(1);
     
     GEngine->NextFrame(enableSceneDraw || enableHUDDraw);
+    fpsDiagFinDrawMs = GetSectionTime(tFinDrw) * 1000.0f;
+
+    if (rendering)
+    {
+      float totalFrameMs = GetSectionTime(fpsDiagFrameStart) * 1000.0f;
+      static DWORD s_lastDiagTick = 0;
+      static int s_diagFrames = 0;
+      static float s_sumTotal = 0, s_sumSim = 0, s_sumFinPres = 0, s_sumPrepDraw = 0;
+      static float s_sumFPrs1 = 0, s_sumAISnd = 0, s_sumAnimL = 0;
+      static float s_sumRectPrep = 0, s_sumDPrime = 0, s_sumSB = 0, s_sumSimUI = 0;
+      static float s_sumDrawScene = 0, s_sumDrawUI = 0, s_sumFinDraw = 0, s_maxTotal = 0;
+      s_diagFrames++;
+      s_sumTotal += totalFrameMs;
+      s_sumSim += fpsDiagSimMs;
+      s_sumFPrs1 += fpsDiagFPrs1Ms;
+      s_sumAISnd += fpsDiagAISndMs;
+      s_sumAnimL += fpsDiagAnimLMs;
+      s_sumFinPres += fpsDiagFinPresMs;
+      s_sumPrepDraw += fpsDiagPrepDrawMs;
+      s_sumRectPrep += fpsDiagRectPrepMs;
+      s_sumDPrime += fpsDiagDPrimeMs;
+      s_sumSB += fpsDiagShadowBufMs;
+      s_sumSimUI += fpsDiagSimUIMs;
+      s_sumDrawScene += fpsDiagDrawSceneMs;
+      s_sumDrawUI += fpsDiagDrawUIMs;
+      s_sumFinDraw += fpsDiagFinDrawMs;
+      if (totalFrameMs > s_maxTotal) s_maxTotal = totalFrameMs;
+
+      DWORD nowTick = GlobalTickCount();
+      if (nowTick - s_lastDiagTick >= 3000 && s_diagFrames > 0)
+      {
+        float invF = 1.0f / s_diagFrames;
+        float avgTotal = s_sumTotal * invF;
+        Vector3 camPos = _scene.GetCamera() ? _scene.GetCamera()->Position() : VZero;
+        RptF(
+          "[FPS-DIAG] pos=(%.0f,%.0f) fps=%.1f avg=%.2fms max=%.2fms | sim=%.2f(fp1=%.2f,ai=%.2f,anm=%.2f) finPres=%.2f prepDraw=%.2f rectPrep=%.2f dPrime=%.2f sb=%.2f simUI=%.2f drawScn=%.2f drawUI=%.2f finDrw=%.2f | p1ON=%d p1OF=%d p1AN=%d p2=%d sbObj=%d",
+          camPos.X(), camPos.Z(),
+          avgTotal > 0.001f ? (1000.0f / avgTotal) : 0.0f,
+          avgTotal, s_maxTotal,
+          s_sumSim * invF, s_sumFPrs1 * invF, s_sumAISnd * invF, s_sumAnimL * invF,
+          s_sumFinPres * invF, s_sumPrepDraw * invF,
+          s_sumRectPrep * invF, s_sumDPrime * invF, s_sumSB * invF,
+          s_sumSimUI * invF, s_sumDrawScene * invF, s_sumDrawUI * invF, s_sumFinDraw * invF,
+          fpsDiagP1ON,
+          fpsDiagP1OF,
+          fpsDiagP1AN,
+          fpsDiagP2,
+          fpsDiagSBObj
+        );
+        s_lastDiagTick = nowTick;
+        s_diagFrames = 0;
+        s_sumTotal = s_sumSim = s_sumFPrs1 = s_sumAISnd = s_sumAnimL = s_sumFinPres = s_sumPrepDraw = 0;
+        s_sumRectPrep = s_sumDPrime = s_sumSB = s_sumSimUI = 0;
+        s_sumDrawScene = s_sumDrawUI = s_sumFinDraw = s_maxTotal = 0;
+      }
+    }
 
     DoAssert(drawContext._oPasO.finalCopy);
     DoAssert(drawContext._oPasA.finalCopy);
@@ -16901,6 +17135,14 @@ bool World::DoKeyDown(int dikCode)
       return true;
   }
 #endif
+  // Inventory owns Space while open. It may be a nested dialog rather than
+  // _userDlg, so route to the active inventory directly and consume the key
+  // before generic option displays or gameplay bindings can react to it.
+  if (dikCode == DIK_SPACE && HandleInventorySpaceKey())
+  {
+    GInput.DisableKey(dikCode);
+    return true;
+  }
   for (int i=0; i<_displays.Size(); i++)
   {
     AbstractOptionsUI *display = _displays[i]._display;
@@ -16930,6 +17172,9 @@ bool World::DoKeyDown(int dikCode)
 
 bool World::DoKeyUp(int dikCode)
 {
+  if (dikCode == DIK_SPACE)
+    ReleaseInventorySpaceKey();
+
   if (!IsUserInputEnabled()
 #if _VBS3
     && dikCode != DIK_ESCAPE
@@ -16966,6 +17211,13 @@ bool World::DoKeyUp(int dikCode)
       return true;
   }
 #endif
+  // The default UI button performs its click on key release. Consume the
+  // matching Space-up event while inventory is still open.
+  if (dikCode == DIK_SPACE && IsInventoryOpened())
+  {
+    GInput.DisableKey(dikCode);
+    return true;
+  }
   for (int i=0; i<_displays.Size(); i++)
   {
     AbstractOptionsUI *display = _displays[i]._display;

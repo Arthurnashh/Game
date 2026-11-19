@@ -7894,7 +7894,6 @@ static void ReloadMaterialFromObjektiv(HANDLE mutex, HANDLE shared)
 */
 
 #if defined (_WIN32)
-#include <stdint.h>
 
 unsigned int CalculateExeCRC(int offset, int size)
 {
@@ -11161,7 +11160,7 @@ void ReadExpansionsFromRegistry(ModInfos &regMods)
 #include "UI/displayUI.hpp"
 
 // 1. Loads the GModInfosRegistry from registry ConfigApp\\Expansions key
-//          ie. "Software\\Bohemia Interactive Studio\\" DayZAppName "\\Expansions"
+//          ie. "Software\\Bohemia Interactive Studio\\" APP_NAME "\\Expansions"
 // 2. Loads the GModInfosProfile from flashpoint cfg.
 void LoadModList()
 {
@@ -11471,7 +11470,7 @@ static void InitPlayerName()
   Glob.header.SetPlayerName(GetLoginName()); // MUST be set before ParseUserParams is called, or profile would not be found otherwise
   ParseUserParams(cfg, &globals);
   ConstParamEntryPtr entry = cfg.FindEntry("playerName");
-  if (entry && !entry->GetValue().IsEmpty()) Glob.header.SetPlayerName(entry->GetValue());
+  if (entry && !entry->GetValue().IsEmpty()) Glob.header.SetPlayerName(*entry);
 #endif
     }
 #else
@@ -13138,7 +13137,7 @@ void OFPFrameFunctions::ErrorMessage(const char *format, va_list argptr)
 #endif
   DDTermError();
   // kill main application window
-  //MessageBox(hwndApp,buf,DayZAppName,MB_OK);
+  //MessageBox(hwndApp,buf,APP_NAME,MB_OK);
   //WinDestroy();
   // show message
 #ifdef _WIN32
@@ -13152,14 +13151,14 @@ void OFPFrameFunctions::ErrorMessage(const char *format, va_list argptr)
   wBuffer[len - 1] = 0; // make sure result is always null terminated
 
   // convert application name from UTF-8 to Unicode
-  len = MultiByteToWideChar(CP_UTF8, 0, DayZAppName, -1, NULL, 0);
-  AUTO_STATIC_ARRAY(wchar_t, wAppName, 1024);
-  wAppName.Resize(len);
-  MultiByteToWideChar(CP_UTF8, 0, DayZAppName, -1, wAppName.Data(), len);
-  wAppName[len - 1] = 0; // make sure result is always null terminated
+  len = MultiByteToWideChar(CP_UTF8, 0, APP_NAME, -1, NULL, 0);
+  AUTO_STATIC_ARRAY(wchar_t, wAPP_NAME, 1024);
+  wAPP_NAME.Resize(len);
+  MultiByteToWideChar(CP_UTF8, 0, APP_NAME, -1, wAPP_NAME.Data(), len);
+  wAPP_NAME[len - 1] = 0; // make sure result is always null terminated
 
   if (!Silent) //when autotest is running, we want no error messages
-    MessageBoxW(NULL,wBuffer.Data(),wAppName.Data(),MB_OK|MB_ICONERROR);
+    MessageBoxW(NULL,wBuffer.Data(),wAPP_NAME.Data(),MB_OK|MB_ICONERROR);
   SetCursor(LoadCursor(NULL,IDC_WAIT));
   TerminateProcess(GetCurrentProcess(),1);
 #else
@@ -13257,14 +13256,14 @@ void WarningMessageLevel( ErrorMessageLevel level, const char *format, va_list a
     wBuffer[len - 1] = 0; // make sure result is always null terminated
 
     // convert application name from UTF-8 to Unicode
-    len = MultiByteToWideChar(CP_UTF8, 0, DayZAppName, -1, NULL, 0);
-    AUTO_STATIC_ARRAY(wchar_t, wAppName, 1024);
-    wAppName.Resize(len);
-    MultiByteToWideChar(CP_UTF8, 0, DayZAppName, -1, wAppName.Data(), len);
-    wAppName[len - 1] = 0; // make sure result is always null terminated
+    len = MultiByteToWideChar(CP_UTF8, 0, APP_NAME, -1, NULL, 0);
+    AUTO_STATIC_ARRAY(wchar_t, wAPP_NAME, 1024);
+    wAPP_NAME.Resize(len);
+    MultiByteToWideChar(CP_UTF8, 0, APP_NAME, -1, wAPP_NAME.Data(), len);
+    wAPP_NAME[len - 1] = 0; // make sure result is always null terminated
 
     if (!Silent) //when autotest is running, we want no error messages
-      MessageBoxW(NULL,wBuffer.Data(),wAppName.Data(),MB_OK|icon);
+      MessageBoxW(NULL,wBuffer.Data(),wAPP_NAME.Data(),MB_OK|icon);
     //if( HideCursor ) ShowCursor(FALSE);
         #else
         puts(buf);

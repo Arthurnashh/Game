@@ -2840,6 +2840,10 @@ SoundSystemXA2::~SoundSystemXA2()
 
 int GetMasterVolume()
 {
+  // Dedicated servers have no audio mixer device. Avoid querying the
+  // interactive Windows mixer during server startup/configuration.
+  if (IsDedicatedServer()) return 65535;
+
   do {
     // obtain a handle to the mixer device
     HMIXER hMixer;
@@ -2881,6 +2885,9 @@ int GetMasterVolume()
 
 void SetMasterVolume(int value)
 {
+  // Server volume is not user-configurable and may have no mixer endpoint.
+  if (IsDedicatedServer()) return;
+
   do {
     // obtain a handle to the mixer device
     HMIXER hMixer;

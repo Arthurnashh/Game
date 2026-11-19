@@ -1,0 +1,28 @@
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileBank", "FileBank.vcproj", "{76533801-E95C-4046-82F2-899004302348}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+		ReleasePE|Win32 = ReleasePE|Win32
+		VBS1Admin|Win32 = VBS1Admin|Win32
+		VBS1MakeAddon|Win32 = VBS1MakeAddon|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{76533801-E95C-4046-82F2-899004302348}.Debug|Win32.ActiveCfg = Debug|Win32
+		{76533801-E95C-4046-82F2-899004302348}.Debug|Win32.Build.0 = Debug|Win32
+		{76533801-E95C-4046-82F2-899004302348}.Release|Win32.ActiveCfg = Release|Win32
+		{76533801-E95C-4046-82F2-899004302348}.Release|Win32.Build.0 = Release|Win32
+		{76533801-E95C-4046-82F2-899004302348}.ReleasePE|Win32.ActiveCfg = ReleasePE|Win32
+		{76533801-E95C-4046-82F2-899004302348}.ReleasePE|Win32.Build.0 = ReleasePE|Win32
+		{76533801-E95C-4046-82F2-899004302348}.VBS1Admin|Win32.ActiveCfg = VBS1Admin|Win32
+		{76533801-E95C-4046-82F2-899004302348}.VBS1Admin|Win32.Build.0 = VBS1Admin|Win32
+		{76533801-E95C-4046-82F2-899004302348}.VBS1MakeAddon|Win32.ActiveCfg = VBS1MakeAddon|Win32
+		{76533801-E95C-4046-82F2-899004302348}.VBS1MakeAddon|Win32.Build.0 = VBS1MakeAddon|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

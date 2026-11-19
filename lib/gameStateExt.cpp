@@ -7735,15 +7735,21 @@ GameValue StatusChatMP(const GameState *state, GameValuePar oper1, GameValuePar 
 {
   // check the argument
   float clientId = oper1;
-  if (!CheckType(state, oper2, GameArray)) 
+  if (oper2.GetType() == GameArray)
+  {
+    const GameArrayType &array = oper2;
+    if (array.Size() >= 2)
+    {
+      GetNetworkManager().StatusChat(toInt(clientId), array[0], array[1]);
+    }
+    else if (array.Size() == 1)
+    {
+      GetNetworkManager().StatusChat(toInt(clientId), array[0]);
+    }
+  }
+  else
   {
     GetNetworkManager().StatusChat(toInt(clientId), oper2);
-    return NOTHING;
-  }
-  const GameArrayType &array = oper2;
-  if (array.Size()==2)
-  {
-    GetNetworkManager().StatusChat(toInt(clientId), array[0], array[1]);
   }
   return NOTHING;
 }
@@ -17710,8 +17716,11 @@ GameValue AgentCreate(const GameState *state, GameValuePar oper1)
 }
 
 
-static RString ServletCharacter;
-static RString ServletWorld;
+// Dedicated server persistence is hosted locally by the packaged file store.
+// Keep the legacy HTTP API contract, but route it to localhost instead of the
+// retired central DayZ service.
+static RString ServletCharacter = "http://127.0.0.1:28100/lud0/";
+static RString ServletWorld = "http://127.0.0.1:28100/world/";
 
 
 void BuildServerRequest( EServletType eType, RString& url, const char* sPath = NULL )
@@ -18244,6 +18253,13 @@ int DBGetItemCount( void )
 //-----------------------------------------------------------------------------
 GameValue DBLoadHost( const GameState *state )
 {
+	if (IsDedicatedServer())
+	{
+		ServletCharacter = "http://127.0.0.1:28100/lud0/";
+		ServletWorld = "http://127.0.0.1:28100/world/";
+		RptF("DBLoadHost: using local server persistence store");
+		return NOTHING;
+	}
 
 	const char s_sCONFIGSERVER[] = {"CfgServerHost"};
 	RString locName = "adress";
@@ -18675,14 +18691,32 @@ GameValue DBServerLoadCharacter(const GameState *state, GameValuePar oper1, Game
     return NOTHING;
   }
 
-  int playerID = toInt(oper1);
+  int playerID = -1;
+  RString playerUID;
+  if (oper1.GetType() == GameArray)
+  {
+    const GameArrayType &args = oper1;
+    if (!CheckSize(state, args, 2)) return NOTHING;
+    if (!CheckType(state, args[0], GameScalar)) return NOTHING;
+    if (!CheckType(state, args[1], GameString)) return NOTHING;
+    playerID = toInt((float)args[0]);
+    playerUID = args[1];
+  }
+  else
+  {
+    if (!CheckType(state, oper1, GameScalar)) return NOTHING;
+    playerID = toInt((float)oper1);
+  }
 
   GameDataCode *code = static_cast<GameDataCode *>(oper2.GetData());
 
   RString url;
   BuildServerRequest(ESERVLET_CHARACTER,url,"load");
 
-  GetNetworkManager().DBLoad(url.Data(), playerID, code);
+  if (playerUID.IsEmpty())
+    GetNetworkManager().DBLoad(url.Data(), playerID, code);
+  else
+    GetNetworkManager().DBLoad(url.Data(), playerID, playerUID, code);
 
   return NOTHING;
 }
@@ -29635,7 +29669,7 @@ static const GameFunction ExtUnary[]=
   XX(GameObject, "createWeaponAttachment", function, WeaponCreateAttachment, GameObject, GameString, "weapon", "type name", "Create an item attached to weapon.", "weapon createWeaponAttachment magazineName", "", "", "101168", Category) \
   XX(GameObject, "itemInSlot", function, EntityGetItemInSlot, GameObject, GameString, "person", "slot name", "Return an item in person's slot.", "item = player itemInSlot\"Headgear\"", "", "", "103065", Category) \
   XX(GameNothing, "selectPlayer", function, ObjSelectPlayer, GameScalar, GameObject, "clientId", "object", "On server machine, change the person controlled by a given client.", "", "", "101590", "", Category) \
-  XX(GameNothing, "dbServerLoadCharacter", function, DBServerLoadCharacter, GameScalar, GameCode, "id", "code", "Starts the process of loading character from the central database. When finished, given code is executed. Works on game server only.", "dbServerLoadCharacter [_id, {_id selectPlayer _agent;}]", "", "102145 DayZ", "", Category) \
+  XX(GameNothing, "dbServerLoadCharacter", function, DBServerLoadCharacter, GameScalarOrArray, GameCode, "id or [id, playerUID]", "code", "Starts loading a character from the central database. The optional UID overrides the authenticated account UID for a separate character slot. When finished, code runs with _agent and _uid set. Server only.", "dbServerLoadCharacter [_id, {_id selectPlayer _agent;}]; [ _id, _characterUID ] dbServerLoadCharacter {_id selectPlayer _agent;}", "", "102145 DayZ", "", Category) \
   XX(GameNothing, "moveToHands", function, PersonMoveItemToHands, GameObject, GameObject, "person", "item", "Take given item to hands.", "_person moveToHands _item", "", "DayZ", "", Category) \
   XX(GameNothing, "moveToDirect", function, AgentMoveToDirect, GameObject, GameArray, "person", "position", "Low level command to person to move directly (no pathplanning) to given position. Position is expected to be in ATL format.", "", "", "DayZ", "", Category) \
   XX(/*returntype*/GameNothing, /*name*/"setTargetCategory", /*priority*/function, /*C++ function*/SetTargetCategory, \
@@ -30139,4 +30173,3 @@ INIT_MODULE(ComRef, 1000)
 #endif
 #endif
 }
-

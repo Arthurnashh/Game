@@ -2493,6 +2493,7 @@ void Shape::Clear()
   
   _face.Clear();
   _texArea.Clear();
+  _texAreaDraw.Clear();
   base::ReleaseTables();
 }
 
@@ -4204,6 +4205,9 @@ void Shape::FindSections(const LODShape *lodShape, bool forceMaterial0)
   VertexDeclarationNeedsUpdate();
 
   SetCanBeInstanced();
+
+  // sections may have been regrouped or given new materials
+  _texAreaDraw.Clear();
 }
 
 void Shape::SetAsOneSection(const ShapeSectionInfo &sec)
@@ -4217,6 +4221,8 @@ void Shape::SetAsOneSection(const ShapeSectionInfo &sec)
 
   // Set the vertex declaration according to sections
   VertexDeclarationNeedsUpdate();
+
+  _texAreaDraw.Clear();
 }
 
 void Shape::CheckPushbufferCanBeUsed() const
@@ -4232,13 +4238,14 @@ void Shape::CheckPushbufferCanBeUsed() const
     }
   }
 
-// HOTFIX: causing Multiple floating point traps in Texture::PrepareAndCheckMipmapLevel() - areaOTex == 1.#INF000
-/*
-  if (_canUsePushBuffer)
+  // Ordinary objects do not have _texArea built (only the landscape loader does).
+  // Build the draw-time index once so PrepareTextures can walk unique textures
+  // instead of rescanning every section and material stage on each object draw.
+  // Animated shapes (pushbuffer disabled) and landscape shapes keep the old path.
+  if (_canUsePushBuffer && !_texArea._valid && !_texAreaDraw._valid)
   {
-    unconst_cast(this)->BuildTexAreaIndex();
+    unconst_cast(this)->BuildTexAreaDrawIndex();
   }
-*/
 }
 
 void Shape::SetCanBeInstanced()
@@ -4591,6 +4598,8 @@ void Shape::SetUniformMaterial(TexMaterial *material)
     ShapeSection &sec = GetSection(i);
     sec.SetMaterialExt(material);
   }
+  // the draw-time texture index keeps pointers into the old material stages
+  _texAreaDraw.Clear();
 }
 
 void Shape::SetUniformMaterial(TexMaterial *material, Texture *texture)
@@ -4602,6 +4611,8 @@ void Shape::SetUniformMaterial(TexMaterial *material, Texture *texture)
     sec.SetMaterialExt(material);
     sec.SetTexture(texture);
   }
+  // the draw-time texture index keeps pointers into the old material stages
+  _texAreaDraw.Clear();
 }
 
 void Shape::SetUniformMaterialEmmisiveColor(const Color &color)
@@ -5863,6 +5874,8 @@ void Shape::RecalculateAreas()
       }
     }
   }
+  // AOT values are baked into the draw-time index
+  _texAreaDraw.Clear();
 }
 
 TexAreaIndex::TexAreaIndex()
@@ -5873,24 +5886,32 @@ TexAreaIndex::TexAreaIndex()
 /**
 We want to track aot min value (saturateMax in Shape::RecalculateAreas does min)
 */
-void TexAreaIndex::AddItem(const RefR<Texture> *tex, float aot, bool someDataWanted)
+void TexAreaIndex::AddItem(const RefR<Texture> *tex, float aot, bool someDataWanted, float z2Scale, bool forceMipmap0)
 {
-  Assert(_finite(aot));
-  // check if the texture is already there
+  // FLT_MAX is used as "request the best mipmap". Do not let it (or an invalid
+  // AOT produced by a broken model) overflow when multiplied by the camera AOT
+  // factor - that was the source of the historical 1.#INF000 trap.
+  static const float MAX_SAFE_AOT = 1e20f;
+  if (!_finite(aot) || aot > MAX_SAFE_AOT) aot = MAX_SAFE_AOT;
+  Assert(aot>=0);
+
+  // check if the texture is already there with the same mipmap scaling
   for (int i=0; i<_items.Size(); i++)
   {
-    if (*_items[i]._tex==*tex)
-    {
-      saturateMax(_items[i]._aot,aot);
-      if (someDataWanted) _items[i]._someDataWanted = someDataWanted;
-      return;
-    }
+    if (*_items[i]._tex!=*tex) continue;
+    if (_items[i]._z2Scale!=z2Scale) continue;
+    if (_items[i]._forceMipmap0!=forceMipmap0) continue;
+    saturateMax(_items[i]._aot,aot);
+    if (someDataWanted) _items[i]._someDataWanted = true;
+    return;
   }
    
   Item &item = _items.Append();
   item._tex = tex;
   item._aot = aot;
+  item._z2Scale = z2Scale;
   item._someDataWanted = someDataWanted;
+  item._forceMipmap0 = forceMipmap0;
 }
 
 void TexAreaIndex::Clear()
@@ -5901,19 +5922,12 @@ void TexAreaIndex::Clear()
 
 void Shape::BuildTexAreaIndex(TexAreaIndex &tgt) const
 {
-  tgt.Clear();
   for (int i=0; i<NSections(); i++)
   {
     const ShapeSection &sec = GetSection(i);
     if (sec.GetTexture())
     {
-      float aot = sec.GetAreaOverTex(0);
-      if (!_finite(aot) || aot<0)
-      {
-        tgt.Clear();
-        return;
-      }
-      tgt.AddItem(sec.GetTextureBackPointer(),aot,false);
+      tgt.AddItem(sec.GetTextureBackPointer(),sec.GetAreaOverTex(0),false);
     }
     if (sec.GetMaterialExt())
     {
@@ -5927,11 +5941,6 @@ void Shape::BuildTexAreaIndex(TexAreaIndex &tgt) const
         const RefR<Texture> *tex = &mat->_stage[i]._tex;
         // check how does texgen affect the mipmap selection
         int tg = mat->_stage[i]._texGen;
-        if (tg<0 || tg>=lenof(mat->_texGen))
-        {
-          tgt.Clear();
-          return;
-        }
         UVSource uvs = mat->_texGen[tg]._uvSource;
         float aot = 0;
         switch (uvs)
@@ -5956,13 +5965,6 @@ void Shape::BuildTexAreaIndex(TexAreaIndex &tgt) const
           default:
             Fail("UVSource not implemented");
             break;
-        }
-        // A bad UV scale can produce INF/NaN. Keep the original section walk for
-        // this shape instead of caching invalid mipmap data.
-        if (!_finite(aot) || aot<0)
-        {
-          tgt.Clear();
-          return;
         }
         tgt.AddItem(tex,aot,mat->_stage[i]._tex->Type()==TT_Diffuse && i!=0);
       }
@@ -7757,9 +7759,6 @@ void LODShape::CustomizeShape(Shape *shape, int lod, float resolution, const Mod
 
   // textures loaded - we may adjust them now
   shape->AdjustTextures();
-  // Cache per-texture mipmap hints after all section/material adjustments.
-  // BuildTexAreaIndex leaves the cache invalid if any material has unusable AoT data.
-  shape->BuildTexAreaIndex();
 }
 
 DEF_RSB(visual);

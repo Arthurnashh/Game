@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "precomp.h"
 
 #include "Simul/Clouds/CloudKeyframer.h"

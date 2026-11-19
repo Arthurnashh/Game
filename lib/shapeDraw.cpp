@@ -1,4 +1,4 @@
-﻿// Poseidon - shape management
+// Poseidon - shape management
 // (C) 1998, SUMA
 
 #include "wpch.hpp"
@@ -39,10 +39,6 @@
 #ifdef _MSC_VER
   #pragma warning( disable: 4355 )
 #endif
-
-// Shape geometry can be released while the free-on-demand manager rotates its
-// cache lists. Serialize both paths so a frame rotation cannot race a draw.
-static CriticalSection ShapeBankGeometryCacheLock;
 
 
 #if _ENABLE_PERFLOG
@@ -91,37 +87,26 @@ void Shape::DrawSections(int cb, const AnimationContext *animContext, ColorVal a
     end = NSections();
   }
 
-  // Early out: nothing to draw
-  if (beg >= end) return;
+  PROFILE_SCOPE_DETAIL_EX(dSec,cuDrw);
+  int sectionsMerged = 0;
+  int sectionDraws = 0;
 
-  // Hoist material creation out of the section loop — it only depends on
-  // animColor, which is constant across all sections of this shape draw.
-  TLMaterial mat;
-  CreateMaterial(mat, animColor);
-
-  // Pre-fetch the crater flag once, used by every iteration
-  const bool hasCraters = (dp._cratersCount > 0);
-
-  // Go through the sections and draw them
-  // there was section merging working here - it cannot work
-  // as we cannot access FaceArray _face here (it can be discarded)
-  for (int i = beg; i < end; i++)
+  // Go through the sections and draw them. Adjacent sections can share one draw
+  // setup when their effective properties and bone ranges match.
+  for (int i = beg; i < end; )
   {
-    // const ShapeSection &sec = GetSection(i);
     const PolyProperties &pp = animContext ? animContext->GetSection(this, i) : GetSection(i);
 
-    const int ppSpec = pp.Special();
-
     // If we render craters and the pixel shader is not designed for drawing craters (f.i. tree crowns), then go to the next section
-    if (hasCraters)
+    if (dp._cratersCount > 0)
     {
       // Tree crown is determined by backface drawing and special pixel shader
-      if (ppSpec & NoBackfaceCull)
+      if (pp.Special()&NoBackfaceCull)
       {
-        const TexMaterial *pmat = pp.GetMaterialExt();
-        if (pmat)
+        const TexMaterial *mat = pp.GetMaterialExt();
+        if (mat)
         {
-          PixelShaderID ps = pmat->GetPixelShaderID();
+          PixelShaderID ps = mat->GetPixelShaderID();
           switch (ps)
           {
           case PSNormalMapThrough:
@@ -135,6 +120,7 @@ void Shape::DrawSections(int cb, const AnimationContext *animContext, ColorVal a
           case PSTreeAdvSimple:
           case PSTreeAdvTrunk:
           case PSTreeAdvTrunkSimple:
+            i++;
             continue;
           }
         }
@@ -142,15 +128,45 @@ void Shape::DrawSections(int cb, const AnimationContext *animContext, ColorVal a
     }
 
     // Proxy or hidden - don't draw
-    if (ppSpec & (IsHidden | IsHiddenProxy)) continue;
+    if (pp.Special() & (IsHidden | IsHiddenProxy))
+    {
+      i++;
+      continue;
+    }
 
     // Calculate the bias for section
-    int secBias = ((ppSpec & ZBiasMask) / ZBiasStep) * 5;
+    int secBias = ((pp.Special() & ZBiasMask) / ZBiasStep) * 5;
     int maxBias = intMax(bias, secBias);
 
-    // Prepare and draw section
     bool uvchanged = false;
-    if (animContext) uvchanged = animContext->GetUVchanged(this, i); 
+    if (animContext) uvchanged = animContext->GetUVchanged(this, i);
+
+    int drawEnd = i+1;
+    if (dp._cratersCount==0 && !uvchanged)
+    {
+      const ShapeSection &firstSection = GetSection(i);
+      for (int next=i+1; next<end; next++)
+      {
+        const PolyProperties &nextPP = animContext ? animContext->GetSection(this, next) : GetSection(next);
+        if (nextPP.Special() & (IsHidden | IsHiddenProxy)) break;
+        if (nextPP!=pp) break;
+
+        const ShapeSection &nextSection = GetSection(next);
+        if (
+          nextSection._minBoneIndex!=firstSection._minBoneIndex ||
+          nextSection._bonesCount!=firstSection._bonesCount
+        ) break;
+        if (animContext && animContext->GetUVchanged(this, next)) break;
+
+        drawEnd = next+1;
+      }
+    }
+
+    // Get the material
+    TLMaterial mat;
+    CreateMaterial(mat,animColor);
+
+    // Prepare and draw section range
     if (uvchanged)
     {
       // get information about UV offset if any and pass them to EngineDD9::PrepareDetailTex(...)
@@ -161,10 +177,13 @@ void Shape::DrawSections(int cb, const AnimationContext *animContext, ColorVal a
     else
       pp.PrepareTL(cb, mat, spec, prop, dp);
 
-    GEngine->DrawSectionTL(cb,*this, i, i+1, maxBias, 0, 0, dp);
+    GEngine->DrawSectionTL(cb,*this, i, drawEnd, maxBias, 0, 0, dp);
+    sectionDraws++;
+    sectionsMerged += drawEnd-i-1;
+    i = drawEnd;
   }
-}
 
+}
 void Shape::Draw(
   int cb, AnimationContext *animContext,
   ColorVal animColor,
@@ -566,7 +585,7 @@ void Shape::ConvertToVBuffer(VBType type, const LODShape *lodShape, int level) c
   ShapeGeometryLock<> lock;
   if (lodShape)
     lock.Lock(lodShape,level);
-  _buffer.SetBuffer(GEngine->CreateVertexBuffer(*this, type, frequent));
+  _buffer.Ref<VertexBuffer>::operator =( GEngine->CreateVertexBuffer(*this, type, frequent) );
   }
   if (_buffer)
   {
@@ -939,7 +958,6 @@ void ShapeBank::ShapeUnloaded(ShapeRefManaged *shapeRef)
 
 void ShapeBank::ShapeGeometryReleased(Shape *shape)
 {
-  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   AssertMainThread();
   if (shape->IsInList())
   {
@@ -1008,7 +1026,6 @@ void ShapeBank::ShapeReleased(ShapeRefManaged *shapeRef)
 
 void ShapeBank::UnloadGeometry(Shape *shape)
 {
-  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   if (shape->IsInList())
   {
     Assert(shape->GeometryCanBeUnloaded());
@@ -1031,7 +1048,6 @@ RString ShapeBank::GetDebugNameGeom() const
 }
 size_t ShapeBank::FreeOneItemGeom()
 {
-  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   Shape *unload = _geometryLoaded.First();
   if (!unload) return 0;
   
@@ -1053,18 +1069,15 @@ size_t ShapeBank::FreeOneItemGeom()
 }
 size_t ShapeBank::MemoryControlledRecentGeom() const
 {
-  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   return _geometryLoaded.MemoryControlledRecent();
 }
 size_t ShapeBank::MemoryControlledGeom() const
 {
-  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   return _geometryLoaded.MemoryControlled();
 }
 
 void ShapeBank::MemoryControlledFrameGeom()
 {
-  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   _geometryLoaded.Frame();
   
 #if 0
@@ -1242,7 +1255,6 @@ void ShapeBank::MemoryControlledFrameLODShape()
 
 void ShapeBank::AddRefGeometry(const Shape *shape, const ShapeRef *shapeRef)
 {
-  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   if (!shape->AddRefLoad())
   {
     // TODO:MC: create a SLL of those which need the handling below to be done
@@ -1262,7 +1274,6 @@ void ShapeBank::AddRefGeometry(const Shape *shape, const ShapeRef *shapeRef)
 
 void ShapeBank::ReleaseGeometry(const Shape *shape)
 {
-  ScopeLockSection lock(ShapeBankGeometryCacheLock);
   //size_t size = shape->GeometrySize();
   if (!shape->ReleaseLoad())
   {
@@ -1583,6 +1594,79 @@ static inline void RepairAreaOfTexture(float &areaOfTexture)
 #endif
 }
 
+/**
+Build the draw-time texture index for ordinary object shapes.
+
+This mirrors the section scan in Shape::PrepareTextures, including the
+minimum AreaOverTexture hotfix and the UV scale used for each material stage.
+It is kept separate from _texArea because the landscape loader uses that index
+with different (historical) mipmap semantics.
+*/
+void Shape::BuildTexAreaDrawIndex()
+{
+  // attribute the one-time cost to vertex buffer creation; this runs right
+  // after the buffer is created (see Shape::CheckPushbufferCanBeUsed)
+  TimeManagerScope scope(TCCreateVertexBuffer);
+
+  _texAreaDraw.Clear();
+
+  // Stages using the landscape environment texture are replaced at draw time
+  // by GLandscape->GetEnvTexture(). A Ref pointer would not follow that swap,
+  // so such shapes must keep using the section scan.
+  for (int s=0; s<NSections(); s++)
+  {
+    const ShapeSection &sec = GetSection(s);
+    TexMaterial *mat = sec.GetMaterialExt();
+    if (!mat) continue;
+    mat->Load();
+    #if _ARMA3_ENV_MAPS
+      for (int i=0; i<mat->_stageCount+1; i++)
+      {
+        if (mat->_stage[i]._useWorldEnvMap) return;
+      }
+    #endif
+  }
+
+  for (int s=0; s<NSections(); s++)
+  {
+    const ShapeSection &sec = GetSection(s);
+
+    if (sec.GetTexture())
+    {
+      _texAreaDraw.AddItem(sec.GetTextureBackPointer(),sec.GetAreaOverTex(0),false);
+    }
+
+    TexMaterial *mat = sec.GetMaterialExt();
+    if (!mat) continue;
+    mat->Load();
+
+    for (int i=0; i<mat->_stageCount+1; i++)
+    {
+      const TexStageInfo &stage = mat->_stage[i];
+      if (!stage._tex) continue;
+      bool someDataWanted = stage._tex->Type()==TT_Diffuse && i!=0;
+
+      float uvScale = mat->GetUVScale(i);
+      if (uvScale>=0.0f)
+      {
+        int uvStage = mat->GetUVStage(i);
+        float areaOTex = sec.GetAreaOverTex(uvStage);
+        RepairAreaOfTexture(areaOTex);
+        // z2 is scaled by uvScale at draw time, exactly like the scan path
+        _texAreaDraw.AddItem(&stage._tex,areaOTex,someDataWanted,uvScale,false);
+      }
+      else
+      {
+        // No relation to UV mapping - the scan path only forces mipmap 0
+        _texAreaDraw.AddItem(&stage._tex,1.0f,someDataWanted,1.0f,true);
+      }
+    }
+  }
+
+  _texAreaDraw._items.Compact();
+  _texAreaDraw._valid = true;
+}
+
 void Shape::PrepareTextures(float z2, AnimationContext *animContext, int special, bool prepareBaseTextureOnly) const
 {
   PROFILE_SCOPE_GRF(prpTx,0);
@@ -1594,20 +1678,47 @@ void Shape::PrepareTextures(float z2, AnimationContext *animContext, int special
   }
 
   float aotFactor = GScene->GetCamera()->GetAOTFactor();
-  if (!prepareBaseTextureOnly && _texArea._valid && (!animContext || !animContext->HasChangedSections()))
+  if (!prepareBaseTextureOnly)
   {
-    for (int i=0; i<_texArea._items.Size(); i++)
+    // the landscape index keeps its historical behaviour
+    const TexAreaIndex *areaIndex = _texArea._valid ? &_texArea : NULL;
+
+    // _texAreaDraw is built from base sections, so it cannot be used when the
+    // animation context replaced sections or when TI textures must be prepared
+    // from the material stages.
+    if (!areaIndex && _texAreaDraw._valid)
     {
-      const TexAreaIndex::Item &item = _texArea._items[i];
-      Texture *txt = *item._tex;
-      // txt is usually not NULL, but some animation might have set it to NULL
-      if (!txt) continue;
-      float areaOTex = item._aot;
-      Assert(areaOTex>=0);
-      txt->PrepareTextureScr(z2,special,areaOTex*aotFactor);
+      if ((!animContext || !animContext->SectionsChanged()) && !GEngine->GetThermalVision())
+      {
+        areaIndex = &_texAreaDraw;
+      }
     }
-    return;
+
+    if (areaIndex)
+    {
+      PROFILE_SCOPE_DETAIL_EX(prpIX,prpTx);
+      for (int i=0; i<areaIndex->_items.Size(); i++)
+      {
+        const TexAreaIndex::Item &item = areaIndex->_items[i];
+        Texture *txt = *item._tex;
+        // txt is usually not NULL, but some animation might have set it to NULL
+        if (!txt) continue;
+
+        if (item._forceMipmap0)
+        {
+          txt->LoadHeaders();
+          txt->PrepareMipmap0(true);
+          continue;
+        }
+
+        float areaOTex = item._aot;
+        Assert(areaOTex>=0);
+        txt->PrepareTextureScr(z2*item._z2Scale,special,areaOTex*aotFactor);
+      }
+      return;
+    }
   }
+  PROFILE_SCOPE_DETAIL_EX(prpSc,prpTx);
   // hint mipmap for all textures used on this shape
   for (int s=0; s<NSections(); s++)
   {
@@ -1712,5 +1823,4 @@ void Shape::PrepareTextures(float z2, AnimationContext *animContext, int special
     }
   }
 }
-
 
