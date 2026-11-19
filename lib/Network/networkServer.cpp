@@ -14513,17 +14513,9 @@ void NetworkServer::ProcessQueuedExec()
 
   _sqfExecBusy = true;
 
-  GameState *execState = GWorld ? GWorld->GetGameState() : NULL;
-  GameDataNamespace *mission = GWorld ? GWorld->GetMissionNamespace() : NULL;
-
-  if (!execState || !mission)
-  {
-    RptF("SDZ_SQF_EXEC: sem GameState/mission namespace, %d comandos descartados", _sqfExecQueue.Size());
-    _sqfExecQueue.Resize(0);
-    _sqfExecFrom.Resize(0);
-    _sqfExecBusy = false;
-    return;
-  }
+  // Admin #exec uses the server evaluator, which registers kick/ban/users.
+  GameState *execState = &_evaluator;
+  GameDataNamespace *globals = &_globals; // server namespace
 
   while (_sqfExecQueue.Size() > 0)
   {
@@ -14539,9 +14531,9 @@ void NetworkServer::ProcessQueuedExec()
     bool evaluated = false;
 
     #if defined(_MSC_VER)
-      evaluated = SDZ_TryEvaluateSqf(execState, expression, mission, &result);
+      evaluated = SDZ_TryEvaluateSqf(execState, expression, globals, &result);
     #else
-      result = execState->EvaluateMultiple(expression, GameState::EvalContext::_default, mission);
+      result = execState->EvaluateMultiple(expression, GameState::EvalContext::_default, globals);
       evaluated = true;
     #endif
 
