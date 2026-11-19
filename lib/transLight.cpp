@@ -122,7 +122,6 @@ void TLVertexTable::DoTransformPoints
     (_andHints & ClipDecalMask) == ClipDecalVertical
   )
   {
-    Fail("Obsolete");
     // second quite often - whole object is vertical decal (used for trees)
     Matrix4 vDecal(MZero);
     // we want to use only vertical part of rotation
@@ -146,7 +145,6 @@ void TLVertexTable::DoTransformPoints
     (_andHints & ClipDecalMask) == ClipDecalNormal
   )
   {
-    Fail("Obsolete");
     // whole object is decal
     Matrix4 decal = GLOB_SCENE->GetCamera()->ScaleMatrix();
     decal.SetPosition(posView.Position());
@@ -161,7 +159,6 @@ void TLVertexTable::DoTransformPoints
   }
   else
   {
-    Fail("Obsolete");
     // TODO: remove or optimize mixed models
     // non-decal part must be handles by anim
     // general case: not very often
@@ -373,7 +370,8 @@ void TLVertexTable::DoMaterialLightingP
 (
   const TLMaterial &mat,
   const Matrix4 &worldToModel, const LightList &lights,
-  const VertexTable &mesh, int beg, int end
+  const VertexTable &mesh, int beg, int end,
+  const Vector3 *positions, const Vector3 *normals
 )
 {
   if( end<=beg ) return; // safety: nothing to light
@@ -473,7 +471,8 @@ void TLVertexTable::DoMaterialLightingP
     const UVPairs &tex = mesh.GetUVArray();
     for( int i=beg; i<end; i++ )
     {
-      Coord cosFi = sunDirection * mesh.Norm(i).Get();
+      Vector3 normal = normals ? normals[i] : mesh.Norm(i).Get();
+      Coord cosFi = sunDirection * normal;
       saturateMax(cosFi,0);
       Color color = ambient+diffuse*cosFi;
       
@@ -520,14 +519,15 @@ void TLVertexTable::DoMaterialLightingP
     const UVPairs &tex = mesh.GetUVArray();
     for( int i=beg; i<end; i++ )
     {
-      Coord cosFi = sunDirection * mesh.Norm(i).Get();
+      Vector3 normal = normals ? normals[i] : mesh.Norm(i).Get();
+      Coord cosFi = sunDirection * normal;
       saturateMax(cosFi,0);
       Color color = ambient+diffuse*cosFi;
       
       TLVertex &v=SetVertex(i);
 
-      Vector3 norm = mesh.Norm(i).Get();
-      Vector3Val pos=mesh.Pos(i);
+      Vector3Val norm = normal;
+      Vector3Val pos = positions ? positions[i] : mesh.Pos(i);
       for( int index=0; index<lights.Size(); index++ )
       {
         color+=lights[index]->ApplyPrecalc(pos,norm);
@@ -652,7 +652,8 @@ void TLVertexTable::DoLineLighting
 void TLVertexTable::DoLighting(
   ColorVal animColor,
   const Matrix4 &worldToModel, const LightList &lights,
-  const Shape &mesh, int spec
+  const Shape &mesh, int spec,
+  const Vector3 *positions, const Vector3 *normals
 )
 {
   // note: worldToModel matrix is transformation from world space to model space
@@ -676,7 +677,7 @@ void TLVertexTable::DoLighting(
     CreateMaterial(mat,animColor);
     mat.specFlags = spec;
 
-    DoMaterialLightingP(mat,worldToModel,lights,mesh,0,size);
+    DoMaterialLightingP(mat,worldToModel,lights,mesh,0,size,positions,normals);
   }
   else if( spec&IsShadow )
   { // shadows need not be lighted
@@ -698,13 +699,11 @@ void TLVertexTable::DoLighting(
       ADD_COUNTER(TLChk,size);
     #endif
 
-    Fail("Mixed SW ligting - obsolete");
-
     TLMaterial mat;
     CreateMaterial(mat,animColor);
     mat.specFlags = spec;
 
-    DoMaterialLightingP(mat,worldToModel,lights,mesh,0,size);
+    DoMaterialLightingP(mat,worldToModel,lights,mesh,0,size,positions,normals);
   }
 }
 
