@@ -1,6 +1,6 @@
 @echo off
 setlocal
-for /f "usebackq tokens=*" %%I in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -version "[18.0,19.0)" -requires Microsoft.Component.MSBuild -property installationPath`) do set "VS2026=%%I"
+for /f "usebackq delims=" %%I in (`powershell.exe -NoProfile -Command "& (Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe') -latest -products '*' -version '[18.0,19.0)' -requires Microsoft.Component.MSBuild -property installationPath"`) do set "VS2026=%%I"
 if not defined VS2026 (
   echo Visual Studio 2026 with MSBuild is required.
   exit /b 1
