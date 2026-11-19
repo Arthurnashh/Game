@@ -377,7 +377,7 @@ Texture *InventoryItemType::GetAttachmentIcon(int i) const
 }
 
 InventoryItem::InventoryItem(const EntityAIType *type, bool fullCreate)
-  : base(type, fullCreate), _ui(false), _inventoryRotated(false), _opened(true), _animationsEnabled(true), _isWorldAttached(false)
+  : base(type, fullCreate), _ui(false), _inventoryRotated(false), _inventoryRotationPreview(-1), _opened(true), _animationsEnabled(true), _isWorldAttached(false)
 {
   int n = Type()->_attachments.Size();
   _attachments.Realloc(n); _attachments.Resize(n);

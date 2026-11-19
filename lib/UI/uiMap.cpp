@@ -10241,26 +10241,29 @@ bool SwapItems(InventoryItem *item1, InventoryItem *item2, Person *owner)
   return true;
 }
 
-// Temporarily expose the drag-preview orientation to the existing cargo
-// validation code. The original orientation is restored unless the item was
-// placed locally with the preview orientation (remote requests carry the
+// Temporarily expose the drag-preview orientation to the cargo placement checks
+// (IsInventoryRotated). The stored footprint used to render the item where it
+// currently lies is unchanged. The preview becomes the stored orientation only
+// if the item was placed locally with it (remote requests carry the
 // orientation and the server update applies it).
 class InventoryRotationPreviewScope
 {
 private:
   InventoryItem *_item;
-  bool _original;
+  bool _rotated;
   bool _committed;
 public:
   InventoryRotationPreviewScope(InventoryItem *item, bool rotated)
-    : _item(item), _original(item ? item->IsInventoryRotated() : false), _committed(false)
+    : _item(item), _rotated(rotated), _committed(false)
   {
     GInventoryPlacedLocally = false;
-    if (_item) _item->SetInventoryRotated(rotated);
+    if (_item) _item->SetInventoryRotationPreview(rotated);
   }
   ~InventoryRotationPreviewScope()
   {
-    if (_item && !_committed && !GInventoryPlacedLocally) _item->SetInventoryRotated(_original);
+    if (!_item) return;
+    _item->ClearInventoryRotationPreview();
+    if (_committed || GInventoryPlacedLocally) _item->SetInventoryRotated(_rotated);
   }
   void Commit() {_committed = true;}
 };

@@ -177,6 +177,8 @@ private:
 
   // item footprint is rotated 90 degrees in a cargo grid
   bool _inventoryRotated;
+  /// drag-preview orientation used by placement checks only (-1 = none)
+  signed char _inventoryRotationPreview;
 
   // content of the container is accessible from the Inventory UI
   bool _opened;
@@ -240,8 +242,12 @@ public:
   virtual bool UseFromInventory(Person *owner);
 
   // Inventory grid rotation (distinct from the world placement rotation flags).
-  bool IsInventoryRotated() const {return _inventoryRotated;}
+  // IsInventoryRotated() is the orientation used for new placements (the drag
+  // preview while one is set); GetInventoryWidth/Height keep the stored footprint.
+  bool IsInventoryRotated() const {return _inventoryRotationPreview >= 0 ? _inventoryRotationPreview != 0 : _inventoryRotated;}
   void SetInventoryRotated(bool rotated) {_inventoryRotated = rotated;}
+  void SetInventoryRotationPreview(bool rotated) {_inventoryRotationPreview = rotated ? 1 : 0;}
+  void ClearInventoryRotationPreview() {_inventoryRotationPreview = -1;}
   int GetInventoryWidth() const;
   int GetInventoryHeight() const;
   bool CanRotateInInventory() const;
