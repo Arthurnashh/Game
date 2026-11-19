@@ -151,7 +151,17 @@ NetPeer *PeerChannelFactoryUDP::createPeer ( NetPool *pool, BitMask *tryPorts, b
         return NULL;
         }
 
-#if defined(_WIN32) 
+#if defined(_WIN32)
+    // A server's local peer and a separate client can choose the same port.
+    // Require an exclusive bind so the second peer tries the next free port.
+    const BOOL exclusive = TRUE;
+    if (setsockopt(s, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
+      reinterpret_cast<const char *>(&exclusive), sizeof(exclusive)) == SOCKET_ERROR)
+    {
+      closesocket(s);
+      return NULL;
+    }
+
     // disable the reporting of WSAECONNRESET to avoid calling of NetPeerUDP::reconnect()
     DWORD enableReporting = FALSE;
     DWORD returned = 0;

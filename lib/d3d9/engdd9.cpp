@@ -22,6 +22,7 @@
 #include "../Shape/material.hpp"
 #include "../clip2D.hpp"
 #include "../global.hpp"
+#include "../gameDirs.hpp"
 #include "../keyInput.hpp"
 #include "../dikCodes.h"
 #include "../landImpl.hpp"
@@ -76,7 +77,17 @@ When only (1-alpha)*dst blending is used for alpha blending, the shader can cont
 #include "ShaderCompileCache.h"
 #endif
 
-static const char HLSLCacheDir[] = "bin\\";
+static RStringB GetShaderCacheDir()
+{
+  char profile[1024];
+  if (GetLocalSettingsDir(profile))
+  {
+    TerminateBy(profile, '\\');
+    return RStringB(profile) + "ShaderCacheDX9\\";
+  }
+
+  return RStringB("ShaderCacheDX9\\");
+}
 
 /// used for Shader Model 3.0 shaders
 #define RelShaderPath_3_0 "ShaderSources_3_0\\"
@@ -19794,7 +19805,8 @@ void EngineDD9::Init3DState()
   
   if (_caps._wddm)
   {
-  
+    // D3D9Ex reports an estimate of the available texture budget.
+    _caps._localVramAmount = Clip32B(totalByDX9);
   }
   else if (totalByDX9>=INT_MAX && _caps._nonlocalVramAmount>=INT_MAX && _caps._localVramAmount>450*oneMB)
   {
@@ -22048,8 +22060,11 @@ static BOOL WINAPI DDEnumCallbackEx(
   DDEnumCallbackExContext *ctx = (DDEnumCallbackExContext *)lpContext;
   if (hm==ctx->hm)
   {
-    ctx->devGuid = *lpGUID;
-    ctx->guidPtr = &ctx->devGuid;
+    if (lpGUID)
+    {
+      ctx->devGuid = *lpGUID;
+      ctx->guidPtr = &ctx->devGuid;
+    }
     // found - terminate
     return FALSE;
   }
@@ -22057,103 +22072,24 @@ static BOOL WINAPI DDEnumCallbackEx(
   return TRUE;
 }
 
-void EngineDD9::InitDXGIInfo(const DXGI_ADAPTER_DESC &adapterDesc)
-{
-  _lastDeviceId = RString();
-  _caps._localVramAmount = Clip32B(adapterDesc.DedicatedVideoMemory);
-  _caps._nonlocalVramAmount = Clip32B((long long)adapterDesc.DedicatedSystemMemory+(long long)adapterDesc.SharedSystemMemory);
-  _caps._wddm = true;
-  _freeLocalVramAmount = 0;
-  _freeNonlocalVramAmount = 0;
-  _freeEstDirty = 0;
-  _freeEstCheckTime = 0;
-}
-
 void EngineDD9::InitDirectDraw7(int adapter)
 {
-  _caps._wddm = false;
+  _caps._wddm = _direct3DEx.NotNull();
 #if !defined(_X360SHADERGEN)
-  /*
-  // following solution adapted from http://msdn.microsoft.com/en-us/library/windows/desktop/bb174526(v=vs.85).aspx does not work
-  // it requires DX10 interfaces, does not work with Direct3D9Ex
+  if (_caps._wddm)
   {
-    ComRef<IDXGIDevice> pDXGIDevice;
-    _direct3DEx->QueryInterface(__uuidof(IDXGIDevice), (void **)pDXGIDevice.Init());
-    if (pDXGIDevice.NotNull())
-    {
-      ComRef<IDXGIAdapter> pDXGIAdapter;
-      pDXGIDevice->GetAdapter(pDXGIAdapter.Init());
-      if (pDXGIAdapter)
-      {
-        DXGI_ADAPTER_DESC adapterDesc;
-        pDXGIAdapter->GetDesc(&adapterDesc);
-        InitDXGIInfo(adapterDesc);
-        return;
-      }
-    }
+    _ddraw.Free();
+    _lastDeviceId = RString();
+    _caps._localVramAmount = 0;
+    _caps._nonlocalVramAmount = 0;
+    _freeLocalVramAmount = 0;
+    _freeNonlocalVramAmount = 0;
+    _freeEstDirty = 0;
+    _freeEstCheckTime = 0;
+    return;
   }
-  */
 
   HMONITOR d3dMonitor = _direct3D->GetAdapterMonitor(adapter);
-  if (_direct3DEx)
-  {
-    // Vista/Win7 - ask DXGI instead
-    struct HMODULEAuto: private ::NoCopy
-    {
-      HMODULE hmod;
-      
-      HMODULEAuto(HMODULE hmod):hmod(hmod){}
-      ~HMODULEAuto(){if (hmod) FreeLibrary(hmod);}
-      
-      operator HMODULE () const {return hmod;}
-    };
-    HMODULEAuto dxgiDll(LoadLibrary("dxgi.dll"));
-
-    if(dxgiDll)
-    {
-      typedef HRESULT WINAPI CreateDXGIFactoryType(REFIID riid, void **ppFactory);
-
-      // Obtain the address of the Direct3DCreate9Ex function. 
-      CreateDXGIFactoryType *createFactory = (CreateDXGIFactoryType *)GetProcAddress( dxgiDll, "CreateDXGIFactory" );
-      if ( createFactory != NULL)
-      {
-
-        ComRef<IDXGIFactory> factory;
-        createFactory(__uuidof(IDXGIFactory),(void **)factory.Init());
-        if (factory)
-        {
-          for (int a=0; a<INT_MAX; a++)
-          {
-            ComRef<IDXGIAdapter> dxgiAdapter;
-            if (!SUCCEEDED(factory->EnumAdapters(a,dxgiAdapter.Init())) || dxgiAdapter.IsNull()) break;
-            // check outputs to see if our monitor is there
-            bool match = false;
-            for (int m=0; m<INT_MAX; m++)
-            {
-              ComRef<IDXGIOutput> output;
-              if (!SUCCEEDED(dxgiAdapter->EnumOutputs(m,output.Init())) || output.IsNull() ) break;
-              DXGI_OUTPUT_DESC outDesc;
-              output->GetDesc(&outDesc);
-              if (outDesc.Monitor==d3dMonitor)
-              {
-                match = true;
-                break;
-              }
-              
-            }
-            if (match)
-            {
-              DXGI_ADAPTER_DESC adapterDesc;
-              dxgiAdapter->GetDesc(&adapterDesc);
-              InitDXGIInfo(adapterDesc);
-              return;
-            }
-          }
-        }
-      }
-    }
-  }
-
   D3DADAPTER_IDENTIFIER9 adid;
   _direct3D->GetAdapterIdentifier(adapter, 0, &adid);
 
@@ -24903,7 +24839,7 @@ void EngineDD9::BackToFront()
       _psCache.Clear();  
   #if _ENABLE_COMPILED_SHADER_CACHE
       RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"PP");
-      ShaderCompileCache cacheInit(SourcesPP, cacheName, RStringB(HLSLCacheDir));
+      ShaderCompileCache cacheInit(SourcesPP, cacheName, GetShaderCacheDir());
   #endif
 
       CreatePostProcessStuff();
@@ -24915,7 +24851,7 @@ void EngineDD9::BackToFront()
       _psCache.Clear();  
   #if _ENABLE_COMPILED_SHADER_CACHE
       RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"PS");
-      ShaderCompileCache cacheInit(SourcesPS, cacheName, RStringB(HLSLCacheDir));
+      ShaderCompileCache cacheInit(SourcesPS, cacheName, GetShaderCacheDir());
   #endif
 
       InitPixelShaders(_sbTechnique);
@@ -24928,7 +24864,7 @@ void EngineDD9::BackToFront()
       _psCache.Clear();  
   #if _ENABLE_COMPILED_SHADER_CACHE
       RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"VS");
-      ShaderCompileCache cacheInit(SourcesVS, cacheName, RStringB(HLSLCacheDir));
+      ShaderCompileCache cacheInit(SourcesVS, cacheName, GetShaderCacheDir());
   #endif
 
       CreateShaderDeclarations();
@@ -27057,17 +26993,17 @@ bool EngineDD9::Init(HINSTANCE hInst, HINSTANCE hPrev, int sw, bool windowed, in
         Assert(!strcmp((const char *)_caps._vsVersion+1,(const char *)_caps._psVersion+1));
         {
           RString cacheName = ShaderCacheName(SBTechnique(i),_caps._sm2Used,"PP");
-          ShaderCompileCache cacheInit(SourcesPP, cacheName, RStringB(HLSLCacheDir), true);
+          ShaderCompileCache cacheInit(SourcesPP, cacheName, GetShaderCacheDir(), true);
           CreatePostProcessStuff();
         }
         {
           RString cacheName = ShaderCacheName(SBTechnique(i),_caps._sm2Used,"PS");
-          ShaderCompileCache cacheInit(SourcesPS, cacheName, RStringB(HLSLCacheDir), true);
+          ShaderCompileCache cacheInit(SourcesPS, cacheName, GetShaderCacheDir(), true);
           InitPixelShaders(SBTechnique(i));
         }
         {
           RString cacheName = ShaderCacheName(SBTechnique(i),_caps._sm2Used,"VS");
-          ShaderCompileCache cacheInit(SourcesVS, cacheName, RStringB(HLSLCacheDir), true);
+          ShaderCompileCache cacheInit(SourcesVS, cacheName, GetShaderCacheDir(), true);
           InitVertexShaders();
           CreateShaderDeclarations();
         }
@@ -27092,7 +27028,7 @@ bool EngineDD9::Init(HINSTANCE hInst, HINSTANCE hPrev, int sw, bool windowed, in
     // +1 needed - we want to compare vs_2_0 with ps_2_0
     Assert(!strcmp((const char *)_caps._vsVersion+1,(const char *)_caps._psVersion+1));
     RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"PS");
-    ShaderCompileCache cacheInit(SourcesPS, cacheName, RStringB(HLSLCacheDir));
+    ShaderCompileCache cacheInit(SourcesPS, cacheName, GetShaderCacheDir());
 #endif
     _renderingMode = RMCommon;
     InitPixelShaders(_sbTechnique);
@@ -27102,7 +27038,7 @@ bool EngineDD9::Init(HINSTANCE hInst, HINSTANCE hPrev, int sw, bool windowed, in
     // +1 needed - we want to compare vs_2_0 with ps_2_0
     Assert(!strcmp((const char *)_caps._vsVersion+1,(const char *)_caps._psVersion+1));
     RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"VS");
-    ShaderCompileCache cacheInit(SourcesVS, cacheName, RStringB(HLSLCacheDir));
+    ShaderCompileCache cacheInit(SourcesVS, cacheName, GetShaderCacheDir());
 #endif
     InitVertexShaders();
 
@@ -27127,7 +27063,7 @@ bool EngineDD9::Init(HINSTANCE hInst, HINSTANCE hPrev, int sw, bool windowed, in
     // +1 needed - we want to compare vs_2_0 with ps_2_0
     Assert(!strcmp((const char *)_caps._vsVersion+1,(const char *)_caps._psVersion+1));
     RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"PP");
-    ShaderCompileCache cacheInit(SourcesPP, cacheName, RStringB(HLSLCacheDir));
+    ShaderCompileCache cacheInit(SourcesPP, cacheName, GetShaderCacheDir());
 #endif
     if (!CreatePostProcessStuff())
     {
@@ -27600,14 +27536,14 @@ void EngineDD9::PostReset(bool hard)
   {
 #if _ENABLE_COMPILED_SHADER_CACHE
     RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"PS");
-    ShaderCompileCache cacheInit(SourcesPS, cacheName, RStringB(HLSLCacheDir));
+    ShaderCompileCache cacheInit(SourcesPS, cacheName, GetShaderCacheDir());
 #endif
     InitPixelShaders(_sbTechnique);
   }
   {
 #if _ENABLE_COMPILED_SHADER_CACHE
     RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"VS");
-    ShaderCompileCache cacheInit(SourcesVS, cacheName, RStringB(HLSLCacheDir));
+    ShaderCompileCache cacheInit(SourcesVS, cacheName, GetShaderCacheDir());
 #endif
     InitVertexShaders();
     if (!CreateShaderDeclarations()) fail = true;
@@ -27636,7 +27572,7 @@ void EngineDD9::PostReset(bool hard)
   {
 #if _ENABLE_COMPILED_SHADER_CACHE
     RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"PP");
-    ShaderCompileCache cacheInit(SourcesPP, cacheName, RStringB(HLSLCacheDir));
+    ShaderCompileCache cacheInit(SourcesPP, cacheName, GetShaderCacheDir());
 #endif
 	const bool recreatePPEffects = hard;
 	InitPostProcessStuff(recreatePPEffects);

@@ -137,8 +137,11 @@ function Assert-Package([string]$Stage) {
     if ($relative -match '(?i)battleye|steam_api(?:64)?\.dll|steamclient(?:64)?\.dll|steam_appid\.txt') {
       throw "Prohibited Steam/BattlEye package content: $relative"
     }
-    if ($file.Name -match '(?i)^d3d(?:x)?1[01](?:_[0-9]+)?\.dll$|^dxgi\.dll$|_DX11\.shdc$') {
+    if ($file.Name -match '(?i)^d3d(?:x)?1[01](?:_[0-9]+)?\.dll$|^dxgi\.dll$') {
       throw "Unsupported graphics runtime content: $relative"
+    }
+    if ($file.Extension -ieq '.shdc') {
+      throw "Generated shader cache must not be packaged: $relative"
     }
     if ($file.Extension -ieq '.pbo' -and (Get-FirstBytesText $file.FullName) -match '^version https://git-lfs\.github\.com/spec/v1') {
       throw "PBO is still a Git LFS pointer: $relative"

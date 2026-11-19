@@ -14,7 +14,6 @@
 #include "d3d9defs.hpp"
 #include "../textbank.hpp"
 #include "txtd3d9.hpp"
-#include "DXGI.h"
 
 #include <Es/Containers/array.hpp>
 #include <Es/Strings/bString.hpp>
@@ -2756,7 +2755,7 @@ public:
     int _hRTComputed;    
     /// HDR precision requested by the user (8,16 or 32 may make a sense)
     HDRPrec _hdrPrec;
-    /// wanted quality of MSAA (corresponds to quality in DXGI_SAMPLE_DESC)
+    /// wanted quality of MSAA
     int _multiSampleQuality;
     // enable / disable vertical synchronization, default set to enable
     bool _vsync;
@@ -6303,7 +6302,6 @@ public:
   
   void Init3D();
 
-  void InitDXGIInfo(const DXGI_ADAPTER_DESC &adapterDesc);
   void InitDirectDraw7(int adapter);
   void Done3D();
   // make sure adapter is selected and _deviceLevel set

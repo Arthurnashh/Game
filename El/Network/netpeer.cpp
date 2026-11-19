@@ -1194,8 +1194,18 @@ void NetPeerUDP::reconnect ()
     tmp = NetChannelBasic::par.rcvBufSize;
     setsockopt(sock,SOL_SOCKET,SO_RCVBUF,(char*)&tmp,sizeof(tmp));
     //setsockopt(sock,SOL_SOCKET,SO_SNDBUF,(char*)&tmp,sizeof(tmp));
-    BOOL share = TRUE;
-    setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char*)&share,sizeof(share));
+#ifdef _WIN32
+    const BOOL exclusive = TRUE;
+    if (setsockopt(sock, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
+      reinterpret_cast<const char *>(&exclusive), sizeof(exclusive)) == SOCKET_ERROR)
+    {
+      closesocket(sock);
+      sock = INVALID_SOCKET;
+      reconnecting = false;
+      leave();
+      return;
+    }
+#endif
     struct sockaddr_in local;
     local.sin_family = AF_INET;
     local.sin_addr.s_addr = bindIPAddress;

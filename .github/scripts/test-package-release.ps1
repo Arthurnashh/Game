@@ -173,6 +173,20 @@ try {
   }
   [System.IO.File]::WriteAllText($shader, 'fixture')
 
+  $looseCache = Join-Path $fixture 'release-assets\client\bin\Shaders_DefVS.shdc'
+  New-Item -ItemType Directory -Path (Split-Path -Parent $looseCache) -Force | Out-Null
+  [System.IO.File]::WriteAllText($looseCache, 'fixture')
+  $negativeArguments.StageDirectory = Join-Path $fixture 'stage\loose-cache'
+  $negativeArguments.ManifestPath = Join-Path $fixture 'manifests\loose-cache.txt'
+  try {
+    & $packager @negativeArguments | Out-Null
+    throw 'The packager accepted a generated shader cache.'
+  }
+  catch {
+    if ($_.Exception.Message -notmatch 'Generated shader cache must not be packaged') { throw }
+  }
+  Remove-Item -LiteralPath $looseCache
+
   if ($sevenZip) {
     $badArchive = Join-Path $fixture 'archives\checksum-collision.zip'
     $badArguments = @{
