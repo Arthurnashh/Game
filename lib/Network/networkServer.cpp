@@ -1,5 +1,6 @@
 #include "../wpch.hpp"
 #include "networkImpl.hpp"
+
 #include "../global.hpp"
 //#include "strIncl.hpp"
 #include "../stringtableExt.hpp"
@@ -716,7 +717,7 @@ bool NetworkServer::BattlEye::Run(const NetworkServer *server)
     }
 
     // add all players
-#if _VERIFY_CLIENT_KEY
+#if _VERIFY_CLIENT_KEY || _ENABLE_STEAM_OWNERSHIP
     const AutoArray<PlayerIdentity> *identities = server->GetIdentities();
     if (identities)
     {
@@ -726,7 +727,11 @@ bool NetworkServer::BattlEye::Run(const NetworkServer *server)
           sockaddr_in address;
           server->_server->GetClientAddress(identity.dpnid, address);
         AddPlayer(identity.dpnid, address.sin_addr.s_addr, address.sin_port, identity.name);
+#if _ENABLE_STEAM_OWNERSHIP
+        PlayerGUIDReceived(identity.dpnid, CSteamID((uint64)identity._steamID));
+#else
         PlayerGUIDReceived(identity.dpnid);
+#endif
         if (identity.clientState == NCSPlaying)
           PlayerGoesInGame(identity.dpnid);
         //else PlayerGoesInLobby(identity.dpnid); //<- assumed as default after AddPlayer
@@ -762,6 +767,17 @@ void NetworkServer::BattlEye::PlayerDisconnected(int player)
   if (_callbacks._changePlayerStatus) (*_callbacks._changePlayerStatus)(player, -1);
 }
 
+#if _ENABLE_STEAM_OWNERSHIP
+void NetworkServer::BattlEye::PlayerGUIDReceived(int player, const CSteamID &id)
+{
+  if (_callbacks._receivedPlayerGUID) 
+  {
+    uint64 steamId = id.ConvertToUint64();
+    (*_callbacks._receivedPlayerGUID)(player, &steamId, sizeof(steamId));
+  }
+}
+
+#else
 void NetworkServer::BattlEye::PlayerGUIDReceived(int player)
 {
   if (_callbacks._receivedPlayerGUID) 
@@ -772,10 +788,16 @@ void NetworkServer::BattlEye::PlayerGUIDReceived(int player)
 #endif
   }
 }
+#endif
 
-void NetworkServer::BattlEye::PlayerGUIDIsValid(int player)
+void NetworkServer::BattlEye::PlayerGUIDIsValid(int player, const CSteamID &ownerId)
 {
-}
+  if (_callbacks._playerGUIDIsValid)
+  {
+    uint64 ownerSteamId = ownerId.ConvertToUint64();
+    (*_callbacks._playerGUIDIsValid)(player, &ownerSteamId, sizeof(ownerSteamId));
+  }
+};
 
 bool NetworkServer::BattlEye::UpdatePositionCallback(int player, const char *netId, float x, float y, float z,
   float dirX, float dirY, float dirZ, float upX, float upY, float upZ, float asideX, float asideY, float asideZ)
@@ -999,17 +1021,251 @@ QFBank *FindBank(const char *prefix)
   const int DefaultSecureIdRequired = 0;
 #endif
 
+#if _ENABLE_STEAM_MATCHMAKING && _ENABLE_DEDICATED_SERVER
 
+#define STEAM_STAT_DEFINE_STATICS(name, Type, DefaultValue) \
+  RString Stat_##name::apiName=RString(#name);
+  
+STEAM_STATS_LIST(STEAM_STAT_DEFINE_STATICS)
+
+#define CREATE_STAT_VAR(name, Type, DefaultValue) \
+  _stats[EStat_##name] = new Stat_##name;
+
+SteamStatistics::SteamStatistics()
+  : _initialized(false), _lastStatsReceivedTime(0), _lastStatsStoredTime(0), _nextStoreStatsTime(0), _nextRequestStatsTime(0),
+    _lastCharacterTimeAliveSyncTime(0)
+{
+  for (int i=0; i<EStatN; ++i) _stats[i]=nullptr;
+}
+
+SteamStatistics::~SteamStatistics()
+{
+  for (int i=0; i<EStatN; ++i) 
+  { 
+    if (_stats[i]) 
+    {
+      delete _stats[i]; 
+      _stats[i]=nullptr; 
+    }
+  }
+}
+
+//! list of possible achivements loaded from CfgAchievements
+AutoArray<AchievementDef> SteamStatistics::achievementsDef;
+
+void SteamStatistics::Init(CSteamID &steamID)
+{
+  _steamID = steamID;
+  //LogF("STEAM: SteamStatiscics::Init(%llu)", steamID.ConvertToUint64());
+
+  // fill in the SteamStat *_stats[] array
+  STEAM_STATS_LIST(CREATE_STAT_VAR)
+  SteamAPICall_t hSteamAPICall = SteamGameServerStats()->RequestUserStats(_steamID);
+  // set the function to call when this API completes
+  _steamCallResultUserStatsReceived.Set( hSteamAPICall, this, &SteamStatistics::OnUserStatsReceived );
+
+  _achievements.Realloc(achievementsDef.Size());
+  _achievements.Resize(achievementsDef.Size());
+  for (int i=0; i<_achievements.Size(); i++)
+  {
+    _achievements[i].def = &achievementsDef[i]; //SteamAchievement::ix is index into achievementsDef array
+  }
+}
+
+void SteamStatistics::Reset(SteamStatsEnum stat)
+{
+  if (_stats[stat])
+  {
+    _stats[stat]->SetDefault();
+    _stats[stat]->SetStat(_steamID);
+    StoreStats();
+  }
+}
+
+void SteamStatistics::OnUserStatsReceived( GSStatsReceived_t *pCallback, bool bIOFailure )
+{
+  //LogF("STEAM: OnUserStatsReceived %llu", pCallback->m_steamIDUser.ConvertToUint64());
+  if ( bIOFailure ) 
+  {
+    _nextRequestStatsTime = ::GetTickCount() + GRandGen.RandomValue()*120*1000; //within 0..120 seconds
+    return;
+  }
+  if (pCallback->m_steamIDUser != _steamID)
+  {
+    RptF("STEAM: Unexpected steamID in OnUserStatsReceived!");
+    return;
+  }
+
+  // even when user has no stats, we can consider SteamStatistics as initialized
+  _nextRequestStatsTime = 0;
+  _initialized = true;
+
+  if (pCallback->m_eResult == k_EResultFail) // user has no stats
+  {
+    //LogF("STEAM: storing default statistics");
+    for (int i=0; i<EStatN; i++)
+    {
+      _stats[i]->SetDefault();
+      _stats[i]->SetStat(_steamID);
+    }
+    StoreStats();
+    return;
+  }
+
+  // There was no Failure => fill in stats state
+  for (int i=0; i<EStatN; ++i)
+    _stats[i]->GetStat(_steamID);
+
+  // fill in achievements state
+  for (int i=0; i<_achievements.Size(); i++)
+  {
+    AchievementDef *aDef = _achievements[i].def;
+    if ( aDef && !aDef->apiName.IsEmpty() )
+    {
+      if ( SteamGameServerStats()->GetUserAchievement( _steamID, aDef->apiName, &_achievements[i].unlocked ) )
+        LogF("  achievement state: %s = %d", cc_cast(aDef->apiName), _achievements[i].unlocked);
+      else 
+        LogF("  achievement state request has FAILED!");
+    }
+  }
+
+  _lastStatsReceivedTime = _lastCharacterTimeAliveSyncTime = ::GetTickCount();
+}
+
+void SteamStatistics::OnUserStatsStored( GSStatsStored_t *pCallback, bool bIOFailure )
+{
+  //LogF("STEAM: OnUserStatsStored %llu", pCallback->m_steamIDUser.ConvertToUint64());
+  _lastStatsStoredTime = ::GetTickCount();
+  _nextStoreStatsTime = _lastStatsStoredTime + 60*1000 + GRandGen.RandomValue()*120*1000; //within 1..3 min
+}
+
+void SteamStatistics::Simulate()
+{
+  if (_initialized)
+  {
+    DWORD curtime = ::GetTickCount();
+    if ( StatsValid() )
+    {
+      //{@ characterTimeAlive Update
+      Stat_characterTimeAlive *stat = dynamic_cast<Stat_characterTimeAlive *>(_stats[EStat_characterTimeAlive]);
+      if (stat)
+      {
+        int aliveTime = stat->GetValue();
+        if ( _lastCharacterTimeAliveSyncTime && curtime>_lastCharacterTimeAliveSyncTime )
+        {
+          int timeElapsed = curtime - _lastCharacterTimeAliveSyncTime;
+          int overtimeMS = timeElapsed % 1000;
+          timeElapsed /= 1000; //in seconds
+          if (timeElapsed)
+          {
+            stat->SetValue(aliveTime + timeElapsed);
+            stat->SetStat(_steamID);
+            _lastCharacterTimeAliveSyncTime = curtime - overtimeMS; // we should add these miliseconds later
+            //LogF("STEAM: characterTimeAlive=%d", aliveTime + timeElapsed);
+          }
+        }
+      }
+      //@}
+    }
+    // check achievements
+    for (int i=0; i<_achievements.Size(); i++)
+    {
+      SteamAchievement &achvm = _achievements[i];
+      if (!achvm.unlocked && achvm.def)
+      {
+        if (achvm.def->statIx>=0 && achvm.def->statIx<EStatN)
+        {
+          SteamStat *stat = _stats[achvm.def->statIx];
+          if (stat->TestAchievementUnlocked(achvm.def->unlockValue))
+          {
+            if (SteamGameServerStats()->SetUserAchievement(_steamID, achvm.def->apiName)) //UnLOCK achievement
+            {
+              achvm.unlocked = true;
+              _nextStoreStatsTime = curtime; //force storeStats
+              LogF("STEAM: achievement %s UNLOCKED", cc_cast(achvm.def->apiName));
+            }
+          }
+        }
+      }
+#if USER_Bebul
+      else // Bebul can reset the achievement manualy
+      {
+        static bool doIt = false;
+        if (doIt)
+        {
+          doIt = false;
+          achvm.unlocked = false;
+          SteamGameServerStats()->ClearUserAchievement( _steamID, achvm.def->apiName );
+          _nextStoreStatsTime = curtime; //force storeStats
+          RptF("STEAM: achievement %s CLEARED", cc_cast(achvm.def->apiName));
+        }
+      }
+#endif
+    }
+    if ( _nextRequestStatsTime && (curtime>=_nextRequestStatsTime) && !_steamCallResultUserStatsReceived.IsActive() )
+    {
+      _nextRequestStatsTime = 0;
+      SteamAPICall_t hSteamAPICall = SteamGameServerStats()->RequestUserStats(_steamID);
+      // set the function to call when this API completes
+      _steamCallResultUserStatsReceived.Set( hSteamAPICall, this, &SteamStatistics::OnUserStatsReceived );
+    }
+    if ( !_nextStoreStatsTime && _lastStatsReceivedTime ) // data are valid, we can store them
+    {
+      _nextStoreStatsTime = curtime + 60*1000 + GRandGen.RandomValue()*120*1000; //within 1..3 minutes
+    }
+    else if ( curtime>=_nextStoreStatsTime )
+    {
+      StoreStats();
+    }
+  }
+}
+
+void SteamStatistics::StoreStats()
+{
+  if ( !_steamCallResultUserStatsStored.IsActive() )
+  {
+    _lastStatsStoredTime = ::GetTickCount();
+    _nextStoreStatsTime= _lastStatsStoredTime + 10*60*1000; //10 minutes, but it SHOULD be reset, as OnUserStatsStored callback is supposed to be called
+    SteamAPICall_t hSteamAPICall = SteamGameServerStats()->StoreUserStats(_steamID);
+    // set the function to call when this API completes
+    _steamCallResultUserStatsStored.Set( hSteamAPICall, this, &SteamStatistics::OnUserStatsStored );
+  }
+}
+
+#endif
+
+#if _ENABLE_STEAM_MATCHMAKING && _ENABLE_DEDICATED_SERVER
+void AchievementDef::SetApiName(RString name)
+{
+#define STEAM_STAT_TEST(name, Type, DefaultValue) \
+  if (apiName==Stat_##name::apiName) { statIx=EStat_##name; break; }
+
+  apiName = name;
+  do {
+    // note: macro uses apiName just set
+    STEAM_STATS_LIST(STEAM_STAT_TEST)
+  } while(false);
+}
+#endif
 
 NetworkServer::NetworkServer(NetworkManager *parent, RString name, RString password, int maxPlayers, int port, bool isPrivate)
 : NetworkComponent(parent)
 #if _ENABLE_DEDICATED_SERVER
 , _globals(&_evaluator, "server", false)
 #endif
+#if _ENABLE_STEAM_MATCHMAKING
+, _callbackSteamServersConnected(this, &NetworkServer::OnSteamServersConnected)
+, _callbackSteamServersConnectFailure(this, &NetworkServer::OnSteamServersConnectFailure)
+, _callbackSteamServersDisconnected(this, &NetworkServer::OnSteamServersDisconnected)
+, _callbackPolicyResponse(this, &NetworkServer::OnPolicyResponse)
+#endif
 {
   _serverState = NSSSelectingMission;
   _serverStateTime = GlobalTickCount();
   _serverTimeOutSent = INT_MAX;
+  #if _ENABLE_DEDICATED_SERVER
+    _sqfExecBusy = false;
+  #endif
   _connectionDesync = CDGood;
   _desyncTotalUpdateNext = GlobalTickCount();
   _desyncTotalAvg = 0;
@@ -1144,7 +1400,34 @@ NetworkServer::NetworkServer(NetworkManager *parent, RString name, RString passw
   ProgressFinish(p);
 #endif
 
+#if _ENABLE_STEAM
 
+#if _ENABLE_STEAM_MATCHMAKING && _ENABLE_DEDICATED_SERVER
+  ConstParamEntryPtr achEntry = Pars.FindEntry("CfgAchievements");
+  if (achEntry && achEntry->IsClass())
+  {
+    SteamStatistics::achievementsDef.Clear();
+    for (int i=0; i<achEntry->GetEntryCount(); i++)
+    {
+      ParamEntryVal cls = achEntry->GetEntry(i);
+      // Steam APIName
+      int ix = SteamStatistics::achievementsDef.Add();
+      AchievementDef &achievement = SteamStatistics::achievementsDef[ix];
+      achievement.SetApiName(cls.GetName()); //ix set inside
+      ConstParamEntryPtr entry = cls.FindEntry("progressStat");
+      if (entry) achievement.progressStat = (*entry);
+      entry = cls.FindEntry("unlockValue");
+      if (entry) achievement.unlockValue = (*entry);
+    }
+  }
+#endif
+#endif
+
+#if _ENABLE_STEAM_MATCHMAKING
+  // ports for Steam services, default are values used in prev. versions
+  _steamPort = 8766;
+  _steamQueryPort = 27016;
+#endif
 }
 
 void NetworkServer::CreateDebugWindow()
@@ -1415,6 +1698,9 @@ NetworkServer::~NetworkServer()
 #endif
 //}
 
+#if _ENABLE_STEAM_MATCHMAKING
+  DoneSteam();
+#endif
 
   Done();
 
@@ -2379,6 +2665,210 @@ void NetworkServer::OnQueryRules(char *outbuf, int maxlen)
 #endif
 //}
 
+//{ STEAMWORKS SDK
+#if _ENABLE_STEAM_MATCHMAKING
+
+void NetworkServer::InitSteam()
+{
+  uint32 ip = bindIPAddress;
+  uint16 masterServerUpdaterPort = _steamQueryPort;
+  uint16 authenticationPort = _steamPort;
+  EServerMode mode = eServerModeAuthenticationAndSecure;
+  RString steamVersion = Format("%s.%d", APP_VERSION_TEXT, BUILD_NO); //such as 0.28.113666
+
+#if USER_BebulXX
+  _putenv("SteamAppId=223350");
+#else
+  _putenv("SteamAppId=480");
+#endif
+  
+  // Initialize the SteamGameServer interface, we tell it some info about us, and we request support
+  // for both Authentication (making sure users own games) and secure mode, VAC running in our game
+  // and kicking users who are VAC banned
+  bool initOK = false;
+  for (int i=0; i<15; i++, authenticationPort+=13, masterServerUpdaterPort++) //try 15 local ports
+  {
+    if (SteamGameServer_Init(ip, authenticationPort, GetSessionPort(), masterServerUpdaterPort, mode, steamVersion))
+    {
+      initOK = true;
+      break;
+    }
+  }
+
+  // Connect to steam servers
+  if (initOK && SteamGameServer())
+  {
+    ConsoleF("SUCCESS: SteamGameServer_Init(%x,%d,%d,%d,%d,%s)", ip, authenticationPort, GetSessionPort(), masterServerUpdaterPort, mode, steamVersion);
+    RptF("SUCCESS: SteamGameServer_Init(%x,%d,%d,%d,%d,%s)", ip, authenticationPort, GetSessionPort(), masterServerUpdaterPort, mode, steamVersion);
+    SteamGameServer()->SetDedicatedServer(_dedicated);
+		// Set the "game dir".
+		// This is currently required for all games.  However, soon we will be
+		// using the AppID for most purposes, and this string will only be needed
+		// for mods.  it may not be changed after the server has logged on
+		SteamGameServer()->SetModDir("dayz");
+
+    // Tell the Steam Master Server about our game
+    SteamGameServer()->SetProduct("dayz"); //was APP_NAME
+ 		SteamGameServer()->SetGameDescription(APP_NAME);
+
+    //SteamGameServer()->SetGameData("Bebul,Game");
+    if (_beIntegration.IsEnabled()) 
+      SteamGameServer()->SetGameTags("battleye");
+
+    SteamGameServer()->LogOnAnonymous();
+    SteamGameServer()->EnableHeartbeats(true);
+  }
+  else
+  {
+    ConsoleF("FAILED: SteamGameServer_Init(%x,%d,%d,%d,%d,%s)", ip, authenticationPort, GetSessionPort(), masterServerUpdaterPort, mode, steamVersion);
+    RptF("FAILED: SteamGameServer_Init(%x,%d,%d,%d,%d,%s)", ip, authenticationPort, GetSessionPort(), masterServerUpdaterPort, mode, steamVersion);
+  }
+}
+
+void NetworkServer::DoneSteam()
+{
+  // Disconnect from the steam servers
+  if (SteamGameServer()) SteamGameServer()->LogOff();
+
+  // Release our reference to the steam client library
+  SteamGameServer_Shutdown();
+}
+
+void NetworkServer::SimulateSteam()
+{
+  // Run any Steam Game Server API callbacks
+  SteamGameServer_RunCallbacks();
+
+  // Update our server details
+  ChangeStateSteam();
+}
+
+void NetworkServer::ChangeStateSteam()
+{
+  if (SteamGameServer())
+  {
+    // Tell the Steam Master Server about our game
+    SteamGameServer()->SetMaxPlayerCount(GetMaxPlayers());
+    SteamGameServer()->SetPasswordProtected(_password || _sessionLocked);
+    SteamGameServer()->SetServerName(_server->GetSessionName());
+    SteamGameServer()->SetMapName(_missionHeader.GetLocalizedMissionName());
+
+    // update any rule values we publish
+    SteamGameServer()->SetKeyValue("requiredVersion", Format("%d", MP_VERSION_REQUIRED));
+//  SteamGameServer()->SetKeyValue("gameType", _missionHeader._gameType);
+    SteamGameServer()->SetKeyValue("island", _missionHeader._island);
+//  SteamGameServer()->SetKeyValue("serverState", Format("%d", _serverState));
+#if USE_MOD_LIST
+    SteamGameServer()->SetKeyValue("mod", GetModListNames());
+#endif
+//  SteamGameServer()->SetKeyValue("equalModRequired", _equalModRequired ? "1" : "0");
+    SteamGameServer()->SetKeyValue("dedicated", _dedicated ? "1" : "0");
+    SteamGameServer()->SetKeyValue("language", Format("%d", GetGameLanguage()));
+//  SteamGameServer()->SetKeyValue("difficulty", Format("%d", Glob.config.difficulty));
+    SteamGameServer()->SetKeyValue("requiredBuild", Format("%d", _buildNoRequired));
+
+    RString gameTags;
+    if (_beIntegration.IsEnabled()) 
+      gameTags = "battleye,";
+    if (_disable3rdPerson) 
+      gameTags = gameTags + "no3rd,";
+
+    extern const char* GetInstanceId( void );
+    if ( GetInstanceId() && stricmp(GetInstanceId(),"000000")!=0 && stricmp(GetInstanceId(),"000001")!=0 )
+    { // it is private "hive" server
+      gameTags = gameTags + "privHive,";
+    }
+    
+		if (_environmentTimeMul > 0.0f)
+		{
+			RString tm = Format("etm%f,", _environmentTimeMul);
+			gameTags = gameTags + tm;
+		}
+
+    float dayT = Glob.clockWeather.GetTimeOfDay()*24.0f;
+    RString dayTm = Format("%02d:%02d", toIntFloor(dayT), toIntFloor(60*(dayT-toIntFloor(dayT))));
+    gameTags = gameTags + dayTm;
+    SteamGameServer()->SetGameTags(gameTags);
+    
+#if defined(_WIN32)
+    SteamGameServer()->SetKeyValue("platform", "win");
+#elif defined(_LINUX)
+    SteamGameServer()->SetKeyValue("platform", "linux");
+#else
+    SteamGameServer()->SetKeyValue("platform", "?");
+#endif
+
+    int timeleft;
+    if (_serverState == NSSPlaying)
+    {
+      timeleft = 15;
+
+      float et = _missionHeader._estimatedEndTime.toFloat();
+      if (et > 0)
+      {
+        et -= Glob.time.toFloat();
+        timeleft = toInt(et / 60.0);
+        saturateMax(timeleft, 1);
+      }
+    }
+    else timeleft = 0;
+    SteamGameServer()->SetKeyValue("timeLeft", Format("%d", timeleft));
+    if (SteamUtils()) SteamGameServer()->SetKeyValue("country", SteamUtils()->GetIPCountry());
+
+    // Update all the players names/scores
+    for (int i=0; i<_identities.Size(); i++)
+    {
+      const PlayerIdentity &identity = _identities[i];
+      
+      // TODO: find the score
+      int score = 0;
+      SteamGameServer()->BUpdateUserData(CSteamID((uint64)identity._steamID), identity.GetName(), score);
+    }
+  }
+}
+
+void NetworkServer::OnSteamServersConnected(SteamServersConnected_t *logonSuccess)
+{
+  ConsoleF("Connected to Steam");
+
+  // Steam servers are ready to accept our session info now
+  ChangeStateSteam();
+}
+
+void NetworkServer::OnSteamServersConnectFailure( SteamServerConnectFailure_t *connectFailure)
+{
+  // Even if master server connection fails, publish state for LAN / local players
+  ChangeStateSteam();
+}
+
+void NetworkServer::OnSteamServersDisconnected(SteamServersDisconnected_t *loggedOff)
+{
+  ConsoleF("Disconnected from Steam");
+}
+
+void NetworkServer::OnPolicyResponse(GSPolicyResponse_t *policyResponse)
+{
+  ConsoleF("Steam policy response");
+}
+
+#if _ENABLE_DEDICATED_SERVER
+void NetworkServer::ResetCharacterTimeAlive(AIBrain *unit)
+{
+  Person *person = unit->GetPerson();
+  if (person)
+  {
+    int dpnid = person->GetRemotePlayer();
+    PlayerIdentity *identity = FindIdentity(dpnid);
+    if (identity && identity->_statistics)
+    {
+      identity->_statistics->Reset(EStat_characterTimeAlive);
+    }
+  }
+}
+#endif
+
+#endif
+//}
 
 bool NetworkServer::DBSave(RString baseURL, int dpnid, RString request)
 {
@@ -2402,6 +2892,17 @@ void NetworkServer::DBLoad(RString baseURL, int playerId, GameDataCode *code)
 	  return;
   if (info)
 	  info->DBLoad(baseURL, playerId, identity->id, info->name, code);
+}
+
+void NetworkServer::DBLoad(RString baseURL, int playerId, RString playerUID, GameDataCode *code)
+{
+  const PlayerIdentity *identity = FindIdentityByPlayerId(playerId);
+  if (!identity)
+    return;
+  NetworkPlayerInfo *info = GetPlayerInfo(identity->dpnid);
+  if (!info)
+    return;
+  info->DBLoad(baseURL, playerId, playerUID, info->name, code);
 }
 
 void LoadMissions(bool userMissions, AutoArray<MPMissionInfo> &missionList, bool campaignCheat=false);
@@ -3669,6 +4170,32 @@ void NetworkServer::OnSimulate()
 {
   PROFILE_SCOPE_EX(nwSer, network)
 
+#if _ENABLE_DEDICATED_SERVER
+  // Show the dedicated server's own update rate in the console window title.
+  // This counts server simulation callbacks, not the connected client's render FPS.
+  if (IsDedicatedServer())
+  {
+    static DWORD fpsWindowStart = 0;
+    static unsigned int fpsWindowFrames = 0;
+    const DWORD now = ::GetTickCount();
+    if (fpsWindowStart == 0) fpsWindowStart = now;
+    ++fpsWindowFrames;
+    const DWORD elapsed = now - fpsWindowStart;
+    if (elapsed >= 1000)
+    {
+      const float serverFps = fpsWindowFrames * 1000.0f / elapsed;
+      NetworkServer *server = GNetworkManager.GetServer();
+      if (server)
+      {
+        RString title = APP_NAME " Console version " APP_VERSION_TEXT "." STRINGIZE(BUILD_NO) ": port %d | FPS %.1f";
+        ConsoleTitle(title, server->GetSessionPort(), serverFps);
+      }
+      fpsWindowStart = now;
+      fpsWindowFrames = 0;
+    }
+  }
+#endif
+
 #define DIAGNOSE_NETWORK_OBJECTS 0
 #if DIAGNOSE_NETWORK_OBJECTS
   static volatile bool diagnoseObjects = false;
@@ -3916,6 +4443,12 @@ void NetworkServer::OnSimulate()
     ReceiveLocalMessages();
     ReceiveUserMessages();
   }
+
+  // SDZ_SQF_EXEC: all network messages of this frame are processed; it is now safe
+  // to run scripts that create/delete objects or walk the mission object list.
+  #if _ENABLE_DEDICATED_SERVER
+    if (_dedicated) ProcessQueuedExec();
+  #endif
 
   PerformIntegrityInvestigations();
 
@@ -4235,6 +4768,11 @@ void NetworkServer::OnSimulate()
 #endif
 //}
 
+  //{ STEAMWORKS SDK
+#if _ENABLE_STEAM_MATCHMAKING
+  SimulateSteam();
+#endif
+  //}
 
   //DoAssert(CheckIntegrityOfPendingMessages());
 
@@ -4398,6 +4936,16 @@ if(_server)
     _players[i]->DBCheckLoaded();
   }
 
+#if _ENABLE_STEAM_MATCHMAKING && _ENABLE_DEDICATED_SERVER
+  static int counter = 0;
+  if ((counter++ % 10)==0) // TODO
+  {
+    for (int i=0; i<_identities.Size(); ++i)
+    {
+      if (_identities[i]._statistics) _identities[i]._statistics->Simulate();
+    }
+  }
+#endif
 }
 
 void NetworkServer::OnSimulateDone()
@@ -4783,6 +5331,10 @@ void NetworkServer::CreateIdentity(PlayerIdentity &ident)
   PlayerIdentity &identity = _identities[index];
   identity.playerid = NextPlayerId();
 
+#if _ENABLE_STEAM_MATCHMAKING && _ENABLE_DEDICATED_SERVER
+  identity._statistics = new SteamStatistics();
+  identity._statistics->Init(CSteamID((uint64)identity._steamID));
+#endif
 
 #if _VERIFY_KEY
   // check for double id
@@ -5222,7 +5774,8 @@ DWORD WINAPI AsyncDBStorage::DBLoadThreadFunction(void *ctx)
     context->_prevContext = NULL; // no longer needed
   }
 
-  context->_err = GetResponse(EHTTPREQ_GET,context->_result,context->_url,context->_playerUID,NULL);
+  RString uidQuery = Format("?uid=%s", cc_cast(context->_playerUID));
+  context->_err = GetResponse(EHTTPREQ_GET,context->_result,context->_url,uidQuery,NULL);
 
   return 0;
 }
@@ -5330,7 +5883,9 @@ void AsyncDBStorage::DBLoad(RString baseURL, int playerId, RString playerUID, RS
   ctx->_prevContext = _lastContext;
   ctx->_code = code;
   ctx->_playerId = playerId;
-  ctx->_playerUID = Format("?uid=%s", cc_cast(playerUID));
+  // Keep the raw UID for the SQF completion handler; only the HTTP request
+  // should receive the ?uid= query-string wrapper.
+  ctx->_playerUID = playerUID;
   ctx->_name = name;
 
 #if USE_MT_LIB_FOR_JOBS
@@ -6086,6 +6641,15 @@ LogF("  sending to %x", pl._player);
 
         _squadChecks.Add(new CheckSquadObject(identity, _proxy, this));
 
+#if _ENABLE_STEAM_MATCHMAKING
+        for (int i=0; i<_players.Size(); i++) // TODO: use some search instead
+        {
+          NetworkPlayerInfo &info = *_players[i];
+          if (info.dpid != from) continue;
+          info._steamValidate.Start(identity,this);
+          break;
+        }
+#endif
         //}
 
         // send server time to player just connected
@@ -6240,6 +6804,15 @@ LogF("  sending to %x", pl._player);
         }
       }
       break;
+    case NMTAskForRotateInventoryItem:
+      {
+        AskForRotateInventoryItemMessage ask;
+        TMError err = ask.TransferMsg(ctx);
+        if ((err == TMOK || err == TMNotFound) && ask._person && ask._item &&
+            ask._person->GetRemotePlayer() == from && ask._person->FindItem(ask._item))
+          SendMsg(BOT_CLIENT, msg, type, NMFGuaranteed);
+      }
+      break;
     case NMTAskForSetItemShortcut:
     case NMTAskForMoveItem:
     case NMTAskForTakeItemToHands:
@@ -6381,8 +6954,22 @@ LogF("  sending to %x", pl._player);
             if (action)
             {
               Object *target = nullptr;
-              if (!message->_actionTarget.IsNull()) 
-                target = dyn_cast<Object>(_parent->GetObject(message->_actionTarget));
+              const NetworkId &targetId = message->_actionTarget;
+              if (!targetId.IsNull())
+                target = dyn_cast<Object>(_parent->GetObject(targetId));
+
+              // Static house/door objects are not always present in the
+              // server's network-object table. For a UserType action, resolve
+              // the player's authoritative current cursor target as fallback.
+              // The action's saved parameters still carry the chosen door id.
+              if (!target && message->_actionType == ATUserType)
+                target = GetPlayerTarget(from);
+
+              if (message->_actionType == ATUserType)
+                RptF("ProcessAction UserType: player=%d targetId=%d:%" OID_FORMAT " resolved=%s fallback=%s",
+                  from, targetId.creator.CreatorInt(), targetId.id,
+                  target ? (const char *)target->GetDebugName() : "<null>",
+                  targetId.IsNull() ? "cursor" : "none");
               action->SetTarget(target);
 
               QIStrStream in(message->_actionParams.Data(), message->_actionParams.Size());
@@ -7599,17 +8186,16 @@ sendToAllPlayers:
             {
               RString expression = cmd._content.ReadString();
 
-              GameVarSpace local(false);
-              int gshandle = _evaluator.BeginContext(&local);
-              GameValue result = _evaluator.EvaluateMultiple(expression, GameState::EvalContext::_default, &_globals); // server namespace
-              _evaluator.EndContext(gshandle);
-
-              if (!result.GetNil())
+              // SDZ_SQF_EXEC: do not evaluate inside the message handler.
+              // Evaluating here ran the script while the network layer was still
+              // walking the object list; object/string churn from the script
+              // corrupted the express heap and killed the server afterwards
+              // (ACCESS_VIOLATION inside FastAlloc / GameDataObject, no RPT line).
+              // The expression goes to a queue drained right after the network
+              // messages of the frame are processed.
+              if (expression.GetLength() > 0)
               {
-                NetworkCommandMessage msg;
-                msg._type = NCMTExecResult;
-                msg._content.WriteString(result.GetText());
-                SendMsg(from, &msg, NMFGuaranteed);
+                QueueExec(from, expression);
               }
             }
           }
@@ -8770,7 +9356,13 @@ LogF
   msg._updatesGuaranteed = _updatesGuaranteed;
   msg._steamServerId = 0;
   msg._steamSecure = false;
-#if _VERIFY_CLIENT_KEY
+#if _ENABLE_STEAM_MATCHMAKING
+  if (SteamGameServer())
+  {
+    msg._steamServerId = SteamGameServer()->GetSteamID().ConvertToUint64();
+    msg._steamSecure = SteamGameServer()->BSecure();
+  }
+#elif _VERIFY_CLIENT_KEY
   if (SecureIdRequired()>0)
   {
     msg._steamServerId = GetSecureRandom();
@@ -10755,6 +11347,16 @@ void NetworkServer::OnClientStateChanged(int dpnid, NetworkClientState state)
   if (identity)
   {    
 #if _USE_BATTL_EYE_SERVER
+#if _ENABLE_STEAM_MATCHMAKING
+    if (state == NCSPlaying && identity->clientState != NCSPlaying)
+    {
+      _beIntegration.PlayerGoesInGame(identity->dpnid);
+    }
+    if (identity->clientState == NCSPlaying && state != NCSPlaying)
+    {
+      _beIntegration.PlayerGoesInLobby(identity->dpnid);
+    }
+#endif
 #endif
 
     identity->clientState = state;
@@ -10958,6 +11560,11 @@ void NetworkServer::OnClientStateChanged(int dpnid, NetworkClientState state)
       msg._type = NCMTMissionDate;
       SendMsg(dpnid, &msg, NMFGuaranteed);
     }
+    { // [F10] send also current weather + date so the client applies the server clock
+      ApplyWeatherMessage wmsg;
+      GLandscape->TranferMsg(wmsg);
+      SendMsg(dpnid, &wmsg, NMFGuaranteed);
+    }
     break;
   case NCSGameFinished:
     // disconnected from game
@@ -11016,6 +11623,17 @@ void NetworkServer::SetClientState(int dpnid, NetworkClientState state)
   if (identity)
   {    
 #if _USE_BATTL_EYE_SERVER
+#if _ENABLE_STEAM_MATCHMAKING
+    if (state == NCSPlaying && identity->clientState != NCSPlaying)
+    {
+
+      _beIntegration.PlayerGoesInGame(identity->dpnid);
+    }
+    if (identity->clientState == NCSPlaying && state != NCSPlaying)
+    {
+      _beIntegration.PlayerGoesInLobby(identity->dpnid);
+    }
+#endif
 #endif
     NetLog("Client %s - changed state from %s to %s",cc_cast(identity->name),cc_cast(FindEnumName(identity->clientState)),cc_cast(FindEnumName(state)));
     identity->clientState = state;
@@ -11098,8 +11716,19 @@ Vector3 NetworkServer::GetCameraPosition(int dpid)
 
 NetworkObject *NetworkServer::GetObject(const NetworkId &id)
 {
-  Fail("Server: GetObject is not implemented");
-  return NULL;
+  if (id.creator == CreatorId(0)) return NULL;
+  else if (id.creator == CreatorId(STATIC_OBJECT))
+  {
+    ObjectId oid;
+    oid.Decode(id.id);
+    return GLandscape->GetObject(oid);
+  }
+
+  // Message references (OLink) are resolved through NetworkServer while a
+  // dedicated server decodes client requests. The old stub made every such
+  // request fail before its handler ran, including inventory rotation.
+  NetworkObjectInfo *info = GetObjectInfo(id);
+  return info ? info->object.GetLink() : NULL;
 }
 
 //! Subsidiary structure for sorting messages by error
@@ -11258,6 +11887,13 @@ static void LogError
 */
 void NetworkServer::CheckFadeOut()
 {
+#if _ENABLE_STEAM_MATCHMAKING
+  for (int i=0; i<_players.Size(); i++)
+  {
+    NetworkPlayerInfo &pInfo = *_players[i];
+    pInfo._steamValidate.HandleTimeout();
+  }
+#endif
 
   if (_serverState == NSSPlaying)
   {
@@ -13174,6 +13810,19 @@ bool NetworkServer::SetDedicated(RString config)
     _updatesGuaranteed = *entry;
   }
 
+#if _ENABLE_STEAM_MATCHMAKING
+  entry = _serverCfg.FindEntry("steamPort");
+  if (entry)
+    _steamPort = *entry;
+  else
+    _steamPort = 8766; // some default value used in prev. versions
+
+  entry = _serverCfg.FindEntry("steamQueryPort");
+  if (entry)
+    _steamQueryPort = *entry;
+  else
+    _steamQueryPort = 27016; // some default value used in prev. versions
+#endif
 
   _buildNoRequired = _serverCfg.ReadValue<int>("requiredBuild",0);
   // server can never require version higher than it has, as the bot client should meet the requirements as well
@@ -13206,6 +13855,11 @@ bool NetworkServer::SetDedicated(RString config)
   entry = _serverCfg.FindEntry("maxPlayers");
   if (entry) _maxPlayersLimit = *entry;
 
+#if _ENABLE_STEAM_MATCHMAKING
+  // steam does not support more than 127 players, the number gets negative for higher values
+  // see https://projects.bistudio.com/dayz/negative_number_on_Player_Count_in_Server_Browsers.txt
+  saturateMin(_maxPlayersLimit, 127);
+#endif
 
   entry = _serverCfg.FindEntry("timeStampFormat");
   if (entry && entry->IsTextValue())
@@ -13831,6 +14485,88 @@ void NetworkServer::InitEvaluator()
     _evaluator.NewFunction(ServerUnary[i]);
   //for(int i=0; i<lenof(ServerBinary); i++)
   //  _evaluator.NewOperator(ServerBinary[i]);
+}
+
+void NetworkServer::QueueExec(int from, RString expression)
+{
+  if (expression.GetLength() <= 0) return;
+  _sqfExecQueue.Add(expression);
+  _sqfExecFrom.Add(from);
+}
+
+#if defined(_MSC_VER)
+// No C++ objects with destructors in this function: that keeps __try/__except legal.
+static bool SDZ_TryEvaluateSqf(GameState *state, const char *expression, GameDataNamespace *globals, GameValue *result)
+{
+  __try
+  {
+    *result = state->EvaluateMultiple(expression, GameState::EvalContext::_default, globals);
+    return true;
+  }
+  __except (EXCEPTION_EXECUTE_HANDLER)
+  {
+    RptF("SDZ_SQF_EXEC: excecao 0x%08X ao avaliar o script", (unsigned)GetExceptionCode());
+    return false;
+  }
+}
+#endif
+
+void NetworkServer::ProcessQueuedExec()
+{
+  if (_sqfExecBusy) return;
+  if (_sqfExecQueue.Size() <= 0) return;
+
+  _sqfExecBusy = true;
+
+  GameState *execState = GWorld ? GWorld->GetGameState() : NULL;
+  GameDataNamespace *mission = GWorld ? GWorld->GetMissionNamespace() : NULL;
+
+  if (!execState || !mission)
+  {
+    RptF("SDZ_SQF_EXEC: sem GameState/mission namespace, %d comandos descartados", _sqfExecQueue.Size());
+    _sqfExecQueue.Resize(0);
+    _sqfExecFrom.Resize(0);
+    _sqfExecBusy = false;
+    return;
+  }
+
+  while (_sqfExecQueue.Size() > 0)
+  {
+    RString expression = _sqfExecQueue[0];
+    int from = _sqfExecFrom[0];
+    _sqfExecQueue.Delete(0);
+    _sqfExecFrom.Delete(0);
+
+    GameVarSpace local(false);
+    int gshandle = execState->BeginContext(&local);
+
+    GameValue result = NOTHING;
+    bool evaluated = false;
+
+    #if defined(_MSC_VER)
+      evaluated = SDZ_TryEvaluateSqf(execState, expression, mission, &result);
+    #else
+      result = execState->EvaluateMultiple(expression, GameState::EvalContext::_default, mission);
+      evaluated = true;
+    #endif
+
+    // Copy the answer before the context and its values are released.
+    RString answer;
+    if (evaluated && !result.GetNil()) answer = result.GetText();
+    result = NOTHING;
+
+    execState->EndContext(gshandle);
+
+    if (from != BOT_CLIENT && answer.GetLength() > 0)
+    {
+      NetworkCommandMessage msg;
+      msg._type = NCMTExecResult;
+      msg._content.WriteString(answer);
+      SendMsg(from, &msg, NMFGuaranteed);
+    }
+  }
+
+  _sqfExecBusy = false;
 }
 
 void NetworkServer::ProfileAnswer(const RString &output)

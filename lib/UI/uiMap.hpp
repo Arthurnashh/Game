@@ -175,13 +175,14 @@ public:
 
   virtual void OnLButtonDown(float x, float y) override;
   virtual void OnLButtonUp(float x, float y) override;
+  void BeginDrag();
   virtual void OnMouseMove(float x, float y, bool active = true) override;
   virtual void OnLButtonDblClick(float x, float y) override;
   virtual void OnRButtonClick(float x, float y) override;
 
   virtual void OnDrawBackGround(UIViewport *vp, float alpha) override;
   virtual void DrawTooltip(UIViewport *vp, float x, float y) override;
-  virtual intptr_t GetTooltipArea(float x, float y) override;
+  virtual int GetTooltipArea(float x, float y) override;
 
   static void DrawItem(InventoryItem *item, float x, float y, float w, float h, float z, float alpha, Color color, Matrix3 *rot = nullptr);
 
@@ -189,6 +190,7 @@ public:
   static void SetItemShortcut(int index, const InventoryItem *item);
   static void DropItem(Person *owner, InventoryItem *item);
   static void MoveItem(EntityAI *target, int index, InventoryItem *item);
+  static void RotateInventoryItem(Person *person, InventoryItem *item);
   static void TakeItemToHands(Person *person, InventoryItem *item);
 
   // test if MoveItem will succeed
@@ -227,9 +229,14 @@ protected:
   // shown in the HUD
   bool _igui;
 
+  //! realign the slot so the visible quickbar stays centered
+  void UpdateLayout();
+  int GetVisibleCount() const;
+
 public:
   CItemShortcut(ControlsContainer *parent, int idc, ParamEntryPar cls, bool igui);
 
+  virtual bool IsInside(float x, float y) const override;
   virtual void OnDraw(float alpha) override;
   virtual void OnDrawBackGround(UIViewport *vp, float alpha) override;
   virtual void OnDrawForeGround(UIViewport *vp, float alpha) override;

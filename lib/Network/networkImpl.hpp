@@ -29,6 +29,10 @@
 #include <El/Common/randomGen.hpp>
 #include <El/XML/inet.hpp>
 
+#if _ENABLE_STEAM_MATCHMAKING
+# include <steamworks/steam_api.h>
+# include <steamworks/steam_gameserver.h>
+#endif
 
 #include "../AI/ai.hpp"
 #include "../house.hpp"
@@ -355,8 +359,15 @@ DECLARE_NET_MESSAGE(AskForDropItem, ASK_FOR_DROP_ITEM_MSG)
   XX(MessageName, OLinkPermO(EntityAI), target, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("New owner of the item"), TRANSF_REF) \
   XX(MessageName, int, index, NDTInteger, int, NCTSmallSigned, DEFVALUE(int, 0), DOC_MSG("Slot index"), TRANSF)\
   XX(MessageName, OLinkPermO(InventoryItem), item, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Moved item"), TRANSF_REF) \
+  XX(MessageName, bool, rotated, NDTBool, bool, NCTNone, DEFVALUE(bool, false), DOC_MSG("Requested inventory orientation"), TRANSF) \
 
 DECLARE_NET_MESSAGE(AskForMoveItem, ASK_FOR_MOVE_ITEM_MSG)
+
+#define ASK_FOR_ROTATE_INVENTORY_ITEM_MSG(MessageName, XX) \
+  XX(MessageName, OLinkPermO(Person), person, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Player requesting item rotation"), TRANSF_REF) \
+  XX(MessageName, OLinkPermO(InventoryItem), item, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Item to rotate in cargo"), TRANSF_REF) \
+
+DECLARE_NET_MESSAGE(AskForRotateInventoryItem, ASK_FOR_ROTATE_INVENTORY_ITEM_MSG)
 
 #define ASK_FOR_TAKE_ITEM_TO_HANDS_MSG(MessageName, XX) \
   XX(MessageName, OLinkPermO(Person), person, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Person holding the item"), TRANSF_REF) \
@@ -1893,13 +1904,6 @@ struct DelayedPublicVariable
 };
 TypeIsMovableZeroed(DelayedPublicVariable)
 
-struct DelayedSpawnForPlayer
-{
-  RString _code;
-  GameValue _args;
-};
-TypeIsGeneric(DelayedSpawnForPlayer)
-
 //! Network Client
 class NetworkClient : public NetworkComponent
 {
@@ -2132,10 +2136,6 @@ protected:
   /// public variables which have Null networkId during PublicVariable are stored to be proccessed later again
   AutoArray<DelayedPublicVariable> _delayedPublicVariables;
 
-  /// spawnForClient code received before the mission init script ran (player scripts are not compiled yet)
-  AutoArray<DelayedSpawnForPlayer> _delayedSpawns;
-  bool _initScriptRun = false;
-
   //! time synchronized from server to clients
   DWORD _serverTime;
   DWORD _serverTimeInitTickCount;
@@ -2146,6 +2146,9 @@ protected:
   bool _serverAdmin;
   int _serverGameMaster;
 
+#if _ENABLE_STEAM_MATCHMAKING
+  HAuthTicket _hAuthTicket;
+#endif
 
 public:
 
@@ -2683,10 +2686,6 @@ public:
   void ClearDelayedPublicVariables();
   void AddDelayedPublicVariable(RString name, int dpnid);
 
-  //! Run spawnForClient code queued until the mission init script ran
-  void ProcessDelayedSpawns();
-  void RunSpawnedCode(RString code, GameValuePar args);
-
   //! Send chat message
   /*!
   \param channel chat channel
@@ -2825,7 +2824,8 @@ public:
   void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type);
   void AskForThrowItem(Man *person, InventoryItem *item, Vector3 pos, Vector3 dir);
 	void AskForDropItem(Person *person, InventoryItem *item);
-  void AskForMoveItem(EntityAI *target, int index, InventoryItem *item);
+  void AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated);
+  void AskForRotateInventoryItem(Person *person, InventoryItem *item);
   void AskForTakeItemToHands(Person *person, InventoryItem *item);
   void AskForSwapItems(InventoryItem *item1, InventoryItem *item2, Person *owner);
 
@@ -3886,6 +3886,39 @@ struct AsyncDBStorage
   void DBCheckLoaded();
 };
 
+#if _ENABLE_STEAM_MATCHMAKING
+class SteamValidation
+{
+  /// Steam authentication is completed (need not wait for it)
+  bool _authDone;
+  /// Steam authentication passed (client approved)
+  bool _authOK;
+
+  bool _started;
+  DWORD _ticksStarted;
+
+  NetworkServer *_server;
+
+  uint64 _steamId;
+
+  AutoArray<char> _steamSessionTicket;
+
+  RString _name;
+
+  int _dpid;
+
+public:
+  SteamValidation();
+  ~SteamValidation();
+
+  void Start(PlayerIdentity &identity, NetworkServer *server);
+
+  void HandleTimeout();
+
+  // Tells us a client has been authenticated and approved to play by Steam (passes auth, license check, VAC status, etc...)
+  STEAM_GAMESERVER_CALLBACK(SteamValidation, OnValidateAuthTicketResponse, ValidateAuthTicketResponse_t, _callbackGSAuthTicketResponse);
+};
+#endif
 
 
 //! Server info about player
@@ -3986,6 +4019,9 @@ struct NetworkPlayerInfo : public AsyncDBStorage, public RefCount, private NoCop
   /// Hashes collected during initial signature test
   CollectedHashes hashes;
   
+#if _ENABLE_STEAM_MATCHMAKING
+  SteamValidation _steamValidate;
+#endif
 
   /// CDKey check
   CDKeyCheck cdKeyCheck;
@@ -4511,8 +4547,12 @@ protected:
     void PlayerDisconnected(int player);
 
     //! BEServer.ReceivedPlayerGUID() will be called as soon as the GameSpy cd-key hash is received from the client (after connecting).
+#if _ENABLE_STEAM_OWNERSHIP
+    void PlayerGUIDReceived(int player, const CSteamID &id);
+#else
     void PlayerGUIDReceived(int player);
-    void PlayerGUIDIsValid(int player);
+#endif
+    void PlayerGUIDIsValid(int player, const CSteamID &ownerId);
 
     #define BE_WRAP_CALLBACK(Name, ...) bool __cdecl Name##Callback(int player, __VA_ARGS__);
     BE_CALLBACKS(BE_WRAP_CALLBACK)
@@ -4694,6 +4734,11 @@ protected:
 
   bool _longLatAuto;
 
+#if _ENABLE_STEAM_MATCHMAKING 
+  // ports for Steam services
+  int _steamPort;
+  int _steamQueryPort;
+#endif
 
   struct GeoJobThread
   {
@@ -4759,6 +4804,14 @@ protected:
   GameState _evaluator;
   /// global variables for _evaluator
   GameDataNamespace _globals;
+
+  /// SDZ_SQF_EXEC: scripts coming from #exec are queued and evaluated after the
+  /// network messages of the current frame have been processed. Running arbitrary
+  /// SQF in the middle of message handling touched half-updated object lists and
+  /// corrupted the script heap (server crashed with no RPT message).
+  AutoArray<RString> _sqfExecQueue;
+  AutoArray<int> _sqfExecFrom;
+  bool _sqfExecBusy;
   //! event handlers
   RString _eventHandlers[NServerEvent];
 
@@ -4931,6 +4984,11 @@ public:
   /// add specific server scripting commands to the _evaluator
   void InitEvaluator();
 
+  /// SDZ_SQF_EXEC: queue an expression received through #exec
+  void QueueExec(int from, RString expression);
+  /// SDZ_SQF_EXEC: evaluate (and answer) every queued expression
+  void ProcessQueuedExec();
+
   void ProfileAnswer(const RString &output);
 #endif
 //}
@@ -4988,6 +5046,7 @@ public:
 
   bool DBSave(RString baseURL, int dpnid, RString request);
   void DBLoad(RString baseURL, int playerId, GameDataCode *code);
+  void DBLoad(RString baseURL, int playerId, RString playerUID, GameDataCode *code);
 
   void OnDraw();
   void OnSimulate();
@@ -5005,11 +5064,7 @@ public:
 
   void SpawnForPlayer(int dpnid, GameDataCode *code, const GameValue &args);
 
-  void PlayerGUIDIsValid(int player) {
-#if _USE_BATTL_EYE_SERVER
-    _beIntegration.PlayerGUIDIsValid(player);
-#endif
-  };
+  void PlayerGUIDIsValid(int player, const CSteamID &ownerId) { _beIntegration.PlayerGUIDIsValid(player, ownerId); };
 
   //! The output format is "creator:id friendlyName"
   RString NetworkIdToNetIdFriendly(const NetworkId &id);
@@ -5385,6 +5440,35 @@ public:
   void OnCDKeyAuthorize(int player, int authenticated, const char *errmsg);
 #endif
 
+#elif _ENABLE_STEAM_MATCHMAKING
+public:
+  /// Initialization of Steamworks SDK server reporting interface
+  void InitSteam();
+  /// Steamworks SDK server reporting interface clean up
+  void DoneSteam();
+  /// Simulation of Steamworks SDK callbacks
+  void SimulateSteam();
+  /// Inform Steam master server about the change of the inner game state
+  void ChangeStateSteam();
+#if _ENABLE_DEDICATED_SERVER
+  /// Reset TimeAlive Statistics
+  void ResetCharacterTimeAlive(AIBrain *unit);
+#endif
+
+  #if _ENABLE_STEAM_OWNERSHIP && _USE_BATTL_EYE_SERVER
+  void PlayerGUIDReceived(int player, const CSteamID &id) {_beIntegration.PlayerGUIDReceived(player, id);}
+  #endif
+
+  // Tells us when we have successfully connected to Steam
+  STEAM_GAMESERVER_CALLBACK(NetworkServer, OnSteamServersConnected, SteamServersConnected_t, _callbackSteamServersConnected);
+  // Tells us when there was a failure to connect to Steam
+  STEAM_GAMESERVER_CALLBACK(NetworkServer, OnSteamServersConnectFailure, SteamServerConnectFailure_t, _callbackSteamServersConnectFailure);
+  // Tells us when we have been logged out of Steam
+  STEAM_GAMESERVER_CALLBACK(NetworkServer, OnSteamServersDisconnected, SteamServersDisconnected_t, _callbackSteamServersDisconnected);
+  // Tells us that Steam has set our security policy (VAC on or off)
+  STEAM_GAMESERVER_CALLBACK(NetworkServer, OnPolicyResponse, GSPolicyResponse_t, _callbackPolicyResponse);
+
+protected:
 #endif
 //}
   //@}
@@ -5630,6 +5714,7 @@ public:
   void CustomFilesProgressGet(int &max, int &pos);
   DWORD GetServerTime();
   DWORD GetEstimatedEndServerTime();
+  void PlayerGUIDIsValid(int player, const CSteamID &ownerId) override;
 
 
 #if _GAMES_FOR_WINDOWS
@@ -5745,6 +5830,7 @@ public:
   virtual bool DBItemDrop(RString baseURL, RString request) override;
 
   virtual void DBLoad(RString baseURL, int playerId, GameDataCode *code) override;
+  virtual void DBLoad(RString baseURL, int playerId, RString playerUID, GameDataCode *code) override;
 
   virtual InputInterface *GetInputInterface(int player) override;
   virtual RString GetDiagText(const NetworkObject *obj) const override;
@@ -5870,7 +5956,8 @@ public:
   virtual void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type) override;
   virtual void AskForThrowItem(Man *person, InventoryItem *item, Vector3 pos, Vector3 dir) override;
 	virtual void AskForDropItem(Person *person, InventoryItem *item) override;
-  virtual void AskForMoveItem(EntityAI *target, int index, InventoryItem *item) override;
+  virtual void AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated) override;
+  virtual void AskForRotateInventoryItem(Person *person, InventoryItem *item) override;
   virtual void AskForTakeItemToHands(Person *person, InventoryItem *item) override;
   virtual void AskForSwapItems(InventoryItem *item1, InventoryItem *item2, Person *owner) override;
 
