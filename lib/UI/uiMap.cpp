@@ -9752,9 +9752,9 @@ void CItemBase::DrawTooltip(UIViewport *vp, float x, float y)
   }
 }
 
-int CItemBase::GetTooltipArea(float x, float y)
+intptr_t CItemBase::GetTooltipArea(float x, float y)
 {
-  return (int)(GetItemInfo(x, y)._item);
+  return (intptr_t)(GetItemInfo(x, y)._item);
 }
 
 bool IsInventoryOpened()
@@ -10253,6 +10253,11 @@ public:
   {
     if (_item) _item->SetInventoryRotated(_original);
   }
+  // accept the previewed orientation; the destructor will keep it
+  void Commit()
+  {
+    if (_item) _original = _item->IsInventoryRotated();
+  }
 };
 
 unsigned char DisplayInventory::OnDragging(IControl *dragCtrl,  IControl *dropCtrl,  float x, float y)
@@ -10471,8 +10476,9 @@ bool DisplayInventory::OnDrop(IControl *dragCtrl, IControl *dropCtrl, float x, f
               // remove from the old owner
               Entity *parent = item->GetHierarchyParent();
               if (parent) DoVerify(parent->RemoveOwnedItem(item));
-    
+
               info._item->AddOwnedItem(item);
+              rotationPreview.Commit();
             }
             return true;
           }
@@ -10495,6 +10501,7 @@ bool DisplayInventory::OnDrop(IControl *dragCtrl, IControl *dropCtrl, float x, f
       {
         // do not break layout by removing item first
         dst->AddItem(item, x, y);
+        rotationPreview.Commit();
         return true;
       }
     }

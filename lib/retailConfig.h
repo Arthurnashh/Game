@@ -52,14 +52,15 @@
 #define _ENABLE_DX10              0
 #define _USE_BATTL_EYE_SERVER     1
 #define _USE_BATTL_EYE_CLIENT     1
-#define _ENABLE_STEAM_OWNERSHIP   1
-#define _ENABLE_STEAM             1
-#define _ENABLE_STEAM_MATCHMAKING 1
+// Steamworks SDK is not available in this tree; keep all Steam integration disabled.
+#define _ENABLE_STEAM_OWNERSHIP   0
+#define _ENABLE_STEAM             0
+#define _ENABLE_STEAM_MATCHMAKING 0
 #define _ENABLE_SEND_UDP_MESSAGE  0
 #define _ENABLE_TEXTURE_HEADERS   1 //if reading texture headers from texture headers file is enabled
 
 //DayZ
-#define _PROFILE_IN_STEAM_CLOUD   1
+#define _PROFILE_IN_STEAM_CLOUD   0
 
 //Heli sim
 

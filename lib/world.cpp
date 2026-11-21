@@ -19132,13 +19132,17 @@ public:
     RString cloudFileName = GetFilenameExt(filename);
     if (SteamRemoteStorage()->FileExists(cloudFileName))
     {
-      if (QIFileFunctions::FileExists(filename))
+      bool LoadFileFromSteamCloud(RString steamFileName, RString targetPath);
+      if (!QIFileFunctions::FileExists(filename))
+      { // no local profile (e.g. new machine) - restore it from the cloud
+        LoadFileFromSteamCloud(cloudFileName, filename);
+      }
+      else
       {
         int64 cloudTimeStamp = SteamRemoteStorage()->GetFileTimestamp(cloudFileName);
         int64 profileTimeStamp = QIFileFunctions::TimeStamp(filename);
         if (profileTimeStamp < cloudTimeStamp)
         { // profile inside cloud is more current, we should overwrite the profile
-          bool LoadFileFromSteamCloud(RString steamFileName, RString targetPath);
           LoadFileFromSteamCloud(cloudFileName, filename);
         }
         // else ... maybe manualy edited profile vars file

@@ -5709,9 +5709,14 @@ void NetworkManager::AskForDropItem(Person *person, InventoryItem *item)
   if (_client) _client->AskForDropItem(person, item);
 }
 
-void NetworkManager::AskForMoveItem(EntityAI *target, int index, InventoryItem *item)
+void NetworkManager::AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated)
 {
-  if (_client) _client->AskForMoveItem(target, index, item);
+  if (_client) _client->AskForMoveItem(target, index, item, rotated);
+}
+
+void NetworkManager::AskForRotateInventoryItem(Person *person, InventoryItem *item)
+{
+  if (_client) _client->AskForRotateInventoryItem(person, item);
 }
 
 void NetworkManager::AskForTakeItemToHands(Person *person, InventoryItem *item)
