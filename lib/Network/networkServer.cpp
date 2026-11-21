@@ -1,5 +1,6 @@
 #include "../wpch.hpp"
 #include "networkImpl.hpp"
+#include "networkQueueUtils.hpp"
 
 #include "../global.hpp"
 //#include "strIncl.hpp"
@@ -12917,33 +12918,34 @@ void NetworkServer::SendMessages()
     const int nMsgMaxGuaranteed = nMsgMax;
     const int nBytesMaxGuaranteed = nBytesMax;
 
-    while (pInfo._messageQueue.Size() > 0)
+    int firstGuaranteedUnsent = 0;
+    while (firstGuaranteedUnsent < pInfo._messageQueue.Size())
     {
       if (nMsg >= nMsgMaxGuaranteed || nBytes >= nBytesMaxGuaranteed)
       {
       #if LOG_QUEUE_PROGRESS
         int qBytes = 0;
-        for (int i=0; i<pInfo._messageQueue.Size(); i++)
+        for (int i=firstGuaranteedUnsent; i<pInfo._messageQueue.Size(); i++)
         {
           qBytes += pInfo._messageQueue[i]->msg->size;
         }
         LogF
         (
-          "  -- queue left %d (%d B)",pInfo._messageQueue.Size(),qBytes
+          "  -- queue left %d (%d B)",pInfo._messageQueue.Size()-firstGuaranteedUnsent,qBytes
         );
       #endif
         break;
       }
 
-      NetworkMessage *msg = pInfo._messageQueue[0]->msg;
+      NetworkMessage *msg = pInfo._messageQueue[firstGuaranteedUnsent]->msg;
       int size = msg->size;
       if (size >= maxSize)
       {
         //DWORD dwMsgId =
         RefR<NetMessage, RefCountSafe> resultMsg;
-        /*int rawSize = */SendMsgRemote(pInfo.dpid, msg, pInfo._messageQueue[0]->type, NMFGuaranteed|NMFStatsAlreadyDone, &resultMsg, NULL);
-        pInfo._messageQueue[0]->SetFence(resultMsg);
-        pInfo._messageQueue.Delete(0);
+        /*int rawSize = */SendMsgRemote(pInfo.dpid, msg, pInfo._messageQueue[firstGuaranteedUnsent]->type, NMFGuaranteed|NMFStatsAlreadyDone, &resultMsg, NULL);
+        pInfo._messageQueue[firstGuaranteedUnsent]->SetFence(resultMsg);
+        firstGuaranteedUnsent++;
         nMsg++;
         nBytes += size;
       }
@@ -12951,19 +12953,20 @@ void NetworkServer::SendMessages()
       {
         int totalSize = 0;
         int i;
-        for (i=0; i<pInfo._messageQueue.Size(); i++)
+        for (i=firstGuaranteedUnsent; i<pInfo._messageQueue.Size(); i++)
         {
           NetworkMessage *msg = pInfo._messageQueue[i]->msg;
           int size = msg->size;
           if (totalSize + size > maxSize) break;
           totalSize += size;
         }
-        /*int rawSize = */SendMsgQueue(pInfo.dpid, pInfo._messageQueue, 0, i, NMFGuaranteed);
-        pInfo._messageQueue.Delete(0, i);
+        /*int rawSize = */SendMsgQueue(pInfo.dpid, pInfo._messageQueue, firstGuaranteedUnsent, i, NMFGuaranteed);
+        firstGuaranteedUnsent = i;
         nMsg++;
         nBytes += totalSize;
       }
     }
+    if (firstGuaranteedUnsent > 0) pInfo._messageQueue.Delete(0, firstGuaranteedUnsent);
 
     #if LOG_QUEUE_PROGRESS
     if (nBytes>0)
@@ -13113,17 +13116,18 @@ DoNotSendUpdates:
     maxSize = MaxSizeNonguaranteed;
     // note: even "nonguaranteed" may be actually sent as guaranteed, but they still have their own queue
     NetMsgFlags flags = _updatesGuaranteed ? NMFGuaranteed : NMFNone;
+    int firstNonGuaranteedUnsent = 0;
     int next = 0; // index of next object to update
     bool empty = false;
     while (true)
     {
       // enforce send last message
-      if (!empty || pInfo._messageQueueNonGuaranteed.Size() <= 0)
+      if (!empty || firstNonGuaranteedUnsent >= pInfo._messageQueueNonGuaranteed.Size())
       {
         if (nMsg >= nMsgMax || nBytes >= nBytesMax) break;
       }
 
-      if (pInfo._messageQueueNonGuaranteed.Size() <= 0)
+      if (firstNonGuaranteedUnsent >= pInfo._messageQueueNonGuaranteed.Size())
       {
         empty = true;
         // starving, try to create further message
@@ -13131,14 +13135,14 @@ DoNotSendUpdates:
         // local communication - message was already sent
         if (pInfo.dpid == BOT_CLIENT)
         {
-          DoAssert(pInfo._messageQueueNonGuaranteed.Size() == 0);
+          DoAssert(firstNonGuaranteedUnsent >= pInfo._messageQueueNonGuaranteed.Size());
           nMsg++;
           continue;
         }
-        DoAssert(pInfo._messageQueueNonGuaranteed.Size() > 0);
+        DoAssert(firstNonGuaranteedUnsent < pInfo._messageQueueNonGuaranteed.Size());
       }
 
-      NetworkMessageQueueItem *item = pInfo._messageQueueNonGuaranteed[0];
+      NetworkMessageQueueItem *item = pInfo._messageQueueNonGuaranteed[firstNonGuaranteedUnsent];
       int size = item->msg->size;
       // enforce send last message
       if (size >= maxSize || nMsg >= nMsgMax || nBytes >= nBytesMax)
@@ -13151,7 +13155,7 @@ DoNotSendUpdates:
 #if LOG_SEND_PROCESS
         LogF("Server: Message %x sent", dwMsgId);
 #endif
-        pInfo._messageQueueNonGuaranteed.Delete(0);
+        firstNonGuaranteedUnsent++;
         nMsg++;
         nBytes += rawSize;
       }
@@ -13161,50 +13165,49 @@ DoNotSendUpdates:
         int i;
         for (i=0; true; i++)
         {
-          if (i >= pInfo._messageQueueNonGuaranteed.Size())
+          int queueIndex = firstNonGuaranteedUnsent + i;
+          if (queueIndex >= pInfo._messageQueueNonGuaranteed.Size())
           {
             empty = true;
             // starving, try to create further message
             if (!PrepareNextUpdate(pInfo, objects, next)) break;
             DoAssert(pInfo.dpid != BOT_CLIENT);
-            DoAssert(i < pInfo._messageQueueNonGuaranteed.Size());
+            DoAssert(queueIndex < pInfo._messageQueueNonGuaranteed.Size());
           }
 
-          NetworkMessageQueueItem *item = pInfo._messageQueueNonGuaranteed[i];
+          NetworkMessageQueueItem *item = pInfo._messageQueueNonGuaranteed[queueIndex];
           int size = item->msg->size;
           if (totalSize + size > maxSize) break;
           totalSize += size;
         }
 
-        for (int j=0; j<i; j++)
-        {
-          NetworkMessageQueueItem &item = *pInfo._messageQueueNonGuaranteed[j];
-
-          if (item.dependOn)
-          { //it depends on previous guaranteed update and cannot be aggregated. We sent it immediately by setting begin
+        int queueEnd = firstNonGuaranteedUnsent + i;
+        int normalCount = CompactNetworkMessageQueueRange(
+          pInfo._messageQueueNonGuaranteed, firstNonGuaranteedUnsent, queueEnd,
+          [this,&pInfo,flags,&nMsg,&nBytes](NetworkMessageQueueItem *item)
+          {
+            // Send dependent messages immediately and keep their queue order.
             RefR<NetMessage, RefCountSafe> resultMsg;
-            int rawSize = SendMsgRemote(pInfo.dpid, item.msg, item.type, NMFStatsAlreadyDone|flags, &resultMsg, item.dependOn);
+            int rawSize = SendMsgRemote(pInfo.dpid, item->msg, item->type, NMFStatsAlreadyDone|flags, &resultMsg, item->dependOn);
             //item.SetFence(resultMsg); //nonguaranteed messages could not raise a fence
-            pInfo._messageQueueNonGuaranteed.Delete(j);
-            i--; //one less items to process
-            j--; //the same index contains new data
             nMsg++;
             nBytes += rawSize;
           }
-        }
+        );
 
-        if (i>0)
+        if (normalCount>0)
         {
-          int rawSize = SendMsgQueue(pInfo.dpid, pInfo._messageQueueNonGuaranteed, 0, i, flags);
+          int rawSize = SendMsgQueue(pInfo.dpid, pInfo._messageQueueNonGuaranteed, firstNonGuaranteedUnsent, firstNonGuaranteedUnsent + normalCount, flags);
 #if LOG_SEND_PROCESS
           LogF("Server: Message %x sent", dwMsgId);
 #endif
-          pInfo._messageQueueNonGuaranteed.Delete(0, i);
+          firstNonGuaranteedUnsent += normalCount;
           nMsg++;
           nBytes += rawSize;
         }
       }
     }
+    if (firstNonGuaranteedUnsent > 0) pInfo._messageQueueNonGuaranteed.Delete(0, firstNonGuaranteedUnsent);
     DoAssert(!empty || pInfo._messageQueueNonGuaranteed.Size() == 0);
 
     // search for maximum error not sent
