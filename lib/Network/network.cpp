@@ -1848,6 +1848,7 @@ DEFINE_NET_MESSAGE(InventoryMenuAttachment, INVENTORY_MENU_ATTACHMENT_MSG)
 DEFINE_NET_MESSAGE(AskForThrowItem, ASK_FOR_THROW_ITEM_MSG)
 DEFINE_NET_MESSAGE(AskForDropItem, ASK_FOR_DROP_ITEM_MSG)
 DEFINE_NET_MESSAGE(AskForMoveItem, ASK_FOR_MOVE_ITEM_MSG)
+DEFINE_NET_MESSAGE(AskForRotateInventoryItem, ASK_FOR_ROTATE_INVENTORY_ITEM_MSG)
 DEFINE_NET_MESSAGE(AskForTakeItemToHands, ASK_FOR_TAKE_ITEM_TO_HANDS_MSG)
 DEFINE_NET_MESSAGE(AskForSwapItems, ASK_FOR_SWAP_ITEMS_MSG)
 DEFINE_NET_MESSAGE(AskForPlayerAction, ASK_FOR_PLAYER_ACTION_MSG)
@@ -5095,6 +5096,17 @@ void NetworkManager::DBLoad(RString baseURL, int playerId, GameDataCode *code)
   else _spStorage.DBLoad(baseURL, playerId, GetPublicKey(), Glob.header.GetPlayerName(), code); // single player fall-back
 }
 
+void NetworkManager::DBLoad(RString baseURL, int playerId, RString playerUID, GameDataCode *code)
+{
+  if (_server) _server->DBLoad(baseURL, playerId, playerUID, code);
+  else _spStorage.DBLoad(baseURL, playerId, playerUID, Glob.header.GetPlayerName(), code); // single player fall-back
+}
+
+void NetworkManager::PlayerGUIDIsValid(int player, const CSteamID &ownerId)
+{
+  if (_server) _server->PlayerGUIDIsValid(player, ownerId);
+}
+
 #if 0 // _PROFILE
 // make single player debugging closer to the client/server version
 #define ENABLED_WRAPPED_INPUT_Ondra 1
@@ -5709,9 +5721,14 @@ void NetworkManager::AskForDropItem(Person *person, InventoryItem *item)
   if (_client) _client->AskForDropItem(person, item);
 }
 
-void NetworkManager::AskForMoveItem(EntityAI *target, int index, InventoryItem *item)
+void NetworkManager::AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated)
 {
-  if (_client) _client->AskForMoveItem(target, index, item);
+  if (_client) _client->AskForMoveItem(target, index, item, rotated);
+}
+
+void NetworkManager::AskForRotateInventoryItem(Person *person, InventoryItem *item)
+{
+  if (_client) _client->AskForRotateInventoryItem(person, item);
 }
 
 void NetworkManager::AskForTakeItemToHands(Person *person, InventoryItem *item)

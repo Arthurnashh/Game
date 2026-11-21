@@ -12163,9 +12163,13 @@ void Transport::LookAround(float aimX, float aimY, float deltaT, const ViewPars 
 */
 void Transport::UpdateZoom(AIBrain *unit)
 {
-  Person *player = unit->GetPerson();
-//   static bool doIt = false;
-//   if (GetZoom() && doIt) GetZoom()->_zoomInsteadOfOptics=false; //patch zoomInsteadOfOptics
+  Person *player = unit ? unit->GetPerson() : NULL;
+  Zoom *zoom = GetZoom(unit);
+  if (!zoom) return;
+
+  // Recalculate this every frame. Leaving it set after UALockTarget is released
+  // forces the continuous zoom to its minimum FOV until the player leaves the vehicle.
+  bool zoomInsteadOfOptics = false;
   if (player && GInput.GetAction(UALockTarget) && (GWorld->IsCameraActive(CamInternal) || GWorld->IsCameraActive(CamExternal)))
   {
 //    EntityAIFull *veh = FocusOn()->GetVehicle();
@@ -12189,11 +12193,11 @@ void Transport::UpdateZoom(AIBrain *unit)
       {
         // zoom in
 //        forcedZoom=true;
-        if (GetZoom())
-          GetZoom()->_zoomInsteadOfOptics=true;
+        zoomInsteadOfOptics = true;
       }
     }
   }
+  zoom->_zoomInsteadOfOptics = zoomInsteadOfOptics;
 }
 
 Object::Zoom *Transport::GetZoom(const AIBrain *unit)

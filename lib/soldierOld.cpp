@@ -1,4 +1,4 @@
-#include "wpch.hpp"
+﻿#include "wpch.hpp"
 
 /*!
 \file
@@ -39,6 +39,19 @@ Implementation file for Man and Soldier classes
 #include "integrity.hpp"
 #include "fileLocator.hpp"
 #include <El/FileServer/fileServer.hpp>
+
+// Case-insensitive substring test for move names. The names returned by the
+// animation config are lower-case ("...wrfl...", "...pknl..."), so the old
+// case-sensitive strstr() never matched and the jump/vault always fell back to
+// the unarmed variant even when a weapon was in the hands.
+static bool MoveNameHas(const char *name, const char *part)
+{
+  if (!name || !part || !*part) return false;
+  const size_t len = strlen(part);
+  for (const char *p = name; *p; ++p)
+    if (_strnicmp(p, part, len)==0) return true;
+  return false;
+}
 #include "gameDirs.hpp"
 
 #include "dikCodes.h"
@@ -1987,6 +2000,32 @@ enf::BulletBoneController* GetRagdollParent(Skeleton* sk, enf::BulletRagdollCont
 \patch_internal 1.01 Date 6/26/2001 by Ondra. Fixed: animate matrix connected with head.
 - this was required because of drawing Night Vision.
 */
+
+// ANIMS-FREELOOK: devolve uma fracao da rotacao contida em "trans"
+// (mesma convencao de eixos/pivo, so com o angulo reduzido).
+static Matrix4 PartialHeadTrans(const Matrix4 &trans, float factor)
+{
+  if (factor<=0.001f) return MIdentity;
+  if (factor>=0.999f) return trans;
+  Matrix3 o = trans.Orientation();
+  Quaternion<float> q0(o), qId(M3Identity);
+  Matrix3 partial;
+  qId.Slerp(q0,factor).UnitToMatrix(partial);
+  Matrix4 res = trans;
+  res.SetOrientation(partial);
+  res.SetPosition(trans.Position()*factor);
+  return res;
+}
+
+// ANIMS-FREELOOK: descobre os ossos da coluna (cache por skeleton).
+static void GetFreeLookSpineBones(const LODShape *shape, SkeletonIndex &spine2, SkeletonIndex &spine3)
+{
+  spine2 = spine3 = SkeletonIndexNone;
+  if (!shape) return;
+  spine2 = shape->FindBone("spine2");
+  spine3 = shape->FindBone("spine3");
+}
+
 void Man::AnimateBoneMatrix(Matrix4 &mat, const ObjectVisualState &vs, int level, SkeletonIndex boneIndex) const
 {
 #if _ENABLE_PHYSICS1
@@ -2022,8 +2061,30 @@ void Man::AnimateBoneMatrix(Matrix4 &mat, const ObjectVisualState &vs, int level
         if (boneIndex==blend.matrixIndex) {headFactor=blend.factor;break;}
       }
 
+      Matrix4 headTrans = mvs._headTrans;
+
+      // ANIMS-FREELOOK: no free look o tronco acompanha ~35% da rotacao da
+      // cabeca (divisao tronco/cabeca), em vez de girar apenas pescoco/cabeca.
+      AIBrain *brainLook = Brain();
+      if (brainLook && brainLook->LookAroundEnabled())
+      {
+        SkeletonIndex spine2 = SkeletonIndexNone;
+        SkeletonIndex spine3 = SkeletonIndexNone;
+        GetFreeLookSpineBones(GetShape(),spine2,spine3);
+
+        bool isSpine2 = (spine2!=SkeletonIndexNone && boneIndex==spine2);
+        bool isSpine3 = (spine3!=SkeletonIndexNone && boneIndex==spine3);
+        if (isSpine2 || isSpine3)
+        {
+          // spine2 + spine3 somam 35% (a cabeca recebe os 65% restantes)
+          Matrix4 torsoTrans = PartialHeadTrans(mvs._headTrans, isSpine2 ? 0.15f : 0.20f);
+          BlendMatrix(mat,torsoTrans,1.0f);
+        }
+        headTrans = PartialHeadTrans(mvs._headTrans,0.65f);
+      }
+
       // check matrix aiming factor
-      BlendMatrix(mat,mvs._headTrans,headFactor);
+      BlendMatrix(mat,headTrans,headFactor);
     }
     AIBrain *unit = Brain();
     if (!mvs._leaningTransIdent || (unit && !mvs._shakingTransIdent && !unit->IsFreeSoldier()))
@@ -2899,7 +2960,23 @@ void Man::ProcessItemToHands()
 {
   if (IsOnAnyLadder()) return;
   if (_itemInHandsWanted == _itemInHands) return;
-  if (IsActionInProgress(MFTakeInHands)) return;
+  // A hands item restored from a save or an authoritative update has no
+  // pending request. Starting the Disarm transition for it would restart the
+  // TakeInHands action forever ("Cancel Action" loop when joining with an
+  // item already in hands).
+  if (!_itemInHandsWanted) return;
+  if (IsActionInProgress(MFTakeInHands))
+  {
+    // ANIMS-FIX: se a animacao de pegar item foi interrompida/cancelada pelo
+    // movimento, a acao ficaria travada mostrando "Cancel Action" para sempre.
+    // Depois do prazo, encerra a acao antiga e refaz a troca imediatamente.
+    if (Glob.time < _takeInHandsDeadline) return;
+    CancelAction();
+    if (_itemInHandsWanted == _itemInHands) return;
+    // conclui a troca imediatamente, sem depender da animacao
+    TakeInHandsAction(_itemInHandsWanted);
+    return;
+  }
   const MoveIdExt &moveWanted = GetMove("Disarm");
   if (moveWanted.id != MoveIdNone)
   {
@@ -2914,6 +2991,7 @@ void Man::ProcessItemToHands()
     }
 #endif
     PlayForcedMove(moveWanted,context);
+    _takeInHandsDeadline = Glob.time + 3.0f;
   }
   else
   {
@@ -2977,9 +3055,13 @@ void Man::RemoveItemInHands()
 
 void Man::TakeInHandsAction(InventoryItem *item)
 {
-  HandleItemInHands(item);
+  // Use the common ownership transfer: remove the selected item from its
+  // clothing/cargo slot and put it in ISHands before making it active.
+  Person::TakeItemToHands(item);
 
-  _itemInHands = item;
+  // If the transfer could not put the item into Hands, clear the pending
+  // request instead of letting ProcessItemToHands retry the action forever.
+  if (item && _itemInHands != item) _itemInHandsWanted = NULL;
 
   // TODO: weapon will tell us what action to play
   if (item)
@@ -4813,6 +4895,10 @@ bool Man::SimulateAnimations(float &turn, float &moveX, float &moveZ, float delt
   if (aSpeed2 > 1e-6f)
     adjustTimeCoef = sqrt(speedWanted2/aSpeed2);
   saturate(adjustTimeCoef, minSpd, maxSpd);
+  // ANIMS-TEMPO: clamp removido em 20/11/2026. Ele existia para compensar as
+  // animacoes 1.30 convertidas; com os RTMs nativos 0.45 (anims.pbo original)
+  // o coeficiente nativo do motor ja esta correto. O clamp fazia a corrida em
+  // diagonal/ lateral ficar lenta (>1.15) e a mira andando ficar rapida (<0.80).
 
 #if 0
   if (this == GWorld->CameraOn())
@@ -6355,7 +6441,7 @@ bool Man::CreatePotentialStateFreeFall(ManVisualState & moveTrans, Vector3& fric
   return true;
 }
 
-const float SlideSlopeThreshold = 2.0f; //atan(sqrt(2))=cca=55�
+const float SlideSlopeThreshold = 2.0f; //atan(sqrt(2))=cca=55ï¿½
 inline float SlideSpeedWanted(float gradFwd, float gradAside, float forceStand)
 {
   if (forceStand) return 0;
@@ -6368,7 +6454,7 @@ inline float SlideSpeedWanted(float gradFwd, float gradAside, float forceStand)
   else
     return slope - 2*SlideSlopeThreshold; //brake is more efficient
 }
-const float StandSlopeThreshold = 0.6f; //atan(sqrt(2))=cca=38�
+const float StandSlopeThreshold = 0.6f; //atan(sqrt(2))=cca=38ï¿½
 inline bool ShouldStand(float gradFwd, float gradAside, bool forceStand)
 {
   //if (forceStand) return true; //NO! unable to prone on the road after such setting!
@@ -7496,8 +7582,7 @@ void Man::Simulate( float deltaT, SimulationImportance prec )
   // DoAssert(_moves.CheckValidState(GetMovesType()));
   // DoAssert(_gesture.CheckValidState(GetGesturesType()));
   if (_ladderBuilding && _ladderIndex>=0)
-  {
-    // check keyboard pilot / AI pilot
+  {    // check keyboard pilot / AI pilot
     if (IsDamageDestroyed())
     {
       DropLadder(_ladderBuilding,_ladderIndex);
@@ -7516,6 +7601,77 @@ void Man::Simulate( float deltaT, SimulationImportance prec )
     base::Simulate(deltaT,prec);
     SimulatePost(deltaT,prec);
     return;
+  }
+
+  // ANIMS-JUMP/VAULT: tratamento direto no jogador local (client-side).
+  // ESPACO = pulo (usa a mesma animacao de pulo 1.30 que aparecia no V).
+  // V      = passar muro/cerca (animacao de vault + impulso fisico).
+  if (this==GWorld->GetRealPlayer() && !_swimming && !IsDead() && Brain() && !Brain()->GetVehicleIn())
+  {
+    RStringB curName = GetMovesType()->GetMoveName(_moves.GetPrimaryMove(FutureVisualState()._moves).id);
+    const char *n = cc_cast(curName);
+    const bool onGround = _landContact && !_freeFall;
+
+    // ---------- ESPACO: pulo ----------
+    if (GInput.GetKeyToDo(DIK_SPACE) && onGround)
+    {
+      FutureVisualState()._speed[1] = 4.6f;
+      _landContact = false;
+      _freeFallStartTime = TIME_MAX;
+      FreeFall(1.2f);
+
+      // Pulo: usa os estados "Mjmp" do config (apontam para os RTM
+      // CdzpAmovPercMjmp*.rtm, a animacao de pulo de verdade). Se o config nao
+      // tiver esses estados, cai para a variante Ovr equivalente.
+      RStringB jumpMove = "AmovPercMjmpSnonWnonDf";
+      if (MoveNameHas(n,"Wrfl"))
+        jumpMove = "AmovPercMjmpSlowWrflDf";
+      else if (MoveNameHas(n,"Wmel"))
+        jumpMove = "AmovPercMjmpSlowWmelDf";
+      bool played = PlayMoveNow(jumpMove);
+      if (!played)
+      {
+        RStringB ovrMove = "AovrPercMrunSnonWnonDf";
+        if (MoveNameHas(n,"Wrfl")) ovrMove = "AovrPercMrunSlowWrflDf";
+        else if (MoveNameHas(n,"Wmel")) ovrMove = "AovrPercMrunSlowWmelDf";
+        played = PlayMoveNow(ovrMove);
+        jumpMove = ovrMove;
+      }
+      RptF("ANIMS-JUMP: espaco estado=%s mov=%d -> %s", n, played?1:0, cc_cast(jumpMove));
+    }
+
+    // ---------- V: passar muro ----------
+    if (GInput.GetKeyDo(DIK_V) && onGround)
+    {
+      bool able = IsAbleToGetOver();
+      RptF("ANIMS-VAULT: V pressionado estado=%s apto=%d", n, able?1:0);
+      if (able)
+      {
+        RStringB vault = "AovrPercMstpSnonWnonDf";
+        if (MoveNameHas(n,"Pknl")!=NULL)
+        {
+          if (MoveNameHas(n,"Wrfl")!=NULL) vault = "AovrPknlMstpSlowWrflDf";
+          else if (MoveNameHas(n,"Wmel")!=NULL) vault = "AovrPknlMstpSlowWmelDf";
+          else vault = "AovrPknlMstpSnonWnonDf";
+        }
+        else if (MoveNameHas(n,"Wrfl")!=NULL)
+          vault = (MoveNameHas(n,"Sras")!=NULL) ? "AovrPercMstpSrasWrflDf" : "AovrPercMstpSlowWrflDf";
+        else if (MoveNameHas(n,"Wmel")!=NULL)
+          vault = (MoveNameHas(n,"Sras")!=NULL) ? "AovrPercMstpSrasWmelDf" : "AovrPercMstpSlowWmelDf";
+
+        Vector3Val d = FutureVisualState().Direction();
+        Vector3 fwd(d.X(),0,d.Z());
+        if (fwd.SquareSize()>0.0001f) fwd.Normalize(); else fwd = VForward;
+        FutureVisualState()._speed = fwd * 2.3f;
+        FutureVisualState()._speed[1] = 6.0f;
+        _landContact = false;
+        _freeFallStartTime = TIME_MAX;
+        FreeFall(1.4f);
+        bool byAction = PlayActionNowGlobal("GetOver");
+        if (!byAction) PlayMoveNow(vault);
+        RptF("ANIMS-VAULT: estado=%s acao=%d", cc_cast(vault), byAction?1:0);
+      }
+    }
   }
 
   if (!IsControlled() && CheckPredictionFrozen())
@@ -11652,14 +11808,17 @@ void Man::ShowWeapons(bool showPrimary, bool showSecondary)
   _showSecondaryWeapon = showSecondary;
 }
 
-const float MaxStandSlope = 0.9f;
-const float MinStandSlope = -0.9f;
+// SUBIDA: limites originais (0.4 subida no run / 0.2 no sprint) faziam o
+// personagem cair para "andar lento" em qualquer ladeira. Agora ele mantem
+// corrida/sprint em praticamente qualquer declive caminhavel.
+const float MaxStandSlope = 1.0f;
+const float MinStandSlope = -1.0f;
 
-const float MaxRunSlope = 0.4f;
-const float MinRunSlope = -0.7f;
+const float MaxRunSlope = 1.0f;
+const float MinRunSlope = -1.0f;
 
-const float MaxSprintSlope = 0.2f;
-const float MinSprintSlope = -0.5f;
+const float MaxSprintSlope = 0.9f;
+const float MinSprintSlope = -0.9f;
 
 inline bool CanSprint(float gradFwd, float gradAside, float dirFwd, float dirAside)
 {
@@ -11729,19 +11888,42 @@ bool Man::IsAbleToGetOver() const
   CollisionBuffer col;
   Vector3Val playerPos = FutureVisualState().Position();
   Vector3Val playerDir = FutureVisualState().Direction();
-  float testDist = 1.5f;
+  int testAge = GetFutureVisualStateAge();
 
-  Vector3Val testPos1 = FutureVisualState().Position() + VUp * 1.2f;
-  GLandscape->ObjectCollisionLine(GetFutureVisualStateAge(), col, Landscape::FilterIgnoreOne(this), testPos1, testPos1 + playerDir * testDist, 0.25f, ObjIntersectGeom, ObjIntersectFire, CF_NEAREST_CONTACT);
-  if (col.Size() > 0)
-    return false;
+  // ANIMS-VAULT:
+  // O teste original exigia o vao totalmente livre a 1,2 m de altura e chao do
+  // outro lado dentro de +-0,3 m, o que impedia saltar muros reais.
+  // Agora: aceita obstaculo com topo ate 1,35 m e chegada entre -0,9 m e +0,35 m.
 
-  Vector3Val testPos2 = testPos1 + playerDir * testDist;
-  GLandscape->ObjectCollisionLine(GetFutureVisualStateAge(), col, Landscape::FilterIgnoreOne(this), testPos2, testPos2 - VUp * 2, 0.25f, ObjIntersectGeom, ObjIntersectFire, CF_NEAREST_CONTACT);
-  if (col.Size() > 0)
+  // 1) espaco livre acima do obstaculo imediato
   {
-    if ( abs(col[0].pos.y - playerPos.y) > 0.3f)
+    Vector3Val headPos = playerPos + VUp * 2.0f + playerDir * 0.6f;
+    GLandscape->ObjectCollisionLine(testAge, col, Landscape::FilterIgnoreOne(this), headPos, headPos + playerDir * 0.8f, 0.25f, ObjIntersectGeom, ObjIntersectFire, CF_NEAREST_CONTACT);
+    if (col.Size() > 0)
       return false;
+  }
+
+  // 2) topo do obstaculo a frente (o chao no mesmo nivel nao conta)
+  {
+    Vector3Val probeTop = playerPos + VUp * 2.0f + playerDir * 0.85f;
+    GLandscape->ObjectCollisionLine(testAge, col, Landscape::FilterIgnoreOne(this), probeTop, probeTop - VUp * 1.9f, 0.25f, ObjIntersectGeom, ObjIntersectFire, CF_NEAREST_CONTACT);
+    if (col.Size() > 0)
+    {
+      float top = col[0].pos.y - playerPos.y;
+      if (top > 1.6f) return false; // alto demais para saltar
+    }
+  }
+
+  // 3) ponto de chegada (1,5 m a frente) precisa estar em nivel parecido
+  {
+    Vector3Val testPos2 = playerPos + VUp * 2.0f + playerDir * 1.5f;
+    GLandscape->ObjectCollisionLine(testAge, col, Landscape::FilterIgnoreOne(this), testPos2, testPos2 - VUp * 3.0f, 0.25f, ObjIntersectGeom, ObjIntersectFire, CF_NEAREST_CONTACT);
+    if (col.Size() > 0)
+    {
+      float dy = col[0].pos.y - playerPos.y;
+      if (dy > 0.35f || dy < -0.9f)
+        return false;
+    }
   }
   return true;
 }
@@ -15219,11 +15401,10 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
   if (zoom) 
   {
     CameraType camType = GWorld->GetCameraType();
+    // Zoom on the scroll button (middle mouse) held, straight from the device so the
+    // saved key profile cannot remap it back to the right mouse button.
     zoom->_zoomInsteadOfOptics = (
-      input->GetAction(UALockTarget) 
-#if _VBS2 //no zooming with RMB when having 2D optics
-      && !(GetOpticsModel(this) && camType == CamGunner)
-#endif
+      GInput.GetMouseButton(2) > 0.5f
       && (camType == CamInternal || camType == CamExternal || camType == CamGunner)
     );
     RenderVisualStateScope(true),zoom->Update(input,deltaT,this); // Zoom update may call RenderVisualState to check if optics are enabled
@@ -15257,25 +15438,25 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
   _lookXRotWanted += diveChangeWanted;
   _headYRotWantedPan = headingChangeWanted;
 
-  bool isWalking = _isWalking;
-  bool toggleWR = input->GetActionToDo(UAWalkRunToggle);
-  bool tempWR = input->GetAction(UAWalkRunTemp)>0.5f;
-  if (toggleWR) //we should lock the UAWalkRunTemp action until released
-    _walkRunTempLocked = true;
-  else if (_walkRunTempLocked && !tempWR) 
-    _walkRunTempLocked = false; //unlock
-  if (toggleWR)
-    isWalking = _isWalking = !_isWalking;
-  else if (tempWR && !_walkRunTempLocked)
-    isWalking = !isWalking;
+  // Movement modes (requested):
+  //   W alone       -> jog (light run)
+  //   Shift (hold)  -> sprint
+  //   Control (hold) -> slow walk
+  const bool shiftHeld = GInput.GetKey(DIK_LSHIFT) > 0.5f || GInput.GetKey(DIK_RSHIFT) > 0.5f;
+  const bool altHeld = GInput.GetKey(DIK_LCONTROL) > 0.5f || GInput.GetKey(DIK_RCONTROL) > 0.5f;
+
+  bool isWalking = altHeld;
 
   if(_walkForced)
   {// walk forced by script function
     isWalking = true;
   }
+  _isWalking = isWalking;
+  _walkRunTempLocked = altHeld;
 
   float runWalkFactor = isWalking ? 0.5f : 1.0f;
-  float fastForwardAct = input->GetActionMoveFastForward();
+  // Double-tap W sprint disabled: the character only runs while Shift is held.
+  float fastForwardAct = 0;
 
   /// when weaponRaised action is active, the weapon is "raised" and SelectManActionRaised array is used to select the ManAction
   bool weaponRaised = CheckAndUpdateRaiseWeapon(input) || (GetEnableOptics(FutureVisualState(), this) && GWorld->GetCameraTypeWanted()==CamGunner);
@@ -15489,10 +15670,8 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
     }
   }
 
-  if (input->GetActionToDo(UASlow))
-    _walkToggle = !_walkToggle;
-
-  bool turbo = GInput.GetAction(UATurbo) > 0.5f;
+  // Shift is now the sprint key (see movement modes above), Alt is the walk key.
+  bool turbo = shiftHeld;
 
   //DIAG_MESSAGE(
   //  500,Format("turnWanted %+.2f -> %+.2f",_turnWanted,turnWanted)
@@ -15508,10 +15687,10 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
   _walkSpeedFineControl = false;
 
   bool shouldStand = ShouldStand(_landGradFwd, _landGradAside, _forceStand);
-  bool wantSlow = false;
+  bool wantSlow = isWalking;
   if (GWorld->FocusOn() == unit)
     // change
-    wantSlow = _walkToggle || GWorld->GetCameraTypeWanted()==CamGunner;
+    wantSlow = wantSlow || GWorld->GetCameraTypeWanted()==CamGunner;
   float dirFwd = fbWanted>0.2 ? 1 : (fbWanted<-0.2 ? -1 : 0);
   float dirAside = rlWanted>0.2 ? 1 : (rlWanted<-0.2 ? -1 : 0);
   float dirSiz = sqrtf(dirFwd*dirFwd + dirAside*dirAside);
@@ -15609,11 +15788,6 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
   {
     // check which action we should take - based on keys
     int fastFlag = turbo;
-    // FIX: when some input mapped to GetActionMoveFastForward() is present, do not keep FastMove active
-    //      The problem was, when sprint was achieved by fastForward action mapped to XBOXThumb, it was preserved
-    //      even when thumb was moving back (no translation through RUN and WALK).
-    if (fastForwardAct<+0.1f && map->GetUseFastMove())
-      fastFlag = true; 
     int rlFlag = 0, fbFlag = 0;
     if (fabs(rlWanted)>+1.5f)
       fastFlag = 1;
@@ -15639,10 +15813,9 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
     // update fastFlag and calculate _walkSpeedWanted
     float maxSpeed = Type()->GetMaxSpeedMs();
     float limitSpeed = floatMin(1.2f - GetEncumbrance(), 1.0f) * maxSpeed;
-    
-    if (fabs(_leanZRot)+fabs(_leanZRotWanted)>0.5f)
-      // if there is any significant leaning, limit movement speed to walking
-      limitSpeed = floatMin(limitSpeed,2.5f);
+
+    // Lean is an additive pose overlay; do not force the character back to walking.
+    // Normal run/sprint, encumbrance, slope, and water limits still apply below.
     if (_waterDepth>0.6)
     {
       if (_waterDepth>1.0)
@@ -15708,6 +15881,15 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
       saturate(_walkSpeedWantedZ,-limitSlow,+limitSlow);
       saturate(_walkSpeedWantedX,-limitSlow,+limitSlow);
       break;
+    }
+
+    // ANIMS-MOVE-DIAG: numeros reais do movimento (para calibrar velocidade).
+    {
+      static int diagTick = 0;
+      if ((fabs(fbWanted)>0.01f || fabs(rlWanted)>0.01f) && (++diagTick % 90)==0)
+        RptF("ANIMS-MOVE: fb=%.2f fast=%d max=%.2f limF=%.2f limS=%.2f wantZ=%.2f walk=%d raised=%d move=%s",
+          fbWanted, fastFlag, maxSpeed, limitFast, limitSlow, _walkSpeedWantedZ, isWalking?1:0, weaponRaised?1:0,
+          cc_cast(GetMovesType()->GetMoveName(_moves.GetPrimaryMove(FutureVisualState()._moves).id)));
     }
 
     // map flags to action
@@ -16137,7 +16319,42 @@ void Man::PerformAction(const Action *action, AIBrain *unit)
     case ATGetOver:
       Assert(action->GetTarget() == this);
 	    if( IsAbleToGetOver() )
-  		  PlayActionNowGlobal("GetOver");
+      {
+        // ANIMS-VAULT: usa sempre a animacao de subir muro (Ovr), nunca a de pulo (Mjmp),
+        // independente de estar andando/correndo.
+        RStringB curName = GetMovesType()->GetMoveName(_moves.GetPrimaryMove(FutureVisualState()._moves).id);
+        const char *n = cc_cast(curName);
+        RStringB vault = "AovrPercMstpSnonWnonDf";
+        if (MoveNameHas(n,"Pknl")!=NULL)
+        {
+          if (MoveNameHas(n,"Wrfl")!=NULL) vault = "AovrPknlMstpSlowWrflDf";
+          else if (MoveNameHas(n,"Wmel")!=NULL) vault = "AovrPknlMstpSlowWmelDf";
+          else vault = "AovrPknlMstpSnonWnonDf";
+        }
+        else if (MoveNameHas(n,"Wrfl")!=NULL)
+        {
+          vault = (MoveNameHas(n,"Sras")!=NULL) ? "AovrPercMstpSrasWrflDf" : "AovrPercMstpSlowWrflDf";
+        }
+        else if (MoveNameHas(n,"Wmel")!=NULL)
+        {
+          vault = (MoveNameHas(n,"Sras")!=NULL) ? "AovrPercMstpSrasWmelDf" : "AovrPercMstpSlowWmelDf";
+        }
+        if (!PlayActionNowGlobal("GetOver")) PlayMoveNow(vault);
+
+        // ANIMS-VAULT: alem da animacao, aplica um impulso que garante a
+        // transposicao fisica do obstaculo (a animacao sozinha nao cruza muros).
+        if (this==GWorld->GetRealPlayer())
+        {
+          Vector3Val d = FutureVisualState().Direction();
+          Vector3 fwd(d.X(),0,d.Z());
+          if (fwd.SquareSize()>0.0001f) fwd.Normalize(); else fwd = VForward;
+          FutureVisualState()._speed = fwd * 2.3f;
+          FutureVisualState()._speed[1] = 6.0f;
+          _landContact = false;
+          _freeFallStartTime = TIME_MAX;
+          FreeFall(1.4f);
+        }
+      }
       break;
     case ATStrokeFist:
       Assert(action->GetTarget() == this);
@@ -17196,17 +17413,45 @@ void Man::RecalcLeaningTransform()
   float leanRotAngle;
   float leanShift;
   ActionMap *map = type->GetActionMap(_moves.GetPrimaryMove(vs->_moves).id, AnimSubIx());
+  ActionMap *leanMap = map;
   if (map)
   {
     if (_leanZRot >= 0)
     {
-      leanRotAngle = map->GetLeanRRot();
-      leanShift = map->GetLeanRShift();
+      leanRotAngle = leanMap->GetLeanRRot();
+      leanShift = leanMap->GetLeanRShift();
     }
     else
     {
-      leanRotAngle = map->GetLeanLRot();
-      leanShift = map->GetLeanLShift();
+      leanRotAngle = leanMap->GetLeanLRot();
+      leanShift = leanMap->GetLeanLShift();
+    }
+
+    // Some locomotion action maps (notably fast/strafe variants) omit the
+    // lean offsets even though the stop map for that same movement family
+    // defines them. Reuse those offsets so Q/E remain an additive pose while
+    // running instead of silently becoming a no-op.
+    if (fabs(leanRotAngle) < 1e-6f && fabs(leanShift) < 1e-6f)
+    {
+      const MoveIdExt &stopMove = type->GetMove(map, ManActStop);
+      if (stopMove.id != MoveIdNone)
+      {
+        ActionMap *stopMap = type->GetActionMap(stopMove.id, AnimSubIx());
+        if (stopMap && stopMap != map)
+        {
+          leanMap = stopMap;
+          if (_leanZRot >= 0)
+          {
+            leanRotAngle = leanMap->GetLeanRRot();
+            leanShift = leanMap->GetLeanRShift();
+          }
+          else
+          {
+            leanRotAngle = leanMap->GetLeanLRot();
+            leanShift = leanMap->GetLeanLShift();
+          }
+        }
+      }
     }
   }
   else
@@ -17216,6 +17461,11 @@ void Man::RecalcLeaningTransform()
   }
 
   float leaningFactor = ValueTest(vs,&MoveInfoMan::LeaningFactor);
+  // Fast locomotion clips may set their leaning factor to zero to suppress
+  // the overlay. If the player is actively holding Q/E, preserve the lean
+  // request; the movement animation still supplies its normal limb motion.
+  if (fabs(_leanZRot) > 0.01f && leaningFactor < 1e-4f)
+    leaningFactor = 1.0f;
   float leaningAngle = -_leanZRot * leanRotAngle * leaningFactor;
   float leaningShift = _leanZRot * leanShift * leaningFactor;
   if (fabs(leaningAngle) > 1e-6f || fabs(leaningShift) > 1e-6f)
@@ -24101,7 +24351,7 @@ ActionContextBase * ActionContextBase::CreateObject(ParamArchive &ar)
   RString type;
   if (ar.Serialize("type", type, 1, "default") != LSOK) return NULL;
   if (stricmp(type, "default") == 0) return new ActionContextDefault();
-  if (stricmp(type, "actionHandler")) return new PlayActionHandlerContext();
+  if (stricmp(type, "actionHandler") == 0) return new PlayActionHandlerContext();
   if (stricmp(type, "animation") == 0) return new ActionContextAnimation();
   if (stricmp(type, "throw") == 0) return new ActionContextThrow();
   if (stricmp(type, "takeinhands") == 0) return new ActionContextTakeInHands();
@@ -24113,5 +24363,4 @@ ActionContextBase * ActionContextBase::CreateObject(ParamArchive &ar)
   ErrF("Unknown action context type: %s", cc_cast(type));
   return NULL;
 }
-
 

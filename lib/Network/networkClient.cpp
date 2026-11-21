@@ -450,6 +450,7 @@ NetworkClient::NetworkClient(NetworkManager *parent, RString address, RString pa
   _clientState = NCSCreated;
   _serverState = NSSSelectingMission;
   _serverTimeout = INT_MAX;
+  _initScriptRun = false;
 
   _connectionQuality = CQGood;
   _connectionDesync = CDGood;
@@ -588,6 +589,7 @@ NetworkClient::NetworkClient(NetworkManager *parent, NetworkServer *server, int 
   _clientState = NCSCreated;
   _serverState = NSSSelectingMission;
   _serverTimeout = INT_MAX;
+  _initScriptRun = false;
 
   _connectionQuality = CQGood;
   _connectionDesync = CDGood;
@@ -4489,13 +4491,25 @@ void NetworkClient::OnMessage(int from, NetworkMessage *msg, NetworkMessageType 
       {
         AskForMoveItemMessage ask;
         TMSGCHECK(ask.TransferMsg(ctx))
-        if (ask._target && ask._item && ask._target->CanMoveItem(ask._index, ask._item))
+        if (ask._target && ask._item)
         {
-          Entity *parent = ask._item->GetHierarchyParent();
-          if (parent) parent->RemoveOwnedItem(ask._item);
+          ask._item->SetInventoryRotated(ask._rotated);
+          if (ask._target->CanMoveItem(ask._index, ask._item))
+          {
+            Entity *parent = ask._item->GetHierarchyParent();
+            if (parent) parent->RemoveOwnedItem(ask._item);
 
-          ask._target->MoveItem(ask._index, ask._item);
+            ask._target->MoveItem(ask._index, ask._item);
+          }
         }
+      }
+      break;
+    case NMTAskForRotateInventoryItem:
+      {
+        AskForRotateInventoryItemMessage ask;
+        TMSGCHECK(ask.TransferMsg(ctx))
+        if (ask._person && ask._item && ask._person->FindItem(ask._item) && ask._item->RotateInInventory())
+          UpdateObject(ask._item, NMCUpdateGeneric, NMFGuaranteed);
       }
       break;
     case NMTAskForTakeItemToHands:
@@ -7623,11 +7637,20 @@ void NetworkClient::AskForDropItem(Person *person, InventoryItem *item)
   SendMsg(&msg, NMFGuaranteed);
 }
 
-void NetworkClient::AskForMoveItem(EntityAI *target, int index, InventoryItem *item)
+void NetworkClient::AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated)
 {
   AskForMoveItemMessage msg;
   msg._target = target;
   msg._index = index;
+  msg._item = item;
+  msg._rotated = rotated;
+  SendMsg(&msg, NMFGuaranteed);
+}
+
+void NetworkClient::AskForRotateInventoryItem(Person *person, InventoryItem *item)
+{
+  AskForRotateInventoryItemMessage msg;
+  msg._person = person;
   msg._item = item;
   SendMsg(&msg, NMFGuaranteed);
 }

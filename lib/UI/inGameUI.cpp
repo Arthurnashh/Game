@@ -2931,6 +2931,11 @@ void DisplayUnitInfo::InitControls()
   ammoMode = NULL;
   counterMeasuresAmmo = NULL;
   counterMeasuresMode = NULL;
+  statusThirst = NULL;
+  statusHunger = NULL;
+  statusTemperature = NULL;
+  statusBlood = NULL;
+  statusHealth = NULL;
 
 #if _HELISIM_ROTORLIB
   airSpeedIndicator = NULL;
