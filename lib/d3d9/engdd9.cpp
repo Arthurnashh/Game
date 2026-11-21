@@ -2,6 +2,7 @@
 #include "../wpch.hpp"
 
 #if !_DISABLE_GUI && !defined _SERVER
+#include <dxgi.h>
 #include "engdd9.hpp"
 #include "postProcess.hpp"
 
@@ -12526,7 +12527,7 @@ void EngineDD9::DrawIndexedPrimitive(int cb, int beg, int end, const Shape &sMes
         }
         else
         {
-          __asm nop;
+          // no-op
         }
       }
       //LogF("TLEnd");
@@ -22398,14 +22399,14 @@ void EngineDD9::Init3D()
   #if !XBOX_D3D
     #define RESTORE_AFFINITY 1
     // remember current affinity so that we can restore it later
-    DWORD oldAffinity = ~0;
-    DWORD sysAffinity = ~0;
+    DWORD_PTR oldAffinity = ~(DWORD_PTR)0;
+    DWORD_PTR sysAffinity = ~(DWORD_PTR)0;
     GetProcessAffinityMask(GetCurrentProcess(),&oldAffinity,&sysAffinity);
     #if 1
       // limit us to 2 CPU to fool driver detection and prevent driver using threaded optimizations
       // note: limiting to 1 CPU has caused game freezing (perhaps driver was using some not thread safe optimizations?)
       int usedCpus = 0;
-      DWORD limitedAffinity = 0;
+      DWORD_PTR limitedAffinity = 0;
       for (int cpu=0; cpu<32 && usedCpus<2; cpu++)
       {
         if ((1<<cpu)&oldAffinity) usedCpus++,limitedAffinity |= 1<<cpu;
@@ -25187,6 +25188,7 @@ EngineDD9::EngineDD9()
 
   _resetStatus = D3D_OK;
   _resetRequested = false;
+  _mainDepthPrimed = false;
   _bloomThreshold = DefaultBloomThreshold;
   _rotBlurPower = DefaultRotBlurPower;
 }
