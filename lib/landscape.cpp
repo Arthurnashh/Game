@@ -5936,8 +5936,13 @@ void Landscape::PrimeDepthBuffer(GridRectangle &groundPrimed, Scene &scene, Scen
   // Calculate the land grid rectangle in a near distance
   GridRectangle rectGroundDepth;
   GetGridRectangleAligned(rectGroundDepth, scene, distanceLimit, GetLandGrid(), _segCache->_landSegmentSize, _segCache->_landSegmentAlign);
-  
-  groundPrimed = rectGroundDepth;
+
+  // the region counts as primed only when this pass actually writes the main
+  // depth buffer - the z-only pass, or any priming pass when FSAA is off
+  // (shared depth buffer); with FSAA on, the SSSM depth-map pass renders into
+  // a separate target and must not mark the ground as primed
+  if (zOnly || GEngine->GetFSAA() == 0)
+    groundPrimed = rectGroundDepth;
 
   // set default depth range for normal rendering
   GEngine->SetDepthRange(DepthBorderCommonMin,DepthBorderCommonMax);
