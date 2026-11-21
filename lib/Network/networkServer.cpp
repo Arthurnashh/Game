@@ -792,11 +792,13 @@ void NetworkServer::BattlEye::PlayerGUIDReceived(int player)
 
 void NetworkServer::BattlEye::PlayerGUIDIsValid(int player, const CSteamID &ownerId)
 {
+#if _ENABLE_STEAM_OWNERSHIP
   if (_callbacks._playerGUIDIsValid)
   {
     uint64 ownerSteamId = ownerId.ConvertToUint64();
     (*_callbacks._playerGUIDIsValid)(player, &ownerSteamId, sizeof(ownerSteamId));
   }
+#endif
 };
 
 bool NetworkServer::BattlEye::UpdatePositionCallback(int player, const char *netId, float x, float y, float z,

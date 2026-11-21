@@ -449,6 +449,7 @@ NetworkClient::NetworkClient(NetworkManager *parent, RString address, RString pa
   _clientState = NCSCreated;
   _serverState = NSSSelectingMission;
   _serverTimeout = INT_MAX;
+  _initScriptRun = false;
 
   _connectionQuality = CQGood;
   _connectionDesync = CDGood;
@@ -587,6 +588,7 @@ NetworkClient::NetworkClient(NetworkManager *parent, NetworkServer *server, int 
   _clientState = NCSCreated;
   _serverState = NSSSelectingMission;
   _serverTimeout = INT_MAX;
+  _initScriptRun = false;
 
   _connectionQuality = CQGood;
   _connectionDesync = CDGood;
