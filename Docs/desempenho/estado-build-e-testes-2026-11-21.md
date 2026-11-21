@@ -5,7 +5,8 @@
 - A base desta execução é `50fa2a66609e3508d66a0f679f8dd7eb6e03ef86`. `Game.sln` usa Visual Studio 2026, toolset MSVC `v145`, SDK `10.0.26100.0` e plataforma x64.
 - O workflow `.github/workflows/build-release.yml` compila as configurações `Retail` e `Retail Server` no runner `windows-2025-vs2026`, e coleta `DayZ.exe`, `DayZServer.exe` e DLLs.
 - A execução `44626990961` em `main` passou no build de cliente e servidor para a revisão base. Como foi disparada por push, não produziu artefato candidato.
-- O workflow agora também roda `cargo fmt`, 15 testes Rust, Clippy e build release do crate PBO em Windows x64. Para pull requests, publica `dayz-pr-candidate-<run_id>` com os binários da candidata. A validação desse novo fluxo ainda está pendente.
+- A Action candidata `44899291460` passou no setup Rust, `cargo fmt`, 15 testes Rust, Clippy, build release do crate PBO em Windows x64, build do cliente e servidor, coleta dos executáveis, teste do script de pacote e upload.
+- O artefato PR é `dayz-pr-candidate-44899291460` (ID `14705848702`), tamanho ZIP 12.222.833 bytes, SHA-256 `94290db2f06cf94f6dc1377ccbaf5be6ad532bbca41a9664c4ae0c633087828c`, expira em 21/12/2026. Contém `client/DayZ.exe` e `server/DayZServer.exe`, ambos PE32+ x86-64. SHA-256 do cliente: `5fd157b5218a05d3b2697c3607aba7819ff75790ea227e27bde0f4eba075e77b`; SHA-256 do servidor: `e961d1824744b1803b15b3ab4f8755d7b31db96180d352e268d0825df8010152`. Extração e formato dos executáveis foram verificados.
 - O Linux local não tem Visual Studio/MSBuild/`link.exe`; o build oficial x64 deve ser validado pela Action, não inferido a partir dos testes Linux.
 
 ## Resultado local
@@ -38,7 +39,7 @@ Os comentários `//export` foram corrigidos para comentários GNU Make. `make -n
 | ABI Rust | Smoke test C++ contra biblioteca release x86_64 | Passou |
 | ABI Rust i686 | Smoke test C++ contra biblioteca release i686 sob QEMU | Passou |
 | Cliente/servidor x64 da revisão base | GitHub Actions `44626990961`, runner VS2026 | Passou |
-| Candidata Windows x64 | Build, Rust e upload de artefato pelo PR | Pendente da Action candidata |
+| Candidata Windows x64 | Action `44899291460`, build, Rust, teste de pacote e upload do artefato PR | Passou |
 | Runtime cliente-servidor | Extração limpa, entrada na missão, rede e reconexão | Pendente |
 | Desempenho do jogo | Captura F2 em cenários reais | Pendente; requer executar a candidata e a referência |
 | Codec com assets reais | Igualdade de saída e comparador C++/Rust com corpus PBO | Pendente; sem corpus validado |

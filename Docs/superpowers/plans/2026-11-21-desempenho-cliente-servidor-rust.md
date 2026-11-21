@@ -14,11 +14,11 @@
 
 | Trilha | Estado | Evidência ou bloqueio |
 | --- | --- | --- |
-| F1 builds | Build de referência confirmado; candidata em validação | A Action `44626990961` compilou `Retail` e `Retail Server` x64 em `windows-2025-vs2026`. A Action do PR também verificará Rust no Windows e publicará um artefato candidato. O build local Linux não substitui esse alvo. Ver [estado dos builds e testes](../../desempenho/estado-build-e-testes-2026-11-21.md). |
+| F1 builds | Build x64 candidato aprovado; runtime pendente | A Action `44899291460` compilou `Retail` e `Retail Server` em `windows-2025-vs2026`, validou o script de pacote e publicou `dayz-pr-candidate-44899291460`. A execução de referência `44626990961` também passou. O build local Linux não substitui esse alvo. Ver [estado dos builds e testes](../../desempenho/estado-build-e-testes-2026-11-21.md). |
 | F2 referência | Bloqueado | Sem executáveis e distribuição de teste para capturar cliente e dedicado. |
 | S1 filas | Implementação e teste unitário concluídos; runtime pendente | Cursor e compactação estável integrados; helper testado com semântica de referência `Ref<T>`. Replay de rede e ganho ainda dependem do jogo executável. |
 | S2/S3/C1/C2/C3 | Bloqueados para mudanças orientadas por perfil | Dependem das capturas F2 e de replay funcional. |
-| R1 codec PBO | Piloto isolado implementado; validação Windows e corpus pendentes | 15 testes debug/release em x86_64 e i686 sob QEMU, Clippy e smoke C++ ABI x86_64 e i686 passaram localmente. A Action candidata compila e testa o crate em Windows x64. Falta comparar com corpus PBO real e medir desempenho ponta a ponta. |
+| R1 codec PBO | Piloto isolado implementado; Windows validado, corpus e desempenho pendentes | 15 testes debug/release em x86_64 e i686 sob QEMU, Clippy e smoke C++ ABI x86_64 e i686 passaram localmente. A Action `44899291460` passou em formatação, testes, Clippy e build release no Windows x64. Falta comparar com corpus PBO real e medir desempenho ponta a ponta. |
 | R2/R3/R4/E1 | Pendentes | Dependem de corpus, perfil, build e runtime qualificados por plataforma. |
 
 Nenhuma funcionalidade do jogo foi removida. O crate Rust continua isolado e não foi escolhido como backend padrão.
