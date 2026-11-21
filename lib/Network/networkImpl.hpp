@@ -5082,7 +5082,12 @@ public:
 
   void SpawnForPlayer(int dpnid, GameDataCode *code, const GameValue &args);
 
-  void PlayerGUIDIsValid(int player, const CSteamID &ownerId) { _beIntegration.PlayerGUIDIsValid(player, ownerId); };
+  void PlayerGUIDIsValid(int player, const CSteamID &ownerId)
+  {
+#if _USE_BATTL_EYE_SERVER
+    _beIntegration.PlayerGUIDIsValid(player, ownerId);
+#endif
+  };
 
   //! The output format is "creator:id friendlyName"
   RString NetworkIdToNetIdFriendly(const NetworkId &id);
