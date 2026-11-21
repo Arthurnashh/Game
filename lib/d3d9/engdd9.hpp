@@ -95,6 +95,8 @@ const int NumDynamicVB2D = 1;
 # define XBOX_D3D 0
 #endif
 
+struct DXGI_ADAPTER_DESC;
+
 struct FloatConstant
 {
   float ar[4];
@@ -4329,6 +4331,9 @@ private:
   /// Flag to determine what we're rendering (Usual stuff, shadow buffer, depth buffer...)
   RenderingMode _renderingMode; // EXCL
 
+  //! true when the main depth buffer was primed by the last priming pass
+  bool _mainDepthPrimed;
+
   PredicationMode CurrentPredicationMode() const
   {
     if (_renderingMode==RMDPrime)
@@ -5801,6 +5806,8 @@ public:
   }
   //! Set the current material, combine material color with lights
   void DoSetMaterial(int cb, const TLMaterial &mat);
+  //! Apply a material modulated by the modulate color, skipping depth passes
+  void ApplyMaterialTL(int cb, const TLMaterial &tlMat);
   //void SetMaterial(const TLMaterial &mat, const LightList &lights, int spec);
 
   void ProjectionChanged(int cb);
@@ -6151,6 +6158,7 @@ public:
   virtual void FogColorChanged(ColorVal fogColor );
   virtual void EnableNightEye(float night);
   virtual void SetZPrimingDone(int cb, bool zPrimingDone);
+  virtual void SetMainDepthPrimed(bool mainDepthPrimed) override {_mainDepthPrimed = mainDepthPrimed;}
 
   void PrepareMesh( int cb, int spec ); // prepare internal variables
   bool BeginMesh( int cb, TLVertexTable &mesh, int spec ); // convert all mesh vertices
@@ -6303,6 +6311,7 @@ public:
   void Init3D();
 
   void InitDirectDraw7(int adapter);
+  void InitDXGIInfo(const DXGI_ADAPTER_DESC &adapterDesc);
   void Done3D();
   // make sure adapter is selected and _deviceLevel set
   void InitAdapter();
