@@ -127,21 +127,33 @@ static const bool StrictAPI = false;
 
 static void InitShaderDirs()
 {
-  BString<256> shaderDir = __FILE__; // should be something like PROJECT_ROOT "\\d3d9\\engdd9.cpp"
-  const char *nam = GetFilenameExt(shaderDir);
-  if (nam)
+  // packaged layout: shader sources live in bin\ShaderSources_3_0 next to the exe
+  char exePath[MAX_PATH];
+  const DWORD exeLength = GetModuleFileNameA(NULL, exePath, lenof(exePath));
+  if (exeLength && exeLength < lenof(exePath))
   {
-    // replace the filename part with RelShaderPath_3_0
-    strcpy(LString(shaderDir).Mid(nam),RelShaderPath_3_0);
+    const char *exeName = GetFilenameExt(exePath);
+    HLSLDir = RString(exePath, exeName - exePath) + "bin\\" RelShaderPath_3_0;
   }
-  else
+  // development fallback: shader sources in the source checkout
+  if (HLSLDir.IsEmpty() || !QIFileFunctions::FileExists(HLSLDir + "VS.hlsl"))
   {
-    // no failure expected, but if there was one, try to recover
-    Fail("Unexpected file path");
-    strcpy(shaderDir,".\\" RelShaderPath_3_0);
+    BString<256> shaderDir = __FILE__; // should be something like PROJECT_ROOT "\\d3d9\\engdd9.cpp"
+    const char *nam = GetFilenameExt(shaderDir);
+    if (nam)
+    {
+      // replace the filename part with RelShaderPath_3_0
+      strcpy(LString(shaderDir).Mid(nam),RelShaderPath_3_0);
+    }
+    else
+    {
+      // no failure expected, but if there was one, try to recover
+      Fail("Unexpected file path");
+      strcpy(shaderDir,".\\" RelShaderPath_3_0);
+    }
+
+    HLSLDir = shaderDir.cstr();
   }
-  
-  HLSLDir = shaderDir.cstr();
   
   FPShaders = HLSLDir + "FPShaders.hlsl";
 
