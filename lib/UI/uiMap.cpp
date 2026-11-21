@@ -10501,7 +10501,10 @@ bool DisplayInventory::OnDrop(IControl *dragCtrl, IControl *dropCtrl, float x, f
       {
         // do not break layout by removing item first
         dst->AddItem(item, x, y);
-        rotationPreview.Commit();
+        // shortcut cells only assign the shortcut without moving the item,
+        // so the previewed rotation must not become authoritative there
+        if (dstShortcut < 0)
+          rotationPreview.Commit();
         return true;
       }
     }
