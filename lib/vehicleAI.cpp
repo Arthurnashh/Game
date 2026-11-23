@@ -9554,8 +9554,15 @@ bool EntityAIFull::FireMGun(const TurretContext &context, const WeaponModePtr &p
   }
   gaussX*=2.0/gausPassNum;
   gaussY*=2.0/gausPassNum;
-  float randomX=(gaussX-1)*(ptr.SumDispersionModifiers(this));
-  float randomY=(gaussY-1)*(ptr.SumDispersionModifiers(this));
+  const float configuredDispersion = ptr.SumDispersionModifiers(this);
+  float effectiveDispersion = configuredDispersion;
+  // Some old rifle configs have a base dispersion near 0.1 radians even for
+  // a player using iron sights. Keep a small spread for bullets, while
+  // preserving the separate pellet spread of shotguns.
+  if (QIsManual() && type->_simulation == AmmoShotBullet)
+    saturateMin(effectiveDispersion, 0.003f);
+  float randomX=(gaussX-1)*effectiveDispersion;
+  float randomY=(gaussY-1)*effectiveDispersion;
   if( !QIsManual() )
   {
     AIBrain *unit = context._gunner ? context._gunner->Brain() : NULL;
@@ -9573,6 +9580,15 @@ bool EntityAIFull::FireMGun(const TurretContext &context, const WeaponModePtr &p
       randomX *= 20;
       randomY *= 20;
     }
+  }
+
+  if (QIsManual() && GWorld && this == GWorld->GetRealPlayer())
+  {
+    static int shotDispersionDiagnostics = 0;
+    if (shotDispersionDiagnostics++ < 32)
+      RptF("ShotDispersion base=%g attachments=%g effective=%g randomX=%g randomY=%g fade=%d",
+        mode->_dispersion, configuredDispersion - mode->_dispersion,
+        effectiveDispersion, randomX, randomY, DoFade ? 1 : 0);
   }
 
 

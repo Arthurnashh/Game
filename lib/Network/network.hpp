@@ -1081,10 +1081,11 @@ public:
   virtual void LoadIsland(RString islandName) = 0;
 #endif
 
-  virtual void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type) = 0;
+  virtual void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type, InventoryItem *item) = 0;
   virtual void AskForThrowItem(Man *person, InventoryItem *item, Vector3 pos, Vector3 dir) = 0;
 	virtual void AskForDropItem(Person *person, InventoryItem *item) = 0;
-  virtual void AskForMoveItem(EntityAI *target, int index, InventoryItem *item) = 0;
+  virtual void AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated) = 0;
+  virtual void AskForRotateInventoryItem(Person *person, InventoryItem *item) = 0;
   virtual void AskForTakeItemToHands(Person *person, InventoryItem *item) = 0;
   virtual void AskForSwapItems(InventoryItem *item1, InventoryItem *item2, Person *owner) = 0;
 
@@ -1402,6 +1403,7 @@ DEFINE_ENUM_END(TMError)
   XX(FORMAT_UPDATE, ItemShortcut, UpdateItemShortcut, "<embedded/> Item shortcut in ClientOutput", Update) \
   XX(FORMAT_UPDATE, InventoryItem, UpdateInventoryItem, "Generic update of InventoryItem (: EntityAI).", Update) \
   XX(FORMAT_SIMPLE, Dummy, AskForMoveItem, "Ask owner for Inventory UI action.", Ask) \
+  XX(FORMAT_SIMPLE, Dummy, AskForRotateInventoryItem, "Ask server to rotate inventory item.", Ask) \
   XX(FORMAT_SIMPLE, Dummy, AskForThrowItem, "Ask owner for throwing UI action.", Ask) \
   XX(FORMAT_SIMPLE, Dummy, AskForDropItem, "Ask owner for Inventory UI action.", Ask) \
   XX(FORMAT_SIMPLE, Dummy, AskForSetItemShortcut, "Ask owner for Inventory UI action.", Ask) \
@@ -2696,6 +2698,12 @@ struct PlayerIdentity : public NetworkSimpleObject
   XUID xuid;
 
   LocalPlayerInfoList localPlayerInfoList;
+
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+  /// Steam identity and authentication ticket, verified by the dedicated server.
+  NetInt64 _steamID;
+  AutoArray<char> _steamSessionTicket;
+#endif
 
   //! address for peer-to-peer voice transition
   sockaddr_in _voiceAddress;

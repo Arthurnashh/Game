@@ -91,6 +91,20 @@ Basic win32 framework, application init and message handling.
 
 #include "jvmInit.hpp"
 
+#if _ENABLE_STEAM && defined(_WIN64)
+#include <Steamworks/steam_api.h>
+#include <Steamworks/steam_gameserver.h>
+static bool GSteamInitialized = false;
+static bool GSteamGameServerInitialized = false;
+static bool GSteamGameServerAdvertised = false;
+static bool GSteamGameServerLoginWarning = false;
+static bool GSteamServerOfficial = false;
+static DWORD GSteamGameServerNextUpdate = 0;
+static DWORD GSteamGameServerLoginStarted = 0;
+static int GSteamGameServerMaxPlayers = 0;
+static RString GSteamGameServerName;
+#endif
+
 #include "system/enf_timer.h"
 #if !defined(_WIN64)
   #include "d3d9/engdd9.hpp"
@@ -4130,6 +4144,15 @@ static void SingleArgument( const char *beg, const char *end )
 {
   if (SAFinish.Process(beg, end)) return;
   if( end==beg ) return;
+#if _ENABLE_STEAM && defined(_WIN64)
+  static const char officialFlag[]="official=";
+  // Accept both official=1 and -official=1 in the server launch command.
+  if (IsOptionWArgs(beg,officialFlag))
+  {
+    GSteamServerOfficial = atoi(beg + strlen(officialFlag)) != 0;
+    return;
+  }
+#endif
   if( *beg=='-' || *beg=='/' || *beg=='+' )
   {
     beg++;
@@ -4410,6 +4433,12 @@ static void SingleArgument( const char *beg, const char *end )
       NetworkPort = atoi(beg + strlen(port));
       ServerPort = NetworkPort;
     }
+#if _ENABLE_STEAM && defined(_WIN64)
+    else if( IsOptionWArgs(beg,officialFlag) )
+    {
+      GSteamServerOfficial = atoi(beg + strlen(officialFlag)) != 0;
+    }
+#endif
     else if ( IsOptionWArgs(beg,ip) )
     {
       bindIPAddress = inet_addr(beg + strlen(ip));
@@ -5927,6 +5956,7 @@ bool SynchronousSignatureChecker::Process()
 #endif
 
 #if !_SERVER
+
 bool AppIdle()
 {
   
@@ -6099,6 +6129,9 @@ bool AppIdle()
   //if( ( focused || ForceRender && LandEditor ) && CanRender )
 
 
+#if _ENABLE_STEAM && defined(_WIN64)
+  if (GSteamInitialized) SteamAPI_RunCallbacks();
+#endif
   ProcessPipeCommands();
   if( CanRender )
   {
@@ -6634,6 +6667,21 @@ void DDTerm()
 
   GlobPreloadedTexturesClear();
   DestroyEngine();
+#if _ENABLE_STEAM && defined(_WIN64)
+  if (GSteamGameServerInitialized)
+  {
+    ISteamGameServer *steamServer = SteamGameServer();
+    if (steamServer && GSteamGameServerAdvertised) steamServer->SetAdvertiseServerActive(false);
+    SteamGameServer_Shutdown();
+    GSteamGameServerInitialized = false;
+    GSteamGameServerAdvertised = false;
+  }
+  if (GSteamInitialized)
+  {
+    SteamAPI_Shutdown();
+    GSteamInitialized = false;
+  }
+#endif
 #if _GAMES_FOR_WINDOWS
   XOnlineCleanup();
   XLiveUnInitialize();
@@ -9364,6 +9412,41 @@ static void DedicatedServerLoop()
     */
     #endif
     AppServerLoop();
+#if _ENABLE_STEAM && defined(_WIN64)
+    if (GSteamGameServerInitialized)
+    {
+      SteamGameServer_RunCallbacks();
+      ISteamGameServer *steamServer = SteamGameServer();
+      if (steamServer && steamServer->BLoggedOn())
+      {
+        if (!GSteamGameServerAdvertised)
+        {
+          steamServer->SetAdvertiseServerActive(true);
+          GSteamGameServerAdvertised = true;
+          LogF("Steamworks dedicated server is listed (AppID 480, official=%d)", GSteamServerOfficial ? 1 : 0);
+          ConsoleF("Connected to Steam (AppID 480)");
+          ConsoleF("Steam policy status (VAC secure: %s)", steamServer->BSecure() ? "yes" : "no");
+        }
+        DWORD now = GlobalTickCount();
+        if (now >= GSteamGameServerNextUpdate)
+        {
+          AutoArray<NetPlayerInfo> steamListedPlayers;
+          GetNetworkManager().GetPlayers(steamListedPlayers);
+          steamServer->SetServerName(cc_cast(GSteamGameServerName));
+          steamServer->SetMaxPlayerCount(GSteamGameServerMaxPlayers);
+          steamServer->SetBotPlayerCount(steamListedPlayers.Size());
+          steamServer->SetGameTags(GSteamServerOfficial ? "sourcedayz,dayz,official=1" : "sourcedayz,dayz");
+          GSteamGameServerNextUpdate = now + 5000;
+        }
+      }
+      else if (!GSteamGameServerLoginWarning && GSteamGameServerLoginStarted != 0 &&
+        GlobalTickCount() - GSteamGameServerLoginStarted > 30000)
+      {
+        GSteamGameServerLoginWarning = true;
+        ConsoleF("Steam Game Server has not confirmed login after 30 seconds; check Steamworks/RPT logs");
+      }
+    }
+#endif
     I_AM_ALIVE();
 
     PROFILE_SCOPE_EX(MSGLP, *)
@@ -10350,6 +10433,95 @@ static bool InitGamesForWindows(RString language)
   return true;
 }
 
+#endif
+
+#if _ENABLE_STEAM && defined(_WIN64)
+extern "C" void __cdecl SteamAPIDebugTextHook(int severity, const char *text)
+{
+  (void)severity;
+  if (text) LogF("STEAMWORKS: %s", text);
+}
+
+static bool InitSteam()
+{
+  if (GSteamInitialized) return true;
+
+  // Spacewar (AppID 480) is used only as the local Steamworks test identity.
+  // No Steam purchase or ownership checks are enabled by this configuration.
+  _putenv("SteamAppId=480");
+
+  // Steamworks provides the test identity; the game's existing online multiplayer
+  // transport remains separate from this API initialization.
+  HMODULE steamApi = LoadLibraryA("steam_api64.dll");
+  if (!steamApi)
+  {
+    LogF("Steamworks test API unavailable (steam_api64.dll, error %lu); native multiplayer transport is unchanged", GetLastError());
+    return false;
+  }
+  FreeLibrary(steamApi);
+
+  if (!SteamAPI_Init())
+  {
+    LogF("Steamworks test API initialization failed; native multiplayer transport is unchanged");
+    return false;
+  }
+
+  GSteamInitialized = true;
+  if (SteamUtils()) SteamUtils()->SetWarningMessageHook(&SteamAPIDebugTextHook);
+  LogF("Steamworks test API initialized (AppID 480)");
+  return true;
+}
+
+bool IsSteamClientInitialized()
+{
+  return GSteamInitialized;
+}
+
+bool SteamOnlineServerStart(int gamePort, int steamPort, int queryPort, const char *serverName, int maxPlayers, bool passwordProtected)
+{
+  if (GSteamGameServerInitialized) return true;
+
+  _putenv("SteamAppId=480");
+  ConsoleF("Connecting dedicated server to Steam (AppID 480)...");
+  if (!SteamGameServer_Init(0, (uint16)steamPort, (uint16)gamePort, (uint16)queryPort, eServerModeAuthentication, APP_VERSION_TEXT))
+  {
+    LogF("Steamworks game-server initialization failed; native multiplayer remains available through direct IP");
+    ConsoleF("Steam Game Server initialization failed (AppID 480); see the server RPT for details");
+    return false;
+  }
+
+  ISteamGameServer *steamServer = SteamGameServer();
+  if (!steamServer)
+  {
+    SteamGameServer_Shutdown();
+    LogF("Steamworks game-server interface is unavailable; native multiplayer remains available through direct IP");
+    ConsoleF("Steam Game Server interface is unavailable");
+    return false;
+  }
+
+  GSteamGameServerInitialized = true;
+  GSteamGameServerName = serverName && serverName[0] ? serverName : "SourceDayZ Community Server";
+  GSteamGameServerMaxPlayers = maxPlayers > 0 ? maxPlayers : MAX_PLAYERS_DS;
+  GSteamGameServerNextUpdate = 0;
+  GSteamGameServerLoginStarted = GlobalTickCount();
+  GSteamGameServerLoginWarning = false;
+  GSteamGameServerAdvertised = false;
+
+  steamServer->SetProduct("spacewar");
+  steamServer->SetGameDescription("SourceDayZ multiplayer test");
+  steamServer->SetModDir("sourcedayz");
+  steamServer->SetDedicatedServer(true);
+  steamServer->SetServerName(cc_cast(GSteamGameServerName));
+  steamServer->SetMaxPlayerCount(GSteamGameServerMaxPlayers);
+  steamServer->SetBotPlayerCount(0);
+  steamServer->SetPasswordProtected(passwordProtected);
+  steamServer->SetGameTags(GSteamServerOfficial ? "sourcedayz,dayz,official=1" : "sourcedayz,dayz");
+  steamServer->LogOnAnonymous();
+  LogF("Steamworks game-server login started (AppID 480, game port %d, query port %d)", gamePort, queryPort);
+  ConsoleF("SourceDayZ server classification: official=%d", GSteamServerOfficial ? 1 : 0);
+  ConsoleF("Steam anonymous login requested (AppID 480)");
+  return true;
+}
 #endif
 
 /// scan a subclass of ArmA2.par file for arguments
@@ -11983,6 +12155,11 @@ it sometimes caused false warnings and premature server termination.
     // handle -showScriptErrors option
     GGameState.ShowScriptErrors(ShowScriptErrors);
 
+#if _ENABLE_STEAM && defined(_WIN64)
+    if (!GenerateShaders && !IsDedicatedServer() && !InitSteam())
+      LogF("Steamworks not available; existing online multiplayer networking remains unchanged");
+#endif
+
     // after processing -cpuCount
     GJobManager.Init();
 
@@ -12270,11 +12447,15 @@ it sometimes caused false warnings and premature server termination.
         QFBank &bank = banks[i];
       DSSignature signature;
       DSHash hash;
-      if (
-        !DataSignatures::FindSignature(signature, bank.GetOpenName(), keys, acceptedKeysCount) ||
-        !bank.GetHash<HashCalculator>(hash._content, signature.Version(), 0) ||
-        !DataSignatures::VerifySignature(hash, signature))
+      const bool signatureFound = DataSignatures::FindSignature(signature, bank.GetOpenName(), keys, acceptedKeysCount);
+      const bool bankHashRead = signatureFound && bank.GetHash<HashCalculator>(hash._content, signature.Version(), 0);
+      const bool signatureValid = bankHashRead && DataSignatures::VerifySignature(hash, signature);
+      if (!signatureValid)
       {
+        RptF("PboSignatureRejected file=%s signatureFound=%d bankHashRead=%d trustedKey=%s keyVersion=%d",
+          cc_cast(bank.GetOpenName()), signatureFound, bankHashRead,
+          signatureFound ? cc_cast(signature._key._name) : "<none>",
+          signatureFound ? signature.Version() : 0);
 #if SIGNATURES_TEST_ONLY
         LogF("Warning: Signature of %s is wrong.", cc_cast(bank.GetOpenName()));
 #else
@@ -12287,6 +12468,11 @@ it sometimes caused false warnings and premature server termination.
         else
           ErrorMessage(LocalizeString(IDS_HASH_WRONG));
 #endif
+      }
+      else if (!stricmp(signature._key._name, "SourceDayZShoulder2"))
+      {
+        RptF("PboSignatureAccepted file=%s key=%s version=%d",
+          cc_cast(bank.GetOpenName()), cc_cast(signature._key._name), signature.Version());
       }
     }
     static const char *additionalSignedFiles[] = ADDITIONAL_SIGNED_FILES;
@@ -13005,6 +13191,20 @@ void OFPFrameFunctions::ErrorMessage(const char *format, va_list argptr)
 
   BString<256> buf;
   vsprintf( buf, format, argptr );
+
+#if defined(_WIN32)
+  // Keep the caller chain in the RPT so generic fatal messages can be mapped
+  // back to the exact source location with this build's PDB.
+  void *errorStack[16];
+  typedef USHORT (WINAPI *CaptureStackBackTraceFn)(ULONG, ULONG, PVOID *, PULONG);
+  HMODULE kernelModule = GetModuleHandleA("kernel32.dll");
+  CaptureStackBackTraceFn captureStack = kernelModule ? (CaptureStackBackTraceFn)GetProcAddress(kernelModule, "RtlCaptureStackBackTrace") : NULL;
+  if (!captureStack && kernelModule)
+    captureStack = (CaptureStackBackTraceFn)GetProcAddress(kernelModule, "CaptureStackBackTrace");
+  USHORT errorStackSize = captureStack ? captureStack(1, 16, errorStack, NULL) : 0;
+  for (USHORT errorStackIndex = 0; errorStackIndex < errorStackSize; errorStackIndex++)
+    ::ErrF("ErrorMessageStack[%u]=%p", (unsigned)errorStackIndex, errorStack[errorStackIndex]);
+#endif
 
   // kill direct draw
 #ifdef _WIN32

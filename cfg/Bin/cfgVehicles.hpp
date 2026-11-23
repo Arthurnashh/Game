@@ -2779,6 +2779,7 @@ class CfgVehicles
     emptyGloves = "";
     emptyBack = "";
     emptyShoulder = "";
+    emptyShoulder2 = ""; // optional second large-weapon slot
     emptyMelee = "";
     emptyMask = "";
   };

@@ -9,6 +9,9 @@
 #include "netTransport.hpp"
 #include "network.hpp"
 #include "../versionNo.h"
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+#include <Steamworks/steam_gameserver.h>
+#endif
 
 #include <Es/Common/win.h>
 #include "../memHeap.hpp"
@@ -66,6 +69,27 @@ RString GetMsgTypeName(NetworkMessageType type);
 // extern const char *NetworkMessageTypeNames[];
 
 struct NetworkPlayerInfo;
+class NetworkServer;
+
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+class SteamValidation
+{
+  uint64 _steamId;
+  NetworkServer *_server;
+  int _dpid;
+  bool _started;
+  bool _authPending;
+  unsigned long _ticksStarted;
+  RString _name;
+  AutoArray<char> _steamSessionTicket;
+public:
+  SteamValidation();
+  ~SteamValidation();
+  void Start(PlayerIdentity &identity, NetworkServer *server);
+  void HandleTimeout();
+  STEAM_GAMESERVER_CALLBACK(SteamValidation, OnValidateAuthTicketResponse, ValidateAuthTicketResponse_t, _callbackGSAuthTicketResponse);
+};
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // Network Messages
@@ -326,6 +350,7 @@ DECLARE_NET_MESSAGE(AskCommanderOverride, ASKCOMMANDEROVERRIDE_MSG)
 #define ASK_FOR_SET_ITEM_SHORTCUT_MSG(MessageName, XX) \
   XX(MessageName, OLinkPermO(Person), person, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Player person"), TRANSF_REF) \
   XX(MessageName, int, index, NDTInteger, int, NCTSmallUnsigned, DEFVALUE(int, 0), DOC_MSG("Shortcut index"), TRANSF)\
+  XX(MessageName, OLinkPermO(InventoryItem), item, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Bound inventory item"), TRANSF_REF) \
   XX(MessageName, RString, itemType, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("Name of the item type"), TRANSF) \
 
 DECLARE_NET_MESSAGE(AskForSetItemShortcut, ASK_FOR_SET_ITEM_SHORTCUT_MSG)
@@ -355,8 +380,15 @@ DECLARE_NET_MESSAGE(AskForDropItem, ASK_FOR_DROP_ITEM_MSG)
   XX(MessageName, OLinkPermO(EntityAI), target, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("New owner of the item"), TRANSF_REF) \
   XX(MessageName, int, index, NDTInteger, int, NCTSmallSigned, DEFVALUE(int, 0), DOC_MSG("Slot index"), TRANSF)\
   XX(MessageName, OLinkPermO(InventoryItem), item, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Moved item"), TRANSF_REF) \
+  XX(MessageName, bool, rotated, NDTBool, bool, NCTNone, DEFVALUE(bool, false), DOC_MSG("Requested inventory orientation"), TRANSF) \
 
 DECLARE_NET_MESSAGE(AskForMoveItem, ASK_FOR_MOVE_ITEM_MSG)
+
+#define ASK_FOR_ROTATE_INVENTORY_ITEM_MSG(MessageName, XX) \
+  XX(MessageName, OLinkPermO(Person), person, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Player requesting item rotation"), TRANSF_REF) \
+  XX(MessageName, OLinkPermO(InventoryItem), item, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Item to rotate in cargo"), TRANSF_REF) \
+
+DECLARE_NET_MESSAGE(AskForRotateInventoryItem, ASK_FOR_ROTATE_INVENTORY_ITEM_MSG)
 
 #define ASK_FOR_TAKE_ITEM_TO_HANDS_MSG(MessageName, XX) \
   XX(MessageName, OLinkPermO(Person), person, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Person holding the item"), TRANSF_REF) \
@@ -2822,10 +2854,11 @@ public:
   */
   void AskForDeleteVehicle(Entity *veh);
 
-  void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type);
+  void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type, InventoryItem *item);
   void AskForThrowItem(Man *person, InventoryItem *item, Vector3 pos, Vector3 dir);
 	void AskForDropItem(Person *person, InventoryItem *item);
-  void AskForMoveItem(EntityAI *target, int index, InventoryItem *item);
+  void AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated);
+  void AskForRotateInventoryItem(Person *person, InventoryItem *item);
   void AskForTakeItemToHands(Person *person, InventoryItem *item);
   void AskForSwapItems(InventoryItem *item1, InventoryItem *item2, Person *owner);
 
@@ -3985,6 +4018,9 @@ struct NetworkPlayerInfo : public AsyncDBStorage, public RefCount, private NoCop
 
   /// Hashes collected during initial signature test
   CollectedHashes hashes;
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+  SteamValidation _steamValidate;
+#endif
   
 
   /// CDKey check
@@ -4513,6 +4549,10 @@ protected:
     //! BEServer.ReceivedPlayerGUID() will be called as soon as the GameSpy cd-key hash is received from the client (after connecting).
     void PlayerGUIDReceived(int player);
     void PlayerGUIDIsValid(int player);
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+    void PlayerGUIDReceived(int player, const CSteamID &id);
+    void PlayerGUIDIsValid(int player, const CSteamID &ownerId);
+#endif
 
     #define BE_WRAP_CALLBACK(Name, ...) bool __cdecl Name##Callback(int player, __VA_ARGS__);
     BE_CALLBACKS(BE_WRAP_CALLBACK)
@@ -4759,6 +4799,9 @@ protected:
   GameState _evaluator;
   /// global variables for _evaluator
   GameDataNamespace _globals;
+  AutoArray<RString> _sqfExecQueue;
+  AutoArray<int> _sqfExecFrom;
+  bool _sqfExecBusy;
   //! event handlers
   RString _eventHandlers[NServerEvent];
 
@@ -4930,6 +4973,8 @@ public:
 
   /// add specific server scripting commands to the _evaluator
   void InitEvaluator();
+  void QueueExec(int from, RString expression);
+  void ProcessQueuedExec();
 
   void ProfileAnswer(const RString &output);
 #endif
@@ -5010,6 +5055,18 @@ public:
     _beIntegration.PlayerGUIDIsValid(player);
 #endif
   };
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+  void PlayerGUIDReceived(int player, const CSteamID &id) {
+#if _USE_BATTL_EYE_SERVER
+    _beIntegration.PlayerGUIDReceived(player, id);
+#endif
+  }
+  void PlayerGUIDIsValid(int player, const CSteamID &ownerId) {
+#if _USE_BATTL_EYE_SERVER
+    _beIntegration.PlayerGUIDIsValid(player, ownerId);
+#endif
+  }
+#endif
 
   //! The output format is "creator:id friendlyName"
   RString NetworkIdToNetIdFriendly(const NetworkId &id);
@@ -5867,10 +5924,11 @@ public:
   void PauseSimulation(bool pause);
 #endif
 
-  virtual void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type) override;
+  virtual void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type, InventoryItem *item) override;
   virtual void AskForThrowItem(Man *person, InventoryItem *item, Vector3 pos, Vector3 dir) override;
 	virtual void AskForDropItem(Person *person, InventoryItem *item) override;
-  virtual void AskForMoveItem(EntityAI *target, int index, InventoryItem *item) override;
+  virtual void AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated) override;
+  virtual void AskForRotateInventoryItem(Person *person, InventoryItem *item) override;
   virtual void AskForTakeItemToHands(Person *person, InventoryItem *item) override;
   virtual void AskForSwapItems(InventoryItem *item1, InventoryItem *item2, Person *owner) override;
 

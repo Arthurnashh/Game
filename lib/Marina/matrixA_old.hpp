@@ -329,12 +329,18 @@ void Matrix<Type>::CombinateColumns(unsigned int iDestColumn, unsigned int iSour
 {
 	ASSERT(iDestColumn < _nDim);
 	ASSERT(iSourceColumn < _nDim);
+	if (iDestColumn >= _nDim || iSourceColumn >= _nDim) return;
 
-	Type * pTemp = _pMatrix + iDestColumn;
+	// Use two independent pointers. The previous code indexed with
+	// (iSourceColumn - iDestColumn), which underflows when the source
+	// column comes before the destination and caused an access violation.
+	Type * pDest = _pMatrix + iDestColumn;
+	Type * pSource = _pMatrix + iSourceColumn;
 	for(unsigned int iRows = 0; iRows < _nDim; iRows++)
 	{
-		*pTemp += fCoef * pTemp[iSourceColumn - iDestColumn];
-		pTemp += _nDim;
+		*pDest += fCoef * (*pSource);
+		pDest += _nDim;
+		pSource += _nDim;
 	}
 }
 
@@ -345,33 +351,37 @@ void Matrix<Type>::CombineCoordinates(unsigned int iCoord1,
 {
     ASSERT(iCoord1 < _nDim);
 	ASSERT(iCoord2 < _nDim);
+    if (iCoord1 >= _nDim || iCoord2 >= _nDim || iCoord1 == iCoord2) return;
     ASSERT(IsNumericalZero(pfCombMatrix[0] * pfCombMatrix[2] + pfCombMatrix[1] * pfCombMatrix[3]));//  must be unitary
     
-    // Columns
-    Type * pTemp = _pMatrix + iCoord1;
+    // Columns. Use one pointer per coordinate: the old pTemp[iCoord2 - iCoord1]
+    // underflows when iCoord2 < iCoord1 and reads out of bounds (crash in the
+    // vehicle collision solver when friction axes are combined in that order).
+    Type * pColumn1 = _pMatrix + iCoord1;
+    Type * pColumn2 = _pMatrix + iCoord2;
     Type * pTempEnd = _pMatrix + _nDim * _nDim;
     Type In1, In2;
 
-	for(; pTemp < pTempEnd; pTemp += _nDim)
+	for(; pColumn1 < pTempEnd; pColumn1 += _nDim, pColumn2 += _nDim)
 	{
-        In1 = (*pTemp);
-        In2 = pTemp[iCoord2 - iCoord1];
-        (*pTemp) = pfCombMatrix[0] * In1 + pfCombMatrix[1] * In2;
-        pTemp[iCoord2 - iCoord1] = pfCombMatrix[2] * In1 + pfCombMatrix[3] * In2;
+        In1 = (*pColumn1);
+        In2 = (*pColumn2);
+        (*pColumn1) = pfCombMatrix[0] * In1 + pfCombMatrix[1] * In2;
+        (*pColumn2) = pfCombMatrix[2] * In1 + pfCombMatrix[3] * In2;
 	}
 
     // Rows
-    pTemp = _pMatrix + iCoord1 * _nDim;
-    pTempEnd = pTemp + _nDim;
-    Type * pTemp2 = _pMatrix + iCoord2 * _nDim;
+    Type * pRow1 = _pMatrix + iCoord1 * _nDim;
+    pTempEnd = pRow1 + _nDim;
+    Type * pRow2 = _pMatrix + iCoord2 * _nDim;
 
-    for(; pTemp < pTempEnd; pTemp++,pTemp2++)
+    for(; pRow1 < pTempEnd; pRow1++,pRow2++)
 	{
-        In1 = (*pTemp);
-        In2 = (*pTemp2);
+        In1 = (*pRow1);
+        In2 = (*pRow2);
 
-        (*pTemp) = pfCombMatrix[0] * In1 + pfCombMatrix[1] * In2;
-        (*pTemp2) = pfCombMatrix[2] * In1 + pfCombMatrix[3] * In2;
+        (*pRow1) = pfCombMatrix[0] * In1 + pfCombMatrix[1] * In2;
+        (*pRow2) = pfCombMatrix[2] * In1 + pfCombMatrix[3] * In2;
     }
 }
 

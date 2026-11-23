@@ -33,6 +33,10 @@
 #include <El/QStream/packFiles.hpp>
 #include <El/FileServer/fileServer.hpp>
 
+#if _ENABLE_STEAM && defined(_WIN64)
+bool SteamOnlineServerStart(int gamePort, int steamPort, int queryPort, const char *serverName, int maxPlayers, bool passwordProtected);
+#endif
+
 #include <El/Evaluator/express.hpp>
 
 #include <El/Common/randomGen.hpp>
@@ -48,6 +52,8 @@
 
 #include <El/CRC/crc.hpp>
 #include <Es/Strings/bString.hpp>
+#include <string>
+#include <vector>
 
 #include "../saveGame.hpp"
 #include "../saveVersion.hpp"
@@ -716,7 +722,7 @@ bool NetworkServer::BattlEye::Run(const NetworkServer *server)
     }
 
     // add all players
-#if _VERIFY_CLIENT_KEY
+#if _VERIFY_CLIENT_KEY || (_ENABLE_STEAM_IDENTITY && defined(_WIN64))
     const AutoArray<PlayerIdentity> *identities = server->GetIdentities();
     if (identities)
     {
@@ -726,7 +732,14 @@ bool NetworkServer::BattlEye::Run(const NetworkServer *server)
           sockaddr_in address;
           server->_server->GetClientAddress(identity.dpnid, address);
         AddPlayer(identity.dpnid, address.sin_addr.s_addr, address.sin_port, identity.name);
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+        if (identity._steamID != 0)
+          PlayerGUIDReceived(identity.dpnid, CSteamID((uint64)identity._steamID));
+        else
+          PlayerGUIDReceived(identity.dpnid);
+#else
         PlayerGUIDReceived(identity.dpnid);
+#endif
         if (identity.clientState == NCSPlaying)
           PlayerGoesInGame(identity.dpnid);
         //else PlayerGoesInLobby(identity.dpnid); //<- assumed as default after AddPlayer
@@ -773,9 +786,31 @@ void NetworkServer::BattlEye::PlayerGUIDReceived(int player)
   }
 }
 
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+void NetworkServer::BattlEye::PlayerGUIDReceived(int player, const CSteamID &id)
+{
+  if (_callbacks._receivedPlayerGUID)
+  {
+    uint64 steamId = id.ConvertToUint64();
+    (*_callbacks._receivedPlayerGUID)(player, &steamId, sizeof(steamId));
+  }
+}
+#endif
+
 void NetworkServer::BattlEye::PlayerGUIDIsValid(int player)
 {
 }
+
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+void NetworkServer::BattlEye::PlayerGUIDIsValid(int player, const CSteamID &ownerId)
+{
+  if (_callbacks._playerGUIDIsValid)
+  {
+    uint64 steamId = ownerId.ConvertToUint64();
+    (*_callbacks._playerGUIDIsValid)(player, &steamId, sizeof(steamId));
+  }
+}
+#endif
 
 bool NetworkServer::BattlEye::UpdatePositionCallback(int player, const char *netId, float x, float y, float z,
   float dirX, float dirY, float dirZ, float upX, float upY, float upZ, float asideX, float asideY, float asideZ)
@@ -867,9 +902,233 @@ void NetworkServer::BattlEye::KickPlayer(int player, const char *reason)
   }
 }
 
+#if _ENABLE_DEDICATED_SERVER
+// Large SQF files travel as several ordinary BattlEye commands. Reassemble and
+// validate the complete script before putting it on the game-thread queue.
+struct SDZBeSqfTransfer
+{
+  std::string id;
+  unsigned int expectedParts;
+  unsigned int expectedCrc;
+  unsigned int receivedParts;
+  unsigned int receivedBytes;
+  DWORD startedAt;
+  std::vector<std::string> parts;
+  std::vector<unsigned char> received;
+
+  SDZBeSqfTransfer() : expectedParts(0), expectedCrc(0), receivedParts(0), receivedBytes(0), startedAt(0) {}
+  void Reset()
+  {
+    id.clear(); expectedParts = expectedCrc = receivedParts = receivedBytes = 0; startedAt = 0;
+    parts.clear(); received.clear();
+  }
+};
+
+static SDZBeSqfTransfer SDZBeTransfer;
+
+static unsigned int SDZBeCrc32(const char *data, unsigned int length)
+{
+  unsigned int crc = 0xFFFFFFFF;
+  for (unsigned int i = 0; i < length; i++)
+  {
+    crc ^= (unsigned char)data[i];
+    for (int bit = 0; bit < 8; bit++)
+      crc = (crc & 1) ? ((crc >> 1) ^ 0xEDB88320) : (crc >> 1);
+  }
+  return ~crc;
+}
+
+static const char *SDZSkipSpaces(const char *text)
+{
+  while (*text == ' ' || *text == '\t') text++;
+  return text;
+}
+
+static bool SDZReadToken(const char **cursor, std::string &token)
+{
+  const char *start = SDZSkipSpaces(*cursor);
+  if (!*start) return false;
+  const char *end = start;
+  while (*end && *end != ' ' && *end != '\t') end++;
+  token.assign(start, end - start);
+  *cursor = end;
+  return true;
+}
+
+static bool SDZValidTransferId(const std::string &id)
+{
+  if (id.length() != 32) return false;
+  for (size_t i = 0; i < id.length(); i++)
+    if (!((id[i] >= '0' && id[i] <= '9') || (id[i] >= 'a' && id[i] <= 'f') || (id[i] >= 'A' && id[i] <= 'F'))) return false;
+  return true;
+}
+
+static bool SDZHandleRconSqfTransfer(NetworkServer *server, const char *command)
+{
+  static const char beginPrefix[] = "#exec __SDZ_BEGIN__ ";
+  static const char partPrefix[] = "#exec __SDZ_PART__ ";
+  static const char endPrefix[] = "#exec __SDZ_END__ ";
+  if (!strnicmp(command, beginPrefix, sizeof(beginPrefix) - 1))
+  {
+    SDZBeTransfer.Reset();
+    const char *cursor = command + sizeof(beginPrefix) - 1;
+    std::string id, countText, crcText, extra;
+    if (!SDZReadToken(&cursor, id) || !SDZReadToken(&cursor, countText) || !SDZReadToken(&cursor, crcText) ||
+        SDZReadToken(&cursor, extra) || !SDZValidTransferId(id))
+    {
+      RptF("SDZ_BE_RCON: invalid large-SQF begin frame");
+      return true;
+    }
+    char *parseEnd = NULL;
+    unsigned long count = strtoul(countText.c_str(), &parseEnd, 10);
+    if (!parseEnd || *parseEnd || count == 0 || count > 2048)
+    {
+      RptF("SDZ_BE_RCON: rejected large-SQF transfer with invalid part count");
+      return true;
+    }
+    parseEnd = NULL;
+    unsigned long crc = strtoul(crcText.c_str(), &parseEnd, 16);
+    if (!parseEnd || *parseEnd || crc > 0xFFFFFFFFUL)
+    {
+      RptF("SDZ_BE_RCON: rejected large-SQF transfer with invalid checksum");
+      return true;
+    }
+    SDZBeTransfer.id = id;
+    SDZBeTransfer.expectedParts = (unsigned int)count;
+    SDZBeTransfer.expectedCrc = (unsigned int)crc;
+    SDZBeTransfer.startedAt = GetTickCount();
+    SDZBeTransfer.parts.resize(count);
+    SDZBeTransfer.received.resize(count, 0);
+    RptF("SDZ_BE_RCON: large-SQF transfer started (%u parts)", (unsigned int)count);
+    return true;
+  }
+
+  if (!strnicmp(command, partPrefix, sizeof(partPrefix) - 1))
+  {
+    if (SDZBeTransfer.expectedParts == 0 || GetTickCount() - SDZBeTransfer.startedAt > 120000)
+    {
+      SDZBeTransfer.Reset();
+      RptF("SDZ_BE_RCON: rejected large-SQF part without an active transfer");
+      return true;
+    }
+    const char *cursor = command + sizeof(partPrefix) - 1;
+    std::string id, indexText;
+    if (!SDZReadToken(&cursor, id) || !SDZReadToken(&cursor, indexText) || id != SDZBeTransfer.id)
+    {
+      RptF("SDZ_BE_RCON: rejected large-SQF part with invalid transfer id");
+      return true;
+    }
+    char *parseEnd = NULL;
+    unsigned long index = strtoul(indexText.c_str(), &parseEnd, 10);
+    if (!parseEnd || *parseEnd || index >= SDZBeTransfer.expectedParts || *cursor != ' ')
+    {
+      RptF("SDZ_BE_RCON: rejected malformed large-SQF part");
+      return true;
+    }
+    const char *chunk = cursor + 1;
+    size_t chunkLength = strlen(chunk);
+    if (chunkLength == 0 || chunkLength > 900)
+    {
+      RptF("SDZ_BE_RCON: rejected malformed large-SQF part");
+      return true;
+    }
+    if (SDZBeTransfer.received[index])
+    {
+      const std::string &receivedChunk = SDZBeTransfer.parts[index];
+      if (receivedChunk.size() != chunkLength || receivedChunk.compare(0, receivedChunk.size(), chunk, chunkLength) != 0)
+        RptF("SDZ_BE_RCON: conflicting duplicate large-SQF part");
+      return true;
+    }
+    if (SDZBeTransfer.receivedBytes + chunkLength > 1048576)
+    {
+      SDZBeTransfer.Reset();
+      RptF("SDZ_BE_RCON: rejected SQF script larger than 1 MiB");
+      return true;
+    }
+    SDZBeTransfer.parts[index].assign(chunk, chunkLength);
+    SDZBeTransfer.received[index] = 1;
+    SDZBeTransfer.receivedParts++;
+    SDZBeTransfer.receivedBytes += (unsigned int)chunkLength;
+    return true;
+  }
+
+  if (!strnicmp(command, endPrefix, sizeof(endPrefix) - 1))
+  {
+    const char *cursor = command + sizeof(endPrefix) - 1;
+    std::string id, extra;
+    if (!SDZReadToken(&cursor, id) || SDZReadToken(&cursor, extra) || id != SDZBeTransfer.id ||
+        SDZBeTransfer.expectedParts == 0 || GetTickCount() - SDZBeTransfer.startedAt > 120000)
+    {
+      SDZBeTransfer.Reset();
+      RptF("SDZ_BE_RCON: rejected invalid or expired large-SQF end frame");
+      return true;
+    }
+    if (SDZBeTransfer.receivedParts != SDZBeTransfer.expectedParts)
+    {
+      RptF("SDZ_BE_RCON: incomplete large-SQF transfer (%u/%u parts)", SDZBeTransfer.receivedParts, SDZBeTransfer.expectedParts);
+      SDZBeTransfer.Reset();
+      return true;
+    }
+    std::string script;
+    script.reserve(SDZBeTransfer.receivedBytes);
+    for (unsigned int i = 0; i < SDZBeTransfer.expectedParts; i++) script += SDZBeTransfer.parts[i];
+    unsigned int expectedCrc = SDZBeTransfer.expectedCrc;
+    unsigned int receivedBytes = (unsigned int)script.length();
+    SDZBeTransfer.Reset();
+    if (SDZBeCrc32(script.c_str(), receivedBytes) != expectedCrc)
+    {
+      RptF("SDZ_BE_RCON: rejected large-SQF transfer with checksum mismatch");
+      return true;
+    }
+    if (!server || script.empty())
+    {
+      RptF("SDZ_BE_RCON: rejected empty large-SQF script or unavailable server");
+      return true;
+    }
+    server->QueueExec(BOT_CLIENT, RString(script.c_str()));
+    RptF("SDZ_BE_RCON: queued reassembled SQF (%u bytes)", receivedBytes);
+    return true;
+  }
+  return false;
+}
+#endif
+
 void NetworkServer::BattlEye::ExecuteCommand(const char *command)
 {
 #if _ENABLE_DEDICATED_SERVER
+  // BattlEye invokes this callback on the dedicated server. There is normally
+  // no local NetworkClient there, so forwarding #exec through the client drops
+  // the command. Queue it for the regular server simulation thread instead.
+  if (!command || !*command) return;
+
+  if (strlen(command) > 1000)
+  {
+    RptF("SDZ_BE_RCON: rejected BattlEye command longer than 1000 bytes");
+    return;
+  }
+
+  NetworkServer *server = GNetworkManager.GetServer();
+  if (SDZHandleRconSqfTransfer(server, command)) return;
+
+  if (strnicmp(command, "#exec", 5) == 0 && (command[5] == 0 || command[5] == ' ' || command[5] == '\t'))
+  {
+    const char *expression = command + 5;
+    while (*expression == ' ' || *expression == '\t') expression++;
+    if (!*expression)
+    {
+      RptF("SDZ_BE_RCON: rejected empty #exec command");
+      return;
+    }
+    if (!server)
+    {
+      RptF("SDZ_BE_RCON: rejected #exec because the server is unavailable");
+      return;
+    }
+    server->QueueExec(BOT_CLIENT, RString(expression));
+    RptF("SDZ_BE_RCON: queued #exec (%d bytes)", (int)strlen(expression));
+    return;
+  }
+
   NetworkClient *client = GNetworkManager.GetClient();
   if (client)
   {
@@ -1010,6 +1269,9 @@ NetworkServer::NetworkServer(NetworkManager *parent, RString name, RString passw
   _serverState = NSSSelectingMission;
   _serverStateTime = GlobalTickCount();
   _serverTimeOutSent = INT_MAX;
+#if _ENABLE_DEDICATED_SERVER
+  _sqfExecBusy = false;
+#endif
   _connectionDesync = CDGood;
   _desyncTotalUpdateNext = GlobalTickCount();
   _desyncTotalAvg = 0;
@@ -3917,6 +4179,10 @@ void NetworkServer::OnSimulate()
     ReceiveUserMessages();
   }
 
+#if _ENABLE_DEDICATED_SERVER
+  if (_dedicated) ProcessQueuedExec();
+#endif
+
   PerformIntegrityInvestigations();
 
   #if _ENABLE_MP
@@ -6086,6 +6352,16 @@ LogF("  sending to %x", pl._player);
 
         _squadChecks.Add(new CheckSquadObject(identity, _proxy, this));
 
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+        for (int i=0; i<_players.Size(); i++)
+        {
+          NetworkPlayerInfo &info = *_players[i];
+          if (info.dpid != from) continue;
+          info._steamValidate.Start(identity, this);
+          break;
+        }
+#endif
+
         //}
 
         // send server time to player just connected
@@ -6245,6 +6521,15 @@ LogF("  sending to %x", pl._player);
     case NMTAskForTakeItemToHands:
     case NMTAskForSwapItems:
       SendMsg(BOT_CLIENT, msg, type, NMFGuaranteed);
+      break;
+    case NMTAskForRotateInventoryItem:
+      {
+        AskForRotateInventoryItemMessage ask;
+        TMError err = ask.TransferMsg(ctx);
+        if ((err == TMOK || err == TMNotFound) && ask._person && ask._item &&
+            ask._person->GetRemotePlayer() == from && ask._person->FindItem(ask._item))
+          SendMsg(BOT_CLIENT, msg, type, NMFGuaranteed);
+      }
       break;
     case NMTAskInventoryMenu:
       {
@@ -7598,19 +7883,7 @@ sendToAllPlayers:
             if (_dedicated && ( (from == _gameMaster && !_admin) || from==BOT_CLIENT ) )
             {
               RString expression = cmd._content.ReadString();
-
-              GameVarSpace local(false);
-              int gshandle = _evaluator.BeginContext(&local);
-              GameValue result = _evaluator.EvaluateMultiple(expression, GameState::EvalContext::_default, &_globals); // server namespace
-              _evaluator.EndContext(gshandle);
-
-              if (!result.GetNil())
-              {
-                NetworkCommandMessage msg;
-                msg._type = NCMTExecResult;
-                msg._content.WriteString(result.GetText());
-                SendMsg(from, &msg, NMFGuaranteed);
-              }
+              if (expression.GetLength() > 0) QueueExec(from, expression);
             }
           }
           break;
@@ -8192,6 +8465,7 @@ void NetworkServer::CheckItemOwner(const NetworkId &id, int newOwner)
 */
 void NetworkServer::OnHackedData(HackType type, int dpid, RString filename)
 {
+  RptF("NetworkHackedData type=%d player=%d file=%s", (int)type, dpid, cc_cast(filename));
   const PlayerIdentity *identity = FindIdentity(dpid);
   if (!identity) return;
 
@@ -11258,6 +11532,10 @@ static void LogError
 */
 void NetworkServer::CheckFadeOut()
 {
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+  for (int i=0; i<_players.Size(); i++)
+    _players[i]->_steamValidate.HandleTimeout();
+#endif
 
   if (_serverState == NSSPlaying)
   {
@@ -13057,6 +13335,18 @@ bool CreateDedicatedServer(SessionType sessionType, RString config)
   if (entry) maxPlayers = *entry;
   maxPlayers += 1; // dedicated server occupy single slot
 
+  RString steamServerName("SourceDayZ Community Server");
+  entry = serverCfg.FindEntry("hostname");
+  if (entry) steamServerName = *entry;
+
+  int steamPort = 8766;
+  entry = serverCfg.FindEntry("steamPort");
+  if (entry) steamPort = *entry;
+
+  int steamQueryPort = 27016;
+  entry = serverCfg.FindEntry("steamQueryPort");
+  if (entry) steamQueryPort = *entry;
+
   int port = GetServerPort();
 
   int rating = 0;
@@ -13081,6 +13371,12 @@ bool CreateDedicatedServer(SessionType sessionType, RString config)
         MyPidFile = true;
       }
     }
+#if _ENABLE_STEAM && defined(_WIN64)
+    if (steamPort > 0 && steamPort <= 65535 && steamQueryPort > 0 && steamQueryPort <= 65535)
+      SteamOnlineServerStart(port, steamPort, steamQueryPort, cc_cast(steamServerName), maxPlayers - 1, !password.IsEmpty());
+    else
+      LogF("Steamworks server-list ports are invalid; use steamPort and steamQueryPort in the dedicated server config");
+#endif
     return true;
   }
 
@@ -13839,6 +14135,85 @@ void NetworkServer::ProfileAnswer(const RString &output)
   msg._type = NCMTProfileAnswer;
   msg._content.WriteString(output);
   SendMsg(_gameMaster, &msg, NMFGuaranteed);
+}
+
+void NetworkServer::QueueExec(int from, RString expression)
+{
+  if (expression.GetLength() <= 0) return;
+  if (_sqfExecQueue.Size() >= 32 || _sqfExecQueue.Size() != _sqfExecFrom.Size())
+  {
+    RptF("SDZ_SQF_EXEC: rejected command because the execution queue is full or inconsistent");
+    return;
+  }
+  _sqfExecQueue.Add(expression);
+  _sqfExecFrom.Add(from);
+}
+
+#if defined(_MSC_VER)
+// Keep SEH in a helper without C++ objects that have destructors.
+static bool SDZ_TryEvaluateSqf(GameState *state, const char *expression, GameDataNamespace *globals, GameValue *result)
+{
+  __try
+  {
+    *result = state->EvaluateMultiple(expression, GameState::EvalContext::_default, globals);
+    return true;
+  }
+  __except (EXCEPTION_EXECUTE_HANDLER)
+  {
+    RptF("SDZ_SQF_EXEC: exception 0x%08X while evaluating script", (unsigned)GetExceptionCode());
+    return false;
+  }
+}
+#endif
+
+void NetworkServer::ProcessQueuedExec()
+{
+  if (_sqfExecBusy || _sqfExecQueue.Size() <= 0) return;
+  _sqfExecBusy = true;
+
+  GameState *execState = GWorld ? GWorld->GetGameState() : NULL;
+  GameDataNamespace *mission = GWorld ? GWorld->GetMissionNamespace() : NULL;
+  if (!execState || !mission)
+  {
+    _sqfExecQueue.Resize(0);
+    _sqfExecFrom.Resize(0);
+    _sqfExecBusy = false;
+    return;
+  }
+
+  while (_sqfExecQueue.Size() > 0)
+  {
+    RString expression = _sqfExecQueue[0];
+    int from = _sqfExecFrom[0];
+    _sqfExecQueue.Delete(0);
+    _sqfExecFrom.Delete(0);
+
+    GameVarSpace local(false);
+    int gshandle = execState->BeginContext(&local);
+    GameValue result = NOTHING;
+    bool evaluated = false;
+#if defined(_MSC_VER)
+    evaluated = SDZ_TryEvaluateSqf(execState, expression, mission, &result);
+#else
+    result = execState->EvaluateMultiple(expression, GameState::EvalContext::_default, mission);
+    evaluated = true;
+#endif
+    RString answer;
+    if (evaluated && !result.GetNil()) answer = result.GetText();
+    if (from == BOT_CLIENT)
+      RptF("SDZ_BE_RCON: SQF evaluation %s", evaluated ? "completed" : "failed (see preceding exception)");
+    result = NOTHING;
+    execState->EndContext(gshandle);
+
+    if (from != BOT_CLIENT && answer.GetLength() > 0)
+    {
+      NetworkCommandMessage msg;
+      msg._type = NCMTExecResult;
+      msg._content.WriteString(answer);
+      SendMsg(from, &msg, NMFGuaranteed);
+    }
+  }
+  _sqfExecBusy = false;
 }
 
 #endif // _ENABLE_DEDICATED_SERVER

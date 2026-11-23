@@ -625,6 +625,13 @@ float Person::CalculateError(NetworkMessageContextWithError &ctx)
 		error += base::CalculateError(ctx);
 		break;
 	}
+
+  // The player's own position drives remote AI (including zombie attacks).
+  // The generic time-only position error can otherwise leave the server with
+  // a stale player position for several seconds while the player is moving.
+  if (ctx.GetClass() == NMCUpdatePosition && GWorld && this == GWorld->GetRealPlayer())
+    error *= 20.0f;
+
 	return error;
 }
 
@@ -994,6 +1001,8 @@ bool Person::AddOwnedItem(InventoryItem *item)
   if (type)
   {
     int slot = type->GetInventorySlot();
+    if (slot == ISShoulder && _inventorySlots[ISShoulder] && !_inventorySlots[ISShoulder2])
+      slot = ISShoulder2;
     if (slot >= 0 && slot < NInventorySlotId && _inventorySlots[slot] == NULL)
     {
       // move in world
@@ -1014,6 +1023,8 @@ bool Person::CanAddOwnedItem(const InventoryItem *item) const
   if (type)
   {
     int slot = type->GetInventorySlot();
+    if (slot == ISShoulder && _inventorySlots[ISShoulder] && !_inventorySlots[ISShoulder2])
+      slot = ISShoulder2;
     return slot >= 0 && slot < NInventorySlotId && _inventorySlots[slot] == NULL;
   }
 
@@ -1028,6 +1039,8 @@ int Person::CanReplaceOwnedItem(const InventoryItem *oldItem, const InventoryIte
   if (type)
   {
     int slot = type->GetInventorySlot();
+    if (slot == ISShoulder && _inventorySlots[ISShoulder2] == oldItem)
+      return ISShoulder2;
     if (slot >= 0 && slot < NInventorySlotId && _inventorySlots[slot] == oldItem) return slot;
   }
 
@@ -1056,7 +1069,8 @@ bool Person::CanMoveItem(int index, const InventoryItem *item) const
 
     // item fits into this slot
     const InventoryItemType *type = item->Type();
-    return type && type->GetInventorySlot() == index;
+    return type && (type->GetInventorySlot() == index ||
+      (index == ISShoulder2 && type->GetInventorySlot() == ISShoulder));
   }
   else
   {
@@ -1224,6 +1238,7 @@ bool Person::CanAddItem(const InventoryItem *item) const
   {
     int slot = type->GetInventorySlot();
     if (slot >= 0 && slot < NInventorySlotId && _inventorySlots[slot] == NULL) return true;
+    if (slot == ISShoulder && _inventorySlots[ISShoulder2] == NULL) return true;
   }
 
   // then check owned containers
@@ -1247,6 +1262,8 @@ bool Person::AddItem(InventoryItem *item)
   if (type)
   {
     int slot = type->GetInventorySlot();
+    if (slot == ISShoulder && _inventorySlots[ISShoulder] && !_inventorySlots[ISShoulder2])
+      slot = ISShoulder2;
     if (slot >= 0 && slot < NInventorySlotId && _inventorySlots[slot] == NULL)
     {
       // move in world
@@ -1721,6 +1738,12 @@ void Person::SimulateWeaponInputs(InputInterface *input, AIBrain *unit, const Tu
       const InventoryItemType *type = GetItemShortcut(index);
       if (type)
       {
+        InventoryItem *bound = _shortcutItems[index];
+        if (bound && FindItem(bound) && bound->Type() == type)
+        {
+          bound->UseFromInventory(this);
+          continue;
+        }
         // find item of this type
         ForEachItem([this, type](InventoryItem *item) -> bool
         {
@@ -1750,6 +1773,7 @@ const InventoryItemType *Person::GetItemShortcut(int index) const
 void Person::SetItemShortcut(int index, const InventoryItemType *itemType)
 {
   void ShowShortcuts();
+  if (index >= 0 && index < NItemShortcuts) _shortcutItems[index] = NULL;
 
   if (index<0)
   {
@@ -1785,6 +1809,14 @@ void Person::SetItemShortcut(int index, const InventoryItemType *itemType)
       _itemShortcuts[index] = NULL;
     }
   }
+}
+
+void Person::SetItemShortcutInstance(int index, InventoryItem *item)
+{
+  if (index < 0 || index >= NItemShortcuts) return;
+  if (item && !FindItem(item)) return;
+  SetItemShortcut(index, item ? item->Type() : NULL);
+  _shortcutItems[index] = item;
 }
 
 int Person::FindItemShortcutIndex(const InventoryItemType *itemType)

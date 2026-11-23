@@ -2063,8 +2063,11 @@ void HelicopterAuto::EngineOn()
 }
 void HelicopterAuto::EngineOff()
 {
-  //base::EngineOff();
-  //_rotorSpeedWanted=0;
+  // Explicit engine stop (SQF "engineOn false", user action or damage).
+  // Transport::EngineOff only toggles the flag; the rotor has to be told to
+  // spin down as well, otherwise the helicopter stays airborne.
+  _rotorSpeedWanted=0;
+  base::EngineOff();
 }
 void HelicopterAuto::EngineOffAction()
 {
@@ -4094,6 +4097,9 @@ void HelicopterAuto::KeyboardPilot(AIBrain *unit, float deltaT )
   // reset the older input - input methods are not compatible, only one must be used at any given time
   _pilotVSpeedHelper = _analogueThrottleTime<=_thrustHelperTime;
 
+  // Q (collective raise) starts the engine. EngineOn() latches
+  // _rotorSpeedWanted = 1, so after the key is released the engine keeps
+  // running; holding Q only controls the climb and Z controls the descent.
   if (forward>0 || throttleDirect>0)
   {
 #if _HELISIM_ROTORLIB
@@ -4102,6 +4108,9 @@ void HelicopterAuto::KeyboardPilot(AIBrain *unit, float deltaT )
     if (!EngineIsOn()) EngineOn();
 #endif
   }
+  // Keep transport engine state (sound/HUD/SQF isEngineOn) in sync with the
+  // latched rotor. Only an explicit engine-off action clears the latch.
+  if (EngineIsOn() && _engineOff) Transport::EngineOn();
 
 
   if (!_pilotVSpeedHelper)

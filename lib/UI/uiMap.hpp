@@ -189,6 +189,7 @@ public:
   static void SetItemShortcut(int index, const InventoryItem *item);
   static void DropItem(Person *owner, InventoryItem *item);
   static void MoveItem(EntityAI *target, int index, InventoryItem *item);
+  static void RotateInventoryItem(Person *person, InventoryItem *item);
   static void TakeItemToHands(Person *person, InventoryItem *item);
 
   // test if MoveItem will succeed

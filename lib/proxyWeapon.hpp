@@ -51,6 +51,7 @@ public:
   XX(type, prefix, Gloves) \
   XX(type, prefix, Back) \
   XX(type, prefix, Hands) /* temporary slot for the item in hands not fitting into inventory */ \
+  XX(type, prefix, Shoulder2) /* second large weapon carried across the back */ \
 
 #ifndef DECL_ENUM_INVENTORY_SLOT_ID
 #define DECL_ENUM_INVENTORY_SLOT_ID

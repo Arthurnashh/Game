@@ -98,12 +98,16 @@ protected:
 public:
   Ref<Man> _target;
   AutoArray<TrailWaypoint> _trail;
+  bool _pathBlocked;
+
+  ChaseTarget() : _pathBlocked(false) {}
 
   void AddWaypoint(Vector3Par pos);
   float Age() const;
   void Clear()
   {
     _trail.Clear();
+    _pathBlocked = false;
   }
   ChaseTarget* CreateReversed() const;
   bool ReachedGoal(Vector3Par pos) const;

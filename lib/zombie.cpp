@@ -220,7 +220,9 @@ void Dummy(LightAI* context)
 LightAI::LightAI(const EntityAIType *name, bool fullCreate): Man(name, fullCreate), _nearestPlayer(0),
   _checkAttack(0), _attackAction(0),
   _tiredFactor(0),
-  _tiredFactorHysteresis(0)
+  _tiredFactorHysteresis(0),
+  _nextPathOptimization(TIME_MIN), _nextObstacleCheckTime(TIME_MIN),
+  _lastAttackTime(TIME_MIN)
 {
 }
 
@@ -465,6 +467,15 @@ void LightAI::Simulate( float deltaT, SimulationImportance prec )
   if (IsSimulationDisabled())
     return;
 
+  const bool isZombie = dynamic_cast<Zombie *>(this) != NULL;
+  if (isZombie && _ignoreCollisionIfStuck)
+  {
+    // The inherited stuck recovery disables Geometry collision. Keep zombie
+    // collision active so a blocked zombie cannot escape through a wall.
+    _ignoreCollisionIfStuck = false;
+    _stuckStarted = TIME_MAX;
+  }
+
   _toSafeSpot.AddWaypoint(FutureVisualState().Position());
 
   float deltaT0 = deltaT;
@@ -567,6 +578,7 @@ void LightAI::Simulate( float deltaT, SimulationImportance prec )
   bool bChange = false;
 
   ManVisualState moveTrans = FutureVisualState(); // store old position
+  Vector3 prevPos = moveTrans.Position();
 
   if(Brain()->GetLifeState() == LifeStateUnconscious)
   {
@@ -641,7 +653,9 @@ void LightAI::Simulate( float deltaT, SimulationImportance prec )
     }
     else
     {
-      if(_attackAction && Type()->GetAttackAction(_attackAction - 1)._canWalk)
+      if (isZombie)
+        _staticCollision = true; // route checks can miss obstacles; keep physical fallback enabled
+      else if(_attackAction && Type()->GetAttackAction(_attackAction - 1)._canWalk)
         _staticCollision = true; //avoid jumping into wall
       else
       {
@@ -668,6 +682,42 @@ void LightAI::Simulate( float deltaT, SimulationImportance prec )
       }
 
       _objectContactNonStatic = false;
+
+      // Validate long zombie moves at short intervals using the animated body
+      // collision shape, preventing a fast simulation step from tunneling
+      // through a thin wall when both endpoints are clear.
+      if (isZombie && prec <= SimulateVisibleFar && !_useAudioTimeForMoves)
+      {
+        static const float zombieCollisionSubdiv = 0.2f;
+        const float moveDist = prevPos.Distance(moveTrans.Position());
+        if (moveDist > zombieCollisionSubdiv + 0.01f)
+        {
+          const Time backupVegCollisionTime = _vegCollisionTime;
+          const bool backupHighPriorityContact = _highPriorityContact;
+          const bool backupPurePersonContact = _purePersonContact;
+          const bool backupObjectContact = _objectContact;
+          ManVisualState collisionTest(moveTrans);
+          int lastClearStep = 0;
+          const int stepCount = intMax((int)ceilf(moveDist / zombieCollisionSubdiv), 2);
+          const Vector3 endPos = moveTrans.Position();
+          for (int step = 0; step < stepCount; step++)
+          {
+            collisionTest.SetPosition(prevPos.Lerp(endPos, (float)step / (stepCount - 1)));
+            const float collisionVolume = ValidatePotentialState(collisionTest);
+            _vegCollisionTime = backupVegCollisionTime;
+            _highPriorityContact = backupHighPriorityContact;
+            _purePersonContact = backupPurePersonContact;
+            _objectContact = backupObjectContact;
+            if (collisionVolume > 0.0f) break;
+            lastClearStep = step;
+          }
+          if (lastClearStep < 2)
+            lastClearStep = intMin(lastClearStep + 1, stepCount - 1);
+          const float moveRatio = (float)lastClearStep / (stepCount - 1);
+          moveTrans.SetPosition(prevPos.Lerp(endPos, moveRatio));
+          deltaT *= moveRatio;
+        }
+      }
 
       const bool farCollision = false;
       if (prec<=SimulateVisibleFar) 
@@ -902,8 +952,47 @@ void LightAI::Simulate( float deltaT, SimulationImportance prec )
       {
         _stuckStarted = TIME_MAX;
         _ignoreCollisionIfStuck = false;
-        if (ValidatePotentialState(moveTrans) > 0)
+        if (!isZombie && ValidatePotentialState(moveTrans) > 0)
           _ignoreCollisionIfStuck = true;              
+      }
+
+      // Endpoint capsule checks alone can miss a thin wall or fence when the
+      // zombie's simulated move crosses the whole obstacle in one frame.
+      if (deltaT > 0 && (prec <= SimulateVisibleNear || (isZombie && prec <= SimulateVisibleFar)))
+      {
+        const Vector3 oldPos = FutureVisualState().Position() + ZombieRayTestOffset;
+        const Vector3 newPos = moveTrans.Position() + ZombieRayTestOffset;
+        CollisionBuffer collision;
+        if (newPos.Distance2(oldPos) > Square(0.1f) && !_ignoreCollisionIfStuck)
+          GLandscape->ObjectCollisionLine(GetFutureVisualStateAge(), collision,
+            Landscape::FilterIgnoreOne(this), oldPos, newPos, ZombieRayTestRadius, ObjIntersectGeom);
+
+        float firstHit = 1e10f;
+        for (int i = 0; i < collision.Size(); i++)
+        {
+          const CollisionInfo &info = collision[i];
+          Object *obj = info.object;
+          if (!obj) continue;
+          const bool zombieStaticWorldBlock = isZombie && obj->Static();
+          if (obj->IsPassable() && !zombieStaticWorldBlock) continue;
+          _objectContact = true;
+          _objectContactNonStatic = _objectContactNonStatic || !obj->Static();
+          // ObjectCollisionLine reports entry=false when the segment begins
+          // inside (or touching) this expanded geometry. That is not a usable
+          // impact fraction; leave the overlap to the animated body solver.
+          if (!info.entry) continue;
+          if (info.under < firstHit) firstHit = info.under;
+        }
+        if (firstHit < 1.0f)
+        {
+          // Stop just before the first outside-to-inside contact. Do not
+          // impose a minimum forward step, which would push short moves into
+          // the same wall and produce an overlap on every following frame.
+          firstHit = floatMax(firstHit - 0.005f, 0.0f);
+          const Vector3 collisionPos = FutureVisualState().Position() * (1 - firstHit) + moveTrans.Position() * firstHit;
+          repairMove += collisionPos - moveTrans.Position();
+          moveTrans.SetPosition(collisionPos);
+        }
       }
     }
   } // if( _freeFall )
@@ -2149,7 +2238,7 @@ void LightAI::AIPathPilot(SteerInfo& info, float deltaT)
   const VisualState& vs = FutureVisualState();
   const FSM::State fsmState = _fsm->GetState();
 
-  if( _walkTarget && _walkTarget->_trail.Size() && CanWalk() )
+  if( _walkTarget && (_walkTarget->_trail.Size() || _walkTarget->_pathBlocked) && CanWalk() )
   {
     Vector3 position = vs.Position();
     Vector3 dir = vs.Direction();
@@ -2183,10 +2272,46 @@ void LightAI::AIPathPilot(SteerInfo& info, float deltaT)
       }
     }
 
-    if( Glob.time > _nextObstacleCheckTime )
+    // A multi-waypoint trail already came from the obstacle-aware pathfinder.
+    // Rebuilding a path to the moving target every second for every zombie
+    // creates a large server-side spike (especially on dense servers) and
+    // makes remote player positions appear stale. Recheck only direct/finished
+    // trails, where there is no alternate route to follow, or a blocked path.
+    if (_walkTarget->_target &&
+        (_walkTarget->_trail.Size() <= 1 || _walkTarget->_pathBlocked) &&
+        Glob.time >= _nextObstacleCheckTime)
     {
-      // FindPathAroundObstacles(_walkTarget->_trail, _walkTarget->_target);
-      _nextObstacleCheckTime = Glob.time + 1;
+      _nextObstacleCheckTime = Glob.time + 1.0f;
+      const Vector3 targetPos = _walkTarget->_target->FutureVisualState().Position();
+      const float targetDist2 = targetPos.Distance2(position);
+      const bool pathFound = InitPathToTarget(_walkTarget, ZombieRayTestOffset, ZombieRayTestRadius, 100);
+      if (!pathFound && targetDist2 <= Square(100.0f))
+      {
+        _walkTarget->_pathBlocked = true;
+        _walkTarget->_trail.Clear();
+      }
+      else
+        _walkTarget->_pathBlocked = false;
+
+      if (_walkTarget->_pathBlocked)
+      {
+        info.speedWanted = 0;
+        info.sideSpeedWanted = 0;
+        info.headChange = 0;
+        info.turnPredict = 0;
+        _walkTarget = NULL;
+        return;
+      }
+    }
+
+    if (_walkTarget->_pathBlocked)
+    {
+      info.speedWanted = 0;
+      info.sideSpeedWanted = 0;
+      info.headChange = 0;
+      info.turnPredict = 0;
+      _walkTarget = NULL;
+      return;
     }
 
     Vector3 walkPos = _walkTarget->_trail[0]._pos;
