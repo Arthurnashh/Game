@@ -161,7 +161,6 @@ TypeIsSimple(InventorySlotId)
   XX(MessageName, RefArray<InventoryItem>, attachments, NDTRefArray, AutoArray<NetworkId>, NCTNone, DEFVALUEREFARRAY, DOC_MSG("Attachments"), TRANSF_REFS, ET_NOT_EQUAL_COUNT, ERR_COEF_MODE) \
   XX(MessageName, bool, inventoryRotated, NDTBool, bool, NCTNone, DEFVALUE(bool, false), DOC_MSG("Item rotated in inventory grid"), TRANSF, ET_NOT_EQUAL, ERR_COEF_IMMEDIATE) \
   XX(MessageName, bool, inLandscape, NDTBool, bool, NCTNone, DEFVALUE(bool, false), DOC_MSG("Item is in landscape"), TRANSF, ET_NOT_EQUAL, ERR_COEF_IMMEDIATE) \
-  XX(MessageName, bool, inventoryRotated, NDTBool, bool, NCTNone, DEFVALUE(bool, false), DOC_MSG("Item is rotated in the inventory grid"), TRANSF, ET_NOT_EQUAL, ERR_COEF_MODE) \
   
 DECLARE_NET_INDICES_EX_ERR(UpdateInventoryItem, UpdateVehicleAI, UPDATE_INVENTORY_ITEM_MSG)
 

@@ -3929,7 +3929,7 @@ struct AsyncDBStorage
   void DBCheckLoaded();
 };
 
-#if _ENABLE_STEAM_MATCHMAKING
+#if _ENABLE_STEAM_MATCHMAKING && !(_ENABLE_STEAM_IDENTITY && defined(_WIN64))
 class SteamValidation
 {
   /// Steam authentication is completed (need not wait for it)
@@ -4065,7 +4065,7 @@ struct NetworkPlayerInfo : public AsyncDBStorage, public RefCount, private NoCop
   SteamValidation _steamValidate;
 #endif
   
-#if _ENABLE_STEAM_MATCHMAKING
+#if _ENABLE_STEAM_MATCHMAKING && !(_ENABLE_STEAM_IDENTITY && defined(_WIN64))
   SteamValidation _steamValidate;
 #endif
 

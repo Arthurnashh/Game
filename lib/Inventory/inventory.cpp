@@ -2265,7 +2265,6 @@ TMError InventoryItem::TransferMsg(NetworkMessageContext &ctx)
       TRANSF_EX(inLandscape, inLandscape);
       bool isOn = IsOn();
       TRANSF_EX(isOn, isOn);
-      TRANSF_EX(inventoryRotated, _inventoryRotated);
     }
     else
     {
@@ -2288,7 +2287,6 @@ TMError InventoryItem::TransferMsg(NetworkMessageContext &ctx)
         if (item) item->ItemMoveOut(this);
       }
 
-      TRANSF_EX(inventoryRotated, _inventoryRotated);
     }
   }
 
@@ -2322,7 +2320,6 @@ float InventoryItem::CalculateError(NetworkMessageContextWithError &ctx)
     error += ERR_COEF_MODE * dif;
 
     if ( message->_isOn!=IsOn() ) error += ERR_COEF_STRUCTURE;
-    if ( message->_inventoryRotated != _inventoryRotated ) error += ERR_COEF_MODE;
   }
   return error;
 }
