@@ -6430,7 +6430,6 @@ public:
   Control *OnCreateCtrl(int type, int idc, ParamEntryPar cls);
   ControlObject *OnCreateObject(int type, int idc, ParamEntryPar cls);
   void OnSimulate(EntityAI *vehicle);
-  virtual bool OnKeyDown(int dikCode) override;
   void DestroyHUD(int exit)
   {
     GWorld->DestroyUserDialog();

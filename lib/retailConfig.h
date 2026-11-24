@@ -57,9 +57,8 @@
 #define _ENABLE_DX10              0
 #define _USE_BATTL_EYE_SERVER     1
 #define _USE_BATTL_EYE_CLIENT     1
-// Steamworks SDK is not available in this tree; keep all Steam integration disabled.
+// Ownership and matchmaking are configured independently of Steam identity.
 #define _ENABLE_STEAM_OWNERSHIP   0
-#define _ENABLE_STEAM             0
 #define _ENABLE_STEAM_MATCHMAKING 0
 #define _ENABLE_SEND_UDP_MESSAGE  0
 #define _ENABLE_TEXTURE_HEADERS   1 //if reading texture headers from texture headers file is enabled
