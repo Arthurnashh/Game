@@ -1274,6 +1274,12 @@ protected:
   bool _showPrimaryWeapon;
   bool _showSecondaryWeapon;
   bool _showHead;
+
+  /// Second shoulder weapon offset expressed in the shoulder proxy's local
+  /// space. Calibrated while the man stands still so the tuned placement is
+  /// kept, while locomotion still carries the weapon with the shoulder bone.
+  Vector3 _secondShoulderOffsetLocal;
+  bool _secondShoulderOffsetValid;
   
   //@{ variables used while climbing ladder
   OLinkO(Building) _ladderBuilding;

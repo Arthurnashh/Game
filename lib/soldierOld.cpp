@@ -34,6 +34,7 @@ Implementation file for Man and Soldier classes
 #include <Es/Strings/bString.hpp>
 #include <Es/Types/scopeLock.hpp>
 #include <Es/Common/langExt.hpp>
+#include <string.h>
 
 #include "move_actions.hpp"
 #include "integrity.hpp"
@@ -53,6 +54,16 @@ static bool MoveNameHas(const char *name, const char *part)
   return false;
 }
 #include "gameDirs.hpp"
+
+// Match animation-state fragments without depending on their letter casing.
+static bool MoveNameHas(const char *name, const char *part)
+{
+  if (!name || !part || !*part) return false;
+  const size_t len = strlen(part);
+  for (const char *p = name; *p; ++p)
+    if (_strnicmp(p, part, len) == 0) return true;
+  return false;
+}
 
 #include "dikCodes.h"
 
@@ -1751,6 +1762,7 @@ _vegCollisionTime(TIME_MIN),
 _metabolismFactor(1.0f),
 
 _showPrimaryWeapon(true), _showSecondaryWeapon(true), _showHead(true),
+  _secondShoulderOffsetLocal(VZero), _secondShoulderOffsetValid(false),
 _manScale(1),
 
 _coverGrassHeight(0.0f),
@@ -3059,9 +3071,16 @@ void Man::TakeInHandsAction(InventoryItem *item)
   // clothing/cargo slot and put it in ISHands before making it active.
   Person::TakeItemToHands(item);
 
-  // If the transfer could not put the item into Hands, clear the pending
-  // request instead of letting ProcessItemToHands retry the action forever.
-  if (item && _itemInHands != item) _itemInHandsWanted = NULL;
+  // Hands are an inventory location, not a second reference to a slot item.
+  // Transfer the item only after the previous hands item has been put away.
+  if (item && GetInSlot(ISHands) != item)
+  {
+    Entity *previousOwner = item->GetHierarchyParent();
+    if (previousOwner) previousOwner->RemoveOwnedItem(item);
+    if (!GetInSlot(ISHands)) PutInSlot(ISHands, item);
+  }
+
+  _itemInHands = item;
 
   // TODO: weapon will tell us what action to play
   if (item)
@@ -4960,6 +4979,7 @@ bool Man::SimulateAnimations(float &turn, float &moveX, float &moveZ, float delt
       }
     }
   }
+
   DoAssert(fabs(moveX)<100);
   DoAssert(fabs(moveZ)<100);
 
@@ -6278,6 +6298,17 @@ bool Man::CreatePotentialStateFreeFall(ManVisualState & moveTrans, Vector3& fric
 
     moveTrans.SetPosition(FutureVisualState().Position() + diffPos);
   }
+  else if (QIsManual() && !_swimming && (!Brain() || !Brain()->GetVehicleIn()))
+  {
+    // Free-fall normally preserves momentum but discards locomotion root steps.
+    // Keep limited horizontal control for the local player so a missing ground
+    // contact cannot permanently lock movement and yaw after the fall timeout.
+    Vector3 airStep;
+    FutureVisualState().DirectionModelToWorld(airStep, Vector3(moveX, 0, moveZ));
+    airStep[1] = 0;
+    airStep *= 0.25f;
+    moveTrans.SetPosition(moveTrans.Position() + airStep);
+  }
 
   // Friction with air.
   Vector3Val speed=FutureVisualState().ModelSpeed();
@@ -6503,6 +6534,7 @@ bool Man::CreatePotentialState(ManVisualState & moveTrans, float& turn, float de
   float moveX,moveZ;
   
   bool change = SimulateAnimations(turn,moveX,moveZ,deltaT,prec);    
+
   
   if (_objectContact) 
     change = true;
@@ -8257,6 +8289,7 @@ void Man::Simulate( float deltaT, SimulationImportance prec )
         if (ValidatePotentialState(moveTrans) > 0)
           _ignoreCollisionIfStuck = true;              
       }
+
     }
   } // if( _freeFall )
 
@@ -10976,6 +11009,66 @@ void Man::PrepareProxiesForDrawing(
     }
     
     ReleaseProxyInfo(info,false);
+  }
+
+  // The second long weapon uses the existing shoulder proxy as a pose anchor.
+  // Offset it across the back so it remains visible without requiring a new
+  // character-model proxy in every survivor P3D.
+  InventoryItem *secondShoulderWeapon = GetInSlot(ISShoulder2);
+  if (_showPrimaryWeapon && secondShoulderWeapon && secondShoulderWeapon != _itemInHands && secondShoulderWeapon->GetShape())
+  {
+    int shoulderProxyIndex = -1;
+    for (int i=0; i<type->GetProxyCountForLevel(level); i++)
+    {
+      const ProxyObjectTyped &proxy = type->GetProxyForLevel(level, i);
+      Object *proxyObj = proxy.obj;
+      const EntityType *proxyType = proxyObj ? proxyObj->GetEntityType() : NULL;
+      if (proxyType && proxyType->GetInventorySlot() == ISShoulder)
+      {
+        shoulderProxyIndex = i;
+        break;
+      }
+    }
+
+    if (shoulderProxyIndex >= 0)
+    {
+      Weapon *secondWeapon = secondShoulderWeapon->GetWeapon();
+      if (secondWeapon) secondWeapon->UpdateShape();
+
+      LODShape *secondShape = secondShoulderWeapon->GetShape();
+      int secondLevel = GScene->LevelFromDistance2(secondShape, dist2, transform.position.Scale());
+      if (secondLevel == LOD_INVISIBLE && secondShoulderWeapon->GetFeatureSize() > 0)
+        secondLevel = secondShape->FindSimplestLevel();
+
+      if (secondLevel != LOD_INVISIBLE && secondLevel >= 0)
+      {
+        const ProxyObjectTyped &shoulderProxy = type->GetProxyForLevel(level, shoulderProxyIndex);
+        SkeletonIndex boneIndex = type->GetProxyBoneForLevel(level, shoulderProxyIndex);
+        Matrix4 anchor = AnimateProxyMatrix(RenderVisualState(), level, shoulderProxy.GetTransform(), boneIndex);
+
+        const ManVisualState &mvs = RenderVisualState().cast<Man>();
+        const Vector3 approvedShift(+0.32f, 0.0f, -0.10f);
+        // While standing still (and not leaning) the offset is recalibrated so
+        // the placement stays exactly the tuned one in character space. While
+        // moving the last calibrated vector is kept, which makes the weapon
+        // follow the shoulder bone rigidly (no sliding off the back).
+        if ((mvs._modelSpeed.SquareSize() < 0.25f && mvs._leaningTransIdent) || !_secondShoulderOffsetValid)
+        {
+          _secondShoulderOffsetLocal = anchor.Orientation().InverseGeneral() * approvedShift;
+          _secondShoulderOffsetValid = true;
+        }
+        Matrix4 oppositeSide(MTranslation, _secondShoulderOffsetLocal);
+        PositionRender secondTransform = transform * anchor * oppositeSide;
+
+        if (secondShape->Remarks() & ShapeReversed)
+        {
+          Matrix4 swapM(MScale, -1, +1, -1);
+          secondTransform = secondTransform * swapM;
+        }
+
+        GScene->ProxyForDrawing(secondShoulderWeapon, rootObj, secondLevel, rootLevel, clipFlags, dist2, secondTransform);
+      }
+    }
   }
 
   base::PrepareProxiesForDrawing(rootObj, rootLevel, animContext, transform, level, clipFlags, so);
@@ -13740,7 +13833,12 @@ void ManType::Load(ParamEntryPar par, const char *shape)
   for (int i=0; i<NInventorySlotId; i++)
   {
     if (i == ISHands) continue; // temporary invisible slot
-    RString typeName = par >> (RString("empty") + InventorySlotTypes.GetName(i));
+    RString emptySlotName = RString("empty") + InventorySlotTypes.GetName(i);
+    // Older config.bin files do not define the new optional Shoulder2 slot.
+    // Do not ask ParamEntry for a missing key: that emits a fatal config
+    // warning during SurvivorMale initialization and can abort startup.
+    RString typeName;
+    if (par.CheckIfEntryExists(emptySlotName)) typeName = par >> emptySlotName;
     if (!typeName.IsEmpty()) _emptySlots[i] = dynamic_cast<InventoryItemType *>(VehicleTypes.New(typeName));
   }
 
@@ -15333,7 +15431,10 @@ static const ManAction SelectManActionRaised[3][3][3]=
 
 void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
 {
-  if (KeyboardUsedInFrame()) return;
+  if (KeyboardUsedInFrame())
+  {
+    return;
+  }
   
   TurretContextEx context;
   context._turret = NULL;
@@ -15401,12 +15502,11 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
   if (zoom) 
   {
     CameraType camType = GWorld->GetCameraType();
-    // Zoom on the scroll button (middle mouse) held, straight from the device so the
-    // saved key profile cannot remap it back to the right mouse button.
-    zoom->_zoomInsteadOfOptics = (
-      GInput.GetMouseButton(2) > 0.5f
-      && (camType == CamInternal || camType == CamExternal || camType == CamGunner)
-    );
+    // Right mouse button (UALockTarget) = hold-to-zoom. This must be
+    // re-evaluated every frame, otherwise releasing the button leaves the
+    // camera stuck at the maximum zoom level.
+    zoom->_zoomInsteadOfOptics = input->GetAction(UALockTarget) &&
+      (camType == CamInternal || camType == CamExternal || camType == CamGunner);
     RenderVisualStateScope(true),zoom->Update(input,deltaT,this); // Zoom update may call RenderVisualState to check if optics are enabled
 
     WeaponModePtr ptr = _weaponsState.ValidatedCurrentWeapon();
@@ -15472,9 +15572,20 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
   bool suspendMovement = false;
   if ((!_landContact || _freeFall) && _freeFallStartTime<Glob.time-0.6f && !_swimming)
   {
-    rlWanted = 0;
-    fbWanted = 0;
     suspendMovement = true;
+    if (QIsManual())
+    {
+      // Do not freeze the controlled player when ground contact is missing.
+      // Keep only a small air-control input while the physics state recovers.
+      const float airControl = 0.25f;
+      rlWanted *= airControl;
+      fbWanted *= airControl;
+    }
+    else
+    {
+      rlWanted = 0;
+      fbWanted = 0;
+    }
   }
 
 
@@ -15516,6 +15627,11 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
     {
       float lookX = input->GetActionWithCurveExclusive(InputInterface::CurveFovMouse, UAAimHeadRight, UAAimHeadLeft);
       float lookY = input->GetActionWithCurveExclusive(InputInterface::CurveFovMouse, UAAimHeadUp, UAAimHeadDown);
+      // Some 0.45 input profiles only bind the horizontal mouse to UAAimRight/
+      // UAAimLeft. Preserve free-look yaw in those profiles when the dedicated
+      // head-yaw pair has no binding or was already consumed by another view.
+      if (fabs(lookX) < 1e-6f)
+        lookX = input->GetActionWithCurve(InputInterface::CurveFovMouse, UAAimRight, UAAimLeft);
 
       float rotXWanted = (ironSight ? _gunXRotWanted : _lookXRotWanted) + lookY*deltaT;
       float rotYWanted = (ironSight ? _gunYRotWanted : _lookYRotWanted) - lookX*deltaT;
@@ -15629,7 +15745,7 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
     }
   }
 
-  if ((!_landContact || _freeFall) && _freeFallStartTime<Glob.time-0.6f && !_swimming)
+  if ((!_landContact || _freeFall) && _freeFallStartTime<Glob.time-0.6f && !_swimming && !QIsManual())
     turnWanted = 0;
   _turnWanted = turnWanted;
 
@@ -15788,6 +15904,11 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
   {
     // check which action we should take - based on keys
     int fastFlag = turbo;
+    // FIX: when some input mapped to GetActionMoveFastForward() is present, do not keep FastMove active
+    //      The problem was, when sprint was achieved by fastForward action mapped to XBOXThumb, it was preserved
+    //      even when thumb was moving back (no translation through RUN and WALK).
+    if (fastForwardAct<+0.1f && map && map->GetUseFastMove())
+      fastFlag = true; 
     int rlFlag = 0, fbFlag = 0;
     if (fabs(rlWanted)>+1.5f)
       fastFlag = 1;
@@ -15813,9 +15934,9 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
     // update fastFlag and calculate _walkSpeedWanted
     float maxSpeed = Type()->GetMaxSpeedMs();
     float limitSpeed = floatMin(1.2f - GetEncumbrance(), 1.0f) * maxSpeed;
-
-    // Lean is an additive pose overlay; do not force the character back to walking.
-    // Normal run/sprint, encumbrance, slope, and water limits still apply below.
+    
+    // Lean is an additive pose overlay; it does not force the character back
+    // to walking. The normal run, sprint, weight, slope and water limits apply.
     if (_waterDepth>0.6)
     {
       if (_waterDepth>1.0)
@@ -15943,11 +16064,26 @@ void Soldier::KeyboardPilot(float deltaT, SimulationImportance prec)
   }
 
 
-  MoveId moveWanted = map ? Type()->GetMove(map, selAction) : GetDefaultMove();
+  MoveId moveWanted = map ? Type()->GetMove(map, selAction) : MoveIdNone;
+  // Resolve the requested action through the active ActionMap first. If the
+  // current state has no map or does not define this action, use the map for
+  // the decoded posture before falling back to an idle/default move.
+  if (moveWanted == MoveIdNone)
+  {
+    const MoveIdExt &postureMove = GetMovesType()->GetMove(GetActUpDegree(FutureVisualState()), selAction);
+    if (postureMove.id != MoveIdNone)
+    {
+      moveWanted = postureMove.id;
+    }
+  }
+  if (moveWanted == MoveIdNone)
+    moveWanted = GetDefaultMove();
   if (!IsLocal() && _targetMoveWanted!=MoveIdNone)
   {
     ActionMap *targetMap = Type()->GetActionMap(_targetMoveWanted, AnimSubIx());
-    if (map!=targetMap && Type()->GetMove(map, ManActStop)!=Type()->GetMove(targetMap, ManActStop))
+    MoveId currentStop = map ? Type()->GetMove(map, ManActStop) : GetDefaultMove();
+    MoveId targetStop = targetMap ? Type()->GetMove(targetMap, ManActStop) : GetDefaultMove();
+    if (map!=targetMap && currentStop!=targetStop)
     {
       moveWanted = _targetMoveWanted;
     }
@@ -16046,7 +16182,24 @@ int Man::GetAutoUpDegree() const
 MoveId Man::GetDefaultMove() const
 {
   int deg = GetAutoUpDegree();
-  return GetMovesType()->GetDefaultMove(deg);
+  MoveId move = GetMovesType()->GetDefaultMove(deg);
+  if (move != MoveIdNone)
+    return move;
+
+  // Some imported survivor animation configs leave the posture's Default
+  // action unmapped. MotionPath::PatchNoMove then receives MoveIdNone and the
+  // character stays in bind pose with no movement actions. Recover a living,
+  // upright character to the known base idle state so the normal action map
+  // can drive walking and running again.
+  if (!_isDead && !IsDown())
+  {
+    MoveId fallbackMove = GetMovesType()->GetMoveId("AidlPercMstpSnonWnonDnon");
+    if (fallbackMove == MoveIdNone)
+      fallbackMove = GetMovesType()->GetMoveId("AmovPercMstpSnonWnonDnon");
+    if (fallbackMove != MoveIdNone)
+      return fallbackMove;
+  }
+  return move;
 }
 
 MoveId Man::GetDefaultMove(ManAction action) const
@@ -17427,10 +17580,8 @@ void Man::RecalcLeaningTransform()
       leanShift = leanMap->GetLeanLShift();
     }
 
-    // Some locomotion action maps (notably fast/strafe variants) omit the
-    // lean offsets even though the stop map for that same movement family
-    // defines them. Reuse those offsets so Q/E remain an additive pose while
-    // running instead of silently becoming a no-op.
+    // Some fast and strafe action maps omit lean offsets. Reuse the stop
+    // animation map from the same movement family while the player runs.
     if (fabs(leanRotAngle) < 1e-6f && fabs(leanShift) < 1e-6f)
     {
       const MoveIdExt &stopMove = type->GetMove(map, ManActStop);
@@ -20212,6 +20363,33 @@ bool Soldier::ProcessFireWeapon(const TurretContext &context, const WeaponModePt
 
       if (QIsManual())
       {
+        // In iron sights the camera and the muzzle have different origins.
+        // Aim the projectile from the muzzle at the surface under the sight,
+        // otherwise the two rays remain parallel and miss sideways nearby.
+        if (GWorld->GetCameraType() == CamGunner && GWorld->CameraOn() == this &&
+            GScene && GScene->GetCamera())
+        {
+          const Camera *camera = GScene->GetCamera();
+          Vector3 cameraPos = camera->Position();
+          Vector3 cameraDir = camera->Direction().Normalized();
+          const float maxAimDistance = 500.0f;
+          float aimDistance = GLandscape->IntersectWithGroundOrSea(
+            NULL, cameraPos, cameraDir, 0, maxAimDistance);
+          if (aimDistance <= 0 || aimDistance > maxAimDistance)
+            aimDistance = maxAimDistance;
+
+          CollisionBuffer hits;
+          GLandscape->ObjectCollisionLine(GetRenderVisualStateAge(), hits,
+            Landscape::FilterIgnoreOne(this), cameraPos,
+            cameraPos + cameraDir * aimDistance, 0,
+            ObjIntersectView, ObjIntersectFire, CF_NEAREST_CONTACT);
+          Vector3 sightTarget = hits.Size() > 0 ? hits[0].pos :
+            cameraPos + cameraDir * aimDistance;
+          Vector3 muzzleWorld = vs->PositionModelToWorld(pos);
+          Vector3 muzzleToTarget = sightTarget - muzzleWorld;
+          if (muzzleToTarget.SquareSize() > 1.0f)
+            dir = vs->DirectionWorldToModel(muzzleToTarget.Normalized());
+        }
         // get fov from the current camera settings
         GWorld->GetCameraType();
         //float fov = GScene->GetCamera()->Left();

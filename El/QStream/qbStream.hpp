@@ -325,6 +325,65 @@ struct AddNonDataFile
     return false;
   }
 };
+
+// DayZ signature version 3 hashes selected script/config payloads, together
+// with the normalized file list and PBO prefix. Binary assets are deliberately
+// excluded by the DayZ v3 policy.
+struct DayZV3File
+{
+  unsigned long startOffset;
+  unsigned long length;
+  RString name;
+  DayZV3File() : startOffset(0), length(0) {}
+  DayZV3File(unsigned long offset, unsigned long len, RString fileName)
+    : startOffset(offset), length(len), name(fileName) {}
+  ClassIsMovable(DayZV3File);
+};
+
+struct AddDayZV3File
+{
+  AutoArray<DayZV3File> &_files;
+  AddDayZV3File(AutoArray<DayZV3File> &files) : _files(files) {}
+  bool operator ()(const FileInfoO &info, const FileBankType *container)
+  {
+    if (info.length > 0)
+    {
+      const char *ext = GetFileExt(info.name);
+      if (ext && *ext == '.' &&
+          (!stricmp(ext+1,"bikb") || !stricmp(ext+1,"c") || !stricmp(ext+1,"ext") ||
+           !stricmp(ext+1,"hpp") || !stricmp(ext+1,"cfg") || !stricmp(ext+1,"h") ||
+           !stricmp(ext+1,"inc")))
+        _files.Add(DayZV3File(info.startOffset, info.length, info.name));
+    }
+    return false;
+  }
+};
+
+struct AddDayZV3Name
+{
+  AutoArray<RString> &_names;
+  AddDayZV3Name(AutoArray<RString> &names) : _names(names) {}
+  bool operator ()(const FileInfoO &info, const FileBankType *container)
+  {
+    if (info.length > 0)
+    {
+      RString name = info.name;
+      name.Lower();
+      _names.Add(name);
+    }
+    return false;
+  }
+};
+
+static int CmpDayZV3Files(const DayZV3File *a, const DayZV3File *b)
+{
+  return a->startOffset < b->startOffset ? -1 : (a->startOffset > b->startOffset ? 1 : 0);
+}
+
+static int CmpDayZV3Names(const RString *a, const RString *b)
+{
+  return strcmp(*a, *b);
+}
 //@} NonDataFileHash calculation
 
 #define MT_SAFE 0
@@ -608,6 +667,72 @@ class QFBank: public RefCount
           }
           //break; //unreachable code
         }
+      }
+      return false;
+    case 3:
+      {
+        // BISign v3 selects the DayZ script/config file hash (hash3).
+        AutoArray<DayZV3File> files;
+        _files.ForEachF(AddDayZV3File(files));
+        QSort(files.Data(), files.Size(), CmpDayZV3Files);
+
+        HashCalculator fileCalculator;
+        if (files.Size() > 0)
+        {
+          QIStreamDataSource in;
+          in.AttachSource(_fileAccess);
+          for (int i = 0; i < files.Size(); i++)
+          {
+            in.seekg(files[i].startOffset);
+            int remaining = files[i].length;
+            char buffer[16*1024];
+            while (remaining > 0)
+            {
+              int chunk = remaining > (int)sizeof(buffer) ? (int)sizeof(buffer) : remaining;
+              size_t read = in.read(buffer, chunk);
+              if (read == 0 || in.fail()) return false;
+              fileCalculator.Add(buffer, read);
+              remaining -= (int)read;
+            }
+          }
+        }
+        else
+        {
+          // DayZ v3 uses the reversed sentinel when no files match its allowlist.
+          fileCalculator.Add("gnihton", 7);
+        }
+        AutoArray<char> fileHash;
+        if (!fileCalculator.GetResult(fileHash)) return false;
+
+        AutoArray<RString> names;
+        _files.ForEachF(AddDayZV3Name(names));
+        QSort(names.Data(), names.Size(), CmpDayZV3Names);
+        HashCalculator nameCalculator;
+        const char *previous = NULL;
+        for (int i = 0; i < names.Size(); i++)
+        {
+          if (!previous || strcmp(previous, names[i]) != 0)
+          {
+            nameCalculator.Add(names[i].Data(), names[i].GetLength());
+            previous = names[i];
+          }
+        }
+        AutoArray<char> nameHash;
+        if (!nameCalculator.GetResult(nameHash)) return false;
+
+        HashCalculator finalCalculator;
+        finalCalculator.Add(fileHash.Data(), fileHash.Size());
+        finalCalculator.Add(nameHash.Data(), nameHash.Size());
+        if (GetPrefix().GetLength() > 0)
+        {
+          finalCalculator.Add(GetPrefix().Data(), GetPrefix().GetLength());
+          if (GetPrefix()[GetPrefix().GetLength()-1] != '\\')
+            finalCalculator.Add("\\", 1);
+        }
+        AutoArray<char> finalHash;
+        if (!finalCalculator.GetResult(finalHash)) return false;
+        hash.Realloc(finalHash.Data(), finalHash.Size());
+        return true;
       }
     }
     return false;

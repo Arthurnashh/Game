@@ -659,6 +659,13 @@ float Person::CalculateError(NetworkMessageContextWithError &ctx)
 		error += base::CalculateError(ctx);
 		break;
 	}
+
+  // The player's own position drives remote AI (including zombie attacks).
+  // The generic time-only position error can otherwise leave the server with
+  // a stale player position for several seconds while the player is moving.
+  if (ctx.GetClass() == NMCUpdatePosition && GWorld && this == GWorld->GetRealPlayer())
+    error *= 20.0f;
+
 	return error;
 }
 
@@ -1038,6 +1045,8 @@ bool Person::AddOwnedItem(InventoryItem *item)
   if (type)
   {
     int slot = type->GetInventorySlot();
+    if (slot == ISShoulder && _inventorySlots[ISShoulder] && !_inventorySlots[ISShoulder2])
+      slot = ISShoulder2;
     if (slot >= 0 && slot < NInventorySlotId && _inventorySlots[slot] == NULL)
     {
       // move in world
@@ -1058,6 +1067,8 @@ bool Person::CanAddOwnedItem(const InventoryItem *item) const
   if (type)
   {
     int slot = type->GetInventorySlot();
+    if (slot == ISShoulder && _inventorySlots[ISShoulder] && !_inventorySlots[ISShoulder2])
+      slot = ISShoulder2;
     return slot >= 0 && slot < NInventorySlotId && _inventorySlots[slot] == NULL;
   }
 
@@ -1072,6 +1083,8 @@ int Person::CanReplaceOwnedItem(const InventoryItem *oldItem, const InventoryIte
   if (type)
   {
     int slot = type->GetInventorySlot();
+    if (slot == ISShoulder && _inventorySlots[ISShoulder2] == oldItem)
+      return ISShoulder2;
     if (slot >= 0 && slot < NInventorySlotId && _inventorySlots[slot] == oldItem) return slot;
   }
 
@@ -1100,7 +1113,8 @@ bool Person::CanMoveItem(int index, const InventoryItem *item) const
 
     // item fits into this slot
     const InventoryItemType *type = item->Type();
-    return type && type->GetInventorySlot() == index;
+    return type && (type->GetInventorySlot() == index ||
+      (index == ISShoulder2 && type->GetInventorySlot() == ISShoulder));
   }
   else
   {
@@ -1276,9 +1290,8 @@ bool Person::CanAddItem(const InventoryItem *item) const
   if (type)
   {
     int slot = type->GetInventorySlot();
-    // Hands is a dedicated equipment state, not a normal auto-placement slot.
-    // Generic inventory moves must never put an item back into Hands.
     if (slot >= 0 && slot < NInventorySlotId && slot != ISHands && _inventorySlots[slot] == NULL) return true;
+    if (slot == ISShoulder && _inventorySlots[ISShoulder2] == NULL) return true;
   }
 
   // then check owned containers
@@ -1302,9 +1315,8 @@ bool Person::AddItem(InventoryItem *item)
   if (type)
   {
     int slot = type->GetInventorySlot();
-    // Hands is populated only by TakeItemToHands/PutInSlot. AddItem is used
-    // for generic inventory transfers and must route hand items to clothing
-    // cargo instead of silently placing them back in ISHands.
+    if (slot == ISShoulder && _inventorySlots[ISShoulder] && !_inventorySlots[ISShoulder2])
+      slot = ISShoulder2;
     if (slot >= 0 && slot < NInventorySlotId && slot != ISHands && _inventorySlots[slot] == NULL)
     {
       // move in world
@@ -1849,8 +1861,9 @@ void Person::UseItemShortcut(int index)
     return;
   }
 
-  InventoryItem *found = NULL;
-  ForEachItem([&](InventoryItem *item) -> bool
+  InventoryItem *found = _shortcutItems[index];
+  if (found && (!FindItem(found) || found->Type() != type || found == inHands)) found = NULL;
+  if (!found) ForEachItem([&](InventoryItem *item) -> bool
   {
     if (item != inHands && item->Type() == type)
     {
@@ -1983,6 +1996,7 @@ const InventoryItemType *Person::GetItemShortcut(int index) const
 void Person::SetItemShortcut(int index, const InventoryItemType *itemType)
 {
   void ShowShortcuts();
+  if (index >= 0 && index < NItemShortcuts) _shortcutItems[index] = NULL;
 
   int available = GetAvailableItemShortcuts();
 
@@ -2022,6 +2036,14 @@ void Person::SetItemShortcut(int index, const InventoryItemType *itemType)
       _itemShortcuts[index] = NULL;
     }
   }
+}
+
+void Person::SetItemShortcutInstance(int index, InventoryItem *item)
+{
+  if (index < 0 || index >= NItemShortcuts) return;
+  if (item && !FindItem(item)) return;
+  SetItemShortcut(index, item ? item->Type() : NULL);
+  _shortcutItems[index] = item;
 }
 
 int Person::FindItemShortcutIndex(const InventoryItemType *itemType)

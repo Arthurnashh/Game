@@ -406,6 +406,11 @@ bool DataSignatures::VerifySignature(const DSHash &hash, const DSSignature &sign
       }
     }
     break;
+  case 3:
+    RSADecrypt((unsigned char *)calculatedHash.Data(),
+      (const unsigned char *)signature._content3.Data(), signature._content3.Size(),
+      keyData, keySize);
+    break;
   }
   Temp<char> revHash; revHash.Realloc(hash._content.Size());
   for (int i=0, siz=hash._content.Size()-1; i<=siz; i++)
@@ -457,6 +462,9 @@ bool DataSignatures::VerifySignature(const DSHash &hash, const DSSignature &sign
           break;
         }
       }
+      break;
+    case 3:
+      ok = CryptVerifySignature(handle, (BYTE *)signature._content3.Data(), signature._content3.Size(), key, NULL, 0) == TRUE;
       break;
   }
   }

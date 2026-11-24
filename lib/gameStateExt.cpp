@@ -18246,13 +18246,14 @@ int DBGetItemCount( void )
 //-----------------------------------------------------------------------------
 GameValue DBLoadHost( const GameState *state )
 {
-	if (IsDedicatedServer())
-	{
-		ServletCharacter = "http://127.0.0.1:28100/lud0/";
-		ServletWorld = "http://127.0.0.1:28100/world/";
-		RptF("DBLoadHost: using local server persistence store");
-		return NOTHING;
-	}
+	// The dedicated server package ships a local persistence service. Keep the
+	// server's character/world requests on loopback instead of the retired BI
+	// Hive endpoint; clients still use the host configured by the mission.
+#if defined(_SERVER)
+	ServletCharacter = "http://127.0.0.1:28100/lud0/";
+	ServletWorld = "http://127.0.0.1:28100/world/";
+	RptF( "DBLoadHost local persistence: %s", ServletCharacter.Data() );
+#else
 
 	const char s_sCONFIGSERVER[] = {"CfgServerHost"};
 	RString locName = "adress";
@@ -18279,6 +18280,7 @@ GameValue DBLoadHost( const GameState *state )
 	 };
 
 /**/	RptF( "DBLoadHost host: %s", ServletCharacter.Data() );
+#endif
 
 	return NOTHING;
 }

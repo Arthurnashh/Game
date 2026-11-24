@@ -5938,7 +5938,12 @@ ParamFile::ErrorCode ParamFile::ParseBinEx(const char *name, IParamClassSource *
   SerializeBinStream f(&in);
 
   SerializeBin(f, source, context);
-  if (f.GetError() != SerializeBinStream::EOK) return f.GetError();
+  if (f.GetError() != SerializeBinStream::EOK)
+  {
+    RptF("Config binary load failed: file=%s error=%d offset=%d version=%d",
+      name, (int)f.GetError(), f.TellG(), f.GetVersion());
+    return f.GetError();
+  }
 
   SetFile(this);
   //SetSource(new ParamClassOwnerNoUnload("",name));
@@ -5947,6 +5952,9 @@ ParamFile::ErrorCode ParamFile::ParseBinEx(const char *name, IParamClassSource *
 
   // load variables
   LoadVariables(f, parentVariables, globalVariables);
+  if (f.GetError() != SerializeBinStream::EOK)
+    RptF("Config variable load failed: file=%s error=%d offset=%d version=%d",
+      name, (int)f.GetError(), f.TellG(), f.GetVersion());
 
 #if DIAG_OPEN
   if (_entries.Size() > 0)
@@ -5968,7 +5976,13 @@ ParamFile::ErrorCode ParamFile::ParseBinEx(QIStream &in, IParamClassSource *sour
   SerializeBinStream f(&in);
 
   SerializeBin(f, source, context);
-  if (f.GetError() != SerializeBinStream::EOK) return f.GetError();
+  if (f.GetError() != SerializeBinStream::EOK)
+  {
+    RString sourceName = source ? source->GetOwnerDebugName() : RString("<unknown stream>");
+    RptF("Config binary stream load failed: source=%s error=%d offset=%d version=%d",
+      (const char *)sourceName, (int)f.GetError(), f.TellG(), f.GetVersion());
+    return f.GetError();
+  }
 
   SetFile(this);
   //SetSource(new ParamClassOwnerNoUnload("",name));
@@ -5977,6 +5991,12 @@ ParamFile::ErrorCode ParamFile::ParseBinEx(QIStream &in, IParamClassSource *sour
 
   // load variables
   LoadVariables(f, parentVariables, globalVariables);
+  if (f.GetError() != SerializeBinStream::EOK)
+  {
+    RString sourceName = source ? source->GetOwnerDebugName() : RString("<unknown stream>");
+    RptF("Config variable stream load failed: source=%s error=%d offset=%d version=%d",
+      (const char *)sourceName, (int)f.GetError(), f.TellG(), f.GetVersion());
+  }
 
 #if DIAG_OPEN
   if (_entries.Size() > 0)
@@ -6020,7 +6040,12 @@ ParamFile::ErrorCode ParamFile::ParseBinEx(QFBank &bank, const char *name, IEval
   //context._fullLoad = false;
 
   SerializeBin(f, source, context);
-  if (f.GetError() != SerializeBinStream::EOK) return f.GetError();
+  if (f.GetError() != SerializeBinStream::EOK)
+  {
+    RptF("Config bank load failed: file=%s error=%d offset=%d version=%d",
+      name, (int)f.GetError(), f.TellG(), f.GetVersion());
+    return f.GetError();
+  }
 
   SetFile(this);
   //SetSource(new ParamClassOwnerFilename("",name));
@@ -6028,6 +6053,9 @@ ParamFile::ErrorCode ParamFile::ParseBinEx(QFBank &bank, const char *name, IEval
   //Assert(CheckIntegrity());
 
   LoadVariables(f, parentVariables, globalVariables);
+  if (f.GetError() != SerializeBinStream::EOK)
+    RptF("Config bank variable load failed: file=%s error=%d offset=%d version=%d",
+      name, (int)f.GetError(), f.TellG(), f.GetVersion());
 
 #if DIAG_OPEN
   if (_entries.Size() > 0)

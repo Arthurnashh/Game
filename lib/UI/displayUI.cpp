@@ -55,6 +55,85 @@
 #include "../dynSound.hpp"
 #include "displayUI.hpp"
 
+#if _ENABLE_STEAM && defined(_WIN64)
+#include <Steamworks/steam_api.h>
+
+bool IsSteamClientInitialized();
+
+class SteamServerListBridge : public ISteamMatchmakingServerListResponse
+{
+  DisplayMultiplayer *_owner;
+  HServerListRequest _request;
+  bool _complete;
+  MatchMakingKeyValuePair_t _tagFilter;
+
+public:
+  SteamServerListBridge(DisplayMultiplayer *owner)
+    : _owner(owner), _request(NULL), _complete(false), _tagFilter("gametagsand", "sourcedayz")
+  {
+  }
+
+  ~SteamServerListBridge()
+  {
+    _owner = NULL;
+    Stop();
+  }
+
+  void Stop()
+  {
+    if (!_request) return;
+    HServerListRequest request = _request;
+    bool cancelRequest = !_complete;
+    // Invalidate the callback target before calling Steam. CancelQuery may
+    // complete a callback synchronously while the display is being destroyed.
+    _request = NULL;
+    _complete = false;
+    ISteamMatchmakingServers *servers = SteamMatchmakingServers();
+    if (servers)
+    {
+      if (cancelRequest) servers->CancelQuery(request);
+      servers->ReleaseRequest(request);
+    }
+  }
+
+  bool Start()
+  {
+    Stop();
+    if (!IsSteamClientInitialized()) return false;
+    ISteamMatchmakingServers *servers = SteamMatchmakingServers();
+    if (!servers) return false;
+    MatchMakingKeyValuePair_t *filters[] = { &_tagFilter };
+    _complete = false;
+    _request = servers->RequestInternetServerList(480, filters, 1, this);
+    return _request != NULL;
+  }
+
+  void ServerResponded(HServerListRequest request, int serverIndex) override
+  {
+    if (!_owner || request != _request) return;
+    ISteamMatchmakingServers *servers = SteamMatchmakingServers();
+    if (!servers) return;
+    gameserveritem_t *server = servers->GetServerDetails(request, serverIndex);
+    if (server) _owner->AddSteamServer(*server);
+  }
+
+  void ServerFailedToRespond(HServerListRequest request, int serverIndex) override
+  {
+    (void)request;
+    (void)serverIndex;
+  }
+
+  void RefreshComplete(HServerListRequest request, EMatchMakingServerResponse response) override
+  {
+    if (!_owner || request != _request) return;
+    _complete = true;
+    _owner->FinishSteamServerList();
+    if (response == eNoServersListedOnMasterServer)
+      RptF("Steamworks server browser returned no SourceDayZ servers");
+  }
+};
+#endif
+
 #include "../Protect/selectProtection.h"
 
 #include "../mbcs.hpp"
@@ -7259,6 +7338,9 @@ struct UpdateSBCallback : public INetworkUpdateCallback
 */
 DisplayMultiplayer::DisplayMultiplayer(ControlsContainer *parent)
   : Display(parent)
+#if _ENABLE_STEAM && defined(_WIN64)
+  , _steamServerList(NULL)
+#endif
 {
   _enableSimulation = false;
   _sessions = NULL;
@@ -7269,6 +7351,10 @@ DisplayMultiplayer::DisplayMultiplayer(ControlsContainer *parent)
 
   Load("RscDisplayMultiplayer");
   LoadParams();
+
+#if _ENABLE_STEAM && defined(_WIN64)
+  _steamServerList = new SteamServerListBridge(this);
+#endif
 
   _refresh = true;
 
@@ -7323,7 +7409,11 @@ DisplayMultiplayer::DisplayMultiplayer(ControlsContainer *parent)
     ProgressFinish(p);
 #endif // _ENABLE_MP
 
-    if (_source == BSInternet && !_serverBrowser) _source = BSLAN;
+    if (_source == BSInternet && !_serverBrowser
+#if _ENABLE_STEAM && defined(_WIN64)
+      && !_steamServerList
+#endif
+      ) _source = BSLAN;
   }
 #endif // _ENABLE_GAMESPY
 
@@ -7361,18 +7451,24 @@ DisplayMultiplayer::DisplayMultiplayer(ControlsContainer *parent)
 
   SetSource(source, false);
 
-#if _ENABLE_GAMESPY
-  // need to be called to obtain my public IP address
-  UpdateServerList();
-  if (_source != BSInternet) UpdateSessions();
-#else
-  UpdateSessions();
+#if _ENABLE_STEAM && defined(_WIN64)
+  if (_source == BSInternet) UpdateSteamServerList();
+  else
 #endif
+  {
+#if _ENABLE_GAMESPY
+    // need to be called to obtain my public IP address
+    UpdateServerList();
+    if (_source != BSInternet) UpdateSessions();
+#else
+    UpdateSessions();
+#endif
+  }
       
   OnSessionChanged(true);
 
 
-#if _ENABLE_GAMESPY
+#if _ENABLE_GAMESPY || (_ENABLE_STEAM && defined(_WIN64))
   if (_source == BSInternet)
   {
     ShowFilterIcons(true);
@@ -7393,7 +7489,110 @@ DisplayMultiplayer::~DisplayMultiplayer()
   if (_serverBrowser)
     ServerBrowserFree(_serverBrowser);
 #endif
+#if _ENABLE_STEAM && defined(_WIN64)
+  delete _steamServerList;
+  _steamServerList = NULL;
+#endif
 }
+
+#if _ENABLE_STEAM && defined(_WIN64)
+void DisplayMultiplayer::UpdateSteamServerList()
+{
+  if (!_sessions || !_steamServerList || !_refresh) return;
+
+  SetProgress(0);
+  _sessions->_sessions.Resize(0);
+  _sessions->_indices.Resize(0);
+  _sessions->SelectSession(0);
+  _sessionSelected = false;
+  _refresh = false;
+
+  if (!_steamServerList->Start())
+  {
+    RptF("Steamworks Internet server list could not be started; verify Steam is running and online");
+    SetProgress(100);
+  }
+}
+
+void DisplayMultiplayer::AddSteamServer(const gameserveritem_t &server)
+{
+  if (!_sessions || !server.m_bHadSuccessfulResponse) return;
+
+  const char *address = server.m_NetAdr.GetConnectionAddressString();
+  if (!address || !address[0]) return;
+  RString guid(address);
+
+  if (_filter.maxPing > 0 && server.m_nPing > _filter.maxPing) return;
+  if (!_filter.passwordedServers && server.m_bPassword) return;
+  if (!_filter.fullServers && server.m_nMaxPlayers > 0 && server.m_nPlayers >= server.m_nMaxPlayers) return;
+  if (_filter.minPlayers > 0 && server.m_nPlayers < _filter.minPlayers) return;
+  if (_filter.maxPlayers > 0 && server.m_nPlayers > _filter.maxPlayers) return;
+
+  int index = -1;
+  for (int i = 0; i < _sessions->_sessions.Size(); i++)
+  {
+    if (_sessions->_sessions[i].guid == guid)
+    {
+      index = i;
+      break;
+    }
+  }
+  if (index < 0)
+  {
+    index = _sessions->_sessions.Add();
+    _sessions->_indices.Add(index);
+  }
+
+  SessionInfo &session = _sessions->_sessions[index];
+  session.guid = guid;
+  session.name = server.GetName();
+  session.gameType = "DayZ";
+  session.mission = server.m_szMap;
+  session.island = server.m_szMap;
+  session.lastTime = 0xFFFFFFFF;
+  session.actualVersion = APP_VERSION_NUM;
+  session.actualBuildNo = BUILD_NO;
+  session.requiredVersion = APP_VERSION_NUM;
+  session.requiredBuildNo = 0;
+  session.password = server.m_bPassword;
+  session.lock = false;
+  session.badActualVersion = false;
+  session.badRequiredVersion = false;
+  session.badMod = false;
+  session.badAdditionalMods = false;
+  session.badSignatures = false;
+  session.serverState = NSSPlaying;
+  session.ping = server.m_nPing;
+  session.playersPublic = server.m_nPlayers;
+  session.slotsPublic = server.m_nMaxPlayers;
+  session.friends = 0;
+  session.favorite = false;
+  session.timeleft = 0;
+  session.platform = "W";
+  session.mod = "SourceDayZ";
+  session.equalModRequired = false;
+  session.dedicated = true;
+  session.language = 0x10009;
+  session.difficulty = Glob.config.diffDefault;
+  session.country = RString();
+  session.region = 0;
+  session.battleEye = 0;
+  session.timeOfDay = RString();
+  session.disable3rdPerson = 0;
+  session.environmentTimeMul = 1.0f;
+  session.privateHive = 0;
+  session.longitude = INT_MAX;
+  session.latitude = INT_MAX;
+}
+
+void DisplayMultiplayer::FinishSteamServerList()
+{
+  if (!_sessions) return;
+  _sessions->Sort(_sort, _ascending, _sessionSelected);
+  SetProgress(100);
+  OnSessionChanged(false);
+}
+#endif
 
 Control *DisplayMultiplayer::OnCreateCtrl(int type, int idc, ParamEntryPar cls)
 {
@@ -7421,6 +7620,14 @@ Control *DisplayMultiplayer::OnCreateCtrl(int type, int idc, ParamEntryPar cls)
 
 void DisplayMultiplayer::OnSimulateBasic()
 {
+#if _ENABLE_STEAM && defined(_WIN64)
+  if (_source == BSInternet && _steamServerList)
+  {
+    UpdateSteamServerList();
+  }
+  else
+#endif
+  {
 #if _ENABLE_GAMESPY
   UpdateServerList();
   if (_listUpdateRunning==StageDone)
@@ -7449,6 +7656,7 @@ void DisplayMultiplayer::OnSimulateBasic()
 #else
   UpdateSessions();
 #endif
+  }
 
   OnSessionChanged(false);
 }
@@ -7507,9 +7715,17 @@ void DisplayMultiplayer::SetSource(BrowsingSource source, bool save)
   _source = source;
   if (save) SaveParams();
 
+#if _ENABLE_GAMESPY || (_ENABLE_STEAM && defined(_WIN64))
+  bool internet = source == BSInternet;
+#else
   bool internet = false;
+#endif
 
+#if _ENABLE_GAMESPY
   if (GetCtrl(IDC_MULTI_GAMESPY)) GetCtrl(IDC_MULTI_GAMESPY)->ShowCtrl(internet);
+#else
+  if (GetCtrl(IDC_MULTI_GAMESPY)) GetCtrl(IDC_MULTI_GAMESPY)->ShowCtrl(false);
+#endif
   if (GetCtrl(IDC_MULTI_PROGRESS)) GetCtrl(IDC_MULTI_PROGRESS)->ShowCtrl(internet);
   if (GetCtrl(IDC_MULTI_REFRESH)) GetCtrl(IDC_MULTI_REFRESH)->ShowCtrl(true);
   if (GetCtrl(IDC_MULTI_FILTER)) GetCtrl(IDC_MULTI_FILTER)->ShowCtrl(internet);
@@ -7893,8 +8109,17 @@ void DisplayMultiplayer::OnButtonClicked(int idc)
   switch (idc)
   {
 #ifndef _XBOX
+    case IDC_MULTI_TAB_INTERNET:
+#if _ENABLE_GAMESPY || (_ENABLE_STEAM && defined(_WIN64))
+      SetSource(BSInternet, true);
+      SetTab(MPTabInternet);
+      ShowFilterIcons(true);
+      _refresh = true;
+#endif
+      break;
     case IDC_MULTI_TAB_LAN:
       SetTab(MPTabLAN);
+      ShowFilterIcons(false);
       UpdateAddress("", _portLocal);
       break;
     case IDC_MULTI_TAB_REMOTE:
@@ -9276,7 +9501,11 @@ void DisplayMultiplayer::LoadParams()
   ParamArchiveLoad ar;
   if (!ParseUserParamsArchive(ar, &globals)) return;
 
+#if _ENABLE_STEAM && defined(_WIN64)
+  BrowsingSource defaultSource = BSInternet;
+#else
   BrowsingSource defaultSource = BSLAN;
+#endif
 
   ar.SerializeEnum("browsingSource", _source, 1, defaultSource);
 #if _ENABLE_GAMESPY

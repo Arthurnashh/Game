@@ -9,6 +9,9 @@
 #include "netTransport.hpp"
 #include "network.hpp"
 #include "../versionNo.h"
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+#include <Steamworks/steam_gameserver.h>
+#endif
 
 #include <Es/Common/win.h>
 #include "../memHeap.hpp"
@@ -70,6 +73,27 @@ RString GetMsgTypeName(NetworkMessageType type);
 // extern const char *NetworkMessageTypeNames[];
 
 struct NetworkPlayerInfo;
+class NetworkServer;
+
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+class SteamValidation
+{
+  uint64 _steamId;
+  NetworkServer *_server;
+  int _dpid;
+  bool _started;
+  bool _authPending;
+  unsigned long _ticksStarted;
+  RString _name;
+  AutoArray<char> _steamSessionTicket;
+public:
+  SteamValidation();
+  ~SteamValidation();
+  void Start(PlayerIdentity &identity, NetworkServer *server);
+  void HandleTimeout();
+  STEAM_GAMESERVER_CALLBACK(SteamValidation, OnValidateAuthTicketResponse, ValidateAuthTicketResponse_t, _callbackGSAuthTicketResponse);
+};
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // Network Messages
@@ -330,6 +354,7 @@ DECLARE_NET_MESSAGE(AskCommanderOverride, ASKCOMMANDEROVERRIDE_MSG)
 #define ASK_FOR_SET_ITEM_SHORTCUT_MSG(MessageName, XX) \
   XX(MessageName, OLinkPermO(Person), person, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Player person"), TRANSF_REF) \
   XX(MessageName, int, index, NDTInteger, int, NCTSmallUnsigned, DEFVALUE(int, 0), DOC_MSG("Shortcut index"), TRANSF)\
+  XX(MessageName, OLinkPermO(InventoryItem), item, NDTRef, NetworkId, NCTNone, DEFVALUENULL, DOC_MSG("Bound inventory item"), TRANSF_REF) \
   XX(MessageName, RString, itemType, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("Name of the item type"), TRANSF) \
 
 DECLARE_NET_MESSAGE(AskForSetItemShortcut, ASK_FOR_SET_ITEM_SHORTCUT_MSG)
@@ -2839,7 +2864,7 @@ public:
   */
   void AskForDeleteVehicle(Entity *veh);
 
-  void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type);
+  void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type, InventoryItem *item);
   void AskForThrowItem(Man *person, InventoryItem *item, Vector3 pos, Vector3 dir);
 	void AskForDropItem(Person *person, InventoryItem *item);
   void AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated);
@@ -3904,7 +3929,7 @@ struct AsyncDBStorage
   void DBCheckLoaded();
 };
 
-#if _ENABLE_STEAM_MATCHMAKING
+#if _ENABLE_STEAM_MATCHMAKING && !(_ENABLE_STEAM_IDENTITY && defined(_WIN64))
 class SteamValidation
 {
   /// Steam authentication is completed (need not wait for it)
@@ -4036,8 +4061,11 @@ struct NetworkPlayerInfo : public AsyncDBStorage, public RefCount, private NoCop
 
   /// Hashes collected during initial signature test
   CollectedHashes hashes;
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+  SteamValidation _steamValidate;
+#endif
   
-#if _ENABLE_STEAM_MATCHMAKING
+#if _ENABLE_STEAM_MATCHMAKING && !(_ENABLE_STEAM_IDENTITY && defined(_WIN64))
   SteamValidation _steamValidate;
 #endif
 
@@ -4570,7 +4598,13 @@ protected:
 #else
     void PlayerGUIDReceived(int player);
 #endif
+    void PlayerGUIDIsValid(int player);
+#if (_ENABLE_STEAM_IDENTITY && defined(_WIN64)) && !_ENABLE_STEAM_OWNERSHIP
+    void PlayerGUIDReceived(int player, const CSteamID &id);
+#endif
+#if _ENABLE_STEAM_OWNERSHIP || (_ENABLE_STEAM_IDENTITY && defined(_WIN64))
     void PlayerGUIDIsValid(int player, const CSteamID &ownerId);
+#endif
 
     #define BE_WRAP_CALLBACK(Name, ...) bool __cdecl Name##Callback(int player, __VA_ARGS__);
     BE_CALLBACKS(BE_WRAP_CALLBACK)
@@ -5001,7 +5035,6 @@ public:
 
   /// add specific server scripting commands to the _evaluator
   void InitEvaluator();
-
   /// SDZ_SQF_EXEC: queue an expression received through #exec
   void QueueExec(int from, RString expression);
   /// SDZ_SQF_EXEC: evaluate (and answer) every queued expression
@@ -5082,12 +5115,18 @@ public:
 
   void SpawnForPlayer(int dpnid, GameDataCode *code, const GameValue &args);
 
-  void PlayerGUIDIsValid(int player, const CSteamID &ownerId)
-  {
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+  void PlayerGUIDReceived(int player, const CSteamID &id) {
+#if _USE_BATTL_EYE_SERVER
+    _beIntegration.PlayerGUIDReceived(player, id);
+#endif
+  }
+  void PlayerGUIDIsValid(int player, const CSteamID &ownerId) {
 #if _USE_BATTL_EYE_SERVER
     _beIntegration.PlayerGUIDIsValid(player, ownerId);
 #endif
-  };
+  }
+#endif
 
   //! The output format is "creator:id friendlyName"
   RString NetworkIdToNetIdFriendly(const NetworkId &id);
@@ -5976,7 +6015,7 @@ public:
   void PauseSimulation(bool pause);
 #endif
 
-  virtual void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type) override;
+  virtual void AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type, InventoryItem *item) override;
   virtual void AskForThrowItem(Man *person, InventoryItem *item, Vector3 pos, Vector3 dir) override;
 	virtual void AskForDropItem(Person *person, InventoryItem *item) override;
   virtual void AskForMoveItem(EntityAI *target, int index, InventoryItem *item, bool rotated) override;
