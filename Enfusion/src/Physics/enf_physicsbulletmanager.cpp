@@ -731,13 +731,18 @@ bool BulletManager::LoadMaterials(const char* name)
 	GameDataNamespace globals(NULL, RString(), false); // TODO: parsing namespace if access to globals needed
 
 	ParamFile matFile;
-  matFile.ParseBinOrTxt(name, NULL, NULL, &globals);
+  const bool physicsMaterialsInVfs = QFBankQueryFunctions::FileExists(name);
+  const bool physicsMaterialsOnDisk = QIFileFunctions::FileExists(name);
+  const bool physicsMaterialsParsed = matFile.ParseBinOrTxt(name, NULL, NULL, &globals);
+  RptF("PhysicsMaterialsDiagnostic file=%s vfs=%d disk=%d parsed=%d entries=%d",
+    cc_cast(name), physicsMaterialsInVfs, physicsMaterialsOnDisk,
+    physicsMaterialsParsed, matFile.GetEntryCount());
   
 	BulletPhysicsMaterial* mat = new BulletPhysicsMaterial(name);
 	
-	if (matFile.GetEntryCount()==0)
+	if (!physicsMaterialsParsed || matFile.GetEntryCount()==0)
 	{
-		RptF("Cannot load material file %s",cc_cast(name));
+		RptF("Physics material file is present but invalid: %s",cc_cast(name));
 		return 0;
 	}
 	else

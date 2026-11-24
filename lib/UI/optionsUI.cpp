@@ -1608,6 +1608,7 @@ RString FindPicture(RString name)
   RString fullname = GetPictureName(name);
   if (QFBankQueryFunctions::FileExists(fullname)) return fullname;
 
+  RptF("MissingResource category=picture requested=%s resolved=%s", (const char *)name, (const char *)fullname);
   ErrorMessage(EMMissingData, "Picture %s not found", (const char *)name);
   return "";
 }

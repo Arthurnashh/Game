@@ -8579,6 +8579,7 @@ bool LODShape::Load(const char *name, bool reversed, const ModelTarget &mt, cons
     // make sure the shape is named, even when not loaded
     // otherwise shape caching may be confused
     _name = nameTemp;
+    RptF("MissingResource category=object path=%s", (const char *)nameTemp);
     ErrorMessage(EMMissingData, "Cannot open object %s",(const char *)nameTemp);
     return false;
   }

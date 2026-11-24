@@ -34,6 +34,10 @@
 
 #include "uiMap.hpp"
 
+extern bool HandleInventorySpaceKey();
+extern void ReleaseInventorySpaceKey();
+extern bool IsInventoryOpened();
+
 // #pragma optimize("", off)
 
 /*!
@@ -1955,6 +1959,9 @@ static int dikCodeShortcutFirst[] = {INPUT_DEVICE_XINPUT + XBOX_Start};
 
 bool ControlsContainer::OnKeyDown(int dikCode)
 {
+  if (dikCode == DIK_SPACE && HandleInventorySpaceKey())
+    return true;
+
   bool ok = false;
   bool enableCtrlProcessing = EnableDefaultKeysProcessing();
   bool shift = GInput.keys[DIK_LSHIFT] || GInput.keys[DIK_RSHIFT];
@@ -2155,6 +2162,12 @@ bool ControlsContainer::OnKeyDown(int dikCode)
 
 bool ControlsContainer::OnKeyUp(int dikCode)
 {
+  if (dikCode == DIK_SPACE)
+  {
+    ReleaseInventorySpaceKey();
+    if (IsInventoryOpened()) return true;
+  }
+
   bool ok = false;
   bool enableCtrlProcessing = EnableDefaultKeysProcessing();
   bool shift = GInput.keys[DIK_LSHIFT] || GInput.keys[DIK_RSHIFT]; (void)shift;

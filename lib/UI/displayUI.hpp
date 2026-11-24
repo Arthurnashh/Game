@@ -785,6 +785,11 @@ public:
 	XX(type, prefix, LAN) \
 	XX(type, prefix, Internet) \
 	XX(type, prefix, Remote)
+#elif _ENABLE_STEAM && defined(_WIN64)
+#define BROWSING_SOURCE_ENUM(type, prefix, XX) \
+	XX(type, prefix, LAN) \
+	XX(type, prefix, Remote) \
+	XX(type, prefix, Internet)
 #else
 #define BROWSING_SOURCE_ENUM(type, prefix, XX) \
 	XX(type, prefix, LAN) \
@@ -833,6 +838,9 @@ enum MPTabs {
   MPTabInternet, MPTabFavorite, MPTabHistory, MPTabFriends, MPTabLAN, MPTabRemote, MP_TABS_COUNT
 };
 
+class SteamServerListBridge;
+class gameserveritem_t;
+
 class DisplayMultiplayer : public Display
 {
 protected:
@@ -862,6 +870,13 @@ protected:
   int _latitude,_longitude;
   //@}
 
+#endif
+
+#if _ENABLE_STEAM && defined(_WIN64)
+  friend class SteamServerListBridge;
+  SteamServerListBridge *_steamServerList;
+  void AddSteamServer(const gameserveritem_t &server);
+  void FinishSteamServerList();
 #endif
 
 
@@ -955,6 +970,10 @@ protected:
   //! remove a server
   void RemoveServer(SBServer server);
 
+#endif
+#if _ENABLE_STEAM && defined(_WIN64)
+  //! updates public sessions from the Steam game-server master list
+  void UpdateSteamServerList();
 #endif
   //! update display when other session was selected
   void OnSessionChanged(bool changed);

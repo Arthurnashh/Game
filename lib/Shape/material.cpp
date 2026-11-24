@@ -1231,6 +1231,7 @@ void TexMaterial::RequestData()
   in.AutoOpen(_name);
   if (in.fail())
   {
+    RptF("MissingResource category=material path=%s", cc_cast(_name));
     ErrorMessage(EMMissingData, "Cannot load material file %s.", cc_cast(_name));
     RptF("Cannot load material file %s",cc_cast(_name));
     Init();

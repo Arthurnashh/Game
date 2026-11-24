@@ -149,6 +149,7 @@ protected:
 
   // shortcuts to inventory items
   Ref<InventoryItem> _itemShortcuts[NItemShortcuts];
+  OLinkPermO(InventoryItem) _shortcutItems[NItemShortcuts];
 
   // remembered origin of items pulled to hands through a shortcut key
   struct ShortcutOrigin
@@ -581,6 +582,7 @@ public:
   //! number of quickbar slots currently available (depends on worn clothing)
   int GetAvailableItemShortcuts() const;
   void SetItemShortcut(int index, const InventoryItemType *itemType);
+  void SetItemShortcutInstance(int index, InventoryItem *item);
   int FindItemShortcutIndex(const InventoryItemType *itemType);
   InventoryItem *GetItemShortcutObject(int index) const;
   void RemoveItemShortcut(InventoryItem *item);

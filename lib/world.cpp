@@ -66,6 +66,10 @@ static const float s_forceFog = 0.0f;
 #include "scripts.hpp"
 #include <El/Debugging/debugTrap.hpp>
 #include <El/HiResTime/hiResTime.hpp>
+
+extern bool IsInventoryOpened();
+extern bool HandleInventorySpaceKey();
+extern void ReleaseInventorySpaceKey();
 #include "txtPreload.hpp"
 #include "Shape/material.hpp"
 #include "Protect/selectProtection.h"
@@ -13249,6 +13253,10 @@ if (_playerOn)
       DoAssert(_checkHashQueue.Size() > 0);
       if (!_checkingHash->IsValid())
       {
+        RptF("BankHashMismatch bank=%d path=%s reason=%d",
+          _checkHashQueue[0]._bankIndex,
+          cc_cast(banks[_checkHashQueue[0]._bankIndex].GetOpenName()),
+          (int)_checkHashQueue[0]._reason);
 #if SIGNATURES_TEST_ONLY
         LogF("Warning: Hash of %s is wrong.", cc_cast(banks[_checkHashQueue[0]._bankIndex].GetOpenName()));
 #else
@@ -17117,6 +17125,12 @@ bool World::DoKeyDown(int dikCode)
     return false;
 #endif
 
+  if (dikCode == DIK_SPACE && HandleInventorySpaceKey())
+  {
+    GInput.DisableKey(dikCode);
+    return true;
+  }
+
 #if _VBS3 // key bindings
   for (int i=0; i<_boundkeys.Size(); i++)
   {
@@ -17209,7 +17223,10 @@ bool World::DoKeyDown(int dikCode)
 bool World::DoKeyUp(int dikCode)
 {
   if (dikCode == DIK_SPACE)
+  {
     ReleaseInventorySpaceKey();
+    if (IsInventoryOpened()) return true;
+  }
 
   if (!IsUserInputEnabled()
 #if _VBS3

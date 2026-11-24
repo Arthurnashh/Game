@@ -1459,7 +1459,9 @@ int TextureD3D9::Init(const char *name, bool caseSensitive)
   ITextureSourceFactory *factory = SelectTextureSourceFactory(name);
   if (!factory || !factory->Check(name))
   {
-    ErrorMessage(EMMissingData, "Cannot load texture %s.",(const char *)GetName());
+    RptF("MissingResource category=texture path=%s", (const char *)GetName());
+    RptF("MissingResource category=texture path=%s", (const char *)GetName());
+  ErrorMessage(EMMissingData, "Cannot load texture %s.",(const char *)GetName());
     _nMipmaps=0;
     _levelLoaded = _levelActive = _smallLevel = _largestUsed = _nMipmaps;
     return -1;

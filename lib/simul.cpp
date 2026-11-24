@@ -469,6 +469,15 @@ void Entity::ApplyRemoteStateAdjustSpeed(float deltaT, VisualState &moveTrans)
 {
   if (_remoteState)
   {
+    // The locally controlled player predicts its own movement. Applying an
+    // older server snapshot here runs after CreatePotentialState and replaces
+    // the freshly computed step with the previous position (walk animation in
+    // place). Spawn/teleport cuts are applied directly by TransferMsg.
+    if (GetNetworkManager().IsClient() && GWorld && this == GWorld->GetRealPlayer())
+    {
+      _remoteState.Free();
+      return;
+    }
     ApplyRemoteState(deltaT,moveTrans);
     FutureVisualState()._speed = moveTrans._speed;
   }
@@ -5704,6 +5713,7 @@ TMError Entity::TransferMsg(NetworkMessageContext &ctx)
     {
       bool isFirstReceived = Glob.time>=_maxPredictionTime; // first, or first after a freeze
       bool positionValid = false;
+      bool ignoreLocalPosition = false;
       TMCHECK(base::TransferMsg(ctx))
       PREPARE_TRANSFER(UpdatePositionVehicle)
       if (ctx.IsSending())
@@ -5729,6 +5739,8 @@ TMError Entity::TransferMsg(NetworkMessageContext &ctx)
           VisualCut();
         }
         positionValid = (posFlags & SimulatePosValid) != 0;
+        ignoreLocalPosition = GetNetworkManager().IsClient() && GWorld &&
+          this == GWorld->GetRealPlayer() && !(posFlags & SimulatePosCut);
       }
       if (ctx.IsSending())
       {
@@ -5772,7 +5784,13 @@ TMError Entity::TransferMsg(NetworkMessageContext &ctx)
         remoteState.orientOffset = M3Zero;
         #endif
 
-        if (positionValid && IsInLandscape()) // positionValid is IsInLandscape() on the sender side
+        // Read every field above before ignoring an ordinary server snapshot
+        // for the owner. Returning early would leave the message stream unread.
+        if (ignoreLocalPosition)
+        {
+          _remoteState.Free();
+        }
+        else if (positionValid && IsInLandscape()) // positionValid is IsInLandscape() on the sender side
         {
           VisualState &vs = FutureVisualState();
 #if  _VBS2

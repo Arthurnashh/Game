@@ -12174,13 +12174,14 @@ void Transport::UpdateZoom(AIBrain *unit)
   {
 //    EntityAIFull *veh = FocusOn()->GetVehicle();
 //    Assert(veh);
-    //which turret?
+    // Turret gunners keep using RMB for lock-on weapons; everybody else
+    // (pilot, copilot, cargo) gets hold-to-zoom on the right mouse button.
+    bool allowZoom = true;
     TurretContext context;
 //    if (veh->GetPrimaryGunnerTurret(context))
     if (FindTurret(player, context))
     {
       WeaponModePtr curPtr = context._weapons->ValidatedCurrentWeapon();
-      bool allowZoom = true;
       if (curPtr.IsValid())
       {
         const MuzzleType *muzzle = curPtr.GetMuzzleType();
@@ -12189,15 +12190,12 @@ void Transport::UpdateZoom(AIBrain *unit)
           muzzle->_canBeLocked == 1 && Glob.config.IsEnabled(DTAutoGuideAT);
         if (canLock) allowZoom = false;
       }
-      if( allowZoom )
-      {
-        // zoom in
-//        forcedZoom=true;
-        zoomInsteadOfOptics = true;
-      }
     }
+    if (allowZoom) zoomInsteadOfOptics = true;
   }
-  zoom->_zoomInsteadOfOptics = zoomInsteadOfOptics;
+  // Use the zoom of the unit being updated (driver or gunner), not the
+  // currently focused one, so the flag is always applied to the right camera.
+  if (GetZoom(unit)) GetZoom(unit)->_zoomInsteadOfOptics = zoomInsteadOfOptics;
 }
 
 Object::Zoom *Transport::GetZoom(const AIBrain *unit)

@@ -378,7 +378,7 @@ Texture *InventoryItemType::GetAttachmentIcon(int i) const
 }
 
 InventoryItem::InventoryItem(const EntityAIType *type, bool fullCreate)
-  : base(type, fullCreate), _ui(false), _opened(true), _inventoryRotated(false), _animationsEnabled(true), _isWorldAttached(false)
+  : base(type, fullCreate), _ui(false), _inventoryRotated(false), _opened(true), _animationsEnabled(true), _isWorldAttached(false)
 {
   int n = Type()->_attachments.Size();
   _attachments.Realloc(n); _attachments.Resize(n);
@@ -415,31 +415,18 @@ int InventoryItem::GetInventoryHeight() const
   return _inventoryRotated ? type->GetItemWidth() : type->GetItemHeight();
 }
 
+bool InventoryItem::CanRotateInInventory() const
+{
+  if (!Type() || GetInventoryWidth() == GetInventoryHeight()) return false;
+  EntityAI *parent = dyn_cast<EntityAI>(GetHierarchyParent());
+  if (!parent || !parent->GetSupply()) return false;
+  return parent->GetSupply()->GetItemsCargo().CanRotateItem(this);
+}
+
 bool InventoryItem::RotateInInventory()
 {
-  const InventoryItemType *type = Type();
-  if (!type || type->GetItemWidth() == type->GetItemHeight()) return false;
-
-  EntityAIFull *owner = dyn_cast<EntityAIFull>(GetHierarchyParent());
-  ResourceSupply *supply = owner ? owner->GetSupply() : NULL;
-  if (!supply) return false;
-
-  InventoryStorage &cargo = supply->GetItemsCargo();
-  const RefArray<InventoryItem> &items = cargo.GetItems();
-  int index = -1;
-  for (int i=0; i<items.Size(); i++)
-  {
-    if (items[i] == this) {index = i; break;}
-  }
-  if (index < 0) return false;
-
+  if (!CanRotateInInventory()) return false;
   _inventoryRotated = !_inventoryRotated;
-  // the item has to fit into the free space it already occupies
-  if (cargo.CanAddItem(this, index) != index)
-  {
-    _inventoryRotated = !_inventoryRotated;
-    return false;
-  }
   return true;
 }
 
@@ -778,7 +765,7 @@ void InventoryItem::GetActions(const std::function<void(const UIAction &action)>
           UIAction action(new ActionBasic(ATTakeItem, this));
           add(action);
         }
-        else if (Type() && Type()->_handheld && !person->GetItemInHands())
+        if (Type() && !person->GetItemInHands())
         {
           //has no room, take into hands (prototype)
           DoAssert(!person->GetInSlot(ISHands));
@@ -849,7 +836,7 @@ bool InventoryItem::UseFromInventory(Person *owner)
   if (Type() && Type()->IsHandheld())
   {
     const InventoryItem *inHands = owner->GetItemInHands();
-    if (inHands && inHands->Type() == Type())
+    if (inHands == this)
     {
       // remove the item
       owner->TakeItemToHands(NULL);
@@ -2221,7 +2208,7 @@ LSError InventoryItem::Serialize(ParamArchive &ar)
 {
   CHECK(base::Serialize(ar));
   CHECK(ar.SerializeRefs("Attachments", _attachments, 1));
-  CHECK(ar.Serialize("InventoryRotated", _inventoryRotated, 1, false));
+  CHECK(ar.Serialize("inventoryRotated", _inventoryRotated, 1, false));
   return LSOK;
 }
 
@@ -2267,6 +2254,10 @@ TMError InventoryItem::TransferMsg(NetworkMessageContext &ctx)
   {
     PREPARE_TRANSFER(UpdateInventoryItem)
 
+    bool inventoryRotated = _inventoryRotated;
+    TRANSF_EX(inventoryRotated, inventoryRotated);
+    if (!ctx.IsSending()) _inventoryRotated = inventoryRotated;
+
     if (ctx.IsSending())
     {
       TRANSF_REFS(attachments)
@@ -2274,7 +2265,6 @@ TMError InventoryItem::TransferMsg(NetworkMessageContext &ctx)
       TRANSF_EX(inLandscape, inLandscape);
       bool isOn = IsOn();
       TRANSF_EX(isOn, isOn);
-      TRANSF_EX(inventoryRotated, _inventoryRotated);
     }
     else
     {
@@ -2297,7 +2287,6 @@ TMError InventoryItem::TransferMsg(NetworkMessageContext &ctx)
         if (item) item->ItemMoveOut(this);
       }
 
-      TRANSF_EX(inventoryRotated, _inventoryRotated);
     }
   }
 
@@ -2312,6 +2301,7 @@ float InventoryItem::CalculateError(NetworkMessageContextWithError &ctx)
     PREPARE_TRANSFER(UpdateInventoryItem)
 
     if (message->_inLandscape != IsInLandscape()) error += ERR_COEF_IMMEDIATE;
+    if (message->_inventoryRotated != _inventoryRotated) error += ERR_COEF_IMMEDIATE;
 
     // items
     int count = intMin(message->_attachments.Size(), _attachments.Size());
@@ -2330,7 +2320,6 @@ float InventoryItem::CalculateError(NetworkMessageContextWithError &ctx)
     error += ERR_COEF_MODE * dif;
 
     if ( message->_isOn!=IsOn() ) error += ERR_COEF_STRUCTURE;
-    if ( message->_inventoryRotated != _inventoryRotated ) error += ERR_COEF_MODE;
   }
   return error;
 }
@@ -2520,10 +2509,10 @@ void InventoryStorage::Render(StaticArrayAuto<bool> &image, const InventoryItem 
   }
 }
 
-int InventoryStorage::FitsInto(const Array<bool> &image, const InventoryItem *item, int index) const
+int InventoryStorage::FitsInto(const Array<bool> &image, const InventoryItemType *type, int index, bool rotated) const
 {
-  int h = item->GetInventoryHeight();
-  int w = item->GetInventoryWidth();
+  int h = rotated ? type->GetItemWidth() : type->GetItemHeight();
+  int w = rotated ? type->GetItemHeight() : type->GetItemWidth();
   if (index >= 0)
   {
     // check the given space
@@ -2591,7 +2580,19 @@ int InventoryStorage::CanAddItem(const InventoryItem *item, int index) const
   AUTO_STATIC_ARRAY(bool, image, 256);
   Render(image, item);
 
-  return FitsInto(image, item, index);
+  return FitsInto(image, type, index, item->IsInventoryRotated());
+}
+
+bool InventoryStorage::CanRotateItem(const InventoryItem *item) const
+{
+  if (!item || !item->Type() || _width <= 0 || _height <= 0) return false;
+  if (item->GetInventoryWidth() == item->GetInventoryHeight()) return false;
+  int index = _items.Find(item);
+  if (index < 0) return false;
+
+  AUTO_STATIC_ARRAY(bool, image, 256);
+  Render(image, item);
+  return FitsInto(image, item->Type(), index, !item->IsInventoryRotated()) == index;
 }
 
 int InventoryStorage::CanReplaceItem(const InventoryItem *oldItem, const InventoryItem *newItem) const
@@ -2607,10 +2608,10 @@ int InventoryStorage::CanReplaceItem(const InventoryItem *oldItem, const Invento
   Render(image, oldItem);
 
   // check if the newItem fits on the same place
-  if (FitsInto(image, newItem, index) == index) return index;
+  if (FitsInto(image, type, index, newItem->IsInventoryRotated()) == index) return index;
 
   // try to find different place in the container
-  return FitsInto(image, newItem, -1);
+  return FitsInto(image, type, -1, newItem->IsInventoryRotated());
 }
 
 bool InventoryStorage::AddItem(EntityAI *owner, InventoryItem *item, int index)

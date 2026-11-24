@@ -1,5 +1,9 @@
 #include "../wpch.hpp"
 #include "networkImpl.hpp"
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+#include <Steamworks/steam_api.h>
+#include <Steamworks/steam_gameserver.h>
+#endif
 #include "../global.hpp"
 //#include "strIncl.hpp"
 #ifdef _WIN32
@@ -1974,9 +1978,18 @@ bool IsUserIdMatch(const char *id, const char *match)
 
 #else
 
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+#define LOGIN_STEAM_IDENTITY_MSG(MessageName, XX) \
+  XX(MessageName, NetInt64, steamID, NDTInt64, NetInt64, NCTNone, DEFVALUE(NetInt64, 0), DOC_MSG("Steam user ID"), TRANSF) \
+  XX(MessageName, AutoArray<char>, steamSessionTicket, NDTRawData, AutoArray<char>, NCTNone, DEFVALUERAWDATA, DOC_MSG("Steam authentication ticket"), TRANSF)
+#else
+#define LOGIN_STEAM_IDENTITY_MSG(MessageName, XX)
+#endif
+
 #define LOGIN_MSG(MessageName, XX) \
   XX(MessageName, int, dpnid, NDTInteger, int, NCTNone, DEFVALUE(int, 0), DOC_MSG("Client (player) ID"), TRANSF) \
   XX(MessageName, int, playerid, NDTInteger, int, NCTNone, DEFVALUE(int, 0), DOC_MSG("ID unique in session (shorter than dpnid)"), TRANSF) \
+  LOGIN_STEAM_IDENTITY_MSG(MessageName, XX) \
   XX(MessageName, int, inaddr, NDTInteger, int, NCTNone, DEFVALUE(int, 0), DOC_MSG("IP address"), TRANSF) \
   XX(MessageName, RString, id, NDTString, RString, NCTNone, DEFVALUE(RString, ""), DOC_MSG("Unique id of player (derivated from CD key)"), TRANSF) \
   XX(MessageName, AutoArray<char>, certificate, NDTRawData, AutoArray<char>, NCTNone, DEFVALUERAWDATA, DOC_MSG("User sigining certificate"), TRANSF) \
@@ -2007,6 +2020,9 @@ DEFINE_NET_INDICES_ERR(PlayerUpdate, PLAYER_UPDATE_MSG, NoErrorInitialFunc)
 
 PlayerIdentity::PlayerIdentity()
 {
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+  _steamID = 0;
+#endif
   _minPing = 0,_avgPing = 0 ,_maxPing = 0;
   _minBandwidth = 0, _avgBandwidth = 0 , _maxBandwidth =0;
   _desync = 0;
@@ -2085,6 +2101,10 @@ TMError PlayerIdentity::TransferMsg(NetworkMessageContext &ctx)
       TRANSF_EX(privateSlot, privateSlot)
       TRANSF_EX(rating, rating)
 #endif
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+      TRANSF(steamID)
+      TRANSF(steamSessionTicket)
+#endif
       TRANSF_EX(id, id)
       TRANSF_EX(certificate, certificate)
       TRANSF_EX(challengeSigned, challengeSigned)
@@ -2160,6 +2180,85 @@ RString PlayerIdentity::GetDebugId() const
 {
   return id;
 }
+
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+SteamValidation::SteamValidation()
+: _steamId(0), _server(NULL), _dpid(0), _started(false), _authPending(false), _ticksStarted(0),
+  _callbackGSAuthTicketResponse(NULL, NULL)
+{
+}
+
+SteamValidation::~SteamValidation()
+{
+  if (_started && SteamGameServer())
+    SteamGameServer()->EndAuthSession(CSteamID(_steamId));
+}
+
+void SteamValidation::Start(PlayerIdentity &identity, NetworkServer *server)
+{
+  _server = server;
+  _steamId = identity._steamID;
+  _steamSessionTicket = identity._steamSessionTicket;
+  _name = identity.GetName();
+  _dpid = identity.dpnid;
+  _started = false;
+  _authPending = false;
+  _ticksStarted = GlobalTickCount();
+  _callbackGSAuthTicketResponse.Register(this, &SteamValidation::OnValidateAuthTicketResponse);
+
+  ISteamGameServer *steamServer = SteamGameServer();
+  RString expectedSteamId = Format("%I64u", (unsigned __int64)_steamId);
+  if (!_steamId || strcmpi(identity.id, expectedSteamId) != 0 ||
+      _steamSessionTicket.Size() == 0 || !steamServer || !steamServer->BLoggedOn())
+  {
+    _started = false;
+    _server->KickOff(_dpid, KOROther, "Steam identity or authentication unavailable");
+    return;
+  }
+
+  EBeginAuthSessionResult result = steamServer->BeginAuthSession(
+    _steamSessionTicket.Data(), _steamSessionTicket.Size(), CSteamID(_steamId));
+  if (result != k_EBeginAuthSessionResultOK)
+  {
+    _server->KickOff(_dpid, KOROther, "Steam authentication failed");
+    LogF("Steam auth ticket rejected for player %s (reason %d)", cc_cast(_name), result);
+  }
+  else
+  {
+    _started = true;
+    _authPending = true;
+  }
+}
+
+void SteamValidation::HandleTimeout()
+{
+  if (_authPending && GlobalTickCount() > _ticksStarted + 60000)
+  {
+    _authPending = false;
+    _server->KickOff(_dpid, KORAuthTimeOut);
+  }
+}
+
+void SteamValidation::OnValidateAuthTicketResponse(ValidateAuthTicketResponse_t *response)
+{
+  if (!_authPending || !response || response->m_SteamID.ConvertToUint64() != _steamId) return;
+
+  if (response->m_eAuthSessionResponse == k_EAuthSessionResponseOK)
+  {
+#if _USE_BATTL_EYE_SERVER
+    _server->PlayerGUIDReceived(_dpid, CSteamID(_steamId));
+    _server->PlayerGUIDIsValid(_dpid, CSteamID(_steamId));
+#endif
+    LogF("Steam authenticated player %s (SteamID %I64u)", cc_cast(_name), (unsigned __int64)_steamId);
+  }
+  else
+  {
+    _server->KickOff(_dpid, KOROther, "Steam authentication rejected");
+    LogF("Steam auth failed for player %s (response %d)", cc_cast(_name), response->m_eAuthSessionResponse);
+  }
+  _authPending = false;
+}
+#endif
 
 
 #define LOCAL_PLAYER_INFO_MSG(MessageName, XX) \
@@ -5700,9 +5799,9 @@ void NetworkManager::LoadIsland(RString islandName)
 
 #endif //_VBS3
 
-void NetworkManager::AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type)
+void NetworkManager::AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type, InventoryItem *item)
 {
-  if (_client) _client->AskForSetItemShortcut(person, index, type);
+  if (_client) _client->AskForSetItemShortcut(person, index, type, item);
 }
 
 void NetworkManager::AskInventoryMenu(AIBrain *unit, InventoryItem *item1, InventoryItem *item2)

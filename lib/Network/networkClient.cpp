@@ -1,6 +1,9 @@
 #include "../wpch.hpp"
 #include "networkImpl.hpp"
 #include "networkQueueUtils.hpp"
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+#include <Steamworks/steam_api.h>
+#endif
 #include "../global.hpp"
 //#include "strIncl.hpp"
 #include "../stringtableExt.hpp"
@@ -3246,6 +3249,26 @@ void NetworkClient::OnMessage(int from, NetworkMessage *msg, NetworkMessageType 
         BankList::ReadAccess banks(GFileBanks);
         identity.filesCount = banks.Size() + _additionalSignedFiles.Size();
 
+#if _ENABLE_STEAM_IDENTITY && defined(_WIN64)
+        if (SteamUser())
+        {
+          identity._steamID = SteamUser()->GetSteamID().ConvertToUint64();
+          char steamTicket[1024];
+          uint32 steamTicketSize = 0;
+          memset(steamTicket, 0, sizeof(steamTicket));
+          SteamUser()->GetAuthSessionTicket(steamTicket, sizeof(steamTicket), &steamTicketSize, NULL);
+          if (identity._steamID != 0 && steamTicketSize > 0 && steamTicketSize <= sizeof(steamTicket))
+          {
+            identity._steamSessionTicket.Copy(steamTicket, steamTicketSize);
+            identity.id = Format("%I64u", (unsigned __int64)identity._steamID);
+          }
+          else
+          {
+            identity._steamID = 0;
+          }
+        }
+#endif
+
 
         GameDataNamespace globals(NULL, RString(), false); // save - no global namespace
 
@@ -4407,7 +4430,10 @@ void NetworkClient::OnMessage(int from, NetworkMessage *msg, NetworkMessageType 
         {
           Ref<InventoryItemType> type;
           if (!ask._itemType.IsEmpty()) type = dynamic_cast<InventoryItemType *>(VehicleTypes.New(ask._itemType));
-          ask._person->SetItemShortcut(ask._index, type);
+          if (ask._item && ask._person->FindItem(ask._item))
+            ask._person->SetItemShortcutInstance(ask._index, ask._item);
+          else
+            ask._person->SetItemShortcut(ask._index, type);
         }
       }
       break;
@@ -4493,14 +4519,23 @@ void NetworkClient::OnMessage(int from, NetworkMessage *msg, NetworkMessageType 
         TMSGCHECK(ask.TransferMsg(ctx))
         if (ask._target && ask._item)
         {
+          const bool oldRotation = ask._item->IsInventoryRotated();
           ask._item->SetInventoryRotated(ask._rotated);
           if (ask._target->CanMoveItem(ask._index, ask._item))
           {
             Entity *parent = ask._item->GetHierarchyParent();
+            Person *handsOwner = dyn_cast<Person>(parent);
+            const bool movedFromHands = handsOwner && handsOwner->GetItemInHands() == ask._item;
             if (parent) parent->RemoveOwnedItem(ask._item);
 
             ask._target->MoveItem(ask._index, ask._item);
+            if (movedFromHands)
+              UpdateObject(handsOwner, NMCUpdateGeneric, NMFGuaranteed);
+            if (oldRotation != ask._rotated)
+              UpdateObject(ask._item, NMCUpdateGeneric, NMFGuaranteed);
           }
+          else
+            ask._item->SetInventoryRotated(oldRotation);
         }
       }
       break;
@@ -4508,7 +4543,8 @@ void NetworkClient::OnMessage(int from, NetworkMessage *msg, NetworkMessageType 
       {
         AskForRotateInventoryItemMessage ask;
         TMSGCHECK(ask.TransferMsg(ctx))
-        if (ask._person && ask._item && ask._person->FindItem(ask._item) && ask._item->RotateInInventory())
+        if (GetNetworkManager().IsServerOwner() && ask._person && ask._item &&
+            ask._person->FindItem(ask._item) && ask._item->RotateInInventory())
           UpdateObject(ask._item, NMCUpdateGeneric, NMFGuaranteed);
       }
       break;
@@ -4516,7 +4552,8 @@ void NetworkClient::OnMessage(int from, NetworkMessage *msg, NetworkMessageType 
       {
         AskForTakeItemToHandsMessage ask;
         TMSGCHECK(ask.TransferMsg(ctx))
-        if (ask._person && ask._item && ask._person->FindItem(ask._item))
+        if (ask._person && ask._item &&
+            (ask._person->FindItem(ask._item) || ask._item->IsInLandscape()))
         {
           ask._person->TakeItemToHands(ask._item);
         }
@@ -7601,11 +7638,12 @@ void NetworkClient::AskCommanderOverride(Turret *turret, Turret *overriddenByTur
 
 #endif //_VBS3
 
-void NetworkClient::AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type)
+void NetworkClient::AskForSetItemShortcut(Person *person, int index, const InventoryItemType *type, InventoryItem *item)
 {
   AskForSetItemShortcutMessage msg;
   msg._person = person;
   msg._index = index;
+  msg._item = item;
   msg._itemType = type ? type->GetName() : RString();
   SendMsg(&msg, NMFGuaranteed);
 }

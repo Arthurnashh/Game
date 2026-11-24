@@ -6430,7 +6430,6 @@ public:
   Control *OnCreateCtrl(int type, int idc, ParamEntryPar cls);
   ControlObject *OnCreateObject(int type, int idc, ParamEntryPar cls);
   void OnSimulate(EntityAI *vehicle);
-  virtual bool OnKeyDown(int dikCode) override;
   void DestroyHUD(int exit)
   {
     GWorld->DestroyUserDialog();
@@ -6441,6 +6440,7 @@ public:
   virtual void OnDrag(IControl *ctrl) override;
   virtual unsigned char OnDragging(IControl *draggCtrl,  IControl *dropCtrl, float x, float y) override;
   virtual bool OnDrop(IControl *draggCtrl, IControl *dropCtrl, float x, float y) override;
+  virtual bool OnKeyDown(int dikCode) override;
   
   virtual void DrawDragInfo(float x, float y, unsigned char enabled, Ref<Font> dragFont, float dragSize) override;
 
@@ -6466,9 +6466,9 @@ void CItemBase::SetItemShortcut(int index, const InventoryItem *item)
   const InventoryItemType *type = item ? item->Type() : NULL;
   if (!GetNetworkManager().IsServerOwner())
     // BOT client have to handle it
-    GetNetworkManager().AskForSetItemShortcut(player, index, type);
+    GetNetworkManager().AskForSetItemShortcut(player, index, type, const_cast<InventoryItem *>(item));
   else
-    player->SetItemShortcut(index, type);
+    player->SetItemShortcutInstance(index, const_cast<InventoryItem *>(item));
 }
 
 static bool ItemContainsInventoryItem(const InventoryItem *container, const InventoryItem *item)
@@ -6543,7 +6543,9 @@ bool CItemBase::CanMoveItem(EntityAI *target, int index, const InventoryItem *it
 
 void CItemBase::RotateInventoryItem(Person *person, InventoryItem *item)
 {
-  if (!item) return;
+  // Items in the hands slot are manipulated by dragging them out of the slot,
+  // never by changing their inventory orientation in place.
+  if (!item || (person && person->GetItemInHands() == item)) return;
   if (!GetNetworkManager().IsServerOwner())
     GetNetworkManager().AskForRotateInventoryItem(person, item);
   else if (item->RotateInInventory())
@@ -8453,9 +8455,13 @@ bool CItemContent::ForEachSlot(
   int columns = toIntFloor(_w / _titleW);
   int col = 0;
   float left = _x;
-  for (int j=0; j<NInventorySlotId; j++)
+  for (int order=0; order<NInventorySlotId; order++)
   {
-    if (j == ISHands) continue; // displayed by the dedicated Hands panel
+    // Keep the serialized slot IDs unchanged, but show both shoulder weapons
+    // together in the inventory before clothing containers.
+    int j = order == ISShoulder + 1 ? ISShoulder2 :
+      (order > ISShoulder + 1 && order <= ISShoulder2 ? order - 1 : order);
+    if (j == ISHands) continue;
     InventoryItem *item = _person->GetInSlot((InventorySlotId)j);
     if (!item) continue;
 
@@ -8486,9 +8492,11 @@ bool CItemContent::ForEachSlot(
     if (first-- <= 0) top += _titleH + vSpace;
   }
   // containers then
-  for (int j=0; j<NInventorySlotId; j++)
+  for (int order=0; order<NInventorySlotId; order++)
   {
-    if (j == ISHands) continue; // displayed by the dedicated Hands panel
+    int j = order == ISShoulder + 1 ? ISShoulder2 :
+      (order > ISShoulder + 1 && order <= ISShoulder2 ? order - 1 : order);
+    if (j == ISHands) continue;
     InventoryItem *container = _person->GetInSlot((InventorySlotId)j);
     if (!container) continue;
 
@@ -8798,10 +8806,6 @@ public:
   virtual float GetGridW() override;
   virtual float GetGridH() override;
   virtual bool IsContained(InventoryItem *item) override;
-
-  virtual void OnLButtonDown(float x, float y) override;
-  virtual void OnLButtonUp(float x, float y) override;
-  virtual void OnMouseMove(float x, float y, bool active = true) override;
 };
 
 CItemInHands::CItemInHands(ControlsContainer *parent, int idc, ParamEntryPar cls, Person *person)
@@ -8816,7 +8820,6 @@ CItemInHands::CItemInHands(ControlsContainer *parent, int idc, ParamEntryPar cls
 
   _bgNoItemColor = GetPackedColor(cls >> "colorNoItemBackground");
   _bgItemColor = GetPackedColor(cls >> "colorItemBackground");
-
 }
 
 void CItemInHands::OnDraw(float alpha)
@@ -9113,15 +9116,8 @@ bool CItemInHands::CanAddItem(InventoryItem *newItem, float x, float y)
   if (m && m->IsOnAnyLadder())
     return false;
 
-  if (fromVicinity)
-  {
-    const InventoryItemType *type = newItem->Type();
-    // Transfer from Vicinity into owned inventory first, then use the normal
-    // take-to-hands action. This preserves the server's ownership checks.
-    return type && type->IsHandheld() && _person->CanAddItem(newItem);
-  }
-
-  if (!_person->FindItem(newItem)) return false;
+  // Ground items can be dragged directly into empty hands as well.
+  if (!_person->FindItem(newItem) && !newItem->IsInLandscape()) return false;
 
   float top = _y + _h - _gridH;
 
@@ -9129,14 +9125,12 @@ bool CItemInHands::CanAddItem(InventoryItem *newItem, float x, float y)
   InventoryItem *oldItem = _person->GetItemInHands();
   if (!oldItem)
   {
-    const InventoryItemType *type = newItem->Type();
-    return type && type->IsHandheld();
+    return true;
   }
 
   if (y < top)
   {
-    const InventoryItemType *type = newItem->Type();
-    if (type && type->IsHandheld()) return true; // directly to hands
+    if (newItem->Type()) return true; // directly to hands
     return CanMoveItem(oldItem, -1, newItem); // as an attachment
   }
 
@@ -9164,22 +9158,7 @@ void CItemInHands::AddItem(InventoryItem *newItem, float x, float y)
 {
   if (!_person) return;
 
-  DisplayInventory *display = dynamic_cast<DisplayInventory *>(_parent.GetLink());
-  CItemBase *vicinity = display ? dynamic_cast<CItemBase *>(display->GetCtrl(IDC_INVENTORY_CONTAINER)) : NULL;
-  const bool fromVicinity = vicinity && vicinity->IsContained(newItem);
-
-  if (fromVicinity)
-  {
-    const InventoryItemType *type = newItem->Type();
-    if (type && type->IsHandheld() && _person->CanAddItem(newItem))
-    {
-      MoveItem(_person, -1, newItem);
-      TakeItemToHands(_person, newItem);
-    }
-    return;
-  }
-
-  if (!_person->FindItem(newItem)) return;
+  if (!_person->FindItem(newItem) && !newItem->IsInLandscape()) return;
 
   float top = _y + _h - _gridH;
 
@@ -9187,18 +9166,13 @@ void CItemInHands::AddItem(InventoryItem *newItem, float x, float y)
   InventoryItem *oldItem = _person->GetItemInHands();
   if (!oldItem)
   {
-    const InventoryItemType *type = newItem->Type();
-    if (type && type->IsHandheld()) TakeItemToHands(_person, newItem);
+    TakeItemToHands(_person, newItem);
     return;
   }
 
   if (y < top)
   {
-    const InventoryItemType *type = newItem->Type();
-    if (type && type->IsHandheld()) 
-      TakeItemToHands(_person, newItem); // directly to hands
-    else
-      MoveItem(oldItem, -1, newItem); // as an attachment
+    TakeItemToHands(_person, newItem);
     return;
   }
 
@@ -9228,22 +9202,6 @@ float CItemInHands::GetGridW()
 float CItemInHands::GetGridH()
 {
   return _gridH;
-}
-
-void CItemInHands::OnLButtonDown(float x, float y)
-{
-  // Hands is an inventory destination and drag source, not a rotation widget.
-  base::OnLButtonDown(x, y);
-}
-
-void CItemInHands::OnLButtonUp(float x, float y)
-{
-  base::OnLButtonUp(x, y);
-}
-
-void CItemInHands::OnMouseMove(float x, float y, bool active)
-{
-  base::OnMouseMove(x, y, active);
 }
 
 class CPlayerPreview : public ControlObject
@@ -9453,6 +9411,9 @@ void CPlayerPreview::OnDraw(float alpha)
       Matrix4 pTransform = proxyObj->RenderVisualState().Transform();
       SkeletonIndex boneIndex = _proxies.GetProxyBoneForLevel(_shape, level, i);
       AnimateMatrix(pTransform, boneIndex);
+      // Pose anchor in the paperdoll model space. The second shoulder weapon
+      // below uses the very same composition as the world rendering.
+      Matrix4 animatedProxy = pTransform;
       pTransform = GetFrameBase() * pTransform;
 
       if (shape->Remarks() & ShapeReversed)
@@ -9502,6 +9463,66 @@ void CPlayerPreview::OnDraw(float alpha)
         ctrl->AnimateMatrix(matrix, boneIndex);
         return true;
       });
+
+      // The character model has a single shoulder proxy, so as in the world
+      // rendering the second shoulder weapon must be drawn manually at the
+      // same proxy, mirrored to the right half of the back.
+      if (proxyType->GetInventorySlot() == ISShoulder)
+      {
+        InventoryItem *secondItem = _person->GetInSlot(ISShoulder2);
+        LODShape *secondShape = secondItem ? secondItem->GetShape() : NULL;
+        if (secondShape && secondItem != item)
+        {
+          // Same composition as Man::PrepareProxiesForDrawing: the offset is
+          // applied to the pose anchor in model space, then the paperdoll
+          // frame places the result.
+          Matrix4 oppositeSide(MTranslation, Vector3(+0.32f, 0.0f, -0.10f));
+          Matrix4 secondTransform = GetFrameBase() * oppositeSide * animatedProxy;
+
+          if (secondShape->Remarks() & ShapeReversed)
+          {
+            Matrix4 swapM(MScale, -1, +1, -1);
+            secondTransform = secondTransform * swapM;
+          }
+
+          Ref<SortObject> oi2 = new SortObject();
+          oi2->SetObject(secondItem);
+          oi2->SetRootObject(this);
+          if (GetShape() && secondShape->GetSkeletonSource() == GetShape()->GetSkeletonSource())
+            oi2->SetParentObject(this);
+
+          secondItem->InsideUIDraw(true);
+
+          Color color(1.0f, 1.0f, 1.0f, 1.0f);
+          DisplayInventory *display = dynamic_cast<DisplayInventory *>(_parent.GetLink());
+          if (display)
+          {
+            if (display->GetDraggedItem() == secondItem) color = ColorItemDragged;
+            else if (display->GetSwappedItem() == secondItem) color = ColorItemSwapped;
+          }
+          color.SetA(alpha * color.A());
+          GEngine->SetInstanceInfo(-1, color, 1.0f);
+
+          secondItem->Draw(-1, pLevel, ClipAll, DrawParameters::_noShadow, InstanceParameters::_default, dist2, secondTransform, oi2
+#if _HELISIM_RENDER_TO_TEXTURE
+            , GScene->GetDrawObjectIndex()
+#endif
+            );
+
+          secondItem->InsideUIDraw(false);
+          GEngine->SetInstanceInfo(-1, HWhite, 1);
+
+          Object *parentObject2 = oi2->GetParentObject();
+          secondItem->DrawProxies(pLevel, dist2, secondTransform, [&parentObject2](Matrix4 &matrix, SkeletonIndex boneIndex) -> bool
+          {
+            if (!parentObject2) return false;
+
+            CPlayerPreview *ctrl = static_cast<CPlayerPreview *>(parentObject2);
+            ctrl->AnimateMatrix(matrix, boneIndex);
+            return true;
+          });
+        }
+      }
     }
   }
 }
@@ -9902,7 +9923,9 @@ bool DisplayInventory::OnKeyDown(int dikCode)
     }
     // Start the drag on Space if the item is held under the pointer but has
     // not yet crossed the regular mouse-movement threshold.
-    if (!_dragItem && item && selectedControl && GInput.mouseL)
+    Person *person = _unit ? _unit->GetPerson() : NULL;
+    const bool itemInHands = person && item && person->GetItemInHands() == item;
+    if (!_dragItem && item && !itemInHands && selectedControl && GInput.mouseL)
     {
       selectedControl->BeginDrag();
       item = _dragItem;
@@ -9911,10 +9934,10 @@ bool DisplayInventory::OnKeyDown(int dikCode)
     {
       // While dragging, rotate only the preview. The selected orientation is
       // sent with the move request when the item is dropped.
-      if (_dragItem->Type() && _dragItem->Type()->GetItemWidth() != _dragItem->Type()->GetItemHeight())
+      if (!itemInHands && _dragItem->Type() && _dragItem->Type()->GetItemWidth() != _dragItem->Type()->GetItemHeight())
         _dragRotated = !_dragRotated;
     }
-    else if (item && item->Type() && item->GetInventoryWidth() != item->GetInventoryHeight())
+    else if (!itemInHands && item && item->Type() && item->GetInventoryWidth() != item->GetInventoryHeight())
       CItemBase::RotateInventoryItem(_unit ? _unit->GetPerson() : NULL, item);
     return true;
   }
@@ -9950,6 +9973,10 @@ Control *DisplayInventory::OnCreateCtrl(int type, int idc, ParamEntryPar cls)
   // ui.pbo's legacy ButtonDropHands is destructive (moves null to hands).
   // The matching ButtonBackground2 is a separate red RscText in ControlsBackground,
   // so omit both controls to remove the icon and its red square.
+  if (idc == 198 || stricmp(cls.GetName(), "ButtonBackground2") == 0) return NULL;
+
+  // Ignore the legacy hands-drop button and its red background control.
+  // Dropping the hands item is handled by inventory drag-and-drop instead.
   if (idc == 198 || stricmp(cls.GetName(), "ButtonBackground2") == 0) return NULL;
 
   Control *ctrl = Display::OnCreateCtrl(type, idc, cls);
@@ -10137,13 +10164,17 @@ void DisplayInventory::OnDrag(IControl *ctrl)
 
   _dragItem = nullptr;
   _swapItem = nullptr;
+  _dragRotated = false;
 
   CItemBase *src = dynamic_cast<CItemBase *>(ctrl);
   if (src)
   {
     // object to be dragged
     DragItemInfo info = src->GetDragItemInfo();
-    if (info._item && CanRemoveItem(info._item))
+    Person *person = _unit ? _unit->GetPerson() : NULL;
+    const bool isHandsItem = src->IDC() == IDC_INVENTORY_HANDS && person &&
+      person->GetItemInHands() == info._item;
+    if (info._item && (CanRemoveItem(info._item) || isHandsItem))
     {
       _dragItem = info._item;
       _dragRotated = info._item->IsInventoryRotated();
@@ -10243,17 +10274,19 @@ class InventoryRotationPreviewScope
 private:
   InventoryItem *_item;
   bool _original;
+  Entity *_originalParent;
 public:
   InventoryRotationPreviewScope(InventoryItem *item, bool rotated)
-    : _item(item), _original(item ? item->IsInventoryRotated() : false)
+    : _item(item), _original(item ? item->IsInventoryRotated() : false),
+      _originalParent(item ? item->GetHierarchyParent() : NULL)
   {
     if (_item) _item->SetInventoryRotated(rotated);
   }
   ~InventoryRotationPreviewScope()
   {
-    if (_item) _item->SetInventoryRotated(_original);
+    if (_item && _item->GetHierarchyParent() == _originalParent)
+      _item->SetInventoryRotated(_original);
   }
-  // accept the previewed orientation; the destructor will keep it
   void Commit()
   {
     if (_item) _original = _item->IsInventoryRotated();
@@ -10279,7 +10312,8 @@ unsigned char DisplayInventory::OnDragging(IControl *dragCtrl,  IControl *dropCt
   const bool handsToInventory = src->IDC() == IDC_INVENTORY_HANDS &&
     ((dst && dst->IDC() == IDC_INVENTORY_CONTENT) ||
      (dropCtrl && dropCtrl->IDC() == IDC_INVENTORY_CONTENT_HEADER));
-  bool canRemove = !person || person->GetItemInHands() != item || handsToInventory || handsToVicinity;
+  const bool handsToGround = src->IDC() == IDC_INVENTORY_HANDS && dropCtrl == NULL;
+  bool canRemove = !person || person->GetItemInHands() != item || handsToInventory || handsToVicinity || handsToGround;
 
   int srcShortcut = src->GetShortcutIndex();
 
@@ -10424,7 +10458,8 @@ bool DisplayInventory::OnDrop(IControl *dragCtrl, IControl *dropCtrl, float x, f
   const bool handsToInventory = src->IDC() == IDC_INVENTORY_HANDS &&
     ((dst && dst->IDC() == IDC_INVENTORY_CONTENT) ||
      (dropCtrl && dropCtrl->IDC() == IDC_INVENTORY_CONTENT_HEADER));
-  bool canRemove = !person || person->GetItemInHands() != item || handsToInventory || handsToVicinity;
+  const bool handsToGround = src->IDC() == IDC_INVENTORY_HANDS && dropCtrl == NULL;
+  bool canRemove = !person || person->GetItemInHands() != item || handsToInventory || handsToVicinity || handsToGround;
 
   int srcShortcut = src->GetShortcutIndex();
 
@@ -10605,10 +10640,8 @@ void DisplayInventory::DrawDragInfo(float x, float y, unsigned char enabled, Ref
 
   float dragX = x - _dragOffsetX;
   float dragY = y - _dragOffsetY;
-  int itemWidth = _dragRotated ? type->GetItemHeight() : type->GetItemWidth();
-  int itemHeight = _dragRotated ? type->GetItemWidth() : type->GetItemHeight();
-  float dragW = itemWidth * _dragGridW;
-  float dragH = itemHeight * _dragGridH;
+  float dragW = (_dragRotated ? type->GetItemHeight() : type->GetItemWidth()) * _dragGridW;
+  float dragH = (_dragRotated ? type->GetItemWidth() : type->GetItemHeight()) * _dragGridH;
 
   PackedColor dragColor;
   switch (enabled)
