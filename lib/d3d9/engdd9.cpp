@@ -2,8 +2,8 @@
 #include "../wpch.hpp"
 
 #if !_DISABLE_GUI && !defined _SERVER
+#include <dxgi.h>
 #include "engdd9.hpp"
-#include <dxerr.h>
 #include "postProcess.hpp"
 
 #include <El/Statistics/statistics.hpp>
@@ -22,7 +22,6 @@
 #include "../Shape/material.hpp"
 #include "../clip2D.hpp"
 #include "../global.hpp"
-#include "../gameDirs.hpp"
 #include "../keyInput.hpp"
 #include "../dikCodes.h"
 #include "../landImpl.hpp"
@@ -77,17 +76,7 @@ When only (1-alpha)*dst blending is used for alpha blending, the shader can cont
 #include "ShaderCompileCache.h"
 #endif
 
-static RStringB GetShaderCacheDir()
-{
-  char profile[1024];
-  if (GetLocalSettingsDir(profile))
-  {
-    TerminateBy(profile, '\\');
-    return RStringB(profile) + "ShaderCacheDX9\\";
-  }
-
-  return RStringB("ShaderCacheDX9\\");
-}
+static const char HLSLCacheDir[] = "bin\\";
 
 /// used for Shader Model 3.0 shaders
 #define RelShaderPath_3_0 "ShaderSources_3_0\\"
@@ -139,6 +128,7 @@ static const bool StrictAPI = false;
 
 static void InitShaderDirs()
 {
+  // packaged layout: shader sources live in bin\ShaderSources_3_0 next to the exe
   char exePath[MAX_PATH];
   const DWORD exeLength = GetModuleFileNameA(NULL, exePath, lenof(exePath));
   if (exeLength && exeLength < lenof(exePath))
@@ -146,17 +136,26 @@ static void InitShaderDirs()
     const char *exeName = GetFilenameExt(exePath);
     HLSLDir = RString(exePath, exeName - exePath) + "bin\\" RelShaderPath_3_0;
   }
+  // development fallback: shader sources in the source checkout
   if (HLSLDir.IsEmpty() || !QIFileFunctions::FileExists(HLSLDir + "VS.hlsl"))
   {
-    BString<512> shaderDir = __FILE__;
-    const char *fileName = GetFilenameExt(shaderDir);
-    if (fileName)
+    BString<256> shaderDir = __FILE__; // should be something like PROJECT_ROOT "\\d3d9\\engdd9.cpp"
+    const char *nam = GetFilenameExt(shaderDir);
+    if (nam)
     {
-      strcpy(LString(shaderDir).Mid(fileName), RelShaderPath_3_0);
-      HLSLDir = shaderDir.cstr();
+      // replace the filename part with RelShaderPath_3_0
+      strcpy(LString(shaderDir).Mid(nam),RelShaderPath_3_0);
     }
-  }
+    else
+    {
+      // no failure expected, but if there was one, try to recover
+      Fail("Unexpected file path");
+      strcpy(shaderDir,".\\" RelShaderPath_3_0);
+    }
 
+    HLSLDir = shaderDir.cstr();
+  }
+  
   FPShaders = HLSLDir + "FPShaders.hlsl";
 
   PSHeader = HLSLDir + "PS.h";
@@ -421,7 +420,7 @@ static void ReportEngDiagMode(int mode)
 
 static GameValue SetEngDiagEnable(const GameState *state, GameValuePar oper1, GameValuePar oper2)
 {
-  const char *modeStr = (RString)oper1;
+  const char *modeStr = oper1.GetData()->GetString();
   bool onOff = oper2;
   int modeMask = ~0;
   int mode = -1;
@@ -443,7 +442,7 @@ static GameValue SetEngDiagEnable(const GameState *state, GameValuePar oper1, Ga
 
 static GameValue SetEngDiagToggle(const GameState *state, GameValuePar oper1)
 {
-  const char *modeStr = (RString)oper1;
+  const char *modeStr = oper1.GetData()->GetString();
   int mode = GetEnumValue<EngDiagEnable>(modeStr);
   if (mode==-1) return NOTHING;
   int modeMask = 1<<mode;
@@ -535,7 +534,7 @@ static GameValue UseStaticVB(const GameState *state, GameValuePar oper1)
 
 static GameValue ReloadVS(const GameState *state, GameValuePar oper1)
 {
-  const char *shader = (RString)oper1;
+  const char *shader = oper1.GetData()->GetString();
   VertexShaderID vs = GetEnumValue<VertexShaderID>(shader);
   if (vs==-1) return NOTHING;
   GEngineDD->ReloadVertexShader(vs);
@@ -544,7 +543,7 @@ static GameValue ReloadVS(const GameState *state, GameValuePar oper1)
 
 static GameValue ReloadPS(const GameState *state, GameValuePar oper1)
 {
-  const char *shader = (RString)oper1;
+  const char *shader = oper1.GetData()->GetString();
   // check all pixel shader which match the mask given in oper1
   for(int ps=0; ps<NPixelShaderID; ps++)
   {
@@ -1836,11 +1835,11 @@ struct SVertexSpriteInstanced9
 //////////////////////////////////////////////////////////////////////////
 
 #include <El/Debugging/debugTrap.hpp>
-#pragma comment(lib,"DxErr")
+#pragma comment(lib,"dxerr9")
 
 void EngineDD9::DDError9( const char *text, int err )
 {
-  LogF("%s:%s",text,DXGetErrorStringA(err));
+  LogF("%s:%s",text,DXGetErrorString9(err));
   if (GDebugger.IsDebugger())
   {
     //BREAK();
@@ -2574,7 +2573,8 @@ static int ComparePriorities(const PPPriorities *pp0, const PPPriorities *pp1)
 void EngineDD9::DoPostprocess(float deltaT, const PostFxSettings &pfx)
 {
   static float BloomBlurScale = 1.0f;
-  static float BloomImgScale = 1.0f;
+  // F8: bloom mais contido (era 1.0) para nao virar "estrela" na tela.
+  static float BloomImgScale = 0.55f;
 
   End3DRendering(); // End rendering of the 3D part of the scene
 
@@ -3447,6 +3447,15 @@ void EngineDD9::InitDraw( bool clear, Color color )
   rect.x2=_w,rect.y2=_h;
   int flags=0;
 
+  // When the z-only priming pass is skipped (FSAA with RMZPrime removed), the
+  // main depth buffer was not cleared by any priming pass. Clear it here so the
+  // scene pass tests against fresh depth instead of last frame's values.
+  if (!_mainDepthPrimed)
+  {
+    flags |= D3DCLEAR_ZBUFFER;
+    if (_caps._hasStencilBuffer) flags|=D3DCLEAR_STENCIL;
+  }
+
   // TODO: unify for FSAA as well
 //   if (GetFSAA()>0)
 //   {
@@ -4156,7 +4165,7 @@ RetryV:
   if (err!=D3D_OK || !data)
   {
     if (GEngineDD->FreeOnDemandSystemMemoryLowLevel(1024*1024)) goto RetryV;
-    ErrF("VB Lock failed, %x,%s",err,DXGetErrorStringA(err));
+    ErrF("VB Lock failed, %x,%s",err,DXGetErrorString9(err));
     ReportMemoryStatusWithVRAM();
     return NULL;
   }
@@ -6274,7 +6283,7 @@ RetryI:
     if (err!=D3D_OK || !data)
     {
     if (GEngineDD->FreeOnDemandSystemMemoryLowLevel(1024*1024)) goto RetryI;
-      ErrF("IB Lock failed, %x:%s",err,DXGetErrorStringA(err));
+      ErrF("IB Lock failed, %x:%s",err,DXGetErrorString9(err));
     ReportMemoryStatusWithVRAM();
     return NULL;
   }
@@ -7050,7 +7059,7 @@ Retry:
   if (err!=D3D_OK || !data)
   {
     if (GEngineDD->FreeOnDemandSystemMemoryLowLevel(1024*1024)) goto Retry;
-    ErrF("VB Lock failed, %x,%s",err,DXGetErrorStringA(err));
+    ErrF("VB Lock failed, %x,%s",err,DXGetErrorString9(err));
     ReportMemoryStatusWithVRAM();
     return -1;
   }
@@ -8048,17 +8057,57 @@ void EngineDD9::SetupLights(int cb, const LightList &lights, int spec, const Dra
 */
 
 #if _ARMA3_NEW_LIGHTING_CFG
+// ---------------------------------------------------------------------------
+// F1 / ciclo 1 - luz rebatida (bounce) e reflexo do chao.
+// Coeficientes de teste: 1.0 reproduz exatamente o comportamento original.
+// Altere apenas um deles por vez, recompile e compare o mesmo save/horario.
+// O primeiro build imprime uma unica linha "F1-bounce" no RPT com os valores
+// crus vindos do world config (bidirect / groundReflection).
+static float s_bounceBidirectCoef = 1.0f;
+static float s_bounceGroundCoef = 1.0f;
+
+static Color ScaleRGBOnly(const Color &c, float coef)
+{
+  if (coef == 1.0f) return c;
+  return Color(c.R() * coef, c.G() * coef, c.B() * coef, c.A());
+}
+
+static int s_bounceCalls = 0;
+
+static void LogBounce(bool newLighting, ColorVal bidirect, ColorVal ground, ColorVal mainGround)
+{
+  // Diario: primeira chamada e depois uma a cada 5000. Se nada aparecer no RPT,
+  // a funcao nao esta sendo chamada no caminho ativo.
+  s_bounceCalls++;
+  if (s_bounceCalls != 1 && (s_bounceCalls % 5000) != 0) return;
+  RptF(
+    "F1-bounce calls=%d newLighting=%d bidirect=(%.4f,%.4f,%.4f) ground=(%.4f,%.4f,%.4f) mainGround=(%.4f,%.4f,%.4f) coef=%.2f/%.2f",
+    s_bounceCalls, newLighting ? 1 : 0,
+    bidirect.R(), bidirect.G(), bidirect.B(),
+    ground.R(), ground.G(), ground.B(),
+    mainGround.R(), mainGround.G(), mainGround.B(),
+    s_bounceBidirectCoef, s_bounceGroundCoef
+  );
+}
+
 Color EngineDD9::ComputeBackReflection(const Color& diffuse)
 {
   if (GScene)
   {
-    if (GLandscape && GLandscape->UseNewLandLighting())
+    bool newLighting = GLandscape && GLandscape->UseNewLandLighting();
+    Color mainGround = GScene->MainLight() ? GScene->MainLight()->GroundReflection() : Color(0,0,0,0);
+    if (newLighting)
     {
-      return GScene->GetCurrentLighting()._bidirect * diffuse;
+      const LandLighting::LightingResult &lighting = GScene->GetCurrentLighting();
+      LogBounce(true, lighting._bidirect, lighting._groundReflection, mainGround);
+      return ScaleRGBOnly(lighting._bidirect * diffuse, s_bounceBidirectCoef);
     }
     else if (GScene->MainLight())
     {
-      return GScene->MainLight()->GroundReflection()*diffuse;
+      // F1: o world config nao define LightingNew, entao o caminho legado e o ativo.
+      // Aplica o mesmo coeficiente aqui para o efeito nao ficar invisivel.
+      LogBounce(false, Color(0,0,0,0), Color(0,0,0,0), mainGround);
+      return ScaleRGBOnly(mainGround * diffuse, s_bounceBidirectCoef);
     }
   }
   return Color(0,0,0,0);
@@ -8070,7 +8119,10 @@ Color EngineDD9::ComputeGroundReflection(const Color& lightAmbient, const Color&
   {
     if (GLandscape && GLandscape->UseNewLandLighting())
     {
-      return GScene->GetCurrentLighting()._groundReflection * GetAccomodateEye() * matAmbient;
+      const LandLighting::LightingResult &lighting = GScene->GetCurrentLighting();
+      return ScaleRGBOnly(
+        lighting._groundReflection * GetAccomodateEye() * matAmbient, s_bounceGroundCoef
+      );
     }
     else if (GScene->MainLight())
     {
@@ -8784,30 +8836,86 @@ void EngineDD9::DrawMeshTLInstanced(
   if (nInstancesInOneStep > 1)
 #endif
   {
+    PROFILE_SCOPE_DETAIL_EX(d9HW,d3d);
     bool ok = BeginMeshTLInstanced(cb,sMesh, prop, spec, lights, bias, minDist2, dp);
     if (ok)
     {
-      // Either use a program to draw or draw it the usual way
-      int drawnInstances = 0;
-      while (drawnInstances < nInstances)
+#if _ENABLE_PERFLOG
+      DEF_COUNTER_P_EX(d9HWc,d3d,PROF_COUNT_SCALE);
+      COUNTER_P_NAME(d9HWc)+=1;
+      DEF_COUNTER_P_EX(d9HWi,d3d,PROF_COUNT_SCALE);
+      COUNTER_P_NAME(d9HWi)+=nInstances;
+#endif
+      // Find visible sections once before chunk loop
+      int singleVisibleSec = -1;
+      int visibleSecCount = 0;
+      for (int i = 0; i < sMesh.NSections(); i++)
       {
-        // Get number of instances
-        int newInstances = min(nInstancesInOneStep, nInstances - drawnInstances);
-
-        // Set instances parameters
-        if (instances[drawnInstances]._object)
+        if (!(sMesh.GetSection(i).Special() & (IsHidden | IsHiddenProxy)))
         {
-          instances[drawnInstances]._object->SetupInstances(cb,sMesh, &instances[drawnInstances], newInstances);
+          singleVisibleSec = i;
+          visibleSecCount++;
         }
-        else
+      }
+
+      if (visibleSecCount == 1)
+      {
+        const ShapeSection &sec = sMesh.GetSection(singleVisibleSec);
+        int secBias = ((sec.Special() & ZBiasMask) / ZBiasStep) * 5;
+        int maxBias = max(bias, secBias);
+        TLMaterial mat;
+        CreateMaterial(mat, HWhite);
+        sec.PrepareTL(cb, mat, spec, prop, dp);
+
+        int drawnInstances = 0;
+        while (drawnInstances < nInstances)
         {
-          SetupInstances(cb,&instances[drawnInstances], newInstances);
+          int newInstances = min(nInstancesInOneStep, nInstances - drawnInstances);
+          if (instances[drawnInstances]._object)
+          {
+            instances[drawnInstances]._object->SetupInstances(cb, sMesh, &instances[drawnInstances], newInstances);
+          }
+          else
+          {
+            SetupInstances(cb, &instances[drawnInstances], newInstances);
+          }
+          DrawSectionTL(cb, sMesh, singleVisibleSec, singleVisibleSec + 1, maxBias, drawnInstances, newInstances, dp);
+          drawnInstances += newInstances;
         }
+      }
+      else if (visibleSecCount > 1)
+      {
+        int drawnInstances = 0;
+        while (drawnInstances < nInstances)
+        {
+          // Get number of instances
+          int newInstances = min(nInstancesInOneStep, nInstances - drawnInstances);
 
-        DrawMeshTLSectionsInstanced(cb,sMesh, prop, spec, bias, drawnInstances, newInstances);
+          // Set instances parameters
+          if (instances[drawnInstances]._object)
+          {
+            instances[drawnInstances]._object->SetupInstances(cb,sMesh, &instances[drawnInstances], newInstances);
+          }
+          else
+          {
+            SetupInstances(cb,&instances[drawnInstances], newInstances);
+          }
 
-        // Update the number of drawn instances
-        drawnInstances += newInstances;
+          for (int i = 0; i < sMesh.NSections(); i++)
+          {
+            const ShapeSection &sec = sMesh.GetSection(i);
+            if (sec.Special() & (IsHidden | IsHiddenProxy)) continue;
+            int secBias = ((sec.Special() & ZBiasMask) / ZBiasStep) * 5;
+            int maxBias = max(bias, secBias);
+            TLMaterial mat;
+            CreateMaterial(mat, HWhite);
+            sec.PrepareTL(cb, mat, spec, prop, dp);
+            DrawSectionTL(cb, sMesh, i, i + 1, maxBias, drawnInstances, newInstances, dp);
+          }
+
+          // Update the number of drawn instances
+          drawnInstances += newInstances;
+        }
       }
 
       // Finish mesh
@@ -8816,7 +8924,14 @@ void EngineDD9::DrawMeshTLInstanced(
   }
   else
   {
+    PROFILE_SCOPE_DETAIL_EX(d9FB,d3d);
     DoAssert(instances);
+#if _ENABLE_PERFLOG
+    DEF_COUNTER_P_EX(d9FBc,d3d,PROF_COUNT_SCALE);
+    COUNTER_P_NAME(d9FBc)+=1;
+    DEF_COUNTER_P_EX(d9FBi,d3d,PROF_COUNT_SCALE);
+    COUNTER_P_NAME(d9FBi)+=nInstances;
+#endif
     Engine::DrawMeshTLInstanced(cb,sMesh, prop, spec, lights, bias, instances, nInstances, minDist2, dp);
     return;
   }
@@ -10188,7 +10303,7 @@ HRESULT EngineDD9::LockDynBuffer(const ComRef<IDirect3DVertexBuffer9> &buf, void
   if (err!=D3D_OK || !data)
   {
     if (CheckMainThread() && FreeOnDemandSystemMemoryLowLevel(1024*1024)) goto Retry;
-    ErrF("VB Lock failed, %x,%s",err,DXGetErrorStringA(err));
+    ErrF("VB Lock failed, %x,%s",err,DXGetErrorString9(err));
     ReportMemoryStatusWithVRAM();
   }
   return err;
@@ -11189,7 +11304,7 @@ void EngineDD9::CreateShader(LazyLoadFile &hlslSource, CONST D3DXMACRO *pDefines
     // and we may ignore the error
       if (vertexShader.IsNull())
       {
-        RptF("DX9 shader compiler (%s, %s): %s", pFunctionName, pProfile, (const char*)result.errorMsgs->GetBufferPointer());
+        LogF("%s", (const char*)result.errorMsgs->GetBufferPointer());
         ErrorMessage("Error compiling vertex shader %s", pFunctionName);
       }
     }
@@ -11515,7 +11630,9 @@ void EngineDD9::SetPixelShaderConstantDBS(int cb, ColorVal matDiffuse, ColorVal 
   float specularCoef;
   if (useNewSpecular && (matPower > 0))
   {
-    static float b = 0.5f;
+    // F3 / ciclo 3 - revertido: o ganho nao foi perceptivel e a pele ficava
+    // com aspecto molhado. Volta ao valor original (0.5).
+    float b = 0.5f;
     static float c = 1000.0f;
     specularCoef = c / Square(2.0f * acos(pow(b, 1.0f / matPower)) * 360.0f/(2.0f*H_PI));
   }
@@ -11529,6 +11646,14 @@ void EngineDD9::SetPixelShaderConstantDBS(int cb, ColorVal matDiffuse, ColorVal 
   static float sunBrightnessCoef = 2.0f;
   float sunBrightness = (sun->SunObjectColor().Brightness() + sun->SunHaloObjectColor().Brightness()) * GetAccomodateEye().Brightness() * _modColor.Brightness() * sunBrightnessCoef;
   float specularCoefSat = min(specularCoef, sunBrightness);
+
+  // F3: confirma uma vez que o caminho especular novo esta ativo.
+  static bool s_specLogged = false;
+  if (!s_specLogged)
+  {
+    s_specLogged = true;
+    RptF("F3-spec first matPower=%.1f coef=%.3f sat=%.3f sunBright=%.3f", matPower, specularCoef, specularCoefSat, sunBrightness);
+  }
 
   // Calculate specular color (which includes specular light from the Sun only, not from the environment)
   /// multiply by 2 so that pixel shader can avoid _x2
@@ -12402,7 +12527,7 @@ void EngineDD9::DrawIndexedPrimitive(int cb, int beg, int end, const Shape &sMes
         }
         else
         {
-          YieldProcessor();
+          // no-op
         }
       }
       //LogF("TLEnd");
@@ -15668,6 +15793,11 @@ void EngineDD9::PrepareTriangleTL(
     DoPrepareTriangle(cb, tex,mat,level,specFlags,prop);
   }
 
+  // Shadow buffer and non-predicated depth priming never write color.
+  // When _bgRecPredication is active in RMDPrime, the recorded command buffer is
+  // replayed in the color pass via CopyCBPredicatedScope, so DoSetMaterial must run.
+  if (_renderingMode==RMShadowBuffer || ((_renderingMode==RMDPrime || _renderingMode==RMZPrime) && !_bgRecPredication)) return;
+
   // make color information from the texture
   // to be a part of the material
   TLMaterial matMod = tlMat;
@@ -15678,6 +15808,27 @@ void EngineDD9::PrepareTriangleTL(
   matMod.specular = matMod.specular*_modColor;
 
   // Set the material and combine material and main light color
+  DoSetMaterial(cb, matMod);
+}
+
+void EngineDD9::ApplyMaterialTL(int cb, const TLMaterial &tlMat)
+{
+  // Skip material/light setup in shadow buffer and non-predicated depth passes.
+  // Keep material setup when recording a predicated CB in RMDPrime (replayed in color pass).
+  if (_renderingMode==RMShadowBuffer || ((_renderingMode==RMDPrime || _renderingMode==RMZPrime) && !_bgRecPredication)) return;
+
+  // make color information from the texture
+  // to be a part of the material
+  TLMaterial matMod = tlMat;
+  matMod.ambient = matMod.ambient*_modColor;
+  matMod.diffuse = matMod.diffuse*_modColor;
+  matMod.forcedDiffuse = matMod.forcedDiffuse*_modColor;
+  matMod.emmisive = matMod.emmisive*_modColor;
+  matMod.specular = matMod.specular*_modColor;
+
+  // Set the material and combine material and main light color.
+  // This is the only instance-dependent part of PrepareTriangleTL: the light
+  // direction is transformed to object space using the current world matrix.
   DoSetMaterial(cb, matMod);
 }
 
@@ -17490,11 +17641,9 @@ void EngineDD9::InitVertexShaders(VertexShaderID vsID)
     SetMacro(defines.Append(),NULL,NULL);
 
     // Sprite
-    if (vsID==NVertexShaderID || vsID==VSSprite || vsID==VSVolCloud || vsID==VSSpriteOnSurface)
+    if (vsID==NVertexShaderID || vsID==VSSprite)
     {
       CreateShader(VSSpriteFile, defines.Data(), "VSSprite", _caps._vsVersion, flags, _vertexShaderSpecial[VSSSprite]);
-      _vertexShaderSpecial[VSSVolCloud] = _vertexShaderSpecial[VSSSprite];
-      _vertexShaderSpecial[VSSSpriteOnSurface] = _vertexShaderSpecial[VSSSprite];
     }
 
     // Water
@@ -17908,17 +18057,7 @@ static const PSName PSNames[NPixelShaderID][NPixelShaderType] =
 #endif
   PS_VARIANTSMOD(SuperExt),
   PS_VARIANTSMODATOC(SuperAToC),
-  PS_NOVARIANTS(NonTLHeatHaze),
-  PS_NOVARIANTS_THERMAL(InterpolationAlpha, HorizonThermal),
-  PS_VARIANTS(Sprite),       // VolCloud
-  PS_VARIANTS(SpriteSimple), // VolCloudSimple
-  PS_VARIANTS_FULL(Discard, Discard, Discard, Discard, Discard, Discard, Discard), // UnderwaterOcclusion
-  PS_VARIANTSMOD_THERMAL(Super, SuperThermal), // SuperHair
-  PS_VARIANTSMODATOC(SuperAToC),               // SuperHairAtoC
-  PS_VARIANTS_FULL(Discard, Discard, Discard, Discard, Discard, Discard, Discard), // Caustics
-  PS_VARIANTSMOD_THERMAL(Super, SuperThermal), // Refract
-  PS_VARIANTS(Sprite),       // SpriteRefract
-  PS_VARIANTS(SpriteSimple)  // SpriteRefractSimple
+	PS_NOVARIANTS(NonTLHeatHaze)
 };
 
 void EngineDD9::InitPixelShaders(SBTechnique sbTechnique, PixelShaderID from, PixelShaderID to)
@@ -19805,8 +19944,7 @@ void EngineDD9::Init3DState()
   
   if (_caps._wddm)
   {
-    // D3D9Ex reports an estimate of the available texture budget.
-    _caps._localVramAmount = Clip32B(totalByDX9);
+  
   }
   else if (totalByDX9>=INT_MAX && _caps._nonlocalVramAmount>=INT_MAX && _caps._localVramAmount>450*oneMB)
   {
@@ -22060,11 +22198,8 @@ static BOOL WINAPI DDEnumCallbackEx(
   DDEnumCallbackExContext *ctx = (DDEnumCallbackExContext *)lpContext;
   if (hm==ctx->hm)
   {
-    if (lpGUID)
-    {
-      ctx->devGuid = *lpGUID;
-      ctx->guidPtr = &ctx->devGuid;
-    }
+    ctx->devGuid = *lpGUID;
+    ctx->guidPtr = &ctx->devGuid;
     // found - terminate
     return FALSE;
   }
@@ -22072,24 +22207,103 @@ static BOOL WINAPI DDEnumCallbackEx(
   return TRUE;
 }
 
+void EngineDD9::InitDXGIInfo(const DXGI_ADAPTER_DESC &adapterDesc)
+{
+  _lastDeviceId = RString();
+  _caps._localVramAmount = Clip32B(adapterDesc.DedicatedVideoMemory);
+  _caps._nonlocalVramAmount = Clip32B((long long)adapterDesc.DedicatedSystemMemory+(long long)adapterDesc.SharedSystemMemory);
+  _caps._wddm = true;
+  _freeLocalVramAmount = 0;
+  _freeNonlocalVramAmount = 0;
+  _freeEstDirty = 0;
+  _freeEstCheckTime = 0;
+}
+
 void EngineDD9::InitDirectDraw7(int adapter)
 {
-  _caps._wddm = _direct3DEx.NotNull();
+  _caps._wddm = false;
 #if !defined(_X360SHADERGEN)
-  if (_caps._wddm)
+  /*
+  // following solution adapted from http://msdn.microsoft.com/en-us/library/windows/desktop/bb174526(v=vs.85).aspx does not work
+  // it requires DX10 interfaces, does not work with Direct3D9Ex
   {
-    _ddraw.Free();
-    _lastDeviceId = RString();
-    _caps._localVramAmount = 0;
-    _caps._nonlocalVramAmount = 0;
-    _freeLocalVramAmount = 0;
-    _freeNonlocalVramAmount = 0;
-    _freeEstDirty = 0;
-    _freeEstCheckTime = 0;
-    return;
+    ComRef<IDXGIDevice> pDXGIDevice;
+    _direct3DEx->QueryInterface(__uuidof(IDXGIDevice), (void **)pDXGIDevice.Init());
+    if (pDXGIDevice.NotNull())
+    {
+      ComRef<IDXGIAdapter> pDXGIAdapter;
+      pDXGIDevice->GetAdapter(pDXGIAdapter.Init());
+      if (pDXGIAdapter)
+      {
+        DXGI_ADAPTER_DESC adapterDesc;
+        pDXGIAdapter->GetDesc(&adapterDesc);
+        InitDXGIInfo(adapterDesc);
+        return;
+      }
+    }
   }
+  */
 
   HMONITOR d3dMonitor = _direct3D->GetAdapterMonitor(adapter);
+  if (_direct3DEx)
+  {
+    // Vista/Win7 - ask DXGI instead
+    struct HMODULEAuto: private ::NoCopy
+    {
+      HMODULE hmod;
+      
+      HMODULEAuto(HMODULE hmod):hmod(hmod){}
+      ~HMODULEAuto(){if (hmod) FreeLibrary(hmod);}
+      
+      operator HMODULE () const {return hmod;}
+    };
+    HMODULEAuto dxgiDll(LoadLibrary("dxgi.dll"));
+
+    if(dxgiDll)
+    {
+      typedef HRESULT WINAPI CreateDXGIFactoryType(REFIID riid, void **ppFactory);
+
+      // Obtain the address of the Direct3DCreate9Ex function. 
+      CreateDXGIFactoryType *createFactory = (CreateDXGIFactoryType *)GetProcAddress( dxgiDll, "CreateDXGIFactory" );
+      if ( createFactory != NULL)
+      {
+
+        ComRef<IDXGIFactory> factory;
+        createFactory(__uuidof(IDXGIFactory),(void **)factory.Init());
+        if (factory)
+        {
+          for (int a=0; a<INT_MAX; a++)
+          {
+            ComRef<IDXGIAdapter> dxgiAdapter;
+            if (!SUCCEEDED(factory->EnumAdapters(a,dxgiAdapter.Init())) || dxgiAdapter.IsNull()) break;
+            // check outputs to see if our monitor is there
+            bool match = false;
+            for (int m=0; m<INT_MAX; m++)
+            {
+              ComRef<IDXGIOutput> output;
+              if (!SUCCEEDED(dxgiAdapter->EnumOutputs(m,output.Init())) || output.IsNull() ) break;
+              DXGI_OUTPUT_DESC outDesc;
+              output->GetDesc(&outDesc);
+              if (outDesc.Monitor==d3dMonitor)
+              {
+                match = true;
+                break;
+              }
+              
+            }
+            if (match)
+            {
+              DXGI_ADAPTER_DESC adapterDesc;
+              dxgiAdapter->GetDesc(&adapterDesc);
+              InitDXGIInfo(adapterDesc);
+              return;
+            }
+          }
+        }
+      }
+    }
+  }
+
   D3DADAPTER_IDENTIFIER9 adid;
   _direct3D->GetAdapterIdentifier(adapter, 0, &adid);
 
@@ -22185,14 +22399,14 @@ void EngineDD9::Init3D()
   #if !XBOX_D3D
     #define RESTORE_AFFINITY 1
     // remember current affinity so that we can restore it later
-    DWORD_PTR oldAffinity = ~DWORD_PTR(0);
-    DWORD_PTR sysAffinity = ~DWORD_PTR(0);
+    DWORD_PTR oldAffinity = ~(DWORD_PTR)0;
+    DWORD_PTR sysAffinity = ~(DWORD_PTR)0;
     GetProcessAffinityMask(GetCurrentProcess(),&oldAffinity,&sysAffinity);
     #if 1
       // limit us to 2 CPU to fool driver detection and prevent driver using threaded optimizations
       // note: limiting to 1 CPU has caused game freezing (perhaps driver was using some not thread safe optimizations?)
       int usedCpus = 0;
-      DWORD limitedAffinity = 0;
+      DWORD_PTR limitedAffinity = 0;
       for (int cpu=0; cpu<32 && usedCpus<2; cpu++)
       {
         if ((1<<cpu)&oldAffinity) usedCpus++,limitedAffinity |= 1<<cpu;
@@ -22366,7 +22580,7 @@ void EngineDD9::Init3D()
       SurfaceFormatNameDD9(_rtFormat),
       SurfaceFormatNameDD9(_presentPars.AutoDepthStencilFormat),
       _presentPars.FullScreen_RefreshRateInHz,
-      DXGetErrorStringA(err)
+      DXGetErrorString9(err)
       );
   }
 
@@ -24839,7 +25053,7 @@ void EngineDD9::BackToFront()
       _psCache.Clear();  
   #if _ENABLE_COMPILED_SHADER_CACHE
       RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"PP");
-      ShaderCompileCache cacheInit(SourcesPP, cacheName, GetShaderCacheDir());
+      ShaderCompileCache cacheInit(SourcesPP, cacheName, RStringB(HLSLCacheDir));
   #endif
 
       CreatePostProcessStuff();
@@ -24851,7 +25065,7 @@ void EngineDD9::BackToFront()
       _psCache.Clear();  
   #if _ENABLE_COMPILED_SHADER_CACHE
       RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"PS");
-      ShaderCompileCache cacheInit(SourcesPS, cacheName, GetShaderCacheDir());
+      ShaderCompileCache cacheInit(SourcesPS, cacheName, RStringB(HLSLCacheDir));
   #endif
 
       InitPixelShaders(_sbTechnique);
@@ -24864,7 +25078,7 @@ void EngineDD9::BackToFront()
       _psCache.Clear();  
   #if _ENABLE_COMPILED_SHADER_CACHE
       RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"VS");
-      ShaderCompileCache cacheInit(SourcesVS, cacheName, GetShaderCacheDir());
+      ShaderCompileCache cacheInit(SourcesVS, cacheName, RStringB(HLSLCacheDir));
   #endif
 
       CreateShaderDeclarations();
@@ -24948,7 +25162,7 @@ void EngineDD9::Pause()
 }
 
 EngineDD9::EngineDD9()
-  : DefaultBloomThreshold(0.75f), DefaultRotBlurPower(0.015f)
+  : DefaultBloomThreshold(1.25f), DefaultRotBlurPower(0.015f)
 {
   // Set Initialized flag
   _initialized = false;
@@ -24974,6 +25188,7 @@ EngineDD9::EngineDD9()
 
   _resetStatus = D3D_OK;
   _resetRequested = false;
+  _mainDepthPrimed = false;
   _bloomThreshold = DefaultBloomThreshold;
   _rotBlurPower = DefaultRotBlurPower;
 }
@@ -26752,7 +26967,7 @@ bool EngineDD9::Init(HINSTANCE hInst, HINSTANCE hPrev, int sw, bool windowed, in
   _afWanted = 0;
   _maxFSAA = 15;
   _postFxQuality = 0;
-	_ssaoEnabled = 0;
+	_ssaoEnabled = 1;
   _postFXLevelMask = CalculatePostEffectsMask(0);
   _hdrPrecWanted = HDR8;
   cbState._bias = 0;
@@ -26993,17 +27208,17 @@ bool EngineDD9::Init(HINSTANCE hInst, HINSTANCE hPrev, int sw, bool windowed, in
         Assert(!strcmp((const char *)_caps._vsVersion+1,(const char *)_caps._psVersion+1));
         {
           RString cacheName = ShaderCacheName(SBTechnique(i),_caps._sm2Used,"PP");
-          ShaderCompileCache cacheInit(SourcesPP, cacheName, GetShaderCacheDir(), true);
+          ShaderCompileCache cacheInit(SourcesPP, cacheName, RStringB(HLSLCacheDir), true);
           CreatePostProcessStuff();
         }
         {
           RString cacheName = ShaderCacheName(SBTechnique(i),_caps._sm2Used,"PS");
-          ShaderCompileCache cacheInit(SourcesPS, cacheName, GetShaderCacheDir(), true);
+          ShaderCompileCache cacheInit(SourcesPS, cacheName, RStringB(HLSLCacheDir), true);
           InitPixelShaders(SBTechnique(i));
         }
         {
           RString cacheName = ShaderCacheName(SBTechnique(i),_caps._sm2Used,"VS");
-          ShaderCompileCache cacheInit(SourcesVS, cacheName, GetShaderCacheDir(), true);
+          ShaderCompileCache cacheInit(SourcesVS, cacheName, RStringB(HLSLCacheDir), true);
           InitVertexShaders();
           CreateShaderDeclarations();
         }
@@ -27028,7 +27243,7 @@ bool EngineDD9::Init(HINSTANCE hInst, HINSTANCE hPrev, int sw, bool windowed, in
     // +1 needed - we want to compare vs_2_0 with ps_2_0
     Assert(!strcmp((const char *)_caps._vsVersion+1,(const char *)_caps._psVersion+1));
     RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"PS");
-    ShaderCompileCache cacheInit(SourcesPS, cacheName, GetShaderCacheDir());
+    ShaderCompileCache cacheInit(SourcesPS, cacheName, RStringB(HLSLCacheDir));
 #endif
     _renderingMode = RMCommon;
     InitPixelShaders(_sbTechnique);
@@ -27038,7 +27253,7 @@ bool EngineDD9::Init(HINSTANCE hInst, HINSTANCE hPrev, int sw, bool windowed, in
     // +1 needed - we want to compare vs_2_0 with ps_2_0
     Assert(!strcmp((const char *)_caps._vsVersion+1,(const char *)_caps._psVersion+1));
     RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"VS");
-    ShaderCompileCache cacheInit(SourcesVS, cacheName, GetShaderCacheDir());
+    ShaderCompileCache cacheInit(SourcesVS, cacheName, RStringB(HLSLCacheDir));
 #endif
     InitVertexShaders();
 
@@ -27063,7 +27278,7 @@ bool EngineDD9::Init(HINSTANCE hInst, HINSTANCE hPrev, int sw, bool windowed, in
     // +1 needed - we want to compare vs_2_0 with ps_2_0
     Assert(!strcmp((const char *)_caps._vsVersion+1,(const char *)_caps._psVersion+1));
     RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"PP");
-    ShaderCompileCache cacheInit(SourcesPP, cacheName, GetShaderCacheDir());
+    ShaderCompileCache cacheInit(SourcesPP, cacheName, RStringB(HLSLCacheDir));
 #endif
     if (!CreatePostProcessStuff())
     {
@@ -27286,6 +27501,7 @@ BIND_SHADER(POOL,[VSPNormalMap][0][1][RMCommon][SIInst],[VD_Position_Normal_Tex0
   // Instancing parameters
   cbState._zPrimingDone = false;
   cbState._lastZPrimingDone = false;
+  _mainDepthPrimed = false;
 
   // Shadow buffer parameters
   _renderingMode = RMCommon;
@@ -27536,14 +27752,14 @@ void EngineDD9::PostReset(bool hard)
   {
 #if _ENABLE_COMPILED_SHADER_CACHE
     RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"PS");
-    ShaderCompileCache cacheInit(SourcesPS, cacheName, GetShaderCacheDir());
+    ShaderCompileCache cacheInit(SourcesPS, cacheName, RStringB(HLSLCacheDir));
 #endif
     InitPixelShaders(_sbTechnique);
   }
   {
 #if _ENABLE_COMPILED_SHADER_CACHE
     RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"VS");
-    ShaderCompileCache cacheInit(SourcesVS, cacheName, GetShaderCacheDir());
+    ShaderCompileCache cacheInit(SourcesVS, cacheName, RStringB(HLSLCacheDir));
 #endif
     InitVertexShaders();
     if (!CreateShaderDeclarations()) fail = true;
@@ -27572,7 +27788,7 @@ void EngineDD9::PostReset(bool hard)
   {
 #if _ENABLE_COMPILED_SHADER_CACHE
     RString cacheName = ShaderCacheName(_sbTechnique,_caps._sm2Used,"PP");
-    ShaderCompileCache cacheInit(SourcesPP, cacheName, GetShaderCacheDir());
+    ShaderCompileCache cacheInit(SourcesPP, cacheName, RStringB(HLSLCacheDir));
 #endif
 	const bool recreatePPEffects = hard;
 	InitPostProcessStuff(recreatePPEffects);
@@ -30062,10 +30278,11 @@ void EngineDD9::EnableClrInvers(bool enable)
 /// Enable/disable SSAO post process effect
 void EngineDD9::EnableSSAO(bool enable)
 {
-	_ssaoEnabled = enable;
+	// F8: SSAO forcado ligado, independente do que o perfil/config pedir.
+	_ssaoEnabled = 1;
   if (_pp._ssao)
   {
-     _pp._ssao->Enable(_ssaoEnabled && ((_pp._ssao->GetLevel() & _postFXLevelMask) != 0));
+     _pp._ssao->Enable(true);
   }
 }
 
@@ -30083,8 +30300,11 @@ void EngineDD9::SetSSAOQuality(int quality)
 {
   if (_pp._ssao)
   {
-    _pp._ssao->Enable(_ssaoEnabled && ((_pp._ssao->GetLevel() & _postFXLevelMask) != 0));
-    _pp._ssao->SetQuality(quality);
+    // F8 / SSAO: estava desligado por padrao e dependia da qualidade escolhida.
+    // Forca ligado em qualidade alta (4) para dar sombreamento de contato.
+    _ssaoEnabled = 1;
+    _pp._ssao->Enable(true);
+    _pp._ssao->SetQuality(4);
   }
 }
 

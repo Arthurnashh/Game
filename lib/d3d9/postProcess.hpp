@@ -1427,7 +1427,7 @@ public:
 	//! get color for blending
 	Color GetBlendColor() const { return _pInterp._pars._lerpColor; }
 
-	//! set color for colorization ( rgb ..color, a ..saturation ( 0..original color, 1..BW multiplied by colorize color ) )
+	//! set color for colorization ( rgb ..color, a ..blend factor: 0 = grayscale tint, 1 = original color )
 	void SetColorizeColor( Color color ) { _pInterp._pars._colorizeColor = color; }
 	//! get color for colorization
 	Color GetColorizeColor() const { return _pInterp._pars._colorizeColor; }
@@ -1440,11 +1440,14 @@ public:
 	//! default values of params (brightness, lerpColor, colorizeColor)
 	void SetDefaultValues()
 	{
-		SetBrightness( 1.0 );
-		SetContrast( 1.0 );
-		SetOffset( 0.0 );
+		// Base neutra para que a correção aplicada no início da missão não mude
+		// gradualmente até os valores de ColorCorrections dos scripts do jogo.
+		// O shader espera o fator de cor entre 0 e 1; 1 preserva a cor original.
+		SetBrightness( 1.0f );
+		SetContrast( 1.0f );
+		SetOffset( 0.0f );
 		SetBlendColor( Color( 0.0f, 0.0f, 0.0f, 0.0f ) );
-		SetColorizeColor( HWhite );
+		SetColorizeColor( Color( 1.0f, 1.0f, 1.0f, 1.0f ) );
     SetRGBWeights( Color( R_EYE, G_EYE, B_EYE ) );
 	}
 	//!

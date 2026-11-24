@@ -161,6 +161,7 @@ TypeIsSimple(InventorySlotId)
   XX(MessageName, RefArray<InventoryItem>, attachments, NDTRefArray, AutoArray<NetworkId>, NCTNone, DEFVALUEREFARRAY, DOC_MSG("Attachments"), TRANSF_REFS, ET_NOT_EQUAL_COUNT, ERR_COEF_MODE) \
   XX(MessageName, bool, inventoryRotated, NDTBool, bool, NCTNone, DEFVALUE(bool, false), DOC_MSG("Item rotated in inventory grid"), TRANSF, ET_NOT_EQUAL, ERR_COEF_IMMEDIATE) \
   XX(MessageName, bool, inLandscape, NDTBool, bool, NCTNone, DEFVALUE(bool, false), DOC_MSG("Item is in landscape"), TRANSF, ET_NOT_EQUAL, ERR_COEF_IMMEDIATE) \
+  XX(MessageName, bool, inventoryRotated, NDTBool, bool, NCTNone, DEFVALUE(bool, false), DOC_MSG("Item is rotated in the inventory grid"), TRANSF, ET_NOT_EQUAL, ERR_COEF_MODE) \
   
 DECLARE_NET_INDICES_EX_ERR(UpdateInventoryItem, UpdateVehicleAI, UPDATE_INVENTORY_ITEM_MSG)
 
@@ -221,6 +222,16 @@ public:
   bool IsOpened() const {return _opened;}
   void Open(bool open) {_opened = open;}
 
+  //! item rotation inside the inventory grid
+  bool IsInventoryRotated() const {return _inventoryRotated;}
+  void SetInventoryRotated(bool rotated) {_inventoryRotated = rotated;}
+  //! size of the item in the inventory grid, swapped when rotated
+  int GetInventoryWidth() const;
+  int GetInventoryHeight() const;
+  //! toggle the inventory rotation, keeping the item inside its container;
+  //! returns false when the rotation has no effect or the item would not fit
+  bool RotateInInventory();
+
   //! Get parameters of action as structured texts
   virtual bool GetActionParams(UIActionParams &params, const Action *action, AIBrain *unit) const override;
   //! Perform action
@@ -239,12 +250,7 @@ public:
   //! Perform default action for item in the inventory
   virtual bool UseFromInventory(Person *owner);
 
-  bool IsInventoryRotated() const {return _inventoryRotated;}
-  void SetInventoryRotated(bool rotated) {_inventoryRotated = rotated;}
-  int GetInventoryWidth() const;
-  int GetInventoryHeight() const;
   bool CanRotateInInventory() const;
-  bool RotateInInventory();
 
   // cast optimization
   virtual Weapon *GetWeapon() {return NULL;}

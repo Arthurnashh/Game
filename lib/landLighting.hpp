@@ -147,7 +147,7 @@ public:
   {
     LightingResult();
 
-    void InitFrom(const LandLighting::Item& item, float cloud);
+    void InitFrom(const LandLighting::Item& item, float cloud, float cosSun);
 
     /// cross between sun and moon (1=sun, 0=moon)
     float _sunOrMoon;

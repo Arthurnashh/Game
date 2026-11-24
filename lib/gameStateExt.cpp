@@ -111,6 +111,9 @@
 
 extern int MaxGroups;
 
+#if _ENABLE_STEAM
+#include <Steamworks/steam_api.h>
+#endif
 
 RString FindScript(RString name);
 
@@ -7732,15 +7735,21 @@ GameValue StatusChatMP(const GameState *state, GameValuePar oper1, GameValuePar 
 {
   // check the argument
   float clientId = oper1;
-  if (!CheckType(state, oper2, GameArray)) 
+  if (oper2.GetType() == GameArray)
+  {
+    const GameArrayType &array = oper2;
+    if (array.Size() >= 2)
+    {
+      GetNetworkManager().StatusChat(toInt(clientId), array[0], array[1]);
+    }
+    else if (array.Size() == 1)
+    {
+      GetNetworkManager().StatusChat(toInt(clientId), array[0]);
+    }
+  }
+  else
   {
     GetNetworkManager().StatusChat(toInt(clientId), oper2);
-    return NOTHING;
-  }
-  const GameArrayType &array = oper2;
-  if (array.Size()==2)
-  {
-    GetNetworkManager().StatusChat(toInt(clientId), array[0], array[1]);
   }
   return NOTHING;
 }
@@ -9332,11 +9341,9 @@ GameValue SetOvercast(const GameState *state, GameValuePar oper1, GameValuePar o
 {
   GWorld->SetWeather(oper2, -1, -1, oper1);
 
-#if _VBS3
-  // Weather chanage done, update clients
-  if(GWorld->GetMode() == GModeNetware)
+  // [F10] propaga o clima aos clientes conectados (antes so em _VBS3)
+  if (GWorld->GetMode() == GModeNetware && GetNetworkManager().IsServer())
     GLandscape->UpdateRemote();
-#endif
 
   return NOTHING;
 }
@@ -9351,11 +9358,9 @@ GameValue SetRain(const GameState *state, GameValuePar oper1, GameValuePar oper2
 {
   GLandscape->SetRain(oper2, oper1);
 
-#if _VBS3
-  // Weather chanage done, update clients
-  if(GWorld->GetMode() == GModeNetware)
+  // [F10] propaga o clima aos clientes conectados (antes so em _VBS3)
+  if (GWorld->GetMode() == GModeNetware && GetNetworkManager().IsServer())
     GLandscape->UpdateRemote();
-#endif
 
   return NOTHING;
 }
@@ -9367,11 +9372,9 @@ GameValue SetFog(const GameState *state, GameValuePar oper1, GameValuePar oper2)
   saturateMin(fog, MaxFog);
   GWorld->SetWeather(-1, fog, -1, oper1);
 
-#if _VBS3
-  // Weather change done, update clients
-  if(GWorld->GetMode() == GModeNetware)
+  // [F10] propaga o clima aos clientes conectados (antes so em _VBS3)
+  if (GWorld->GetMode() == GModeNetware && GetNetworkManager().IsServer())
     GLandscape->UpdateRemote();
-#endif
 
   return NOTHING;
 }
@@ -15619,7 +15622,7 @@ GameValue ConfigListNames(const GameState *state)
   RString mask = GetUserDirectory() + RString("Config\\*.*");
 
   _finddata_t info;
-  intptr_t h = X_findfirst(mask, &info);
+  long h = X_findfirst(mask, &info);
   if (h != -1)
   {
     do
@@ -17152,10 +17155,9 @@ GameValue SetDate(const GameState *state, GameValuePar oper1)
 
   GWorld->SetDate(toInt(safe_cast<float>(array[0])), toInt(safe_cast<float>(array[1])), toInt(safe_cast<float>(array[2])), toInt(safe_cast<float>(array[3])), toInt(safe_cast<float>(array[4])));
   GLandscape->ResetWeather();
-#if _VBS3
-  // Date change done, update clients
-  if(GWorld->GetMode() == GModeNetware) GLandscape->UpdateRemote();
-#endif
+  // [F10] propaga data/hora e clima aos clientes conectados (antes so em _VBS3)
+  if (GWorld->GetMode() == GModeNetware && GetNetworkManager().IsServer())
+    GLandscape->UpdateRemote();
 
   return NOTHING;
 }
@@ -17707,8 +17709,11 @@ GameValue AgentCreate(const GameState *state, GameValuePar oper1)
 }
 
 
-static RString ServletCharacter;
-static RString ServletWorld;
+// Dedicated server persistence is hosted locally by the packaged file store.
+// Keep the legacy HTTP API contract, but route it to localhost instead of the
+// retired central DayZ service.
+static RString ServletCharacter = "http://127.0.0.1:28100/lud0/";
+static RString ServletWorld = "http://127.0.0.1:28100/world/";
 
 
 void BuildServerRequest( EServletType eType, RString& url, const char* sPath = NULL )
@@ -18681,14 +18686,32 @@ GameValue DBServerLoadCharacter(const GameState *state, GameValuePar oper1, Game
     return NOTHING;
   }
 
-  int playerID = toInt(oper1);
+  int playerID = -1;
+  RString playerUID;
+  if (oper1.GetType() == GameArray)
+  {
+    const GameArrayType &args = oper1;
+    if (!CheckSize(state, args, 2)) return NOTHING;
+    if (!CheckType(state, args[0], GameScalar)) return NOTHING;
+    if (!CheckType(state, args[1], GameString)) return NOTHING;
+    playerID = toInt((float)args[0]);
+    playerUID = args[1];
+  }
+  else
+  {
+    if (!CheckType(state, oper1, GameScalar)) return NOTHING;
+    playerID = toInt((float)oper1);
+  }
 
   GameDataCode *code = static_cast<GameDataCode *>(oper2.GetData());
 
   RString url;
   BuildServerRequest(ESERVLET_CHARACTER,url,"load");
 
-  GetNetworkManager().DBLoad(url.Data(), playerID, code);
+  if (playerUID.IsEmpty())
+    GetNetworkManager().DBLoad(url.Data(), playerID, code);
+  else
+    GetNetworkManager().DBLoad(url.Data(), playerID, playerUID, code);
 
   return NOTHING;
 }
@@ -25355,6 +25378,46 @@ GameValue LoadingScreenUpdate(const GameState *state, GameValuePar oper1)
   return NOTHING;
 }
 
+#if _ENABLE_STEAM
+class SessionStatistics
+{
+protected:
+  bool _initialized;
+  bool _updated;
+  bool _achievementStored;
+
+public:
+  SessionStatistics()
+    : _initialized(false), _updated(false), _achievementStored(false),
+    _callbackUserStatsReceived(this, &SessionStatistics::OnUserStatsReceived),
+    _callbackUserStatsStored(this, &SessionStatistics::OnUserStatsStored),
+    _callbackAchievementStored(this, &SessionStatistics::OnAchievementStored)
+    {}
+  bool IsInitialized() const {return _initialized;}
+  bool IsUpdated() const {return _updated;}
+  bool IsAchievementStored() const {return _achievementStored;}
+
+  STEAM_CALLBACK(SessionStatistics, OnUserStatsReceived, UserStatsReceived_t, _callbackUserStatsReceived);
+  STEAM_CALLBACK(SessionStatistics, OnUserStatsStored, UserStatsStored_t, _callbackUserStatsStored);
+  STEAM_CALLBACK(SessionStatistics, OnAchievementStored, UserAchievementStored_t, _callbackAchievementStored);
+};
+
+void SessionStatistics::OnUserStatsReceived(UserStatsReceived_t *callback)
+{
+  _initialized = true;
+}
+
+void SessionStatistics::OnUserStatsStored(UserStatsStored_t *callback)
+{
+  _updated = true;
+}
+
+void SessionStatistics::OnAchievementStored(UserAchievementStored_t *callback)
+{
+  _achievementStored = true;
+}
+
+#endif
 
 GameValue AchievementUnlock(const GameState *state, GameValuePar oper1)
 {
@@ -25363,6 +25426,45 @@ GameValue AchievementUnlock(const GameState *state, GameValuePar oper1)
   ConstParamEntryPtr cls = (Pars >> "CfgAchievements").FindEntry(name);
   if (!cls) return false;
 
+#if _ENABLE_STEAM
+  ISteamUserStats *s = SteamUserStats();
+  if (s)
+  {
+    // TODO: integrate session statistics in different way (asynchronous solution)
+    SessionStatistics stats;
+
+    ProgressScope progress(false, LocalizeString(IDS_LOAD_WORLD), "%s", true);
+
+    if (!s->RequestCurrentStats()) return false;
+    while (!stats.IsInitialized())
+    {
+      SteamAPI_RunCallbacks();
+      progress.Refresh();
+    }
+
+    // check if achievement is already unlocked
+    bool done = false;
+    if (s->GetAchievement(name, &done) && done) return false;
+
+    if (!s->SetAchievement(name)) return false;
+/* (not called)
+    while (!stats.IsAchievementStored())
+    {
+      SteamAPI_RunCallbacks();
+      progress.Refresh();
+    }
+*/
+
+    if (!s->StoreStats()) return false;
+    while (!stats.IsUpdated())
+    {
+      SteamAPI_RunCallbacks();
+      progress.Refresh();
+    }
+
+    return true;
+  }
+#endif
 
   // TODO: proper implementation
 
@@ -29562,7 +29664,7 @@ static const GameFunction ExtUnary[]=
   XX(GameObject, "createWeaponAttachment", function, WeaponCreateAttachment, GameObject, GameString, "weapon", "type name", "Create an item attached to weapon.", "weapon createWeaponAttachment magazineName", "", "", "101168", Category) \
   XX(GameObject, "itemInSlot", function, EntityGetItemInSlot, GameObject, GameString, "person", "slot name", "Return an item in person's slot.", "item = player itemInSlot\"Headgear\"", "", "", "103065", Category) \
   XX(GameNothing, "selectPlayer", function, ObjSelectPlayer, GameScalar, GameObject, "clientId", "object", "On server machine, change the person controlled by a given client.", "", "", "101590", "", Category) \
-  XX(GameNothing, "dbServerLoadCharacter", function, DBServerLoadCharacter, GameScalar, GameCode, "id", "code", "Starts the process of loading character from the central database. When finished, given code is executed. Works on game server only.", "dbServerLoadCharacter [_id, {_id selectPlayer _agent;}]", "", "102145 DayZ", "", Category) \
+  XX(GameNothing, "dbServerLoadCharacter", function, DBServerLoadCharacter, GameScalarOrArray, GameCode, "id or [id, playerUID]", "code", "Starts loading a character from the central database. The optional UID overrides the authenticated account UID for a separate character slot. When finished, code runs with _agent and _uid set. Server only.", "dbServerLoadCharacter [_id, {_id selectPlayer _agent;}]; [ _id, _characterUID ] dbServerLoadCharacter {_id selectPlayer _agent;}", "", "102145 DayZ", "", Category) \
   XX(GameNothing, "moveToHands", function, PersonMoveItemToHands, GameObject, GameObject, "person", "item", "Take given item to hands.", "_person moveToHands _item", "", "DayZ", "", Category) \
   XX(GameNothing, "moveToDirect", function, AgentMoveToDirect, GameObject, GameArray, "person", "position", "Low level command to person to move directly (no pathplanning) to given position. Position is expected to be in ATL format.", "", "", "DayZ", "", Category) \
   XX(/*returntype*/GameNothing, /*name*/"setTargetCategory", /*priority*/function, /*C++ function*/SetTargetCategory, \
@@ -30066,4 +30168,3 @@ INIT_MODULE(ComRef, 1000)
 #endif
 #endif
 }
-

@@ -6430,6 +6430,7 @@ public:
   Control *OnCreateCtrl(int type, int idc, ParamEntryPar cls);
   ControlObject *OnCreateObject(int type, int idc, ParamEntryPar cls);
   void OnSimulate(EntityAI *vehicle);
+  virtual bool OnKeyDown(int dikCode) override;
   void DestroyHUD(int exit)
   {
     GWorld->DestroyUserDialog();
@@ -6471,6 +6472,32 @@ void CItemBase::SetItemShortcut(int index, const InventoryItem *item)
     player->SetItemShortcutInstance(index, const_cast<InventoryItem *>(item));
 }
 
+static bool ItemContainsInventoryItem(const InventoryItem *container, const InventoryItem *item)
+{
+  if (!container || !item) return false;
+  if (container == item) return true;
+
+  bool found = false;
+  container->ForEachItem([&found, item](const InventoryItem *child) -> bool
+  {
+    if (child == item)
+    {
+      found = true;
+      return true;
+    }
+    return false;
+  });
+  return found;
+}
+
+static void RemoveMovedItemFromHands(Person *owner, InventoryItem *item)
+{
+  if (!owner || !item) return;
+  InventoryItem *inHands = owner->GetItemInHands();
+  if (ItemContainsInventoryItem(item, inHands))
+    owner->RemoveItemInHands();
+}
+
 void CItemBase::DropItem(Person *owner, InventoryItem *item)
 {
   if (!GetNetworkManager().IsServerOwner())
@@ -6481,24 +6508,8 @@ void CItemBase::DropItem(Person *owner, InventoryItem *item)
     Entity *parent = item->GetHierarchyParent();
     if (parent) parent->RemoveOwnedItem(item);
 
-    // dropped item nor any contained item cannot stay in hands
-    if (owner)
-    {
-      const InventoryItem *inHands = owner->GetItemInHands();
-      if (inHands)
-      {
-        if (inHands == item) owner->RemoveItemInHands();
-        else item->ForEachItem([&owner, &inHands](const InventoryItem *child) -> bool
-        {
-          if (child == inHands)
-          {
-            owner->RemoveItemInHands();
-            return true;
-          }
-          return false;
-        });
-      }
-    }
+    // dropped item nor any contained item can stay in hands
+    RemoveMovedItemFromHands(owner, item);
 
     Vector3Val pos = owner->FutureVisualState().Position();
     Vector3Val dir = owner->FutureVisualState().Direction();
@@ -6516,9 +6527,13 @@ void CItemBase::MoveItem(EntityAI *target, int index, InventoryItem *item)
   else
   {
     Entity *parent = item->GetHierarchyParent();
+    Person *handsOwner = dyn_cast<Person>(parent);
+    const bool movedFromHands = handsOwner && handsOwner->GetItemInHands() == item;
     if (parent) parent->RemoveOwnedItem(item);
 
     target->MoveItem(index, item);
+    if (movedFromHands)
+      GetNetworkManager().UpdateObject(handsOwner, NMCUpdateGeneric);
   }
 }
 
@@ -6594,6 +6609,14 @@ void CItemBase::OnMouseMove(float x, float y, bool active)
     }
   }
   else OnMouseHold(x, y, active);
+}
+
+void CItemBase::BeginDrag()
+{
+  if (!_moving || _dragging) return;
+  if (_parent) _parent->OnDrag(this);
+  _dragging = true;
+  _moving = false;
 }
 
 
@@ -6859,11 +6882,39 @@ CItemShortcut::CItemShortcut(ControlsContainer *parent, int idc, ParamEntryPar c
   }
 }
 
+int CItemShortcut::GetVisibleCount() const
+{
+  if (!GWorld) return 0;
+  Person *ui = GWorld->PlayerOn();
+  if (!ui) return 0;
+  return ui->GetAvailableItemShortcuts();
+}
+
+void CItemShortcut::UpdateLayout()
+{
+  int count = GetVisibleCount();
+  if (count <= 0) return;
+  if (_index < 0 || _index >= count) return; // hidden slot keeps its old place
+
+  // keep the visible quickbar centered on screen
+  const float gap = _w * (0.010f / 0.047f);
+  const float total = count * _w + (count - 1) * gap;
+  _x = 0.5f - total * 0.5f + _index * (_w + gap);
+}
+
+bool CItemShortcut::IsInside(float x, float y) const
+{
+  const_cast<CItemShortcut *>(this)->UpdateLayout();
+  if (_index < 0 || _index >= GetVisibleCount()) return false;
+  return x >= _x && x <= _x + _w && y >= _y && y <= _y + _h;
+}
+
 InventoryItem *CItemShortcut::GetItem()
 {
   if (!GWorld) return NULL;
   Person *ui = GWorld->PlayerOn();
   if (!ui) return NULL;
+  if (_index < 0 || _index >= ui->GetAvailableItemShortcuts()) return NULL;
 
   return ui->GetItemShortcutObject(_index);
 }
@@ -6884,11 +6935,12 @@ bool CItemShortcut::IsContained(InventoryItem *item)
 
 bool CItemShortcut::CanAddItem(InventoryItem *item, float x, float y)
 {
-  return true;
+  return _index >= 0 && _index < GetVisibleCount();
 }
 
 void CItemShortcut::AddItem(InventoryItem *item, float x, float y)
 {
+  if (_index < 0 || _index >= GetVisibleCount()) return;
   SetItemShortcut(_index, item);
 }
 
@@ -6926,26 +6978,13 @@ void CItemShortcut::ToggleShortcuts()
 
 void CItemShortcut::OnDraw(float alpha)
 {
+  UpdateLayout();
+  if (_index < 0 || _index >= GetVisibleCount()) return;
+
   if (_igui)
   {
-    if (IsInventoryOpened())
-    {
-      ShowShortcuts();
-      return;
-    }
-
-    // fading
-    float age = Glob.uiTime - _lastTime;
-    
-    if (age >= _endDim) return;
-    
-    if (age > _startDim)
-    {
-      // interpolate dim
-      float factor = (age - _startDim) * (1.0f / (_endDim - _startDim));
-      // update alpha
-      alpha *= 1.0 - factor;
-    }
+    if (IsInventoryOpened()) return;
+    if (!GWorld || !GWorld->UI()->IsHUDShown()) return;
   }
 
   InventoryItem *item = GetItem();
@@ -6973,26 +7012,16 @@ void CItemShortcut::OnDraw(float alpha)
 
 void CItemShortcut::OnDrawBackGround(UIViewport *vp, float alpha)
 {
+  UpdateLayout();
+  if (_index < 0 || _index >= GetVisibleCount()) return;
+
   if (_igui)
   {
     if (IsInventoryOpened()) return;
-
-    // fading
-    float age = Glob.uiTime - _lastTime;
-    
-    if (age >= _endDim) return;
-    
-    if (age > _startDim)
-    {
-      // interpolate dim
-      float factor = (age - _startDim) * (1.0f / (_endDim - _startDim));
-      // update alpha
-      alpha *= 1.0 - factor;
-    }
   }
 
   if (!GWorld) return;
-  if (!GWorld->UI()->IsHUDShown()) return;
+  if (_igui && !GWorld->UI()->IsHUDShown()) return;
 
   Person *ui = GWorld->PlayerOn();
   if (!ui) return;
@@ -7030,26 +7059,16 @@ void CItemShortcut::OnDrawBackGround(UIViewport *vp, float alpha)
 
 void CItemShortcut::OnDrawForeGround(UIViewport *vp, float alpha)
 {
+  UpdateLayout();
+  if (_index < 0 || _index >= GetVisibleCount()) return;
+
   if (_igui)
   {
     if (IsInventoryOpened()) return;
-
-    // fading
-    float age = Glob.uiTime - _lastTime;
-    
-    if (age >= _endDim) return;
-    
-    if (age > _startDim)
-    {
-      // interpolate dim
-      float factor = (age - _startDim) * (1.0f / (_endDim - _startDim));
-      // update alpha
-      alpha *= 1.0 - factor;
-    }
   }
 
   if (!GWorld) return;
-  if (!GWorld->UI()->IsHUDShown()) return;
+  if (_igui && !GWorld->UI()->IsHUDShown()) return;
 
   Person *ui = GWorld->PlayerOn();
   if (!ui) return;
@@ -7066,19 +7085,15 @@ void CItemShortcut::OnDrawForeGround(UIViewport *vp, float alpha)
   TextDrawAttr attr(_size, _font, color, true);
   Rect2DFloat clipRect(_x, _y, _w, _h);
 
-  float width = _w - offsetX;
-  float top = _y + _h - _size - offsetY;
+  // key label and item count only - keep the shortcut slots clean like the HUD
   if (count > 0)
   {
     vp->DrawText(Point2DFloat(_x + offsetX, _y + offsetY), clipRect, attr, cc_cast(_shortcut));
     BString<16> buffer;
     sprintf(buffer, "%d", count);
     float tw = vp->GetTextWidth(attr, cc_cast(buffer));
-    vp->DrawText(Point2DFloat(_x + _w - tw - offsetX, top), clipRect, attr, cc_cast(buffer));
-    width -= tw + 4 * offsetY;
+    vp->DrawText(Point2DFloat(_x + _w - tw - offsetX, _y + offsetY), clipRect, attr, cc_cast(buffer));
   }
-  clipRect.w = width;
-  vp->DrawText(Point2DFloat(_x + offsetX, top), clipRect, attr, cc_cast(type->GetShortName()));
 }
 
 static int AttachmentsCount(InventoryItem *container)
@@ -8447,6 +8462,7 @@ bool CItemContent::ForEachSlot(
     // together in the inventory before clothing containers.
     int j = order == ISShoulder + 1 ? ISShoulder2 :
       (order > ISShoulder + 1 && order <= ISShoulder2 ? order - 1 : order);
+    if (j == ISHands) continue;
     InventoryItem *item = _person->GetInSlot((InventorySlotId)j);
     if (!item) continue;
 
@@ -8481,6 +8497,7 @@ bool CItemContent::ForEachSlot(
   {
     int j = order == ISShoulder + 1 ? ISShoulder2 :
       (order > ISShoulder + 1 && order <= ISShoulder2 ? order - 1 : order);
+    if (j == ISHands) continue;
     InventoryItem *container = _person->GetInSlot((InventorySlotId)j);
     if (!container) continue;
 
@@ -8508,6 +8525,7 @@ void CItemContent::OnDraw(float alpha)
   int countSimple = 0, countContainers = 0;
   for (int j=0; j<NInventorySlotId; j++)
   {
+    if (j == ISHands) continue; // do not count the Hands panel as inventory
     InventoryItem *container = _person->GetInSlot((InventorySlotId)j);
     if (!container) continue;
 
@@ -8674,6 +8692,7 @@ bool CItemContent::IsContained(InventoryItem *check)
 {
   for (int j=0; j<NInventorySlotId; j++)
   {
+    if (j == ISHands) continue;
     InventoryItem *item = _person->GetInSlot((InventorySlotId)j);
     if (!item) continue;
     if (item == check) return true;
@@ -9088,6 +9107,10 @@ bool CItemInHands::IsContained(InventoryItem *check)
 bool CItemInHands::CanAddItem(InventoryItem *newItem, float x, float y)
 {
   if (!_person) return false;
+
+  DisplayInventory *display = dynamic_cast<DisplayInventory *>(_parent.GetLink());
+  CItemBase *vicinity = display ? dynamic_cast<CItemBase *>(display->GetCtrl(IDC_INVENTORY_CONTAINER)) : NULL;
+  const bool fromVicinity = vicinity && vicinity->IsContained(newItem);
 
   const Person * const p = _person;
   const Man * const m = dynamic_cast<const Man *>(p);
@@ -9753,7 +9776,7 @@ void CItemBase::DrawTooltip(UIViewport *vp, float x, float y)
 
 intptr_t CItemBase::GetTooltipArea(float x, float y)
 {
-  return reinterpret_cast<intptr_t>(GetItemInfo(x, y)._item);
+  return (intptr_t)(GetItemInfo(x, y)._item);
 }
 
 bool IsInventoryOpened()
@@ -9874,38 +9897,65 @@ DisplayInventory::~DisplayInventory()
 
 bool DisplayInventory::OnKeyDown(int dikCode)
 {
-  if (dikCode != DIK_SPACE) return Display::OnKeyDown(dikCode);
-
-  InventoryItem *item = _dragItem;
-  Person *person = _unit ? _unit->GetPerson() : NULL;
-  if (!item)
+  if (dikCode == DIK_SPACE)
   {
-    const float x = 0.5f + GInput.cursorX * 0.5f;
-    const float y = 0.5f + GInput.cursorY * 0.5f;
-    const int itemControls[] = {IDC_INVENTORY_HANDS, IDC_INVENTORY_CONTAINER, IDC_INVENTORY_CONTENT};
-    for (int i = 0; i < lenof(itemControls) && !item; i++)
+    InventoryItem *item = _dragItem;
+    CItemBase *selectedControl = NULL;
+    // Space is also the default-button key in ControlsContainer. Always consume
+    // it here so that an item that cannot rotate (or a missed drag state) does
+    // not activate the inventory's Close button.
+    if (!item)
     {
-      CItemBase *control = dynamic_cast<CItemBase *>(GetCtrl(itemControls[i]));
-      if (control && control->IsInside(x, y))
+      const float x = 0.5f + GInput.cursorX * 0.5f;
+      const float y = 0.5f + GInput.cursorY * 0.5f;
+      // The held-item panel can contain the dragged item, its attachments, or
+      // items inside its cargo. Include it in the same cursor hit test as the
+      // two inventory grids so Space works when the shoe is selected there.
+      const int itemControls[] = {IDC_INVENTORY_HANDS, IDC_INVENTORY_CONTAINER, IDC_INVENTORY_CONTENT};
+      for (int i = 0; i < lenof(itemControls) && !item; i++)
       {
-        item = control->GetItemInfo(x, y)._item;
+        CItemBase *control = dynamic_cast<CItemBase *>(GetCtrl(itemControls[i]));
+        if (control && control->IsInside(x, y))
+        {
+          item = control->GetItemInfo(x, y)._item;
+          if (item) selectedControl = control;
+        }
       }
     }
+    // Start the drag on Space if the item is held under the pointer but has
+    // not yet crossed the regular mouse-movement threshold.
+    Person *person = _unit ? _unit->GetPerson() : NULL;
+    const bool itemInHands = person && item && person->GetItemInHands() == item;
+    if (!_dragItem && item && !itemInHands && selectedControl && GInput.mouseL)
+    {
+      selectedControl->BeginDrag();
+      item = _dragItem;
+    }
+    if (_dragItem)
+    {
+      // While dragging, rotate only the preview. The selected orientation is
+      // sent with the move request when the item is dropped.
+      if (!itemInHands && _dragItem->Type() && _dragItem->Type()->GetItemWidth() != _dragItem->Type()->GetItemHeight())
+        _dragRotated = !_dragRotated;
+    }
+    else if (!itemInHands && item && item->Type() && item->GetInventoryWidth() != item->GetInventoryHeight())
+      CItemBase::RotateInventoryItem(_unit ? _unit->GetPerson() : NULL, item);
+    return true;
   }
-  const bool itemInHands = person && item && person->GetItemInHands() == item;
-  if (_dragItem)
-  {
-    if (!itemInHands && _dragItem->Type() && _dragItem->Type()->GetItemWidth() != _dragItem->Type()->GetItemHeight())
-      _dragRotated = !_dragRotated;
-  }
-  else if (!itemInHands && item && item->Type() && item->GetInventoryWidth() != item->GetInventoryHeight())
-    CItemBase::RotateInventoryItem(person, item);
-  return true;
+  return Display::OnKeyDown(dikCode);
 }
 
+// Shared by World::DoKeyDown and ControlsContainer::OnKeyDown so Space always
+// reaches the live inventory, including when its dialog is nested under a
+// different display instead of being stored as World::_userDlg.
 bool HandleInventorySpaceKey()
 {
-  if (GActiveInventoryDisplay == NULL || !DisplayInventory::IsOpened()) return false;
+  if (GActiveInventoryDisplay == NULL || !DisplayInventory::IsOpened())
+    return false;
+
+  // Keyboard auto-repeat sends multiple key-down events while Space is held.
+  // Rotating on every repeat can toggle a 2x1 item back to its original
+  // orientation before the player sees the result.
   if (!GInventorySpaceKeyDown)
   {
     GInventorySpaceKeyDown = true;
@@ -9921,6 +9971,10 @@ void ReleaseInventorySpaceKey()
 
 Control *DisplayInventory::OnCreateCtrl(int type, int idc, ParamEntryPar cls)
 {
+  // ui.pbo's legacy ButtonDropHands is destructive (moves null to hands).
+  // The matching ButtonBackground2 is a separate red RscText in ControlsBackground,
+  // so omit both controls to remove the icon and its red square.
+  if (idc == 198 || stricmp(cls.GetName(), "ButtonBackground2") == 0) return NULL;
 
   // Ignore the legacy hands-drop button and its red background control.
   // Dropping the hands item is handled by inventory drag-and-drop instead.
@@ -10214,6 +10268,8 @@ bool SwapItems(InventoryItem *item1, InventoryItem *item2, Person *owner)
   return true;
 }
 
+// Temporarily expose the drag-preview orientation to the existing cargo
+// validation code, then restore the item's authoritative orientation.
 class InventoryRotationPreviewScope
 {
 private:
@@ -10231,6 +10287,10 @@ public:
   {
     if (_item && _item->GetHierarchyParent() == _originalParent)
       _item->SetInventoryRotated(_original);
+  }
+  void Commit()
+  {
+    if (_item) _original = _item->IsInventoryRotated();
   }
 };
 
@@ -10452,8 +10512,9 @@ bool DisplayInventory::OnDrop(IControl *dragCtrl, IControl *dropCtrl, float x, f
               // remove from the old owner
               Entity *parent = item->GetHierarchyParent();
               if (parent) DoVerify(parent->RemoveOwnedItem(item));
-    
+
               info._item->AddOwnedItem(item);
+              rotationPreview.Commit();
             }
             return true;
           }
@@ -10476,6 +10537,10 @@ bool DisplayInventory::OnDrop(IControl *dragCtrl, IControl *dropCtrl, float x, f
       {
         // do not break layout by removing item first
         dst->AddItem(item, x, y);
+        // shortcut cells only assign the shortcut without moving the item,
+        // so the previewed rotation must not become authoritative there
+        if (dstShortcut < 0)
+          rotationPreview.Commit();
         return true;
       }
     }

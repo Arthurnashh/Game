@@ -10083,7 +10083,8 @@ bool EngineDD9::PPColors::Init( const LazyLoadFile &hlsl, const LazyLoadFile &vs
   if (firstInit)
   {
     SetDefaultValues();
-    enabled = false;
+    // F11: mantem a correcao de cor sempre ativa (antes o efeito nascia desligado).
+    enabled = true;
     _pInterp.Initialize();
   }
 
