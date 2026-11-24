@@ -22,4 +22,7 @@ spawnLoot [_position,30000,35000];
 
 dbInitServer;
 
+// Persistent world objects (vehicles / tents)
+call compile preprocessFileLineNumbers "dz_worldPersist.sqf";
+
 setTimeForScripts 0.03;

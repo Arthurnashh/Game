@@ -18244,6 +18244,374 @@ int DBGetItemCount( void )
 
 
 //-----------------------------------------------------------------------------
+// World object persistence (vehicles / tents)
+//-----------------------------------------------------------------------------
+
+static void DBWorldSaveState( EntityAI *veh, JSONValue &document, JSONAllocator &allocator )
+{
+	// synchronized / stored variables (fuel, engine state, custom script vars)
+	// JSONSaveVariables creates document["state"] and fills state.vars.
+	veh->JSONSaveVariables(document, allocator);
+
+	if (!document.HasMember("state"))
+	{
+		JSONValue state;
+		state.SetObject();
+		document.AddMember("state", state, allocator);
+	}
+
+	JSONValue &state = document["state"];
+	if (!state.IsObject())
+		return;
+
+	// item cargo (tents and vehicles with itemsCargoSize)
+	ResourceSupply *supply = veh->GetSupply();
+	if (supply)
+	{
+		JSONValue items;
+		items.SetArray();
+		supply->ForEachItemCargo([&items, &allocator](const InventoryItem *item) -> bool
+		{
+			if (!item) return false;
+
+			JSONValue value;
+			value.SetObject();
+			value.AddMember("type", item->GetName(), allocator);
+			item->JSONSave(value, allocator);
+			items.PushBack(value, allocator);
+			return false; // continue
+		}, false /*avoid recursion*/);
+
+		if (items.Size() > 0)
+			state.AddMember("items", items, allocator);
+	}
+
+	float damage = veh->GetTotalDamage();
+	if (damage > 0)
+		state.AddMember("damage", damage, allocator);
+}
+
+static void DBWorldLoadState( EntityAI *veh, JSONValue &document )
+{
+	if (!document.HasMember("state"))
+		return;
+
+	JSONValue &state = document["state"];
+	if (!state.IsObject())
+		return;
+
+	veh->JSONLoadVariables(document);
+
+	if (state.HasMember("items"))
+	{
+		JSONValue &items = state["items"];
+		ResourceSupply *supply = veh->GetSupply();
+		if (supply && items.IsArray())
+		{
+			for (rapidjson::SizeType i = 0; i < items.Size(); i++)
+			{
+				JSONValue &value = items[i];
+				if (!value.IsObject() || !value.HasMember("type")) continue;
+
+				JSONValue &vtype = value["type"];
+				if (!vtype.IsString()) continue;
+
+				Ref<InventoryItem> item = dyn_cast<InventoryItem>(GWorld->NewNonAIVehicleWithID(vtype.GetString(), RString()));
+				if (!item) continue;
+				if (!item->JSONLoad(value, NULL)) continue;
+
+				GWorld->AddOutVehicle(item);
+				int index = supply->GetItemsCargo().CanAddItem(item);
+				if (index >= 0)
+				{
+					item->SetMoveOutDone(veh);
+					supply->GetItemsCargo().AddItem(veh, item, index);
+				}
+			}
+		}
+	}
+
+	if (state.HasMember("damage"))
+	{
+		JSONValue &vdamage = state["damage"];
+		if (vdamage.IsNumber())
+			veh->SetDamage((float)vdamage.GetDouble(), true);
+	}
+
+	if (document.HasMember("fuel"))
+	{
+		JSONValue &vfuel = document["fuel"];
+		if (vfuel.IsNumber())
+			veh->Refuel((float)vfuel.GetDouble() - veh->GetFuel());
+	}
+}
+
+static void DBWorldBuildBody( EntityAI *veh, JSONValue &document, JSONAllocator &allocator )
+{
+	const Matrix4 &trans = veh->FutureVisualState().Transform();
+	JSONAddMatrix4(document, "mt", trans, allocator);
+
+	DBWorldSaveState(veh, document, allocator);
+	document.AddMember("fuel", veh->GetFuel(), allocator);
+}
+
+static int DBWorldAddSync( EntityAI *veh )
+{
+	RString url;
+	BuildServerRequest(ESERVLET_WORLD,url,"add");
+
+	JSONDocument document;
+	document.SetObject();
+	JSONAllocator& allocator = document.GetAllocator();
+
+	document.AddMember( "type", veh->GetType()->GetName(), allocator );
+	document.AddMember( "imp", 100, allocator );
+
+	DBWorldBuildBody(veh, document, allocator);
+
+	JSONBuffer buffer;
+	JSONWriter writer(buffer);
+	document.Accept(writer);
+
+	RString postData = buffer.GetString();
+	RString result;
+
+	int err = GetResponse(EHTTPREQ_POST,result,url,"?shard=11223344",postData);
+	if (err >= 400)
+	{
+		LogF("HTTP Error: %d", err);
+		LogF(result);
+		return 0;
+	}
+
+	JSONDocument reply;
+	reply.Parse<rapidjson::kParseDefaultFlags>(result);
+	if (!reply.Empty() && reply.HasMember("id"))
+	{
+		JSONValue &vid = reply["id"];
+		if (vid.IsInt())
+			return vid.GetInt();
+	}
+
+	return 0;
+}
+
+static bool DBWorldUpdateSync( int id, EntityAI *veh )
+{
+	if (id <= 0 || !veh)
+		return false;
+
+	RString url;
+	BuildServerRequest(ESERVLET_WORLD,url,"update");
+
+	JSONDocument document;
+	document.SetObject();
+	JSONAllocator& allocator = document.GetAllocator();
+
+	document.AddMember( "item", id, allocator );
+
+	DBWorldBuildBody(veh, document, allocator);
+
+	JSONBuffer buffer;
+	JSONWriter writer(buffer);
+	document.Accept(writer);
+
+	RString postData = buffer.GetString();
+	RString result;
+
+	int err = GetResponse(EHTTPREQ_POST,result,url,"?shard=11223344",postData);
+	if (err >= 400)
+	{
+		LogF("HTTP Error: %d", err);
+		LogF(result);
+		return false;
+	}
+
+	return true;
+}
+
+GameValue DBWorldAdd( const GameState *state, GameValuePar oper1 )
+{
+	if (!GetNetworkManager().IsServerOwner())
+	{
+		state->AccessError("dbWorldAdd");
+		return 0.0f;
+	}
+
+	Object *obj = GetObject(oper1);
+	EntityAI *veh = dyn_cast<EntityAI>(obj);
+	if (!veh)
+		return 0.0f;
+
+	return (float)DBWorldAddSync(veh);
+}
+
+GameValue DBWorldSave( const GameState *state, GameValuePar oper1 )
+{
+	if (!GetNetworkManager().IsServerOwner())
+	{
+		state->AccessError("dbWorldSave");
+		return false;
+	}
+
+	const GameArrayType &array = oper1;
+	if (array.Size() != 2)
+	{
+		state->SetError(EvalDim, array.Size(), 2);
+		return false;
+	}
+
+	if (!CheckType(state, array[0], GameScalar)) return false;
+	if (!CheckType(state, array[1], GameObject)) return false;
+
+	float fid = array[0];
+	int id = (int)fid;
+
+	Object *obj = GetObject(array[1]);
+	EntityAI *veh = dyn_cast<EntityAI>(obj);
+	if (!veh)
+		return false;
+
+	return DBWorldUpdateSync(id, veh);
+}
+
+GameValue DBWorldRemove( const GameState *state, GameValuePar oper1 )
+{
+	if (!GetNetworkManager().IsServerOwner())
+	{
+		state->AccessError("dbWorldRemove");
+		return false;
+	}
+
+	float fid = oper1;
+	int id = (int)fid;
+	if (id <= 0)
+		return false;
+
+	return DBRemoveItem(id);
+}
+
+GameValue DBWorldList( const GameState *state )
+{
+	RString url;
+	BuildServerRequest(ESERVLET_WORLD,url,"list");
+
+	RString result;
+	int err = GetResponse(EHTTPREQ_GET,result,url,"?shard=11223344",NULL);
+	if (err >= 400)
+	{
+		LogF("HTTP Error: %d", err);
+		LogF(result);
+		return state->CreateGameValue(GameArray);
+	}
+
+	GameValue value = state->CreateGameValue(GameArray);
+	GameArrayType &array = value;
+
+	JSONDocument document;
+	document.Parse<rapidjson::kParseDefaultFlags>(result);
+	if (!document.Empty() && document.HasMember("ids"))
+	{
+		JSONValue &ids = document["ids"];
+		if (ids.IsArray())
+		{
+			array.Resize(ids.Size());
+			for (rapidjson::SizeType i = 0; i < ids.Size(); i++)
+				array[i] = (float)ids[i].GetInt();
+		}
+	}
+
+	return value;
+}
+
+GameValue DBWorldSpawn( const GameState *state, GameValuePar oper1 )
+{
+	if (!GetNetworkManager().IsServerOwner())
+	{
+		state->AccessError("dbWorldSpawn");
+		return GameValueExt(nullptr,GameValExtObject);
+	}
+
+	float fid = oper1;
+	int id = (int)fid;
+	if (id <= 0)
+		return GameValueExt(nullptr,GameValExtObject);
+
+	RString url;
+	BuildServerRequest(ESERVLET_WORLD,url,"get");
+
+	JSONDocument request;
+	request.SetObject();
+	JSONAllocator& allocator = request.GetAllocator();
+	request.AddMember( "item", id, allocator );
+
+	JSONBuffer buffer;
+	JSONWriter writer(buffer);
+	request.Accept(writer);
+
+	RString postData = buffer.GetString();
+	RString result;
+
+	int err = GetResponse(EHTTPREQ_POST,result,url,NULL,postData);
+	if (err >= 400)
+	{
+		LogF("HTTP Error: %d", err);
+		LogF(result);
+		return GameValueExt(nullptr,GameValExtObject);
+	}
+
+	JSONDocument document;
+	document.Parse<rapidjson::kParseDefaultFlags>(result);
+	if (document.Empty() || !document.HasMember("type"))
+		return GameValueExt(nullptr,GameValExtObject);
+
+	JSONValue &vtype = document["type"];
+	if (!vtype.IsString())
+		return GameValueExt(nullptr,GameValExtObject);
+
+	RString typeName = vtype.GetString();
+
+	if (!document.HasMember("pos"))
+		return GameValueExt(nullptr,GameValExtObject);
+
+	JSONValue &arr = document["pos"];
+	if (!arr.IsArray() || arr.Size() != 9)
+		return GameValueExt(nullptr,GameValExtObject);
+
+	float x, y, z;
+
+	x = arr[rapidjson::SizeType(0)].GetDouble();
+	y = arr[rapidjson::SizeType(1)].GetDouble();
+	z = arr[rapidjson::SizeType(2)].GetDouble();
+	Vector3 pos(x,y,z);
+
+	x = arr[rapidjson::SizeType(3)].GetDouble();
+	y = arr[rapidjson::SizeType(4)].GetDouble();
+	z = arr[rapidjson::SizeType(5)].GetDouble();
+	Vector3 dir(x,y,z);
+
+	x = arr[rapidjson::SizeType(6)].GetDouble();
+	y = arr[rapidjson::SizeType(7)].GetDouble();
+	z = arr[rapidjson::SizeType(8)].GetDouble();
+	Vector3 up(x,y,z);
+
+	Entity *veh = CreateVehicle( pos, typeName, false, true, ASpCanCollide, true, true, dir, up );
+	if (!veh)
+	{
+		RptF("dbWorldSpawn: unable to create '%s' (id %d)", cc_cast(typeName), id);
+		return GameValueExt(nullptr,GameValExtObject);
+	}
+
+	veh->SetInvisible(false);
+
+	EntityAI *ai = dyn_cast<EntityAI>(veh);
+	if (ai)
+		DBWorldLoadState(ai, document);
+
+	return GameValueExt(veh);
+}
+
+//-----------------------------------------------------------------------------
 GameValue DBLoadHost( const GameState *state )
 {
 	// The dedicated server package ships a local persistence service. Keep the
@@ -28376,6 +28744,7 @@ GameValue MoveJPanel(const GameState *state, GameValuePar oper1)
 #endif
 
 #define NULARS_OFP(XX, Category) \
+  XX(GameArray, "dbWorldList", DBWorldList, "Returns the ids of all persistent world objects (vehicles and tents). Works on game server only.", "_ids = dbWorldList", "", "SDZ", "", Category) \
   XX(GameObject, "player", Player, "This is the person controlled by the player. In MP this value is different on each computer.", "alive player", "", "", "", Category) \
   XX(GameArray, "players", ListPlayers, "List of all players on the server.","{_x globalChat 'I am here'}forEach players", "", "103584", "", Category) \
   XX(GameBool,    "isServer",           IsServer,             "Returns true if the computer is the server.",                          "",                         "", "2.92", "", Category) \
@@ -28951,6 +29320,10 @@ static const GameNular ExtNular[]=
   XX(GameBool, "dbKillCharacter", DBKillCharacter, GameString, "playerUID", "Kill character (zero it's aliveness in database).", "_bool = dbKillCharacter uid", "", "101171 DayZ", "", Category) \
   XX(GameBool, "dbLoadCharacter", DBLoadCharacter, GameString, "playerUID", "Load character status and inventory from database.", "_bool = dbLoadCharacter uid", "", "101171 DayZ", "", Category) \
   XX(GameBool, "dbSaveCharacter", DBSaveCharacter, GameString, "playerUID", "Save character status and inventory to database.", "_bool = dbSaveCharacter uid", "", "101171 DayZ", "", Category) \
+  XX(GameScalar, "dbWorldAdd", DBWorldAdd, GameObject, "object", "Store a vehicle or tent in the world database and return its persistent id (0 on failure). Works on game server only.", "_id = dbWorldAdd myTent", "", "SDZ", "", Category) \
+  XX(GameBool, "dbWorldSave", DBWorldSave, GameArray, "id, object", "Update position, state, fuel and cargo of a persistent world object.", "_ok = dbWorldSave [myId, myTent]", "", "SDZ", "", Category) \
+  XX(GameBool, "dbWorldRemove", DBWorldRemove, GameScalar, "id", "Remove a persistent world object from the database.", "_ok = dbWorldRemove myId", "", "SDZ", "", Category) \
+  XX(GameObject, "dbWorldSpawn", DBWorldSpawn, GameScalar, "id", "Create a persistent world object from the database and restore its state and cargo. Works on game server only.", "_obj = dbWorldSpawn myId", "", "SDZ", "", Category) \
   XX(GameBool, "dbSaveInt", DBSaveInt, GameArray, "playerUID,Column,Value", "Save single column variable into database.", "_bool = dbSaveInt uid, column, value", "", "101171 DayZ", "", Category) \
   XX(GameScalar, "dbLoadInt", DBLoadInt, GameArray, "playerUID,Column", "Load single column variable from database.", "_scalar = dbLoadInt uid, column", "", "101171 DayZ", "", Category) \
   XX(GameNothing, "dbSelectHost", DBSelectHost, GameString, "Host URL", "Set custom server host adress.", "dbSelectHost http://url.com/", "", "101171 DayZ", "", Category) \
